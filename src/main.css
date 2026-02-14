@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+.primary-bg-color{
+    background-color: #FFF4EF;
+}
+
+.secondary-bg-color{
+    background-color: #F4E5E5;
+}
+
+.button-bg-color{
+    background-color: #E8ADAD;
+}
+
+.category-bg-color{
+    background-color: #a21d1d33;
+}
+
+.divider-bg-color{
+    background: #C6F3D2;
+}
+
+.MiniDivider-bg-color{
+    background-color: #a21d1d2b;
+}
+
+.heading-color{
+    color:#A21D1D;
+}
+
+.heading-2-color{
+    color: #1C371C;
+    text-decoration: solid;
+    font-size: 18px
+}
+
+.content-text{
+    color: #1C371C;
+}
+
+
+
