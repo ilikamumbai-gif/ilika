@@ -1,0 +1,33 @@
+[
+  {
+    "id": 1,
+    "name": "Customer Name",
+    "image": "/src/assets/Images/customer.jpg",
+    "text": "The best product ever. This works like magic. Totally Trustable."
+  },
+  {
+    "id": 2,
+    "name": "Customer Name",
+    "image": "/src/assets/Images/customer.jpg",
+    "text": "The best product ever. This works like magic. Totally Trustable."
+  },
+  {
+    "id": 3,
+    "name": "Customer Name",
+    "image": "/src/assets/Images/customer.jpg",
+    "text": "The best product ever. This works like magic. Totally Trustable."
+  },
+  {
+    "id": 4,
+    "name": "Customer Name",
+    "image": "/src/assets/Images/customer.jpg",
+    "text": "The best product ever. This works like magic. Totally Trustable."
+  },
+  {
+    "id": 5,
+    "name": "Customer Name",
+    "image": "/src/assets/Images/customer.jpg",
+    "text": "The best product ever. This works like magic. Totally Trustable."
+  }
+  
+]
