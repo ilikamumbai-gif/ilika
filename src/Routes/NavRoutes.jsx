@@ -80,6 +80,7 @@ const NavRoutes = () => {
         <Route path="/faq" element={<Faq />} />
         <Route path="/order-success/:id" element={<OrderSuccess/>}/>
 
+
         {/* USER AUTH */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />

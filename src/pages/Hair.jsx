@@ -1,26 +1,24 @@
-import { useCategories } from "../context/CategoryContext";
+import React from 'react'
+import ProductList from '../components/ProductList'
+import MiniDivider from '../components/MiniDivider'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
+import Heading from '../components/Heading'
+import CartDrawer from '../components/CartDrawer'
 
 const Hair = () => {
-  const { categories } = useCategories();
-
-  const hairCategory = categories.find(
-    (c) => c.name.toLowerCase() === "hair"
-  );
-
   return (
     <>
       <MiniDivider />
 
+      {/* ✅ Added primary-bg-color */}
       <div className='primary-bg-color'>
         <Header />
         <CartDrawer/>
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
           <Heading heading="Hair Products" />
-
-          {hairCategory && (
-            <ProductList categoryId={hairCategory.id} />
-          )}
+         <ProductList category="hair" />
 
         </section>
 
@@ -29,3 +27,5 @@ const Hair = () => {
     </>
   )
 }
+
+export default Hair
