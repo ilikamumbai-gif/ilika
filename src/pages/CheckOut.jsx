@@ -111,9 +111,9 @@ const Checkout = () => {
     0
   );
 
-  const gst = Math.round(subtotal * 0.18);
+  
   const shipping = 0;
-  const total = subtotal + gst + shipping;
+  const total = subtotal  + shipping;
 
   /* ---------------- PLACE ORDER ---------------- */
 

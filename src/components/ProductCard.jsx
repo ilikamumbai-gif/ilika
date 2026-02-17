@@ -85,10 +85,7 @@ const ProductCard = ({ product }) => {
             </span>
           </div>
 
-          {/* DESCRIPTION */}
-          <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 min-h-[2.8rem]">
-            {product.additionalInfo}
-          </p>
+       
 
           {/* BOTTOM SECTION */}
           <div className="flex items-center justify-between ">

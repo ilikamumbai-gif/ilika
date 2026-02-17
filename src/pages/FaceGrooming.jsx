@@ -28,7 +28,7 @@ const FaceGrooming = () => {
         <CartDrawer/>
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
-          <Heading heading="Hair Products" />
+          <Heading heading="Face Grooming Products" />
 
           {hairCategory ? (
             <ProductList categoryId={hairCategory.id} />

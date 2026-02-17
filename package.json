@@ -11,6 +11,12 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "@tiptap/extension-horizontal-rule": "^3.19.0",
+    "@tiptap/extension-strike": "^3.19.0",
+    "@tiptap/extension-text-style": "^3.19.0",
+    "@tiptap/extension-underline": "^3.19.0",
+    "@tiptap/react": "^3.19.0",
+    "@tiptap/starter-kit": "^3.19.0",
     "cors": "^2.8.6",
     "firebase": "^12.9.0",
     "git": "^0.1.5",
