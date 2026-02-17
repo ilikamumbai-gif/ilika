@@ -84,12 +84,24 @@ const ProductTab = ({ product }) => {
               {product.description || "No description available."}
             </p>
 
-            {/* Highlights from Admin */}
+            
+          </>
+        )}
+
+        {/* ================= ADDITIONAL INFO ================= */}
+        {activeTab === "info" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+
+            <div className="border p-4 rounded-lg sm:col-span-2">
+            
+              
+                <h4 className="text-base sm:text-lg font-semibold">
+               Aditional INformation
+                </h4>
+              {/* Highlights from Admin */}
             {product.points?.length > 0 && (
               <>
-                <h4 className="text-base sm:text-lg font-semibold mt-6">
-                  Product Features
-                </h4>
 
                 <ul className="list-disc pl-5 space-y-2">
                   {product.points.map((point, index) => (
@@ -98,33 +110,8 @@ const ProductTab = ({ product }) => {
                 </ul>
               </>
             )}
-          </>
-        )}
-
-        {/* ================= ADDITIONAL INFO ================= */}
-        {activeTab === "info" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-            <div className="border p-4 rounded-lg">
-              <p className="font-medium">Category ID</p>
-              <p className="text-gray-600">
-                {product.categoryId || "N/A"}
-              </p>
             </div>
-
-            <div className="border p-4 rounded-lg">
-              <p className="font-medium">Price</p>
-              <p className="text-gray-600">
-                ₹{product.price}
-              </p>
-            </div>
-
-            <div className="border p-4 rounded-lg sm:col-span-2">
-              <p className="font-medium">Additional Info</p>
-              <p className="text-gray-600">
-                {product.additionalInfo || "No additional information"}
-              </p>
-            </div>
+            
 
           </div>
         )}

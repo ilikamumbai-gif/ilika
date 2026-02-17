@@ -127,19 +127,15 @@ const ProductDetail = () => {
 
               {/* Description */}
               <p className="text-sm sm:text-base content-text leading-relaxed">
-                {product.description}
+            
+                {product.additionalInfo || "No additional information"}
+           
               </p>
 
               <div className="h-px bg-gray-200 my-2" />
 
               {/* Highlights (From DB) */}
-              {product.points && product.points.length > 0 && (
-                <ul className="text-sm sm:text-base text-gray-600 space-y-2">
-                  {product.points.map((point, index) => (
-                    <li key={index}>✔ {point}</li>
-                  ))}
-                </ul>
-              )}
+            
 
               {/* ACTION BUTTONS */}
               <div className="flex flex-col sm:flex-row gap-3 mt-4">

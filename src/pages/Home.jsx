@@ -42,7 +42,7 @@ const Home = () => {
 
         {/* TOP APPLIANCES (CATEGORY FILTERED) */}
         <Heading heading="TOP APPLIANCES" />
-        <ProductList category="skincare" limit={8} />
+        <ProductList limit={8} />
 
         {/* SHOP BY INGREDIENTS */}
         <Heading heading="SHOP BY INGREDIENTS" />

@@ -112,7 +112,7 @@ const Checkout = () => {
   );
 
   const gst = Math.round(subtotal * 0.18);
-  const shipping = subtotal > 999 ? 0 : 49;
+  const shipping = 0;
   const total = subtotal + gst + shipping;
 
   /* ---------------- PLACE ORDER ---------------- */
@@ -340,8 +340,7 @@ const Checkout = () => {
 
             <div className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
-              <div className="flex justify-between"><span>GST</span><span>₹{gst}</span></div>
-              <div className="flex justify-between"><span>Shipping</span><span>{shipping === 0 ? "Free" : `₹${shipping}`}</span></div>
+              <div className="flex justify-between"><span>Shipping</span><span>Free<strike>99</strike></span></div>
 
               <hr />
 

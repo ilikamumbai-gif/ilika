@@ -1,16 +1,20 @@
 import { useProducts } from "../context/ProductContext";
 import ProductCard from "./ProductCard";
 
-const ProductList = ({ category }) => {
+const ProductList = ({ categoryId }) => {
   const { products } = useProducts();
 
-  // 🔥 Filter products by category
-  const filteredProducts = category
-    ? products.filter(
-        (item) =>
-          item.category?.toLowerCase() === category.toLowerCase()
+  const filteredProducts = categoryId
+    ? products.filter((item) =>
+        item.categoryIds?.includes(categoryId)
       )
     : products;
+
+
+  console.log(filteredProducts)
+
+
+
 
   return (
     <section className="w-full py-6 sm:py-8">

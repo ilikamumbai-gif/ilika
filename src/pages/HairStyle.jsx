@@ -29,7 +29,7 @@ const HairStyle = () => {
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
           <Heading heading="Hair Styling" />
-          <ProductList/>
+          <ProductList category="hairstyling"/>
         </section>
 
         <Footer/>

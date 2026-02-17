@@ -108,14 +108,14 @@ const ProductCard = ({ product }) => {
 
             {product.originalPrice && (
               <span className="text-xs line-through text-gray-400">
-                ₹{product.originalPrice}
+                ₹{product.add}
               </span>
             )}
           </div>
 
           {/* DESCRIPTION */}
           <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
-            {product.description}
+            {product.additionalInfo}
           </p>
 
           {/* RATING + ADD BUTTON */}

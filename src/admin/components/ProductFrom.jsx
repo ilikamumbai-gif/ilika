@@ -2,21 +2,24 @@ import React, { useState } from "react";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { app } from "../../firebase/firebaseConfig";
 import { useCategories } from "../context/CategoryContext";
+import { useNavigate } from "react-router-dom";
 
 const storage = getStorage(app);
 
 const ProductForm = ({ onSubmit, initialData = {}  }) => {
   const { categories } = useCategories();
+  const navigate = useNavigate()
 
-  const [form, setForm] = useState({
-    name: initialData.name || "",
+const [form, setForm] = useState({
+  name: initialData.name || "",
   price: initialData.price || "",
-  categoryId: initialData.categoryId || "",
+  categoryIds: initialData.categoryIds || [],
   description: initialData.description || "",
   additionalInfo: initialData.additionalInfo || "",
   points: initialData.points ? initialData.points.join(", ") : "",
   image: null,
-  });
+});
+
 
   const [loading, setLoading] = useState(false);
 
@@ -29,6 +32,24 @@ const ProductForm = ({ onSubmit, initialData = {}  }) => {
       setForm({ ...form, [name]: value });
     }
   };
+  const handleCategoryChange = (id) => {
+  setForm((prev) => {
+    if (prev.categoryIds.includes(id)) {
+      // remove category
+      return {
+        ...prev,
+        categoryIds: prev.categoryIds.filter((c) => c !== id),
+      };
+    } else {
+      // add category
+      return {
+        ...prev,
+        categoryIds: [...prev.categoryIds, id],
+      };
+    }
+  });
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,7 +77,8 @@ const ProductForm = ({ onSubmit, initialData = {}  }) => {
       await onSubmit({
         name: form.name,
         price: Number(form.price),
-        categoryId: form.categoryId,
+        categoryIds: form.categoryIds,
+
         description: form.description,
         additionalInfo: form.additionalInfo,
         points: form.points
@@ -65,22 +87,23 @@ const ProductForm = ({ onSubmit, initialData = {}  }) => {
         imageUrl,
       });
 
-      // Reset form after success
-      setForm({
-        name: "",
-        price: "",
-        categoryId: "",
-        description: "",
-        additionalInfo: "",
-        points: "",
-        image: null,
-      });
+     setForm({
+  name: "",
+  price: "",
+  categoryIds: [],
+  description: "",
+  additionalInfo: "",
+  points: "",
+  image: null,
+});
 
-    } catch (error) {
-      console.error("❌ Image upload failed:", error);
-    }
+} catch (error) {
+  console.error("❌ Image upload failed:", error);
+}
 
-    setLoading(false);
+setLoading(false);
+
+    
   };
 
   return (
@@ -106,20 +129,26 @@ const ProductForm = ({ onSubmit, initialData = {}  }) => {
         required
       />
 
-      <select
-        name="categoryId"
-        value={form.categoryId}
-        onChange={handleChange}
-        className="w-full border p-2 rounded"
-        required
+     <div className="space-y-2">
+  <p className="font-medium">Select Categories</p>
+
+  <div className="grid grid-cols-2 gap-2 border p-3 rounded max-h-40 overflow-y-auto">
+    {categories.map((cat) => (
+      <label
+        key={cat.id}
+        className="flex items-center gap-2 text-sm cursor-pointer"
       >
-        <option value="">Select Category</option>
-        {categories.map((cat) => (
-          <option key={cat.id} value={cat.id}>
-            {cat.name}
-          </option>
-        ))}
-      </select>
+        <input
+          type="checkbox"
+          checked={form.categoryIds.includes(cat.id)}
+          onChange={() => handleCategoryChange(cat.id)}
+        />
+        {cat.name}
+      </label>
+    ))}
+  </div>
+</div>
+
 
       <textarea
         name="description"
@@ -131,7 +160,7 @@ const ProductForm = ({ onSubmit, initialData = {}  }) => {
 
       <textarea
         name="additionalInfo"
-        placeholder="Additional Information"
+        placeholder="Short Information"
         value={form.additionalInfo}
         onChange={handleChange}
         className="w-full border p-2 rounded"
@@ -140,7 +169,7 @@ const ProductForm = ({ onSubmit, initialData = {}  }) => {
       <input
         type="text"
         name="points"
-        placeholder="Highlights (comma separated)"
+        placeholder="Aditiona Information  (comma separated)"
         value={form.points}
         onChange={handleChange}
         className="w-full border p-2 rounded"

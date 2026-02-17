@@ -32,6 +32,7 @@ import OrderSuccess from "../pages/OrderSuccess";
 import ShippingPolicy from "../pages/ShippingPolicy";
 import Faq from "../pages/Faq";
 import NewArrival from "../pages/NewArrival";
+import CreateCtm from "../pages/CreateCtm";
 
 
 
@@ -54,6 +55,7 @@ const NavRoutes = () => {
         <Route path="/grooming/:category" element={<Grooming />} />
 
         <Route path="/ctm" element={<Ctm />} />
+        <Route path="/ctmkit" element={<CreateCtm />} />
         <Route path="/blog" element={<Blog />} />
 
         {/* 🔥 PROTECTED USER ROUTE */}
