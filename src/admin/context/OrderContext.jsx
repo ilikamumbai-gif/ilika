@@ -6,31 +6,39 @@ export const OrderProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* ================= FETCH ALL ORDERS ================= */
+  const API = import.meta.env.VITE_API_URL;
+
+  // Universal Firestore Date Parser
+  const parseDate = (createdAt) => {
+    if (!createdAt) return "-";
+
+    // Firestore Timestamp
+    if (createdAt?._seconds)
+      return new Date(createdAt._seconds * 1000).toLocaleDateString();
+
+    // JS Date
+    return new Date(createdAt).toLocaleDateString();
+  };
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/orders`
-        );
+        const res = await fetch(`${API}/api/orders`);
         const data = await res.json();
 
-        const formatted = data.map((order) => ({
-          id: order.id,
-          userId: order.userId,
-          userName: order.userEmail || "User",
-          total: order.totalAmount,
-          status: order.status,
-          date: order.createdAt?._seconds
-            ? new Date(order.createdAt._seconds * 1000).toLocaleDateString()
-            : "-",
-          items: order.items,
-          address: order.shippingAddress,
+        const formatted = data.map((o) => ({
+          id: o.id || "",
+          userEmail: o.userEmail || "guest@email.com",
+          total: o.totalAmount || 0,
+          status: o.status || "Placed",
+          date: parseDate(o.createdAt),
+          items: o.items || [],
+          shippingAddress: o.shippingAddress || {},
         }));
 
         setOrders(formatted);
       } catch (err) {
-        console.error("Failed to fetch orders:", err);
+        console.error("Failed to fetch orders", err);
       } finally {
         setLoading(false);
       }
@@ -39,7 +47,6 @@ export const OrderProvider = ({ children }) => {
     fetchOrders();
   }, []);
 
-  /* ================= GET SINGLE ORDER ================= */
   const getOrderById = (id) =>
     orders.find((o) => String(o.id) === String(id));
 

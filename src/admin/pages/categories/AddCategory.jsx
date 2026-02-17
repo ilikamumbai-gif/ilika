@@ -13,26 +13,44 @@ const AddCategory = () => {
     group: "",
   });
 
+  /* Auto slug generator */
+  const generateSlug = (text) =>
+    text
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "name" && { slug: generateSlug(value) }),
+    }));
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  console.log("🔥 Submitting category:", formData);
+    if (!formData.name || !formData.slug || !formData.group) {
+      alert("Please fill all fields");
+      return;
+    }
 
-  try {
-    await addCategory(formData);   // ✅ wait for backend
+    try {
+      await addCategory(formData);
 
-    navigate("/admin/categories"); // redirect after success
+      // IMPORTANT → go back instead of navigating new page
+      // this keeps ProductForm mounted and forces context refresh
+      navigate(-1);
 
-  } catch (error) {
-    console.error("Add category failed:", error);
-  }
-};
-
+    } catch (error) {
+      console.error("Add category failed:", error);
+      alert("Failed to add category");
+    }
+  };
 
   return (
     <AdminLayout>
@@ -51,23 +69,25 @@ const AddCategory = () => {
             type="text"
             name="name"
             required
+            value={formData.name}
             onChange={handleChange}
             className="w-full border rounded-lg px-3 py-2 text-sm"
+            placeholder="Moisturizers"
           />
         </div>
 
         {/* SLUG */}
         <div>
           <label className="block text-sm font-medium mb-1">
-            Slug
+            Slug (auto generated)
           </label>
           <input
             type="text"
             name="slug"
             required
+            value={formData.slug}
             onChange={handleChange}
-            className="w-full border rounded-lg px-3 py-2 text-sm"
-            placeholder="facecare, haircare"
+            className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50"
           />
         </div>
 
@@ -79,6 +99,7 @@ const AddCategory = () => {
           <select
             name="group"
             required
+            value={formData.group}
             onChange={handleChange}
             className="w-full border rounded-lg px-3 py-2 text-sm"
           >
@@ -93,7 +114,7 @@ const AddCategory = () => {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="px-5 py-2 rounded-lg bg-black text-white text-sm"
+            className="px-5 py-2 rounded-lg bg-black text-white text-sm hover:opacity-90"
           >
             Add Category
           </button>

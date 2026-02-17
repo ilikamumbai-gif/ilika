@@ -4,23 +4,18 @@ const ProductContext = createContext(null);
 
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
+  const API = import.meta.env.VITE_API_URL;
 
-  /* ===============================
-     FETCH PRODUCTS
-  ================================ */
+  /* FETCH PRODUCTS */
   const fetchProducts = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
-
-      if (!res.ok) {
-        throw new Error("Failed to fetch products");
-      }
+      const res = await fetch(`${API}/api/products`);
+      if (!res.ok) throw new Error("Failed to fetch products");
 
       const data = await res.json();
-      setProducts(data);
-
+      setProducts([...data]); // new reference important
     } catch (error) {
-      console.error("❌ Fetch products error:", error);
+      console.error("Fetch products error:", error);
     }
   };
 
@@ -28,77 +23,43 @@ export const ProductProvider = ({ children }) => {
     fetchProducts();
   }, []);
 
-  /* ===============================
-     ADD PRODUCT
-  ================================ */
+  /* ADD PRODUCT */
   const addProduct = async (data) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+    const res = await fetch(`${API}/api/products`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-      if (!res.ok) {
-        throw new Error("Failed to add product");
-      }
+    if (!res.ok) throw new Error("Failed to add product");
 
-      await fetchProducts();
-
-    } catch (error) {
-      console.error("❌ Add product error:", error);
-    }
+    await fetchProducts(); // refresh list
   };
 
-  /* ===============================
-     UPDATE PRODUCT
-  ================================ */
+  /* UPDATE PRODUCT */
   const updateProduct = async (id, data) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+    const res = await fetch(`${API}/api/products/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-      if (!res.ok) {
-        throw new Error("Failed to update product");
-      }
+    if (!res.ok) throw new Error("Failed to update product");
 
-      await fetchProducts();
-
-    } catch (error) {
-      console.error("❌ Update product error:", error);
-    }
+    await fetchProducts();
   };
 
-  /* ===============================
-     DELETE PRODUCT
-  ================================ */
+  /* DELETE PRODUCT */
   const deleteProduct = async (id) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
-        method: "DELETE",
-      });
+    const res = await fetch(`${API}/api/products/${id}`, {
+      method: "DELETE",
+    });
 
-      if (!res.ok) {
-        throw new Error("Failed to delete product");
-      }
+    if (!res.ok) throw new Error("Failed to delete product");
 
-      await fetchProducts();
-
-    } catch (error) {
-      console.error("❌ Delete product error:", error);
-    }
+    await fetchProducts();
   };
 
-  /* ===============================
-     GET PRODUCT BY ID
-  ================================ */
   const getProductById = (id) =>
     products.find((p) => String(p.id) === String(id));
 

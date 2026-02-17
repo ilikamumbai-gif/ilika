@@ -3,9 +3,11 @@ import { Menu, X } from "lucide-react";
 import logo from "../assets/Images/logo2.png";
 import Nav from "./Nav";
 import  { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 const Header = () => {
+  const navigate = useNavigate();
    const [open, setOpen] = useState(false);
   return (
    <header className="w-full sticky top-0 z-50 bg-white/30 backdrop-blur-md">
@@ -13,11 +15,12 @@ const Header = () => {
       <div className="max-w-8xl  flex items-center justify-between px-4  py-3">
 
         {/* Logo */}
-        <div className="h-12 md:h-14 flex items-center">
+        <div className="h-12 md:h-14 flex items-center" onClick={() => navigate(`/`)}>
           <img
             src={logo}
             alt="Ilika"
             className="h-full w-auto object-contain"
+
           />
         </div>
 

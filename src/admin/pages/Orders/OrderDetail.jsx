@@ -22,7 +22,6 @@ const OrderDetail = () => {
   return (
     <AdminLayout>
 
-      {/* HEADER */}
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -32,27 +31,31 @@ const OrderDetail = () => {
         </button>
 
         <h1 className="text-xl font-semibold">
-          Order #{order.id}
+          Order #{order.id.slice(-6)}
         </h1>
       </div>
 
-      {/* CUSTOMER DETAILS */}
+      {/* Shipping Address */}
       <div className="bg-white border rounded-xl p-4 mb-6">
         <h2 className="font-semibold mb-3">Shipping Address</h2>
 
         <div className="text-sm text-gray-700 space-y-1">
-          <p className="font-medium">{order.userName}</p>
-          <p>{order.address?.line}</p>
+          <p className="font-medium">
+            {order.shippingAddress?.name || "Customer"}
+          </p>
+          <p>{order.shippingAddress?.line}</p>
           <p>
-            {order.address?.city}, {order.address?.state} - {order.address?.pincode}
+            {order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.pincode}
           </p>
           <p className="mt-2">
-            <span className="text-gray-500">Phone:</span> {order.phone}
+            <span className="text-gray-500">Phone:</span>{" "}
+            {order.shippingAddress?.phone}
           </p>
+          <p className="text-gray-500">{order.userEmail}</p>
         </div>
       </div>
 
-      {/* ITEMS */}
+      {/* Items */}
       <div className="bg-white border rounded-xl overflow-hidden">
         <h2 className="px-4 py-3 border-b font-semibold">Order Items</h2>
 
@@ -80,7 +83,6 @@ const OrderDetail = () => {
         </table>
       </div>
 
-      {/* TOTAL */}
       <div className="flex justify-end mt-4">
         <div className="bg-white border rounded-xl p-4 w-full sm:w-64">
           <p className="text-sm text-gray-500">Grand Total</p>

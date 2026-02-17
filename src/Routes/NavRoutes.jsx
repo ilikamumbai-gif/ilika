@@ -31,6 +31,7 @@ import Checkout from "../pages/CheckOut";
 import OrderSuccess from "../pages/OrderSuccess";
 import ShippingPolicy from "../pages/ShippingPolicy";
 import Faq from "../pages/Faq";
+import NewArrival from "../pages/NewArrival";
 
 
 
@@ -46,6 +47,7 @@ const NavRoutes = () => {
         <Route path="/skin" element={<Skin />} />
         <Route path="/hair" element={<Hair />} />
         <Route path="/grooming" element={<Grooming />} />
+        <Route path="/newarrival" element={<NewArrival />} />
 
         <Route path="/skin/:category" element={<Skin />} />
         <Route path="/hair/:category" element={<Hair />} />

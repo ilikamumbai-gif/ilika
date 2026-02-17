@@ -10,29 +10,59 @@ const OrderList = () => {
   const { orders, loading } = useOrders();
 
   const columns = [
-    { label: "Order ID", key: "id" },
-    { label: "Customer", key: "userName" },
+    {
+      label: "Order ID",
+      key: "id",
+      render: (row) => (
+        <span className="font-medium text-gray-700">
+          #{row?.id ? row.id.slice(-6) : "------"}
+        </span>
+      ),
+    },
+
+    {
+      label: "Customer",
+      key: "userEmail",
+      render: (row) => (
+        <div className="text-sm">
+          <p className="font-medium text-gray-800">
+            {row?.shippingAddress?.name || "Customer"}
+          </p>
+          <p className="text-gray-500">{row?.userEmail}</p>
+        </div>
+      ),
+    },
+
     {
       label: "Total",
       key: "total",
       align: "right",
-      render: (row) => `₹${row.total}`,
+      render: (row) => `₹${row?.total || 0}`,
     },
+
     {
       label: "Status",
       key: "status",
-      render: (row) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          row.status === "Delivered"
+      render: (row) => {
+        const status = row?.status || "Placed";
+
+        const color =
+          status === "Delivered"
             ? "bg-green-100 text-green-700"
-            : row.status === "Shipped"
+            : status === "Shipped"
             ? "bg-blue-100 text-blue-700"
-            : "bg-yellow-100 text-yellow-700"
-        }`}>
-          {row.status}
-        </span>
-      ),
+            : status === "Cancelled"
+            ? "bg-red-100 text-red-700"
+            : "bg-yellow-100 text-yellow-700";
+
+        return (
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>
+            {status}
+          </span>
+        );
+      },
     },
+
     { label: "Date", key: "date" },
   ];
 

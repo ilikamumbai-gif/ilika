@@ -11,200 +11,298 @@ const UserDetail = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
 
+  const [addresses, setAddresses] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [newAddress, setNewAddress] = useState("");
+  const [editingAddressId, setEditingAddressId] = useState(null);
+
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const [user, setUser] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
+    orders: 0,
     joined: "",
   });
 
-  const [orders, setOrders] = useState([]);
-  const [saving, setSaving] = useState(false);
-
-  /* ---------------- REDIRECT ---------------- */
+  /* ===============================
+     REDIRECT IF NOT LOGGED IN
+  ================================ */
   useEffect(() => {
-    if (!currentUser) navigate("/login");
-  }, [currentUser]);
+    if (!currentUser) {
+      navigate("/login");
+    }
+  }, [currentUser, navigate]);
 
-  /* ---------------- FETCH USER ---------------- */
+  /* ===============================
+     FETCH LOGGED IN USER FROM DB
+  ================================ */
   useEffect(() => {
     if (!currentUser) return;
 
-    const fetchUser = async () => {
+    const fetchAllData = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}`);
-        const data = await res.json();
+        // PROFILE
+        const userRes = await fetch(`${import.meta.env.VITE_API_URL}/api/users`);
+        const users = await userRes.json();
 
-        setUser({
-          name: data.name || "",
-          email: data.email || "",
-          phone: data.phone || "",
-          address: data.address || "",
-          joined: data.createdAt
-            ? new Date(data.createdAt._seconds * 1000).toLocaleDateString()
-            : "",
-        });
+        const loggedUser = users.find(u => u.uid === currentUser.uid);
+        if (loggedUser) setUser(loggedUser);
+
+        // ADDRESSES
+        const addrRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}/address`
+        );
+        const addrData = await addrRes.json();
+        setAddresses(addrData);
+
+        // ORDERS
+        const orderRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/orders/${currentUser.uid}`
+        );
+        const orderData = await   orderRes.json();
+        setOrders(orderData);
+
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoading(false);
       }
     };
 
-    fetchUser();
+    fetchAllData();
   }, [currentUser]);
 
-  /* ---------------- FETCH ORDERS ---------------- */
-  useEffect(() => {
-    if (!currentUser) return;
 
-    const fetchOrders = async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}/orders`
-        );
-        const data = await res.json();
+  /* ===============================
+     HANDLE INPUT CHANGE
+  ================================ */
+  const handleChange = (e) => {
+    setUser({ ...user, [e.target.name]: e.target.value });
+  };
 
-        setOrders(data);
-      } catch (err) {
-        console.error("Failed to fetch orders", err);
-      }
-    };
-
-    fetchOrders();
-  }, [currentUser]);
-
-  /* ---------------- SAVE ADDRESS ---------------- */
+  /* ===============================
+     SAVE EDIT (UI ONLY)
+  ================================ */
   const handleSave = async (e) => {
     e.preventDefault();
-    setSaving(true);
 
-    try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(user)
+    });
+
+    setIsEditing(false);
+  };
+  const addAddress = async () => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}/address`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: newAddress })
+      }
+    );
+
+    const data = await res.json();
+    setAddresses(prev => [{ id: data.id, text: newAddress }, ...prev]);
+    setNewAddress("");
+  };
+  const updateAddress = async (id, text) => {
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}/address/${id}`,
+      {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: user.name,
-          phone: user.phone,
-          address: user.address,
-        }),
-      });
+        body: JSON.stringify({ text })
+      }
+    );
 
-      alert("Profile updated successfully");
-      setIsEditing(false);
-    } catch (err) {
-      alert("Failed to update");
-    } finally {
-      setSaving(false);
+    setAddresses(prev =>
+      prev.map(a => a.id === id ? { ...a, text } : a)
+    );
+
+    setEditingAddressId(null);
+  };
+
+
+  /* ===============================
+     LOGOUT
+  ================================ */
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
   };
-
-  /* ---------------- LOGOUT ---------------- */
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login");
-  };
-
-  if (loading) return <p className="p-10 text-center">Loading...</p>;
 
   return (
     <>
       <MiniDivider />
+
       <div className="primary-bg-color">
         <Header />
         <CartDrawer />
 
-        <section className="max-w-5xl mx-auto px-4 py-8">
-          <Heading heading="My Account" />
+        <section className="primary-bg-color">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <Heading heading="My Account" />
 
-          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            {/* LEFT PROFILE */}
-            <div className="border rounded-xl p-6 text-center">
-              <div className="w-20 h-20 mx-auto rounded-full bg-pink-300 flex items-center justify-center text-2xl font-bold">
-                {user.name?.charAt(0) || "U"}
-              </div>
+              {/* LEFT CARD */}
+              <div className="self-start">
+                <div className="secondary-bg-color rounded-2xl p-6 text-center min-[h-380]">
+                  <div className="w-24 h-24 mx-auto rounded-full bg-[#E7A6A1] flex items-center justify-center text-3xl font-semibold">
+                    {user.name?.charAt(0) || "U"}
+                  </div>
 
-              <h3 className="mt-3 font-semibold">{user.name}</h3>
-              <p className="text-sm text-gray-500">{user.email}</p>
-              <p className="text-sm text-gray-500">{user.phone}</p>
+                  <h3 className="mt-4 text-lg font-semibold heading-color">
+                    {user.name}
+                  </h3>
+                  <p className="text-sm content-text">{user.email}</p>
+                  <p className="text-sm content-text">{user.phone}</p>
 
-              <button
-                onClick={() => setIsEditing(true)}
-                className="mt-4 w-full bg-black text-white py-2 rounded-md"
-              >
-                Edit Profile
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="mt-2 w-full border py-2 rounded-md"
-              >
-                Logout
-              </button>
-            </div>
-
-            {/* RIGHT CONTENT */}
-            <div className="lg:col-span-2 space-y-6">
-
-              {/* ADDRESS */}
-              <div className="border rounded-xl p-5">
-                <h4 className="font-semibold mb-2">Shipping Address</h4>
-                <p className="text-sm text-gray-600">
-                  {user.address || "No address saved"}
-                </p>
-              </div>
-
-              {/* ORDER COUNT */}
-              <div className="border rounded-xl p-5">
-                <h4 className="font-semibold">Total Orders</h4>
-                <p className="text-2xl font-bold">{orders.length}</p>
-              </div>
-
-              {/* ORDER HISTORY */}
-              <div className="border rounded-xl p-5">
-                <h4 className="font-semibold mb-4">Order History</h4>
-
-                {orders.length === 0 ? (
-                  <p className="text-gray-500 text-sm">
-                    You haven't placed any orders yet
+                  <p className="text-xs text-gray-500 mt-2">
+                    Member since {user.joined}
                   </p>
-                ) : (
-                  <div className="space-y-4">
-                    {orders.map(order => (
-                      <div key={order.id} className="border rounded-lg p-4">
-                        <div className="flex justify-between">
-                          <div>
-                            <p className="font-medium">Order #{order.id}</p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(order.createdAt._seconds * 1000).toLocaleDateString()}
-                            </p>
-                          </div>
 
-                          <span className="text-xs px-2 py-1 bg-yellow-100 rounded-full">
-                            {order.status}
-                          </span>
-                        </div>
+                  {!isEditing && (
+                    <>
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="mt-5 w-full bg-[#E7A6A1] py-2 rounded-md text-sm font-medium hover:bg-[#dd8f8a] transition"
+                      >
+                        Edit Profile
+                      </button>
 
-                        <div className="mt-2 text-sm">
-                          {order.items.slice(0, 2).map((i, idx) => (
-                            <p key={idx}>{i.name} × {i.quantity}</p>
-                          ))}
-                        </div>
+                      <button
+                        onClick={handleLogout}
+                        className="mt-3 w-full border border-black py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
 
-                        <div className="mt-2 font-semibold">
-                          ₹{order.totalAmount}
+              {/* RIGHT SECTION */}
+              <div className="lg:col-span-2">
+
+                {/* VIEW MODE */}
+                {!isEditing && (
+                  <div className="space-y-6">
+                    <div className="border rounded-xl p-5">
+                      <h4 className="font-semibold heading-color mb-2">
+                        Shipping Address
+                      </h4>
+                      <p className="text-sm content-text leading-relaxed">
+                        {user.address}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <Stat title="Orders" value={orders.length} />
+
+                     
+                      <Stat title="Addresses" value={user.address.length} />
+                    </div>
+                    <div className="border rounded-xl p-5">
+                      <h4 className="font-semibold mb-3">My Orders</h4>
+
+                      {orders.length === 0 && <p>No orders yet</p>}
+
+                      {orders.map(order => (
+                        <div key={order.id} className="border-b py-3">
+                          <p className="text-sm font-medium">
+                            Order #{order.id.slice(-6)}
+                          </p>
+                          <p className="text-sm">₹ {order.totalAmount}</p>
+                          <p className="text-xs text-gray-500">{order.status}</p>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+
+
+                    <div className="pt-6">
+                      <Link
+                        to="/"
+                        className="w-full sm:w-auto bg-black text-white px-6 py-2 rounded-md text-sm hover:opacity-90 transition"
+                      >
+                        Browse Products
+                      </Link>
+                    </div>
                   </div>
                 )}
-              </div>
 
+                {/* EDIT MODE */}
+                {isEditing && (
+                  <form
+                    onSubmit={handleSave}
+                    className="border rounded-2xl p-6 space-y-4"
+                  >
+                    <h4 className="text-lg font-semibold heading-color mb-4">
+                      Edit Profile
+                    </h4>
+
+                    <Input
+                      label="Full Name"
+                      name="name"
+                      value={user.name}
+                      onChange={handleChange}
+                    />
+
+                    <Input
+                      label="Email"
+                      name="email"
+                      value={user.email}
+                      onChange={handleChange}
+                    />
+
+                    <Input
+                      label="Phone"
+                      name="phone"
+                      value={user.phone}
+                      onChange={handleChange}
+                    />
+
+                    <div>
+                      <label className="text-sm font-medium">
+                        Address
+                      </label>
+                      <textarea
+                        name="address"
+                        value={user.address}
+                        onChange={handleChange}
+                        rows="3"
+                        className="w-full mt-1 border rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                      <button
+                        type="submit"
+                        className="bg-[#E7A6A1] px-6 py-2 rounded-md text-sm font-medium hover:bg-[#dd8f8a] transition"
+                      >
+                        Save Changes
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="border px-6 py-2 rounded-md text-sm hover:bg-gray-50 transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+              </div>
             </div>
           </div>
         </section>
@@ -214,5 +312,24 @@ const UserDetail = () => {
     </>
   );
 };
+
+/* 🔹 Small Reusable Components */
+
+const Stat = ({ title, value }) => (
+  <div className="border rounded-xl p-4 text-center">
+    <p className="text-sm text-gray-500">{title}</p>
+    <p className="text-xl font-semibold heading-color">{value}</p>
+  </div>
+);
+
+const Input = ({ label, ...props }) => (
+  <div>
+    <label className="text-sm font-medium">{label}</label>
+    <input
+      {...props}
+      className="w-full mt-1 border rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+    />
+  </div>
+);
 
 export default UserDetail;

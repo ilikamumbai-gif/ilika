@@ -34,15 +34,19 @@ const CategoryList = () => {
       <AdminTable
         columns={columns}
         data={categories}
-        actions={(row) => (
-          <button
-            onClick={() => deleteCategory(row.id)}
-            className="p-2 rounded-md bg-red-50 text-red-600 hover:bg-red-100"
-            title="Delete"
-          >
-            <Trash2 size={16} />
-          </button>
-        )}
+       actions={(row) => (
+  <button
+    onClick={() => {
+      if (window.confirm("Delete this category?"))
+        deleteCategory(row.id);
+    }}
+    className="p-2 rounded-md bg-red-50 text-red-600 hover:bg-red-100"
+    title="Delete"
+  >
+    <Trash2 size={16} />
+  </button>
+)}
+
       />
     </AdminLayout>
   );

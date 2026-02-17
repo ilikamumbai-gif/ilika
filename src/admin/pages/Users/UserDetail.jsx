@@ -8,13 +8,15 @@ const UserDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { users } = useUsers(); 
+  const { users } = useUsers();
   const { orders } = useOrders();
 
-  const user = users.find((u) => u.id == id);
+  const user = users.find((u) => String(u.id) === String(id));
+
+  // Match orders by email
   const userOrders = orders.filter(
-  (o) => String(o.userId) === String(id)
-);
+    (o) => String(o.userEmail) === String(user?.email)
+  );
 
   if (!user) {
     return (
@@ -44,7 +46,7 @@ const UserDetail = () => {
         </p>
       </div>
 
-      {/* DESKTOP ORDERS TABLE */}
+      {/* DESKTOP TABLE */}
       <div className="hidden md:block bg-white border rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b">
@@ -62,21 +64,32 @@ const UserDetail = () => {
                 key={order.id}
                 className="border-b last:border-none hover:bg-gray-50"
               >
-                <td className="px-4 py-3">{order.id}</td>
-                <td className="px-4 py-3">{order.createdAt}</td>
+                <td className="px-4 py-3">#{order.id.slice(-6)}</td>
+                <td className="px-4 py-3">{order.date}</td>
+
                 <td className="px-4 py-3 text-center">
-                  <span className="px-2 py-1 text-xs border rounded">
+                  <span
+                    className={`px-2 py-1 text-xs rounded ${
+                      order.status === "Delivered"
+                        ? "bg-green-100 text-green-700"
+                        : order.status === "Shipped"
+                        ? "bg-blue-100 text-blue-700"
+                        : order.status === "Cancelled"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
                     {order.status}
                   </span>
                 </td>
+
                 <td className="px-4 py-3 text-right">
                   ₹{order.total}
                 </td>
+
                 <td className="px-4 py-3 text-right">
                   <button
-                    onClick={() =>
-                      navigate(`/admin/orders/${order.id}`)
-                    }
+                    onClick={() => navigate(`/admin/orders/${order.id}`)}
                     className="underline text-sm"
                   >
                     View
@@ -94,15 +107,12 @@ const UserDetail = () => {
         )}
       </div>
 
-      {/* MOBILE ORDER CARDS */}
+      {/* MOBILE CARDS */}
       <div className="md:hidden space-y-4">
         {userOrders.map((order) => (
-          <div
-            key={order.id}
-            className="bg-white border rounded-xl p-4"
-          >
-            <p className="font-medium">Order #{order.id}</p>
-            <p className="text-sm text-gray-500">{order.createdAt}</p>
+          <div key={order.id} className="bg-white border rounded-xl p-4">
+            <p className="font-medium">Order #{order.id.slice(-6)}</p>
+            <p className="text-sm text-gray-500">{order.date}</p>
 
             <div className="flex justify-between mt-2 text-sm">
               <span>Status: {order.status}</span>
@@ -110,9 +120,7 @@ const UserDetail = () => {
             </div>
 
             <button
-              onClick={() =>
-                navigate(`/admin/orders/${order.id}`)
-              }
+              onClick={() => navigate(`/admin/orders/${order.id}`)}
               className="mt-3 text-sm underline"
             >
               View Order

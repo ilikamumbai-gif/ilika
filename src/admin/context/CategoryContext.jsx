@@ -24,7 +24,9 @@ export const CategoryProvider = ({ children }) => {
       }
 
       const data = await res.json();
-      setCategories(data);
+
+      // Always replace state (important for re-render)
+      setCategories([...data]);
 
     } catch (error) {
       console.error("❌ Fetch categories error:", error.message);
@@ -51,13 +53,12 @@ export const CategoryProvider = ({ children }) => {
         throw new Error(`Add failed: ${text}`);
       }
 
-      const data = await res.json();
-
-      // Optimistic update
-      setCategories((prev) => [...prev, data]);
+      // IMPORTANT: re-fetch from DB so all pages update
+      await fetchCategories();
 
     } catch (error) {
       console.error("❌ Add category error:", error.message);
+      throw error;
     }
   };
 
@@ -77,14 +78,11 @@ export const CategoryProvider = ({ children }) => {
         throw new Error(`Update failed: ${text}`);
       }
 
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === id ? { ...cat, ...updatedCategory } : cat
-        )
-      );
+      await fetchCategories();
 
     } catch (error) {
       console.error("❌ Update category error:", error.message);
+      throw error;
     }
   };
 
@@ -102,12 +100,11 @@ export const CategoryProvider = ({ children }) => {
         throw new Error(`Delete failed: ${text}`);
       }
 
-      setCategories((prev) =>
-        prev.filter((cat) => cat.id !== id)
-      );
+      await fetchCategories();
 
     } catch (error) {
       console.error("❌ Delete category error:", error.message);
+      throw error;
     }
   };
 
