@@ -4,10 +4,29 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import AdminTable from "../../components/AdminTable";
 import { useOrders } from "../../context/OrderContext";
+const getStatusStyle = (status) => {
+  switch (status) {
+    case "Placed":
+      return "bg-gray-100 text-gray-700 border-gray-300";
+    case "Shipped":
+      return "bg-blue-100 text-blue-700 border-blue-300";
+    case "Delivered":
+      return "bg-green-100 text-green-700 border-green-300";
+    case "Cancelled":
+      return "bg-red-100 text-red-700 border-red-300";
+    default:
+      return "bg-gray-100 text-gray-700 border-gray-300";
+  }
+};
+
 
 const OrderList = () => {
   const navigate = useNavigate();
-  const { orders, loading } = useOrders();
+  const { orders, loading, updateOrderStatus  } = useOrders();
+
+  const handleStatusChange = (id, status) => {
+    updateOrderStatus(id, status);
+  };
 
   const columns = [
     {
@@ -15,7 +34,7 @@ const OrderList = () => {
       key: "id",
       render: (row) => (
         <span className="font-medium text-gray-700">
-          #{row?.id ? row.id.slice(-6) : "------"}
+          #{row?.id?.slice(-6)}
         </span>
       ),
     },
@@ -34,6 +53,16 @@ const OrderList = () => {
     },
 
     {
+      label: "Payment",
+      key: "paymentMethod",
+      render: (row) => (
+        <span className="text-sm font-medium">
+          {row?.paymentStatus === "Paid" ? "ONLINE" : "COD"}
+        </span>
+      ),
+    },
+
+    {
       label: "Total",
       key: "total",
       align: "right",
@@ -43,24 +72,19 @@ const OrderList = () => {
     {
       label: "Status",
       key: "status",
-      render: (row) => {
-        const status = row?.status || "Placed";
+      render: (row) => (
+      <select
+  value={row?.status || "Placed"}
+  onChange={(e) => handleStatusChange(row.id, e.target.value)}
+  className={`border rounded-md text-xs px-2 py-1 font-medium focus:outline-none ${getStatusStyle(row?.status || "Placed")}`}
+>
 
-        const color =
-          status === "Delivered"
-            ? "bg-green-100 text-green-700"
-            : status === "Shipped"
-            ? "bg-blue-100 text-blue-700"
-            : status === "Cancelled"
-            ? "bg-red-100 text-red-700"
-            : "bg-yellow-100 text-yellow-700";
-
-        return (
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>
-            {status}
-          </span>
-        );
-      },
+          <option value="Placed">Placed</option>
+          <option value="Shipped">Shipped</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      ),
     },
 
     { label: "Date", key: "date" },

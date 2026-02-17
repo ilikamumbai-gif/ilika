@@ -5,53 +5,35 @@ import { useCart } from "../context/CartProvider";
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
-  /* ===============================
-     AUTO CALCULATE DISCOUNT
-  ================================ */
+  /* ================= IMAGE HANDLER ================= */
+  const productImage =
+    (product.images && product.images[0]) ||
+    product.image ||
+    product.imageUrl ||
+    "/placeholder.png";
+
+  /* ================= DISCOUNT ================= */
   const calculatedDiscount =
     product.discount ||
-    (product.originalPrice
-      ? Math.round(
-          ((product.originalPrice - product.price) /
-            product.originalPrice) *
-            100
-        )
+    (product.mrp
+      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
       : null);
 
-  /* ===============================
-     CATEGORY LABEL HANDLER
-  ================================ */
-  const getCategoryLabel = () => {
-    if (!product) return "";
-    const cat = product.category;
-
-    if (!cat) return "General";
-    if (Array.isArray(cat)) return cat[0];
-    if (typeof cat === "string") return cat;
-
-    return "General";
-  };
-
-  /* ===============================
-     RATING HANDLER
-  ================================ */
+  /* ================= RATING ================= */
   const rating = product.rating || 4;
 
   return (
-    <div className="primary-bg-color rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 w-full group">
+    <div className="primary-bg-color rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 w-full group h-full flex flex-col">
 
-      <Link
-        to={`/product/${product.id}`}
-        state={product}
-        className="block h-full"
-      >
-        {/* IMAGE SECTION */}
-        <div className="relative h-56 sm:h-72 w-full overflow-hidden bg-[#f3d6d6]">
+      <Link to={`/product/${product.id}`} state={product} className="flex flex-col h-full">
 
-          {/* Image */}
+        {/* IMAGE */}
+        <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#f3d6d6]">
+
           <img
-            src={product.image || product.imageUrl || "/placeholder.png"}
+            src={productImage}
             alt={product.name}
+            loading="lazy"
             className="
               absolute inset-0
               w-full h-full
@@ -61,7 +43,7 @@ const ProductCard = ({ product }) => {
             "
           />
 
-          {/* Gradient overlay */}
+          {/* Gradient */}
           <div className="
             absolute bottom-0 left-0
             w-full h-12
@@ -69,65 +51,55 @@ const ProductCard = ({ product }) => {
             backdrop-blur-sm z-10 pointer-events-none
           " />
 
-          {/* CATEGORY BADGE */}
-          <span className="
-            absolute top-3 right-3 z-20
-            category-bg-color content-text
-            text-xs px-3 py-1 rounded-md capitalize
-          ">
-            {getCategoryLabel()}
-          </span>
-
-          {/* DISCOUNT BADGE */}
-          {(calculatedDiscount || product.discountLabel) && (
+          {/* DISCOUNT */}
+          {calculatedDiscount && (
             <span className="
               absolute top-3 left-3 z-20
               MiniDivider-bg-color content-text
               text-[10px] sm:text-xs font-semibold
               px-2.5 py-1 rounded-md shadow
             ">
-              {product.discountLabel ||
-                `${calculatedDiscount}% OFF`}
+              {calculatedDiscount}% OFF
             </span>
           )}
         </div>
 
         {/* CONTENT */}
-        <div className="pb-4 px-4 flex flex-col gap-2">
+        <div className="pb-4 px-4 flex flex-col gap-2 flex-grow">
 
           {/* NAME */}
-          <h3 className="text-sm sm:text-base font-semibold text-[#1C371C] line-clamp-1">
+          <h3 className="text-sm sm:text-base font-semibold text-[#1C371C] line-clamp-2 min-h-[2.5rem]">
             {product.name}
           </h3>
 
-          {/* PRICE SECTION */}
+          {/* PRICE */}
           <div className="flex items-center gap-2">
+            {product.mrp && (
+              <span className="text-sm line-through text-gray-400">
+                ₹{product.mrp}
+              </span>
+            )}
+
             <span className="text-base font-semibold text-[#1C371C]">
               ₹{product.price}
             </span>
-
-            {product.originalPrice && (
-              <span className="text-xs line-through text-gray-400">
-                ₹{product.add}
-              </span>
-            )}
           </div>
 
           {/* DESCRIPTION */}
-          <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
+          <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 min-h-[2.8rem]">
             {product.additionalInfo}
           </p>
 
-          {/* RATING + ADD BUTTON */}
-          <div className="flex items-center justify-between mt-2">
+          {/* BOTTOM SECTION */}
+          <div className="flex items-center justify-between ">
 
-            {/* Rating */}
+            {/* RATING */}
             <div className="flex text-sm text-black tracking-wide">
               {"★".repeat(rating)}
               {"☆".repeat(5 - rating)}
             </div>
 
-            {/* Add Button */}
+            {/* ADD BUTTON */}
             <button
               onClick={(e) => {
                 e.preventDefault();

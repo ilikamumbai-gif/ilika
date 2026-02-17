@@ -1,33 +1,50 @@
 [
   {
     "id": 1,
-    "name": "Customer Name",
-    "image": "/src/assets/Images/customer.jpg",
-    "text": "The best product ever. This works like magic. Totally Trustable."
+    "name": "Aarohi Mehta",
+    "image": "/src/assets/Images/customer1.jpg",
+    "text": "I was honestly not expecting this quality at this price. The fabric feels premium and the packaging was beautiful. Will definitely order again!"
   },
   {
     "id": 2,
-    "name": "Customer Name",
-    "image": "/src/assets/Images/customer.jpg",
-    "text": "The best product ever. This works like magic. Totally Trustable."
+    "name": "Riya Sharma",
+    "image": "/src/assets/Images/customer2.jpg",
+    "text": "Delivery was quick and the product looked exactly like the pictures. I’ve already recommended it to my friends."
   },
   {
     "id": 3,
-    "name": "Customer Name",
-    "image": "/src/assets/Images/customer.jpg",
-    "text": "The best product ever. This works like magic. Totally Trustable."
+    "name": "Sneha Patel",
+    "image": "/src/assets/Images/customer3.jpg",
+    "text": "Perfect for daily use. Comfortable, stylish and worth every rupee. Customer support was also very helpful."
   },
   {
     "id": 4,
-    "name": "Customer Name",
-    "image": "/src/assets/Images/customer.jpg",
-    "text": "The best product ever. This works like magic. Totally Trustable."
+    "name": "Kavya Iyer",
+    "image": "/src/assets/Images/customer4.jpg",
+    "text": "I loved the attention to detail. You can tell the brand really cares about quality. Definitely buying more colors!"
   },
   {
     "id": 5,
-    "name": "Customer Name",
-    "image": "/src/assets/Images/customer.jpg",
-    "text": "The best product ever. This works like magic. Totally Trustable."
+    "name": "Ananya Desai",
+    "image": "/src/assets/Images/customer5.jpg",
+    "text": "Super happy with my purchase. It feels durable and elegant at the same time. Got many compliments already."
+  },
+  {
+    "id": 6,
+    "name": "Pooja Verma",
+    "image": "/src/assets/Images/customer6.jpg",
+    "text": "The finish and design are amazing. Looks much more expensive than it actually is. Totally satisfied!"
+  },
+  {
+    "id": 7,
+    "name": "Neha Kapoor",
+    "image": "/src/assets/Images/customer7.jpg",
+    "text": "Exactly what I needed. Fits perfectly and the material is very comfortable even after long hours."
+  },
+  {
+    "id": 8,
+    "name": "Ishita Jain",
+    "image": "/src/assets/Images/customer8.jpg",
+    "text": "One of the best online purchases I’ve made this year. Smooth experience from ordering to delivery."
   }
-  
 ]

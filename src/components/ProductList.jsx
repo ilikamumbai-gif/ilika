@@ -11,7 +11,6 @@ const ProductList = ({ categoryId }) => {
     : products;
 
 
-  console.log(filteredProducts)
 
 
 

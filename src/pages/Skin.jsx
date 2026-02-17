@@ -1,4 +1,6 @@
 import React from 'react'
+import { useCategories } from "../admin/context/CategoryContext";
+
 import ProductList from '../components/ProductList'
 import MiniDivider from '../components/MiniDivider'
 import Header from '../components/Header'
@@ -6,19 +8,34 @@ import Footer from '../components/Footer'
 import Heading from '../components/Heading'
 import CartDrawer from '../components/CartDrawer'
 
-const Skin = () => {
+const RollerAndGuasha = () => {
+  const { categories } = useCategories();
+
+ const hairCategory = categories.find(
+  (c) =>
+    c.name
+      .toLowerCase()
+      .replace(/\s+/g, "") === "skin"
+);
+
+
   return (
     <>
       <MiniDivider />
 
-      {/* ✅ Added primary-bg-color */}
       <div className='primary-bg-color'>
         <Header />
         <CartDrawer/>
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
-          <Heading heading="Skin Care" />
-          <ProductList/>
+          <Heading heading="Skin Care Products" />
+
+          {hairCategory ? (
+            <ProductList categoryId={hairCategory.id} />
+          ) : (
+            <p className="text-sm text-gray-500">Loading products...</p>
+          )}
+
         </section>
 
         <Footer/>
@@ -27,4 +44,4 @@ const Skin = () => {
   )
 }
 
-export default Skin
+export default RollerAndGuasha

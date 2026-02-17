@@ -4,14 +4,13 @@ const TestimonialCard = ({ testimonial }) => {
   return (
     <div
       className="
-        min-w-[260px] sm:min-w-0
+        w-[85%] sm:w-[48%] md:w-[32%] lg:w-[24%] flex-shrink-0
         primary-bg-color
         rounded-2xl
-        p-6
+        p-5 sm:p-6
         flex flex-col gap-4
         transition-all duration-300
         hover:shadow-lg hover:-translate-y-1
-        overflow-hidden 
         shadow-sm
       "
     >

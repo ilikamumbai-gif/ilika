@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -6,7 +6,6 @@ import MiniDivider from "../components/MiniDivider";
 import ProductTab from "../components/ProductTab";
 import CartDrawer from "../components/CartDrawer";
 import { useCart } from "../context/CartProvider";
-import { useEffect, useState } from "react";
 
 const ProductDetail = () => {
   const { state } = useLocation();
@@ -16,10 +15,9 @@ const ProductDetail = () => {
 
   const [product, setProduct] = useState(state || null);
   const [loading, setLoading] = useState(!state);
+  const [selectedImage, setSelectedImage] = useState(null);
 
-  /* ===============================
-     FETCH PRODUCT IF REFRESHED
-  ================================ */
+  /* ================= FETCH PRODUCT IF REFRESH ================= */
   useEffect(() => {
     if (!product && id) {
       fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`)
@@ -34,6 +32,17 @@ const ProductDetail = () => {
         });
     }
   }, [id, product]);
+
+  /* ================= SET FIRST IMAGE ================= */
+  useEffect(() => {
+    if (product) {
+      if (product.images && product.images.length > 0) {
+        setSelectedImage(product.images[0]);
+      } else {
+        setSelectedImage(product.imageUrl || product.image);
+      }
+    }
+  }, [product]);
 
   if (loading) {
     return (
@@ -54,9 +63,7 @@ const ProductDetail = () => {
   const isInCart = cartItems.some(item => item.id === product.id);
 
   const handleBuyNow = () => {
-    if (!isInCart) {
-      addToCart(product);
-    }
+    if (!isInCart) addToCart(product);
     closeCart();
     navigate("/checkout");
   };
@@ -74,20 +81,45 @@ const ProductDetail = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14">
 
-            {/* IMAGE SECTION */}
-            <div className="relative bg-[#f3d6d6] rounded-2xl overflow-hidden">
-              <img
-                src={product.imageUrl || product.image}
-                alt={product.name}
-                className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover"
-              />
+            {/* ================= IMAGE GALLERY ================= */}
+            <div className="flex flex-col gap-4">
 
-              <span className="absolute top-4 right-4 category-bg-color content-text text-xs px-3 py-1 rounded-md capitalize">
-                {product.categoryName || "Product"}
-              </span>
+              {/* MAIN IMAGE */}
+              <div className="relative bg-[#f3d6d6] rounded-2xl overflow-hidden">
+                <img
+                  src={selectedImage}
+                  alt={product.name}
+                  className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover transition"
+                />
+
+                <span className="absolute top-4 right-4 category-bg-color content-text text-xs px-3 py-1 rounded-md capitalize">
+                  {product.categoryName || "Product"}
+                </span>
+              </div>
+
+              {/* THUMBNAILS */}
+              {product.images && product.images.length > 1 && (
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                  {product.images.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedImage(img)}
+                      className={`border rounded-lg overflow-hidden transition 
+                      ${selectedImage === img ? "border-black" : "border-gray-300 hover:border-black"}`}
+                    >
+                      <img
+                        src={img}
+                        alt="thumb"
+                        className="w-full h-20 object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
             </div>
 
-            {/* CONTENT SECTION */}
+            {/* ================= CONTENT ================= */}
             <div className="flex flex-col gap-5">
 
               <button
@@ -107,35 +139,26 @@ const ProductDetail = () => {
                   {"★".repeat(rating)}
                   {"☆".repeat(5 - rating)}
                 </div>
-                <span className="text-gray-500">
-                  ({rating}/5)
-                </span>
+                <span className="text-gray-500">({rating}/5)</span>
               </div>
 
               {/* Price */}
               <div className="flex items-center gap-3">
-                <p className="text-2xl font-semibold text-[#1C371C]">
-                  ₹{product.price}
-                </p>
+                <strike className="text-[#5d655d8d]">
+                  <span className="text-base font-semibold">₹{product.mrp}</span>
+                </strike>
 
-                {product.originalPrice && (
-                  <span className="line-through text-gray-400">
-                    ₹{product.originalPrice}
-                  </span>
-                )}
+                <span className="text-base font-semibold text-[#1C371C]">
+                  ₹{product.price}
+                </span>
               </div>
 
               {/* Description */}
               <p className="text-sm sm:text-base content-text leading-relaxed">
-            
                 {product.additionalInfo || "No additional information"}
-           
               </p>
 
               <div className="h-px bg-gray-200 my-2" />
-
-              {/* Highlights (From DB) */}
-            
 
               {/* ACTION BUTTONS */}
               <div className="flex flex-col sm:flex-row gap-3 mt-4">
@@ -156,10 +179,10 @@ const ProductDetail = () => {
 
               </div>
             </div>
+
           </div>
         </section>
 
-        {/* Tabs now fully dynamic */}
         <ProductTab product={product} />
       </div>
 

@@ -25,10 +25,10 @@ const AddProduct = () => {
       <h1 className="text-xl font-semibold mb-4">Add Product</h1>
 
       <ProductForm
-  key={categories.length}   // ⭐ forces rerender when category added
-  onSubmit={handleAdd}
-  categories={categories}
-/>
+        key={categories.length}   // ⭐ forces rerender when category added
+        onSubmit={handleAdd}
+        categories={categories}
+      />
 
     </AdminLayout>
   );

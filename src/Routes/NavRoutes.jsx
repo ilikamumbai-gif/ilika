@@ -33,6 +33,13 @@ import ShippingPolicy from "../pages/ShippingPolicy";
 import Faq from "../pages/Faq";
 import NewArrival from "../pages/NewArrival";
 import CreateCtm from "../pages/CreateCtm";
+import HairCare from "../pages/HairCare";
+import HairStyle from "../pages/HairStyle";
+import Face from "../pages/Face";
+import Body from "../pages/Body";
+import FaceGrooming from "../pages/FaceGrooming";
+import RollerAndGuasha from "../pages/RollerAndGuasha";
+import HairRemoval from "../pages/HairRemoval";
 
 
 
@@ -50,9 +57,13 @@ const NavRoutes = () => {
         <Route path="/grooming" element={<Grooming />} />
         <Route path="/newarrival" element={<NewArrival />} />
 
-        <Route path="/skin/:category" element={<Skin />} />
-        <Route path="/hair/:category" element={<Hair />} />
-        <Route path="/grooming/:category" element={<Grooming />} />
+        <Route path="/skin/face" element={<Face />} />
+        <Route path="/skin/body" element={<Body />} />
+        <Route path="/hair/care" element={<HairCare />} />
+        <Route path="/hair/style" element={<HairStyle />} />
+        <Route path="/grooming/roller" element={<RollerAndGuasha />} />
+        <Route path="/grooming/face" element={<FaceGrooming />} />
+        <Route path="/grooming/remover" element={<HairRemoval />} />
 
         <Route path="/ctm" element={<Ctm />} />
         <Route path="/ctmkit" element={<CreateCtm />} />

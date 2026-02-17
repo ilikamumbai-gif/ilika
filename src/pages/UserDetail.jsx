@@ -13,9 +13,6 @@ const UserDetail = () => {
 
   const [addresses, setAddresses] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [newAddress, setNewAddress] = useState("");
-  const [editingAddressId, setEditingAddressId] = useState(null);
-
   const [isEditing, setIsEditing] = useState(false);
 
   const [user, setUser] = useState({
@@ -23,67 +20,64 @@ const UserDetail = () => {
     email: "",
     phone: "",
     address: "",
-    orders: 0,
     joined: "",
   });
 
-  /* ===============================
-     REDIRECT IF NOT LOGGED IN
-  ================================ */
+  /* Redirect if not logged in */
   useEffect(() => {
-    if (!currentUser) {
-      navigate("/login");
-    }
+    if (!currentUser) navigate("/login");
   }, [currentUser, navigate]);
 
-  /* ===============================
-     FETCH LOGGED IN USER FROM DB
-  ================================ */
+  /* Fetch User + Address + Orders */
   useEffect(() => {
     if (!currentUser) return;
 
     const fetchAllData = async () => {
       try {
-        // PROFILE
+        /* USER PROFILE */
         const userRes = await fetch(`${import.meta.env.VITE_API_URL}/api/users`);
         const users = await userRes.json();
-
         const loggedUser = users.find(u => u.uid === currentUser.uid);
-        if (loggedUser) setUser(loggedUser);
 
-        // ADDRESSES
+        if (loggedUser) {
+          setUser({
+            ...loggedUser,
+            joined: loggedUser.createdAt?._seconds
+              ? new Date(loggedUser.createdAt._seconds * 1000).toLocaleDateString()
+              : "",
+          });
+        }
+
+        /* ADDRESSES */
         const addrRes = await fetch(
           `${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}/address`
         );
-        const addrData = await addrRes.json();
-        setAddresses(addrData);
+        setAddresses(await addrRes.json());
 
-        // ORDERS
+        /* USER ORDERS */
         const orderRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/orders/${currentUser.uid}`
+          `${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}/orders`
         );
-        const orderData = await   orderRes.json();
-        setOrders(orderData);
+        const orderData = await orderRes.json();
+
+        const formattedOrders = orderData.map(o => ({
+          ...o,
+          date: o.createdAt?._seconds
+            ? new Date(o.createdAt._seconds * 1000).toLocaleDateString()
+            : new Date(o.createdAt).toLocaleDateString(),
+        }));
+
+        setOrders(formattedOrders);
 
       } catch (err) {
-        console.error(err);
+        console.error("Fetch error:", err);
       }
     };
 
     fetchAllData();
   }, [currentUser]);
 
-
-  /* ===============================
-     HANDLE INPUT CHANGE
-  ================================ */
-  const handleChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
-  };
-
-  /* ===============================
-     SAVE EDIT (UI ONLY)
-  ================================ */
+  /* Profile Update */
   const handleSave = async (e) => {
     e.preventDefault();
 
@@ -95,54 +89,16 @@ const UserDetail = () => {
 
     setIsEditing(false);
   };
-  const addAddress = async () => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}/address`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: newAddress })
-      }
-    );
 
-    const data = await res.json();
-    setAddresses(prev => [{ id: data.id, text: newAddress }, ...prev]);
-    setNewAddress("");
-  };
-  const updateAddress = async (id, text) => {
-    await fetch(
-      `${import.meta.env.VITE_API_URL}/api/users/${currentUser.uid}/address/${id}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
-      }
-    );
-
-    setAddresses(prev =>
-      prev.map(a => a.id === id ? { ...a, text } : a)
-    );
-
-    setEditingAddressId(null);
-  };
-
-
-  /* ===============================
-     LOGOUT
-  ================================ */
+  /* Logout */
   const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    await logout();
+    navigate("/login");
   };
 
   return (
     <>
       <MiniDivider />
-
       <div className="primary-bg-color">
         <Header />
         <CartDrawer />
@@ -155,17 +111,15 @@ const UserDetail = () => {
 
               {/* LEFT CARD */}
               <div className="self-start">
-                <div className="secondary-bg-color rounded-2xl p-6 text-center min-[h-380]">
+                <div className="secondary-bg-color rounded-2xl p-6 text-center">
+
                   <div className="w-24 h-24 mx-auto rounded-full bg-[#E7A6A1] flex items-center justify-center text-3xl font-semibold">
                     {user.name?.charAt(0) || "U"}
                   </div>
 
-                  <h3 className="mt-4 text-lg font-semibold heading-color">
-                    {user.name}
-                  </h3>
-                  <p className="text-sm content-text">{user.email}</p>
-                  <p className="text-sm content-text">{user.phone}</p>
-
+                  <h3 className="mt-4 text-lg font-semibold">{user.name}</h3>
+                  <p className="text-sm">{user.email}</p>
+                  <p className="text-sm">{user.phone}</p>
                   <p className="text-xs text-gray-500 mt-2">
                     Member since {user.joined}
                   </p>
@@ -174,14 +128,14 @@ const UserDetail = () => {
                     <>
                       <button
                         onClick={() => setIsEditing(true)}
-                        className="mt-5 w-full bg-[#E7A6A1] py-2 rounded-md text-sm font-medium hover:bg-[#dd8f8a] transition"
+                        className="mt-5 w-full bg-[#E7A6A1] py-2 rounded-md text-sm"
                       >
                         Edit Profile
                       </button>
 
                       <button
                         onClick={handleLogout}
-                        className="mt-3 w-full border border-black py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition"
+                        className="mt-3 w-full border py-2 rounded-md text-sm"
                       >
                         Logout
                       </button>
@@ -193,116 +147,138 @@ const UserDetail = () => {
               {/* RIGHT SECTION */}
               <div className="lg:col-span-2">
 
-                {/* VIEW MODE */}
-                {!isEditing && (
+                {!isEditing ? (
                   <div className="space-y-6">
+
+                    {/* ADDRESS */}
                     <div className="border rounded-xl p-5">
-                      <h4 className="font-semibold heading-color mb-2">
-                        Shipping Address
-                      </h4>
-                      <p className="text-sm content-text leading-relaxed">
-                        {user.address}
-                      </p>
+                      <h4 className="font-semibold mb-2">Shipping Address</h4>
+                      <p className="text-sm">{user.address || "No address saved"}</p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* STATS */}
+                    <div className="grid grid-cols-2 gap-4">
                       <Stat title="Orders" value={orders.length} />
-
-                     
-                      <Stat title="Addresses" value={user.address.length} />
-                    </div>
-                    <div className="border rounded-xl p-5">
-                      <h4 className="font-semibold mb-3">My Orders</h4>
-
-                      {orders.length === 0 && <p>No orders yet</p>}
-
-                      {orders.map(order => (
-                        <div key={order.id} className="border-b py-3">
-                          <p className="text-sm font-medium">
-                            Order #{order.id.slice(-6)}
-                          </p>
-                          <p className="text-sm">₹ {order.totalAmount}</p>
-                          <p className="text-xs text-gray-500">{order.status}</p>
-                        </div>
-                      ))}
+                      <Stat title="Addresses" value={addresses.length} />
                     </div>
 
 
-                    <div className="pt-6">
-                      <Link
-                        to="/"
-                        className="w-full sm:w-auto bg-black text-white px-6 py-2 rounded-md text-sm hover:opacity-90 transition"
-                      >
-                        Browse Products
-                      </Link>
-                    </div>
+
+
+
+                    <Link
+                      to="/"
+                      className="inline-block bg-black text-white px-6 py-2 rounded-md text-sm"
+                    >
+                      Browse Products
+                    </Link>
+
                   </div>
-                )}
 
-                {/* EDIT MODE */}
-                {isEditing && (
-                  <form
-                    onSubmit={handleSave}
-                    className="border rounded-2xl p-6 space-y-4"
-                  >
-                    <h4 className="text-lg font-semibold heading-color mb-4">
-                      Edit Profile
-                    </h4>
 
-                    <Input
-                      label="Full Name"
-                      name="name"
-                      value={user.name}
-                      onChange={handleChange}
+                ) : (
+                  <form onSubmit={handleSave} className="border rounded-2xl p-6 space-y-4">
+                    <Input label="Full Name" name="name" value={user.name} onChange={e => setUser({ ...user, name: e.target.value })} />
+                    <Input label="Email" name="email" value={user.email} onChange={e => setUser({ ...user, email: e.target.value })} />
+                    <Input label="Phone" name="phone" value={user.phone} onChange={e => setUser({ ...user, phone: e.target.value })} />
+
+                    <textarea
+                      value={user.address}
+                      onChange={e => setUser({ ...user, address: e.target.value })}
+                      className="w-full border rounded-md p-2"
                     />
 
-                    <Input
-                      label="Email"
-                      name="email"
-                      value={user.email}
-                      onChange={handleChange}
-                    />
-
-                    <Input
-                      label="Phone"
-                      name="phone"
-                      value={user.phone}
-                      onChange={handleChange}
-                    />
-
-                    <div>
-                      <label className="text-sm font-medium">
-                        Address
-                      </label>
-                      <textarea
-                        name="address"
-                        value={user.address}
-                        onChange={handleChange}
-                        rows="3"
-                        className="w-full mt-1 border rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                      <button
-                        type="submit"
-                        className="bg-[#E7A6A1] px-6 py-2 rounded-md text-sm font-medium hover:bg-[#dd8f8a] transition"
-                      >
-                        Save Changes
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setIsEditing(false)}
-                        className="border px-6 py-2 rounded-md text-sm hover:bg-gray-50 transition"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                    <button className="bg-[#E7A6A1] px-6 py-2 rounded-md text-sm">
+                      Save Changes
+                    </button>
                   </form>
                 )}
 
               </div>
+            </div>
+            {/* ================= ORDERS ================= */}
+            <Heading heading="Your Order"/>
+            <div className="space-y-4 ">
+              {orders.map((order) => {
+
+                const statusColor =
+                  order.status === "Delivered"
+                    ? "bg-green-100 text-green-700"
+                    : order.status === "Cancelled"
+                      ? "bg-red-100 text-red-600"
+                      : "bg-yellow-100 text-yellow-700";
+
+                const formattedDate = new Date(order.date).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                });
+
+                return (
+                  <div
+                    key={order.id}
+                    className="border rounded-xl p-4 flex flex-col gap-4 hover:shadow-md transition"
+                  >
+
+                    {/* TOP ROW */}
+                    <div className="flex justify-between items-start flex-wrap gap-3">
+
+                      <div>
+                        <p className="font-medium text-sm">
+                          Order #{order.id.slice(-6)}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Placed on {formattedDate}
+                        </p>
+                      </div>
+
+                      <span className={`px-3 py-1 text-xs rounded-full font-medium ${statusColor}`}>
+                        {order.status || "Processing"}
+                      </span>
+
+                    </div>
+
+                    {/* PRODUCTS PREVIEW */}
+                    {order.items && (
+                      <div className="flex items-center gap-3 overflow-x-auto pb-1">
+
+                        {order.items.slice(0, 4).map((item, i) => (
+                          <img
+                            key={i}
+                            src={item.image}
+                            alt={item.name}
+                            className="w-14 h-14 object-cover rounded-lg border"
+                          />
+                        ))}
+
+                        {order.items.length > 4 && (
+                          <div className="w-14 h-14 flex items-center justify-center text-xs bg-gray-100 rounded-lg border">
+                            +{order.items.length - 4}
+                          </div>
+                        )}
+
+                      </div>
+                    )}
+
+                    {/* BOTTOM ROW */}
+                    <div className="flex justify-between items-center">
+
+                      <p className="text-xs text-gray-500">
+                        {order.items?.length || 1} item(s)
+                      </p>
+
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">Total</p>
+                        <p className="font-semibold text-[#1C371C] text-lg">
+                          ₹{order.totalAmount}
+                        </p>
+                      </div>
+
+                    </div>
+
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -313,22 +289,18 @@ const UserDetail = () => {
   );
 };
 
-/* 🔹 Small Reusable Components */
-
+/* Reusable components */
 const Stat = ({ title, value }) => (
   <div className="border rounded-xl p-4 text-center">
     <p className="text-sm text-gray-500">{title}</p>
-    <p className="text-xl font-semibold heading-color">{value}</p>
+    <p className="text-xl font-semibold">{value}</p>
   </div>
 );
 
 const Input = ({ label, ...props }) => (
   <div>
     <label className="text-sm font-medium">{label}</label>
-    <input
-      {...props}
-      className="w-full mt-1 border rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-    />
+    <input {...props} className="w-full border rounded-md p-2 text-sm" />
   </div>
 );
 

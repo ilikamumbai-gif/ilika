@@ -7,30 +7,30 @@ import MiniDivider from "../components/MiniDivider";
 import CartDrawer from "../components/CartDrawer";
 
 const offers = [
-  {
-    title: "Flat 20% Off",
-    description: "Get flat 20% off on all skincare products.",
-    code: "ILIKA20",
-    validity: "30 Sep 2024",
-  },
-  {
-    title: "₹300 Off",
-    description: "₹300 off on orders above ₹1999.",
-    code: "SAVE300",
-    validity: "15 Oct 2024",
-  },
-  {
-    title: "Free Shipping",
-    description: "Enjoy free delivery on prepaid orders.",
-    code: "FREESHIP",
-    validity: "Limited time",
-  },
-  {
-    title: "First Order Offer",
-    description: "Extra 10% off on your first purchase.",
-    code: "WELCOME10",
-    validity: "New users only",
-  },
+  // {
+  //   title: "Flat 20% Off",
+  //   description: "Get flat 20% off on all skincare products.",
+  //   code: "ILIKA20",
+  //   validity: "30 Sep 2024",
+  // },
+  // {
+  //   title: "₹300 Off",
+  //   description: "₹300 off on orders above ₹1999.",
+  //   code: "SAVE300",
+  //   validity: "15 Oct 2024",
+  // },
+  // {
+  //   title: "Free Shipping",
+  //   description: "Enjoy free delivery on prepaid orders.",
+  //   code: "FREESHIP",
+  //   validity: "Limited time",
+  // },
+  // {
+  //   title: "First Order Offer",
+  //   description: "Extra 10% off on your first purchase.",
+  //   code: "WELCOME10",
+  //   validity: "New users only",
+  // },
 ];
 
 const Offer = () => {

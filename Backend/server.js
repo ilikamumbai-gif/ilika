@@ -151,6 +151,35 @@ app.delete("/api/products/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete product" });
   }
 });
+/* ============================== PAYMENTS ============================== */
+
+app.post("/api/payments/create-order", async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    if (!amount) {
+      return res.status(400).json({ error: "Amount is required" });
+    }
+
+    const options = {
+      amount: amount * 100, // Razorpay uses paise
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    res.json({
+      id: order.id,
+      currency: order.currency,
+      amount: order.amount,
+    });
+
+  } catch (error) {
+    console.error("Razorpay error:", error);
+    res.status(500).json({ error: "Failed to create Razorpay order" });
+  }
+});
 
 /* ============================== ORDERS ============================== */
 app.post("/api/orders", async (req, res) => {
@@ -201,12 +230,56 @@ app.get("/api/orders", async (req, res) => {
 });
 
 app.get("/api/users/:uid/orders", async (req, res) => {
-  const snapshot = await db.collection("orders")
-    .where("userId", "==", req.params.uid)
-    .orderBy("createdAt", "desc").get();
+  try {
+    const snapshot = await db.collection("orders")
+      .where("userId", "==", req.params.uid)
+      .get();
 
-  res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    let orders = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Sort manually (latest first)
+    orders.sort((a, b) => {
+      const aTime = a.createdAt?._seconds || new Date(a.createdAt).getTime() || 0;
+      const bTime = b.createdAt?._seconds || new Date(b.createdAt).getTime() || 0;
+      return bTime - aTime;
+    });
+
+    res.json(orders);
+
+  } catch (error) {
+    console.error("USER ORDER FETCH ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch user orders" });
+  }
 });
+
+/* ============================== UPDATE ORDER STATUS ============================== */
+/* ============================== UPDATE ORDER STATUS ============================== */
+app.put("/api/orders/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ error: "Status is required" });
+    }
+
+    await db.collection("orders")
+      .doc(req.params.id)
+      .update({
+        status,
+        updatedAt: new Date(),
+      });
+
+    res.json({ message: "Order status updated successfully" });
+
+  } catch (error) {
+    console.error("STATUS UPDATE ERROR:", error);
+    res.status(500).json({ error: "Failed to update order status" });
+  }
+});
+
 
 /* ============================== CATEGORIES ============================== */
 app.post("/api/categories", async (req, res) => {
@@ -228,6 +301,59 @@ app.delete("/api/categories/:id", async (req, res) => {
   await db.collection("categories").doc(req.params.id).delete();
   res.json({ message: "Category deleted successfully" });
 });
+/* ============================== VERIFY PAYMENT ============================== */
+
+app.post("/api/payments/verify", async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      orderId
+    } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Invalid payment data" });
+    }
+
+    // create signature
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest("hex");
+
+    // verify
+    if (expectedSignature === razorpay_signature) {
+
+      // update order payment status in firestore
+      if (orderId) {
+        await db.collection("orders").doc(orderId).update({
+          paymentStatus: "Paid",
+          razorpay_payment_id,
+          paidAt: new Date(),
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: "Payment verified successfully"
+      });
+
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid signature"
+      });
+    }
+
+  } catch (error) {
+    console.error("Verification error:", error);
+    res.status(500).json({ success: false, message: "Payment verification failed" });
+  }
+});
+
 
 /* ============================== START ============================== */
 const PORT = process.env.PORT || 5000;

@@ -4,6 +4,8 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import { UserOrderProvider } from "./context/UserOrderContext";
 import { OrderProvider } from "./admin/context/OrderContext";
 import { UserProvider } from "./admin/context/UserContext";
+import { ProductProvider } from "./admin/context/ProductContext";
+import { CategoryProvider } from "./admin/context/CategoryContext";
 
 const App = () => {
   return (
@@ -11,10 +13,16 @@ const App = () => {
       <UserProvider>
         <OrderProvider>
           <CartProvider>
+            <CategoryProvider>
+
+            <ProductProvider>
+
             <UserOrderProvider>
               <NavRoutes />
               <ScrollToTopButton />
             </UserOrderProvider>
+            </ProductProvider>
+            </CategoryProvider>
           </CartProvider>
         </OrderProvider>
       </UserProvider>

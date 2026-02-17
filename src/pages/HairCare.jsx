@@ -1,23 +1,23 @@
 import React from 'react'
-import { useParams } from "react-router-dom";
-import ProductList from "../components/ProductList";
-import Heading from "../components/Heading";
-import Header from "../components/Header";
-import MiniDivider from "../components/MiniDivider";
-import Footer from "../components/Footer";
-import CartDrawer from "../components/CartDrawer";
+import { useCategories } from "../admin/context/CategoryContext";
+
+import ProductList from '../components/ProductList'
+import MiniDivider from '../components/MiniDivider'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
+import Heading from '../components/Heading'
+import CartDrawer from '../components/CartDrawer'
 
 const HairCare = () => {
-  const { category } = useParams();
+  const { categories } = useCategories();
 
-  const headingMap = {
-    face: "Face Care",
-    body: "Body Care",
-    care: "Hair Care",
-    styling: "Hair Styling",
-    roller: "Roller",
-    remover: "Remover",
-  };
+ const hairCategory = categories.find(
+  (c) =>
+    c.name
+      .toLowerCase()
+      .replace(/\s+/g, "") === "haircare"
+);
+
 
   return (
     <>
@@ -28,8 +28,14 @@ const HairCare = () => {
         <CartDrawer/>
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
-          <Heading heading="Hair Care" />
-          <ProductList category="haircare"/>
+          <Heading heading="Hair Products" />
+
+          {hairCategory ? (
+            <ProductList categoryId={hairCategory.id} />
+          ) : (
+            <p className="text-sm text-gray-500">Loading products...</p>
+          )}
+
         </section>
 
         <Footer/>
@@ -38,4 +44,4 @@ const HairCare = () => {
   )
 }
 
-export default HairCare;
+export default HairCare

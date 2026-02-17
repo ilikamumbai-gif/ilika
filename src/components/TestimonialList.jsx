@@ -10,7 +10,8 @@ const TestimonialList = () => {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  // BUTTON SCROLL
+  /* ================= BUTTON SCROLL ================= */
+
   const scroll = (direction) => {
     const slider = sliderRef.current;
     const scrollAmount = slider.clientWidth * 0.9;
@@ -21,25 +22,36 @@ const TestimonialList = () => {
     });
   };
 
-  // DRAG START
+  /* ================= DRAG START ================= */
+
   const handleMouseDown = (e) => {
+    const slider = sliderRef.current;
     setIsDragging(true);
-    setStartX(e.pageX - sliderRef.current.offsetLeft);
-    setScrollLeft(sliderRef.current.scrollLeft);
+    slider.classList.add("cursor-grabbing");
+
+    setStartX(e.pageX - slider.offsetLeft);
+    setScrollLeft(slider.scrollLeft);
   };
 
-  // DRAG MOVE
+  /* ================= DRAG MOVE ================= */
+
   const handleMouseMove = (e) => {
     if (!isDragging) return;
     e.preventDefault();
 
-    const x = e.pageX - sliderRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5; // drag speed
-    sliderRef.current.scrollLeft = scrollLeft - walk;
+    const slider = sliderRef.current;
+    const x = e.pageX - slider.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    slider.scrollLeft = scrollLeft - walk;
   };
 
-  // DRAG END
-  const stopDrag = () => setIsDragging(false);
+  /* ================= DRAG END ================= */
+
+  const stopDrag = () => {
+    const slider = sliderRef.current;
+    setIsDragging(false);
+    slider.classList.remove("cursor-grabbing");
+  };
 
   return (
     <section className="w-full py-6 primary-bg-color">
@@ -56,7 +68,7 @@ const TestimonialList = () => {
         {/* RIGHT BUTTON */}
         <button
           onClick={() => scroll("right")}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-10  secondary-bg-color shadow-md p-2 rounded-full hidden md:flex"
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 secondary-bg-color shadow-md p-2 rounded-full hidden md:flex"
         >
           <ChevronRight />
         </button>
@@ -69,29 +81,16 @@ const TestimonialList = () => {
           onMouseLeave={stopDrag}
           onMouseUp={stopDrag}
           className="
-            overflow-x-hidden
-            cursor-grab active:cursor-grabbing
+            overflow-x-auto scroll-smooth scrollbar-hide
+            cursor-grab
             select-none
-            px-4
+            px-2 sm:px-4
+            touch-pan-x
           "
         >
-          <div
-            className="
-            grid
-            grid-rows-2
-            grid-flow-col
-            gap-6
-            auto-cols-[90%]
-            sm:auto-cols-[48%]
-            lg:auto-cols-[25%]
-         
-            "
-          >
+          <div className="flex gap-4 sm:gap-6">
             {testimonials.map((item) => (
-              <TestimonialCard
-                key={item.id}
-                testimonial={item}
-              />
+              <TestimonialCard key={item.id} testimonial={item} />
             ))}
           </div>
         </div>

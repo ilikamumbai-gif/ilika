@@ -1,37 +1,47 @@
-import { useParams } from "react-router-dom";
-import ProductList from "../components/ProductList";
-import Heading from "../components/Heading";
-import Header from "../components/Header";
-import MiniDivider from "../components/MiniDivider";
-import Footer from "../components/Footer";
-import CartDrawer from "../components/CartDrawer";
+import React from 'react'
+import { useCategories } from "../admin/context/CategoryContext";
+
+import ProductList from '../components/ProductList'
+import MiniDivider from '../components/MiniDivider'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
+import Heading from '../components/Heading'
+import CartDrawer from '../components/CartDrawer'
 
 const FaceGrooming = () => {
-  const { category } = useParams();
+  const { categories } = useCategories();
 
-  const headingMap = {
-    face: "Face Care",
-    body: "Body Care",
-    care: "Hair Care",
-    styling: "Hair Styling",
-    roller: "Roller",
-    remover: "Remover",
-  };
+ const hairCategory = categories.find(
+  (c) =>
+    c.name
+      .toLowerCase()
+      .replace(/\s+/g, "") === "facegrooming"
+);
+
 
   return (
     <>
-   <MiniDivider />
+      <MiniDivider />
+
       <div className='primary-bg-color'>
         <Header />
-         <CartDrawer/>
+        <CartDrawer/>
+
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
-          <Heading heading="Face Grooming Tools" />
-            <ProductList/>
+          <Heading heading="Hair Products" />
+
+          {hairCategory ? (
+            <ProductList categoryId={hairCategory.id} />
+          ) : (
+            <p className="text-sm text-gray-500">Loading products...</p>
+          )}
+
         </section>
+
         <Footer/>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default FaceGrooming;
+export default FaceGrooming

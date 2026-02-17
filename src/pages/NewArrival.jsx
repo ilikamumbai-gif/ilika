@@ -1,28 +1,47 @@
-import { useParams } from "react-router-dom";
-import ProductList from "../components/ProductList";
-import Heading from "../components/Heading";
-import Header from "../components/Header";
-import MiniDivider from "../components/MiniDivider";
-import Footer from "../components/Footer";
-import CartDrawer from "../components/CartDrawer";
+import React from 'react'
+import { useCategories } from "../admin/context/CategoryContext";
+
+import ProductList from '../components/ProductList'
+import MiniDivider from '../components/MiniDivider'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
+import Heading from '../components/Heading'
+import CartDrawer from '../components/CartDrawer'
 
 const NewArrival = () => {
+  const { categories } = useCategories();
+
+ const hairCategory = categories.find(
+  (c) =>
+    c.name
+      .toLowerCase()
+      .replace(/\s+/g, "") === "new"
+);
 
 
   return (
     <>
-   <MiniDivider />
+      <MiniDivider />
+
       <div className='primary-bg-color'>
         <Header />
-         <CartDrawer/>
+        <CartDrawer/>
+
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
-          <Heading heading="Our New Arrivals" />
-            <ProductList/>
+          <Heading heading="Hair Products" />
+
+          {hairCategory ? (
+            <ProductList categoryId={hairCategory.id} />
+          ) : (
+            <p className="text-sm text-gray-500">Loading products...</p>
+          )}
+
         </section>
+
         <Footer/>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default NewArrival;
+export default NewArrival

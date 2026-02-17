@@ -11,14 +11,23 @@ const ProductList = () => {
 
   const { products, deleteProduct, fetchProducts } = useProducts();
 
-useEffect(() => {
-  fetchProducts();
-}, []);
-
+  
+  
   const { categories } = useCategories();
+  useEffect(() => {
+    fetchProducts();
+  }, [categories.length]);
 
-  const getCategoryName = (id) =>
-    categories.find((c) => String(c.id) === String(id))?.name || "N/A";
+  const getCategoryNames = (ids = []) => {
+  if (!ids.length) return "N/A";
+
+  return ids
+    .map((id) =>
+      categories.find((c) => String(c.id) === String(id))?.name
+    )
+    .filter(Boolean)
+    .join(", ");
+};
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
@@ -37,10 +46,11 @@ useEffect(() => {
     },
 
     {
-      label: "Category",
-      key: "categoryId",
-      render: (row) => getCategoryName(row.categoryId),
-    },
+  label: "Categories",
+  key: "categoryIds",
+  render: (row) => getCategoryNames(row.categoryIds),
+},
+
 
     {
       label: "Price",
