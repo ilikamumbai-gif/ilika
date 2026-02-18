@@ -75,18 +75,22 @@ const ProductTab = ({ product }) => {
 
         {/* ================= DESCRIPTION ================= */}
         {activeTab === "description" && (
-          <>
-            <h3 className="text-lg sm:text-xl font-semibold heading-color">
-              Product Description
-            </h3>
+  <>
+    <h3 className="text-lg sm:text-xl font-semibold heading-color">
+      Product Description
+    </h3>
 
-            <p>
-              {product.description || "No description available."}
-            </p>
+    {product.description ? (
+      <div
+        className="prose max-w-none text-sm sm:text-base leading-relaxed"
+        dangerouslySetInnerHTML={{ __html: product.description }}
+      />
+    ) : (
+      <p>No description available.</p>
+    )}
+  </>
+)}
 
-            
-          </>
-        )}
 
         {/* ================= ADDITIONAL INFO ================= */}
         {activeTab === "info" && (

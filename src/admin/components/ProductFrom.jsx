@@ -164,7 +164,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
       <textarea placeholder="Short Info" value={form.additionalInfo} onChange={e=>setForm({...form,additionalInfo:e.target.value})} className="w-full border p-2 rounded" />
 
-      <input placeholder="Points (comma separated)" value={form.points} onChange={e=>setForm({...form,points:e.target.value})} className="w-full border p-2 rounded" />
+      <input placeholder="Aditional Points (comma separated)" value={form.points} onChange={e=>setForm({...form,points:e.target.value})} className="w-full border p-2 rounded" />
 
       {/* IMAGE UPLOAD */}
       <div className="border-2 border-dashed p-5 rounded-xl text-center cursor-pointer" onClick={()=>fileInputRef.current.click()}>
