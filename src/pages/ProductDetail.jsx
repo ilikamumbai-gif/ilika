@@ -6,43 +6,73 @@ import MiniDivider from "../components/MiniDivider";
 import ProductTab from "../components/ProductTab";
 import CartDrawer from "../components/CartDrawer";
 import { useCart } from "../context/CartProvider";
+import { auth } from "../../Backend/firebaseConfig";
+import { useProducts } from "../admin/context/ProductContext";
+import { createSlug } from "../utils/slugify";
+
 
 const ProductDetail = () => {
   const { state } = useLocation();
-  const { id } = useParams();
+const { slug } = useParams();
   const navigate = useNavigate();
   const { addToCart, closeCart, cartItems } = useCart();
 
-  const [product, setProduct] = useState(state || null);
-  const [loading, setLoading] = useState(!state);
-  const [selectedImage, setSelectedImage] = useState(null);
+const [product, setProduct] = useState(null);
+const [loading, setLoading] = useState(true);
 
-  /* ================= FETCH PRODUCT IF REFRESH ================= */
-  useEffect(() => {
-    if (!product && id) {
-      fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`)
-        .then(res => res.json())
-        .then(data => {
-          setProduct(data);
-          setLoading(false);
-        })
-        .catch(err => {
-          console.error("Failed to fetch product:", err);
-          setLoading(false);
-        });
+  const [selectedImage, setSelectedImage] = useState(null);
+  /* VARIANT STATE */
+  const [activeVariant, setActiveVariant] = useState(null);
+
+
+  /* ================= FETCH PRODUCT USING SLUG ================= */
+useEffect(() => {
+
+  const loadProduct = async () => {
+
+    let productId = state?.id;
+
+    // If user refreshed or opened direct link
+    if (!productId && products.length) {
+      const found = products.find(
+        p => createSlug(p.name) === slug
+      );
+      productId = found?._id || found?.id;
     }
-  }, [id, product]);
+
+    if (!productId) return;
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${productId}`);
+      const data = await res.json();
+      setProduct(data);
+    } catch (err) {
+      console.error("Failed to fetch product:", err);
+    }
+
+    setLoading(false);
+  };
+
+  loadProduct();
+
+}, [slug, product]);
+
+
 
   /* ================= SET FIRST IMAGE ================= */
   useEffect(() => {
-    if (product) {
-      if (product.images && product.images.length > 0) {
-        setSelectedImage(product.images[0]);
-      } else {
-        setSelectedImage(product.imageUrl || product.image);
-      }
+    if (!product) return;
+
+    if (product.hasVariants && product.variants?.length) {
+      const first = product.variants[0];
+      setActiveVariant(first);
+      setSelectedImage(first.images?.[0]);
+    } else {
+      setActiveVariant(null);
+      setSelectedImage(product.images?.[0] || product.imageUrl || product.image);
     }
   }, [product]);
+
 
   if (loading) {
     return (
@@ -60,13 +90,67 @@ const ProductDetail = () => {
     );
   }
 
-  const isInCart = cartItems.some(item => item.id === product.id);
+  const handleAddToCart = () => {
+    const item = activeVariant
+      ? {
+        ...product,
+        id: cartId,
+        baseProductId: productId,
+        variantId: activeVariant.id,
+        variantLabel: activeVariant.label,
+        price: activeVariant.price,
+        mrp: activeVariant.mrp,
+        image: activeVariant.images?.[0],
+      }
+      : {
+        ...product,
+        id: productId,
+      };
 
-  const handleBuyNow = () => {
-    if (!isInCart) addToCart(product);
-    closeCart();
-    navigate("/checkout");
+    addToCart(item);
   };
+
+  const handleBuyNow = async () => {
+    const user = auth.currentUser;
+
+    // 🚫 not logged in → go login
+    if (!user) {
+      navigate("/user?redirect=checkout");
+      return;
+    }
+
+    if (!isInCart) {
+      handleAddToCart();
+      setTimeout(() => {
+        closeCart();
+        navigate("/checkout");
+      }, 150);
+    } else {
+      closeCart();
+      navigate("/checkout");
+    }
+
+  };
+
+
+
+  /* ================= DERIVED DATA ================= */
+  const productId = product._id || product.id;
+
+  const images = activeVariant?.images?.length
+    ? activeVariant.images
+    : product.images || [];
+
+  const price = activeVariant ? activeVariant.price : product.price;
+  const mrp = activeVariant ? activeVariant.mrp : product.mrp;
+
+  const discount = mrp ? Math.round(((mrp - price) / mrp) * 100) : 0;
+
+  const cartId = activeVariant
+    ? `${productId}_${activeVariant.id}`
+    : productId;
+  const isInCart = cartItems.some(item => item.id === cartId);
+
 
   const rating = product.rating || 4;
 
@@ -87,8 +171,8 @@ const ProductDetail = () => {
               {/* MAIN IMAGE */}
               <div className="relative bg-white rounded-2xl overflow-hidden  shadow-sm">
 
-               <img
-  src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                <img
+                  src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
 
                   alt={product.name}
                   className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover transition"
@@ -100,17 +184,17 @@ const ProductDetail = () => {
               </div>
 
               {/* THUMBNAILS */}
-              {product.images && product.images.length > 1 && (
+              {images && images.length > 1 && (
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
-                  {product.images.map((img, i) => (
+                  {images.map((img, i) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(img)}
-                      className={` rounded-lg overflow-hidden transition 
-                      ${selectedImage === img ? "border-black" : "border-gray-300 hover:border-black"}`}
+                      className={`rounded-lg overflow-hidden transition 
+        ${selectedImage === img ? "border-black" : "border-gray-300 hover:border-black"}`}
                     >
                       <img
-                        src={img}
+                        src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
                         alt="thumb"
                         className="w-full h-20 object-cover"
                       />
@@ -118,6 +202,7 @@ const ProductDetail = () => {
                   ))}
                 </div>
               )}
+
 
             </div>
 
@@ -132,8 +217,8 @@ const ProductDetail = () => {
                 ← Back
               </button>
 
-              <div>             
-                 {/* TITLE */}
+              <div>
+                {/* TITLE */}
                 {/* className="text-[18px] font-luxury font-semibold text-[#172917] leading-tight tracking-tight" */}
                 <h1 className="text-2xl sm:text-3xl font-luxury font-bold  heading-color leading-tight tracking-tight">
                   {product.name}
@@ -143,6 +228,29 @@ const ProductDetail = () => {
                 <p className="text-sm text-gray-600 mt-1">
                   {product.additionalInfo || "Deep nourishment & long lasting hydration"}
                 </p></div>
+              {/* VARIANTS */}
+              {product.hasVariants && (
+                <div className="mt-3">
+                  <p className="text-sm font-medium mb-2">Select Option</p>
+                  <div className="flex flex-wrap gap-2">
+                    {product.variants.map(v => (
+                      <button
+                        key={v.id}
+                        onClick={() => {
+                          setActiveVariant(v);
+                          setSelectedImage(v.images?.[0]);
+                        }}
+                        className={`px-4 py-2 border rounded-lg text-sm transition
+          ${activeVariant?.id === v.id
+                            ? "bg-[#1C371C] text-white border-[#1C371C]"
+                            : "border-gray-300 hover:border-black"}`}
+                      >
+                        {v.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
 
               <div>
@@ -150,23 +258,26 @@ const ProductDetail = () => {
                 <div className="flex items-center flex-wrap gap-3 mt-2">
 
                   {/* MRP */}
-                  {product.mrp && (
+                  {mrp && (
                     <span className="text-sm font-clean text-[#7a7a7a]">
-                      <span className="text-2xl  font-clean text-[#1C371C]">MRP</span> <span className="line-through ml-1">₹{product.mrp}</span>
+                      <span className="text-2xl font-clean text-[#1C371C]">MRP</span>
+                      <span className="line-through ml-1">₹{mrp}</span>
                     </span>
                   )}
+
 
                   {/* PRICE */}
                   <span className="text-2xl  font-clean text-[#1C371C]">
-                    ₹{product.price}
+                    ₹{price}
                   </span>
 
                   {/* DISCOUNT BADGE */}
-                  {product.mrp && (
+                  {mrp && (
                     <span className="text-xs font-semibold bg-[#a1e7b168] text-[#026a17] px-2.5 py-1 rounded">
-                      {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% OFF
+                      {discount}% OFF
                     </span>
                   )}
+
 
                 </div>
                 <p className="text-[13px] text-gray-500">
@@ -199,7 +310,7 @@ const ProductDetail = () => {
               <div className="flex flex-col sm:flex-row gap-3">
 
                 <button
-                  onClick={() => addToCart(product)}
+                  onClick={handleAddToCart}
                   className="flex-1 bg-[#b34140] text-white py-3 rounded-xl hover:opacity-90 transition"
                 >
                   Add to Cart

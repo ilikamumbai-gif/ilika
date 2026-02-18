@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { auth, db } from "../../Backend/firebaseConfig";
-
 import {
   doc,
   setDoc,
@@ -9,23 +8,22 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
+  const navigate = useNavigate();
 
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
-  // 🔥 LOAD CART WHEN USER LOGS IN
+  /* LOAD USER CART WHEN LOGIN */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        setCartItems([]);
-        return;
-      }
+      if (!user) return;
 
       const cartRef = collection(db, "users", user.uid, "cart");
       const snapshot = await getDocs(cartRef);
@@ -41,28 +39,42 @@ export const CartProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // 🛒 ADD TO CART
+  /* ADD TO CART (guest allowed) */
   const addToCart = async (product) => {
     const user = auth.currentUser;
 
+    // ---------- GUEST ----------
     if (!user) {
-      alert("Please login first");
+      setCartItems(prev => {
+        const existing = prev.find(item => item.id === product.id);
+
+        if (existing) {
+          return prev.map(item =>
+            item.id === product.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          );
+        }
+
+        return [...prev, { ...product, quantity: 1 }];
+      });
+
+      openCart();
       return;
     }
 
-    const existing = cartItems.find((item) => item.id === product.id);
+    // ---------- LOGGED ----------
+    const existing = cartItems.find(item => item.id === product.id);
     const newQuantity = existing ? existing.quantity + 1 : 1;
 
-    // Save to Firestore
     await setDoc(doc(db, "users", user.uid, "cart", product.id), {
       ...product,
       quantity: newQuantity,
     });
 
-    // Update local state
-    setCartItems((prev) => {
+    setCartItems(prev => {
       if (existing) {
-        return prev.map((item) =>
+        return prev.map(item =>
           item.id === product.id
             ? { ...item, quantity: newQuantity }
             : item
@@ -74,66 +86,68 @@ export const CartProvider = ({ children }) => {
     openCart();
   };
 
-  // ➕ INCREMENT
+  /* INCREMENT */
   const incrementQty = async (id) => {
     const user = auth.currentUser;
-    if (!user) return;
-
     const item = cartItems.find((item) => item.id === id);
     if (!item) return;
 
     const newQuantity = item.quantity + 1;
 
-    await setDoc(doc(db, "users", user.uid, "cart", id), {
-      ...item,
-      quantity: newQuantity,
-    });
+    if (user) {
+      await setDoc(doc(db, "users", user.uid, "cart", id), {
+        ...item,
+        quantity: newQuantity,
+      });
+    }
 
-    setCartItems((prev) =>
-      prev.map((item) =>
+    setCartItems(prev =>
+      prev.map(item =>
         item.id === id ? { ...item, quantity: newQuantity } : item
       )
     );
   };
 
-  // ➖ DECREMENT
+  /* DECREMENT */
   const decrementQty = async (id) => {
     const user = auth.currentUser;
-    if (!user) return;
-
     const item = cartItems.find((item) => item.id === id);
     if (!item) return;
 
     const newQuantity = item.quantity - 1;
 
     if (newQuantity <= 0) {
-      await deleteDoc(doc(db, "users", user.uid, "cart", id));
-      setCartItems((prev) => prev.filter((item) => item.id !== id));
+      if (user)
+        await deleteDoc(doc(db, "users", user.uid, "cart", id));
+
+      setCartItems(prev => prev.filter(item => item.id !== id));
       return;
     }
 
-    await setDoc(doc(db, "users", user.uid, "cart", id), {
-      ...item,
-      quantity: newQuantity,
-    });
+    if (user) {
+      await setDoc(doc(db, "users", user.uid, "cart", id), {
+        ...item,
+        quantity: newQuantity,
+      });
+    }
 
-    setCartItems((prev) =>
-      prev.map((item) =>
+    setCartItems(prev =>
+      prev.map(item =>
         item.id === id ? { ...item, quantity: newQuantity } : item
       )
     );
   };
 
-  // 🧹 CLEAR CART
+  /* CLEAR CART */
   const clearCart = async () => {
     const user = auth.currentUser;
-    if (!user) return;
 
-    const cartRef = collection(db, "users", user.uid, "cart");
-    const snapshot = await getDocs(cartRef);
-
-    for (const item of snapshot.docs) {
-      await deleteDoc(doc(db, "users", user.uid, "cart", item.id));
+    if (user) {
+      const cartRef = collection(db, "users", user.uid, "cart");
+      const snapshot = await getDocs(cartRef);
+      for (const item of snapshot.docs) {
+        await deleteDoc(doc(db, "users", user.uid, "cart", item.id));
+      }
     }
 
     setCartItems([]);
@@ -157,10 +171,4 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used inside CartProvider");
-  }
-  return context;
-};
+export const useCart = () => useContext(CartContext);

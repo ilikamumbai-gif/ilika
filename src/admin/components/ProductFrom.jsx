@@ -59,17 +59,20 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   const { categories } = useCategories();
   const fileInputRef = useRef(null);
 
-  const [form, setForm] = useState({
-    name: initialData.name || "",
-    price: initialData.price || "",
-    mrp: initialData.mrp || "",
-    categoryIds: initialData.categoryIds || [],
-    description: initialData.description || "",
-    additionalInfo: initialData.additionalInfo || "",
-    tagline: initialData.tagline || "",
-    points: initialData.benefits ? initialData.benefits.join(", ") : "",
-    images: [],
-  });
+const [form, setForm] = useState({
+  name: initialData.name || "",
+  price: initialData.price || "",
+  mrp: initialData.mrp || "",
+  hasVariants: initialData.hasVariants || false,   // NEW
+  variants: initialData.variants || [],             // NEW
+  categoryIds: initialData.categoryIds || [],
+  description: initialData.description || "",
+  additionalInfo: initialData.additionalInfo || "",
+  tagline: initialData.tagline || "",
+  points: initialData.benefits ? initialData.benefits.join(", ") : "",
+  images: [],
+});
+
 
   const [previewImages, setPreviewImages] = useState(initialData.images || []);
   const [loading, setLoading] = useState(false);
@@ -108,6 +111,30 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         : [...prev.categoryIds, id],
     }));
   };
+/* ================= VARIANT IMAGE SELECT ================= */
+const handleVariantImageSelect = (files, index) => {
+  const arr = Array.from(files);
+
+  const updated = [...form.variants];
+
+  updated[index].images = [...(updated[index].images || []), ...arr];
+  updated[index].preview = [
+    ...(updated[index].preview || []),
+    ...arr.map(file => URL.createObjectURL(file))
+  ];
+
+  setForm({ ...form, variants: updated });
+};
+
+/* REMOVE SINGLE VARIANT IMAGE */
+const removeVariantImage = (variantIndex, imgIndex) => {
+  const updated = [...form.variants];
+
+  updated[variantIndex].images.splice(imgIndex, 1);
+  updated[variantIndex].preview.splice(imgIndex, 1);
+
+  setForm({ ...form, variants: updated });
+};
 
   /* SUBMIT */
   const handleSubmit = async (e) => {
@@ -117,38 +144,62 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     try {
       let imageUrls = [];
 
-      /* UPLOAD NEW IMAGES */
-      if (form.images.length > 0) {
-        const uploads = form.images.map(async file => {
-          const imageRef = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
+if(!form.hasVariants){
+  if(form.images.length>0){
+    const uploads=form.images.map(async file=>{
+      const imageRef=ref(storage,`products/${crypto.randomUUID()}-${file.name}`);
+      await uploadBytes(imageRef,file);
+      return await getDownloadURL(imageRef);
+    });
+    imageUrls=await Promise.all(uploads);
+  }
+}
+let variantData = [];
 
-          await uploadBytes(imageRef, file, {
-            cacheControl: "no-cache",
-          });
+if (form.hasVariants) {
+  for (const variant of form.variants) {
 
-          const url = await getDownloadURL(imageRef);
+    const uploadedImages = [];
 
-          // cache buster
-        return url;
-
-        });
-
-        imageUrls = await Promise.all(uploads);
+    for (const file of variant.images || []) {
+      if (typeof file === "string") {
+        // already uploaded image (editing product)
+        uploadedImages.push(file);
       } else {
-        imageUrls = initialData.images || [];
+        // new image upload
+        const imageRef = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
+        await uploadBytes(imageRef, file);
+        const url = await getDownloadURL(imageRef);
+        uploadedImages.push(url);
       }
+    }
 
-      await onSubmit({
-        name: form.name,
-        price: Number(form.price),
-        mrp: Number(form.mrp),
-        categoryIds: form.categoryIds,
-        description: form.description,
-        additionalInfo: form.additionalInfo,
-        tagline: form.tagline,
-        points: form.points.split(",").map(p => p.trim()),
-        images: imageUrls,
-      });
+    variantData.push({
+      id: variant.id,
+      label: variant.label,
+      price: Number(variant.price),
+      mrp: Number(variant.mrp),
+      images: uploadedImages,
+    });
+  }
+}
+
+
+
+    await onSubmit({
+  name: form.name,
+  hasVariants: form.hasVariants,
+  price: form.hasVariants ? null : Number(form.price),
+  mrp: form.hasVariants ? null : Number(form.mrp),
+  variants: variantData,
+  categoryIds: form.categoryIds,
+  description: form.description,
+  additionalInfo: form.additionalInfo,
+  tagline: form.tagline,
+  benefits: form.points.split(",").map(p => p.trim()),
+  images: imageUrls,
+});
+
 
       setForm({
         name: "",
@@ -183,10 +234,140 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         required
       />
 
-      <div className="grid grid-cols-2 gap-3">
-        <input type="number" placeholder="Price" value={form.price} onChange={e=>setForm({...form,price:e.target.value})} className="border p-2 rounded" required />
-        <input type="number" placeholder="MRP" value={form.mrp} onChange={e=>setForm({...form,mrp:e.target.value})} className="border p-2 rounded" required />
+  {form.variants.map((variant,index)=>(
+
+  <div key={variant.id} className="border p-4 rounded space-y-3 bg-gray-50">
+
+    <div className="grid grid-cols-3 gap-3">
+      <input
+        placeholder="Label (50ml / Small)"
+        value={variant.label}
+        onChange={e=>{
+          const updated=[...form.variants];
+          updated[index].label=e.target.value;
+          setForm({...form,variants:updated});
+        }}
+        className="border p-2 rounded"
+      />
+
+      <input
+        type="number"
+        placeholder="Price"
+        value={variant.price}
+        onChange={e=>{
+          const updated=[...form.variants];
+          updated[index].price=e.target.value;
+          setForm({...form,variants:updated});
+        }}
+        className="border p-2 rounded"
+      />
+
+      <input
+        type="number"
+        placeholder="MRP"
+        value={variant.mrp}
+        onChange={e=>{
+          const updated=[...form.variants];
+          updated[index].mrp=e.target.value;
+          setForm({...form,variants:updated});
+        }}
+        className="border p-2 rounded"
+      />
+    </div>
+
+    {/* MULTIPLE IMAGE UPLOAD */}
+    <div className="space-y-2">
+      <label className="text-sm font-medium">Variant Images</label>
+
+      <input
+        type="file"
+        multiple
+        accept="image/*"
+        onChange={(e)=>handleVariantImageSelect(e.target.files,index)}
+        className="block w-full text-sm"
+      />
+
+      {/* PREVIEW GRID */}
+      <div className="grid grid-cols-4 gap-2">
+        {(variant.preview || variant.images || []).map((img,i)=>(
+          <div key={i} className="relative group">
+            <img
+              src={typeof img==="string"?img:URL.createObjectURL(img)}
+              className="h-20 w-full object-cover rounded border"
+            />
+
+            <button
+              type="button"
+              onClick={()=>removeVariantImage(index,i)}
+              className="absolute top-1 right-1 bg-black text-white text-xs px-2 rounded opacity-0 group-hover:opacity-100"
+            >
+              X
+            </button>
+          </div>
+        ))}
       </div>
+    </div>
+
+    <button
+      type="button"
+      onClick={()=>{
+        setForm({
+          ...form,
+          variants:form.variants.filter((_,i)=>i!==index)
+        })
+      }}
+      className="text-red-500 text-sm"
+    >
+      Remove Variant
+    </button>
+
+  </div>
+
+))}
+
+
+      {/* VARIANT TOGGLE */}
+<label className="flex items-center gap-2">
+  <input
+    type="checkbox"
+    checked={form.hasVariants}
+    onChange={(e)=>setForm({...form,hasVariants:e.target.checked})}
+  />
+  This product has variants (Size / Weight / Color)
+</label>
+{/* VARIANTS */}
+{form.hasVariants && (
+  <div className="border rounded-xl p-4 space-y-4">
+
+    <div className="flex justify-between items-center">
+      <h3 className="font-semibold text-lg">Variants</h3>
+      <button
+        type="button"
+        onClick={()=>{
+          setForm(prev=>({
+            ...prev,
+            variants:[
+              ...prev.variants,
+              {
+                id: crypto.randomUUID(),
+                label:"",
+                price:"",
+                mrp:"",
+                images:[]
+              }
+            ]
+          }))
+        }}
+        className="bg-black text-white px-3 py-1 rounded"
+      >
+        Add Variant
+      </button>
+    </div>
+
+   
+
+  </div>
+)}
 
       <input
         placeholder="Tagline (comma separated)"
@@ -247,3 +428,4 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 };
 
 export default ProductForm;
+  

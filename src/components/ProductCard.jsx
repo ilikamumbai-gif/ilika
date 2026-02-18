@@ -1,23 +1,38 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
+import { createSlug } from "../utils/slugify";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
-
+const slug = createSlug(product.name);
   const productId = product._id || product.id;
+  /* VARIANT SUPPORT */
+  const defaultVariant = product.hasVariants && product.variants?.length
+    ? product.variants[0]
+    : null;
+
+  const displayPrice = defaultVariant ? defaultVariant.price : product.price;
+  const displayMrp = defaultVariant ? defaultVariant.mrp : product.mrp;
+
+  const cartId = defaultVariant
+    ? `${productId}_${defaultVariant.id}`
+    : productId;
 
   const productImage =
+    (defaultVariant?.images && defaultVariant.images[0]) ||
     (product.images && product.images[0]) ||
     product.image ||
     product.imageUrl ||
     "/placeholder.png";
 
+
   const calculatedDiscount =
     product.discount ||
-    (product.mrp
-      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+    (displayMrp
+      ? Math.round(((displayMrp - displayPrice) / displayMrp) * 100)
       : null);
+
 
   const rating = product.rating || 4;
   const reviews = product.reviews || 80;
@@ -26,7 +41,7 @@ const ProductCard = ({ product }) => {
   return (
     <div className="primary-bg-color rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 w-full flex flex-col">
 
-      <Link to={`/product/${productId}`} state={product} className="flex flex-col h-full">
+      <Link to={`/product/${slug}`} state={{ id: productId }} className="flex flex-col h-full">
 
         {/* IMAGE AREA */}
         <div className="relative aspect-square overflow-hidden flex items-center justify-center ">
@@ -87,12 +102,11 @@ const ProductCard = ({ product }) => {
           <div className="flex items-baseline gap-2 mt-1 whitespace-nowrap">
 
             <span className="font-semibold text-[#1C371C] text-[16px] font-clean">
-              ₹{product.price}
-            </span>
+              ₹{displayPrice}            </span>
 
-            {product.mrp && (
+            {displayMrp && displayMrp > displayPrice && (
               <span className="text-[#1c371c98] text-[13px] font-clean line-through">
-                ₹{product.mrp}
+                ₹{displayMrp}
               </span>
             )}
 
@@ -106,7 +120,23 @@ const ProductCard = ({ product }) => {
           <button
             onClick={(e) => {
               e.preventDefault();
-              addToCart({ ...product, id: productId });
+              addToCart(
+                defaultVariant
+                  ? {
+                    ...product,
+                    id: cartId,
+                    baseProductId: productId,
+                    variantId: defaultVariant.id,
+                    variantLabel: defaultVariant.label,
+                    price: defaultVariant.price,
+                    mrp: defaultVariant.mrp,
+                    image: defaultVariant.images?.[0],
+                  }
+                  : {
+                    ...product,
+                    id: productId,
+                  }
+              );
             }}
             className="w-full bg-[#E7A6A1] text-black text-[13px] font-clean tracking-widest py-2.5 rounded-lg"
           >

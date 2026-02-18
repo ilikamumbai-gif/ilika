@@ -1,18 +1,19 @@
 import { useProducts } from "../context/ProductContext";
 import ProductCard from "./ProductCard";
 
-const ProductList = ({ categoryId }) => {
+const ProductList = ({ categoryId, limit }) => {
   const { products } = useProducts();
 
-  const filteredProducts = categoryId
+  let filteredProducts = categoryId
     ? products.filter((item) =>
-        item.categoryIds?.includes(categoryId)
-      )
+      item.categoryIds?.includes(categoryId)
+    )
     : products;
 
-
-
-
+  /* APPLY LIMIT AFTER FILTER */
+  if (limit) {
+    filteredProducts = filteredProducts.slice(0, limit);
+  }
 
 
   return (
@@ -22,7 +23,7 @@ const ProductList = ({ categoryId }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.length ? (
             filteredProducts.map((item) => (
-              <ProductCard key={item.id} product={item} />
+              <ProductCard key={item._id || item.id} product={item} />
             ))
           ) : (
             <p className="col-span-full text-sm text-gray-500">

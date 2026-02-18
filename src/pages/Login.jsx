@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword
@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signInWithGoogle } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -16,6 +17,16 @@ const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState("");
 
+  /* ---------------- REDIRECT HANDLER ---------------- */
+  const params = new URLSearchParams(location.search);
+  const redirect = params.get("redirect");
+
+  const redirectAfterLogin = () => {
+    if (redirect === "checkout") navigate("/checkout");
+    else navigate("/user");
+  };
+
+  /* ---------------- SAVE USER ---------------- */
   const saveUserToBackend = async (user) => {
     await fetch(`${import.meta.env.VITE_API_URL}/api/users/login`, {
       method: "POST",
@@ -28,6 +39,7 @@ const Login = () => {
     });
   };
 
+  /* ---------------- EMAIL LOGIN ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -50,20 +62,26 @@ const Login = () => {
       }
 
       await saveUserToBackend(userCredential.user);
-      navigate("/user");
+
+      // ⭐ IMPORTANT REDIRECT
+      redirectAfterLogin();
 
     } catch (err) {
       setError(err.message);
     }
   };
 
+  /* ---------------- GOOGLE LOGIN ---------------- */
   const handleGoogleAuth = async () => {
     setError("");
 
     try {
       const result = await signInWithGoogle();
       await saveUserToBackend(result.user);
-      navigate("/user");
+
+      // ⭐ IMPORTANT REDIRECT
+      redirectAfterLogin();
+
     } catch (err) {
       setError(err.message);
     }
@@ -107,7 +125,7 @@ const Login = () => {
           </button>
         </form>
 
-        {/* 🔥 GOOGLE BUTTON */}
+        {/* GOOGLE BUTTON */}
         <button
           onClick={handleGoogleAuth}
           className="w-full mt-4 border py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition"
