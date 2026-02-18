@@ -45,7 +45,7 @@ const Home = () => {
         <ProductList limit={8} />
 
         {/* SHOP BY INGREDIENTS */}
-        <Heading heading="SHOP BY INGREDIENTS" />
+        <Heading heading="TOP CATEGORY" />
         <CategoryNav categories={IngredientsData} />
 
         {/* BRAND MANIFESTO */}

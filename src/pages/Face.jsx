@@ -15,7 +15,7 @@ const Face = () => {
   (c) =>
     c.name
       .toLowerCase()
-      .replace(/\s+/g, "") === "face"
+      .replace(/\s+/g, "") === "facecare"
 );
 
 

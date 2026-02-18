@@ -15,7 +15,7 @@ const Body = () => {
   (c) =>
     c.name
       .toLowerCase()
-      .replace(/\s+/g, "") === "body"
+      .replace(/\s+/g, "") === "bodycare"
 );
 
 

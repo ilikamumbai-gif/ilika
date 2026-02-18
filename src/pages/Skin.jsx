@@ -15,7 +15,7 @@ const RollerAndGuasha = () => {
   (c) =>
     c.name
       .toLowerCase()
-      .replace(/\s+/g, "") === "skin"
+      .replace(/\s+/g, "") === "skincare"
 );
 
 

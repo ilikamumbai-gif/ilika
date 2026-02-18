@@ -104,11 +104,11 @@ const ProductTab = ({ product }) => {
                Aditional INformation
                 </h4>
               {/* Highlights from Admin */}
-            {product.points?.length > 0 && (
+            {product.highlights?.length > 0 && (
               <>
 
                 <ul className="list-disc pl-5 space-y-2">
-                  {product.points.map((point, index) => (
+                  {product.highlights.map((point, index) => (
                     <li key={index}>{point}</li>
                   ))}
                 </ul>

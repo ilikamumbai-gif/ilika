@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { app } from "../../firebase/firebaseConfig";
 import { useCategories } from "../context/CategoryContext";
@@ -12,7 +12,6 @@ const storage = getStorage(app);
 
 /* ================= RICH TEXT EDITOR ================= */
 const RichTextEditor = ({ value, onChange }) => {
-
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
@@ -30,8 +29,6 @@ const RichTextEditor = ({ value, onChange }) => {
 
   return (
     <div className="border rounded-lg p-3 bg-white space-y-3">
-
-      {/* Toolbar */}
       <div className="flex flex-wrap gap-2 border-b pb-2">
         <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={btn}>H1</button>
         <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btn}>H2</button>
@@ -57,6 +54,7 @@ const RichTextEditor = ({ value, onChange }) => {
   );
 };
 
+/* ================= PRODUCT FORM ================= */
 const ProductForm = ({ onSubmit, initialData = {} }) => {
   const { categories } = useCategories();
   const fileInputRef = useRef(null);
@@ -68,27 +66,40 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     categoryIds: initialData.categoryIds || [],
     description: initialData.description || "",
     additionalInfo: initialData.additionalInfo || "",
-    points: initialData.points ? initialData.points.join(", ") : "",
+    tagline: initialData.tagline || "",
+    points: initialData.benefits ? initialData.benefits.join(", ") : "",
     images: [],
   });
 
-  const [previewImages, setPreviewImages] = useState([]);
+  const [previewImages, setPreviewImages] = useState(initialData.images || []);
   const [loading, setLoading] = useState(false);
 
-  /* ================= IMAGE SELECT ================= */
+  /* CLEANUP PREVIEW URLS */
+  useEffect(() => {
+    return () => {
+      previewImages.forEach(img => {
+        if (img.startsWith("blob:")) URL.revokeObjectURL(img);
+      });
+    };
+  }, [previewImages]);
+
+  /* IMAGE SELECT */
   const handleImageSelect = (files) => {
     const arr = Array.from(files);
+
     setForm(prev => ({ ...prev, images: [...prev.images, ...arr] }));
-    setPreviewImages(prev => [...prev, ...arr.map(file => URL.createObjectURL(file))]);
+
+    const previews = arr.map(file => URL.createObjectURL(file));
+    setPreviewImages(prev => [...prev, ...previews]);
   };
 
-  /* ================= REMOVE IMAGE ================= */
+  /* REMOVE IMAGE */
   const removeImage = (index) => {
     setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
     setPreviewImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  /* ================= CATEGORY ================= */
+  /* CATEGORY */
   const handleCategoryChange = (id) => {
     setForm(prev => ({
       ...prev,
@@ -98,42 +109,63 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     }));
   };
 
-  /* ================= SUBMIT ================= */
+  /* SUBMIT */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      let imageUrls = initialData.images || [];
+      let imageUrls = [];
 
+      /* UPLOAD NEW IMAGES */
       if (form.images.length > 0) {
         const uploads = form.images.map(async file => {
           const imageRef = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
-          await uploadBytes(imageRef, file);
-          return await getDownloadURL(imageRef);
+
+          await uploadBytes(imageRef, file, {
+            cacheControl: "no-cache",
+          });
+
+          const url = await getDownloadURL(imageRef);
+
+          // cache buster
+        return url;
+
         });
 
-        imageUrls = [...imageUrls, ...(await Promise.all(uploads))];
+        imageUrls = await Promise.all(uploads);
+      } else {
+        imageUrls = initialData.images || [];
       }
 
-      const discount = form.mrp && form.price
-        ? Math.round(((form.mrp - form.price) / form.mrp) * 100)
-        : 0;
-
       await onSubmit({
-        ...form,
+        name: form.name,
         price: Number(form.price),
         mrp: Number(form.mrp),
-        discount,
-        points: form.points ? form.points.split(",").map(p => p.trim()) : [],
+        categoryIds: form.categoryIds,
+        description: form.description,
+        additionalInfo: form.additionalInfo,
+        tagline: form.tagline,
+        points: form.points.split(",").map(p => p.trim()),
         images: imageUrls,
       });
 
-      setForm({ name:"", price:"", mrp:"", categoryIds:[], description:"", additionalInfo:"", points:"", images:[] });
+      setForm({
+        name: "",
+        price: "",
+        mrp: "",
+        categoryIds: [],
+        description: "",
+        additionalInfo: "",
+        tagline: "",
+        points: "",
+        images: [],
+      });
+
       setPreviewImages([]);
 
     } catch (err) {
-      console.error(err);
+      console.error("PRODUCT SAVE ERROR:", err);
     }
 
     setLoading(false);
@@ -142,12 +174,42 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-xl">
 
-      <input name="name" placeholder="Product Name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="w-full border p-2 rounded" required />
+      <input
+        name="name"
+        placeholder="Product Name"
+        value={form.name}
+        onChange={e => setForm({ ...form, name: e.target.value })}
+        className="w-full border p-2 rounded"
+        required
+      />
 
       <div className="grid grid-cols-2 gap-3">
-        <input type="number" name="price" placeholder="Price" value={form.price} onChange={e=>setForm({...form,price:e.target.value})} className="border p-2 rounded" required />
-        <input type="number" name="mrp" placeholder="MRP" value={form.mrp} onChange={e=>setForm({...form,mrp:e.target.value})} className="border p-2 rounded" required />
+        <input type="number" placeholder="Price" value={form.price} onChange={e=>setForm({...form,price:e.target.value})} className="border p-2 rounded" required />
+        <input type="number" placeholder="MRP" value={form.mrp} onChange={e=>setForm({...form,mrp:e.target.value})} className="border p-2 rounded" required />
       </div>
+
+      <input
+        placeholder="Tagline (comma separated)"
+        value={form.tagline}
+        onChange={e => setForm({ ...form, tagline: e.target.value })}
+        className="w-full border p-2 rounded"
+      />
+
+      <textarea
+        placeholder="Additional Info"
+        value={form.additionalInfo}
+        onChange={e => setForm({ ...form, additionalInfo: e.target.value })}
+        className="w-full border p-2 rounded"
+      />
+
+      <input
+        placeholder="Benefits (comma separated)"
+        value={form.points}
+        onChange={e => setForm({ ...form, points: e.target.value })}
+        className="w-full border p-2 rounded"
+      />
+
+      <RichTextEditor value={form.description} onChange={html=>setForm({...form,description:html})} />
 
       {/* CATEGORY */}
       <div className="grid grid-cols-2 gap-2 border p-3 rounded max-h-40 overflow-y-auto">
@@ -158,13 +220,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           </label>
         ))}
       </div>
-
-      {/* DESCRIPTION */}
-      <RichTextEditor value={form.description} onChange={html=>setForm({...form,description:html})} />
-
-      <textarea placeholder="Short Info" value={form.additionalInfo} onChange={e=>setForm({...form,additionalInfo:e.target.value})} className="w-full border p-2 rounded" />
-
-      <input placeholder="Aditional Points (comma separated)" value={form.points} onChange={e=>setForm({...form,points:e.target.value})} className="w-full border p-2 rounded" />
 
       {/* IMAGE UPLOAD */}
       <div className="border-2 border-dashed p-5 rounded-xl text-center cursor-pointer" onClick={()=>fileInputRef.current.click()}>

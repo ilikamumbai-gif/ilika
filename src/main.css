@@ -1,7 +1,21 @@
 @import "tailwindcss";
 
+/* BRAND TYPOGRAPHY */
+
+.font-brand {
+  font-family: "Playfair Display", serif;
+}
+.font-luxury {
+  font-family: "Cormorant Garamond", serif;
+}
+
+.font-clean {
+  font-family: "Inter", sans-serif;
+}
+
 .primary-bg-color{
-    background-color: #FFF4EF;
+    /* background-color: #FFF4EF; */
+    background-color: #ffffff;
 }
 
 .secondary-bg-color{
@@ -25,7 +39,7 @@
 }
 
 .heading-color{
-    color:#A21D1D;
+    color:#b34140;
 }
 
 .heading-2-color{

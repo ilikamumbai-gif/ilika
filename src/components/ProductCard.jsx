@@ -5,118 +5,115 @@ import { useCart } from "../context/CartProvider";
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
-  /* ================= IMAGE HANDLER ================= */
+  const productId = product._id || product.id;
+
   const productImage =
     (product.images && product.images[0]) ||
     product.image ||
     product.imageUrl ||
     "/placeholder.png";
 
-  /* ================= DISCOUNT ================= */
   const calculatedDiscount =
     product.discount ||
     (product.mrp
       ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
       : null);
 
-  /* ================= RATING ================= */
   const rating = product.rating || 4;
+  const reviews = product.reviews || 80;
+  const isTall = productImage?.includes("bottle") || productImage?.includes("tube");
 
   return (
-    <div className="primary-bg-color rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 w-full group h-full flex flex-col">
+    <div className="primary-bg-color rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 w-full flex flex-col">
 
-      <Link to={`/product/${product.id}`} state={product} className="flex flex-col h-full">
+      <Link to={`/product/${productId}`} state={product} className="flex flex-col h-full">
 
-        {/* IMAGE */}
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#f3d6d6]">
+        {/* IMAGE AREA */}
+        <div className="relative aspect-square overflow-hidden flex items-center justify-center ">
 
           <img
-            src={productImage}
+            src={`${productImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+
             alt={product.name}
-            loading="lazy"
-            className="
-              absolute inset-0
-              w-full h-full
-              object-cover object-center
-              transition-transform duration-500
-              group-hover:scale-110
-            "
+            className={`
+    absolute inset-0
+    w-full h-full
+    object-contain
+    ${isTall ? "scale-[1.18]" : "scale-[1.08]"}
+    p-2
+  `}
           />
 
-          {/* Gradient */}
-          <div className="
-            absolute bottom-0 left-0
-            w-full h-12
-            bg-gradient-to-t from-[#fff5ef] via-[#fff5ef]/70 to-transparent
-            backdrop-blur-sm z-10 pointer-events-none
-          " />
 
-          {/* DISCOUNT */}
+
+          {/* DISCOUNT BADGE (THEME) */}
           {calculatedDiscount && (
-            <span className="
-              absolute top-3 left-3 z-20
-              MiniDivider-bg-color content-text
-              text-[10px] sm:text-xs font-semibold
-              px-2.5 py-1 rounded-md shadow
-            ">
+            <div className="absolute top-3 right-3 bg-[#E7A6A1] text-black text-xs font-semibold px-2.5 py-1 rounded-md shadow">
               {calculatedDiscount}% OFF
-            </span>
+            </div>
           )}
         </div>
 
         {/* CONTENT */}
-        <div className="pb-4 px-4 flex flex-col gap-2 flex-grow">
+        <div className="p-4 flex flex-col gap-2 flex-grow">
 
           {/* NAME */}
-          <h3 className="text-sm sm:text-base font-semibold text-[#1C371C] line-clamp-2 min-h-[2.5rem]">
+          <h3 className="text-[15px]  font-semibold text-[#172917] leading-snug tracking-wide">
             {product.name}
           </h3>
 
+          {/* TAGLINE */}
+          {product.tagline && (
+            <div className="flex flex-wrap gap-1 mt-1 ">
+              {product.tagline.split(",").map((tag, i, arr) => (
+                <span key={i} className="text-[12px] heading-color font-clean">
+                  {tag.trim()}
+                  {i !== arr.length - 1 && " • "}
+                </span>
+              ))}
+            </div>
+          )}
+
+
+          {/* RATING */}
+          <div className="flex items-center gap-2 text-xs mt-1">
+            <div className="text-[#E7A6A1] font-clean tracking-wider">
+              {"★".repeat(rating)}
+              {"☆".repeat(5 - rating)}
+            </div>
+          </div>
+
           {/* PRICE */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-baseline gap-2 mt-1 whitespace-nowrap">
+
+            <span className="font-semibold text-[#1C371C] text-[16px] font-clean">
+              ₹{product.price}
+            </span>
+
             {product.mrp && (
-              <span className="text-sm line-through text-gray-400">
+              <span className="text-[#1c371c98] text-[13px] font-clean line-through">
                 ₹{product.mrp}
               </span>
             )}
 
-            <span className="text-base font-semibold text-[#1C371C]">
-              ₹{product.price}
-            </span>
           </div>
 
-       
 
-          {/* BOTTOM SECTION */}
-          <div className="flex items-center justify-between ">
-
-            {/* RATING */}
-            <div className="flex text-sm text-black tracking-wide">
-              {"★".repeat(rating)}
-              {"☆".repeat(5 - rating)}
-            </div>
-
-            {/* ADD BUTTON */}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                addToCart(product);
-              }}
-              className="
-                bg-[#E7A6A1]
-                text-black text-sm
-                px-4 py-1.5
-                rounded-md
-                hover:bg-[#dd8f8a]
-                active:scale-95
-                transition
-              "
-            >
-              Add
-            </button>
-
-          </div>
         </div>
+
+        {/* BUTTON */}
+        <div className="px-4 pb-4">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              addToCart({ ...product, id: productId });
+            }}
+            className="w-full bg-[#E7A6A1] text-black text-[13px] font-clean tracking-widest py-2.5 rounded-lg"
+          >
+            Add To Cart
+          </button>
+        </div>
+
       </Link>
     </div>
   );

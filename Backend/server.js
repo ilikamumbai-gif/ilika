@@ -19,8 +19,11 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "https://ilika.vercel.app",
+  "https://ilika.in",
+  "https://www.ilika.in",
   process.env.FRONTEND_URL,
 ];
+
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -108,40 +111,73 @@ app.put("/api/users/:uid/address/:addressId", async (req, res) => {
 /* ============================== PRODUCTS ============================== */
 app.post("/api/products", async (req, res) => {
   try {
-    const docRef = await db.collection("products").add({ ...req.body, createdAt: new Date() });
-    res.json({ id: docRef.id, ...req.body });
-  } catch {
+    const now = Date.now();
+
+    const productData = {
+      ...req.body,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const docRef = await db.collection("products").add(productData);
+
+    res.json({ id: docRef.id, ...productData });
+  } catch (error) {
+    console.error("ADD PRODUCT ERROR:", error);
     res.status(500).json({ error: "Failed to add product" });
   }
 });
 
-app.get("/api/products", async (req, res) => {
-  try {
-    const snapshot = await db.collection("products").get();
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  } catch {
-    res.status(500).json({ error: "Failed to fetch products" });
-  }
-});
+
 
 app.get("/api/products/:id", async (req, res) => {
   try {
     const doc = await db.collection("products").doc(req.params.id).get();
-    if (!doc.exists) return res.status(404).json({ error: "Product not found" });
+
+    if (!doc.exists)
+      return res.status(404).json({ error: "Product not found" });
+
     res.json({ id: doc.id, ...doc.data() });
   } catch {
     res.status(500).json({ error: "Failed to fetch product" });
   }
 });
 
+
+
+app.get("/api/products", async (req, res) => {
+  try {
+    const snapshot = await db.collection("products").orderBy("createdAt", "desc").get();
+
+    const products = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.json(products);
+  } catch {
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
+});
+
+
+
 app.put("/api/products/:id", async (req, res) => {
   try {
-    await db.collection("products").doc(req.params.id).update({ ...req.body, updatedAt: new Date() });
+    const updateData = {
+      ...req.body,
+      updatedAt: Date.now(), // ⭐ version bump
+    };
+
+    await db.collection("products").doc(req.params.id).update(updateData);
+
     res.json({ message: "Product updated successfully" });
-  } catch {
+  } catch (error) {
+    console.error("UPDATE PRODUCT ERROR:", error);
     res.status(500).json({ error: "Failed to update product" });
   }
 });
+
 
 app.delete("/api/products/:id", async (req, res) => {
   try {

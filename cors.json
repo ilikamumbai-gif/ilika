@@ -1,6 +1,6 @@
 [
   {
-    "origin": ["http://localhost:5173","https://ilika.vercel.app/"],
+    "origin": ["http://localhost:5173","https://ilika.vercel.app","https://www.ilika.in","https://ilika.in"],
     "method": ["GET", "POST", "PUT", "DELETE"],
     "maxAgeSeconds": 3600,
     "responseHeader": ["Content-Type"]

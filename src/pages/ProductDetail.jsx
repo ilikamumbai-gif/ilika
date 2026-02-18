@@ -85,9 +85,11 @@ const ProductDetail = () => {
             <div className="flex flex-col gap-4">
 
               {/* MAIN IMAGE */}
-              <div className="relative bg-[#f3d6d6] rounded-2xl overflow-hidden">
-                <img
-                  src={selectedImage}
+              <div className="relative bg-white rounded-2xl overflow-hidden  shadow-sm">
+
+               <img
+  src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+
                   alt={product.name}
                   className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover transition"
                 />
@@ -104,7 +106,7 @@ const ProductDetail = () => {
                     <button
                       key={i}
                       onClick={() => setSelectedImage(img)}
-                      className={`border rounded-lg overflow-hidden transition 
+                      className={` rounded-lg overflow-hidden transition 
                       ${selectedImage === img ? "border-black" : "border-gray-300 hover:border-black"}`}
                     >
                       <img
@@ -119,8 +121,9 @@ const ProductDetail = () => {
 
             </div>
 
+
             {/* ================= CONTENT ================= */}
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4 lg:sticky lg:top-24 h-fit">
 
               <button
                 onClick={() => navigate(-1)}
@@ -129,61 +132,118 @@ const ProductDetail = () => {
                 ← Back
               </button>
 
-              <h1 className="text-2xl sm:text-3xl font-semibold heading-color">
-                {product.name}
-              </h1>
+              <div>             
+                 {/* TITLE */}
+                {/* className="text-[18px] font-luxury font-semibold text-[#172917] leading-tight tracking-tight" */}
+                <h1 className="text-2xl sm:text-3xl font-luxury font-bold  heading-color leading-tight tracking-tight">
+                  {product.name}
+                </h1>
 
-              {/* Rating */}
-              <div className="flex items-center gap-2 text-sm">
-                <div className="text-black">
-                  {"★".repeat(rating)}
-                  {"☆".repeat(5 - rating)}
+                {/* TAGLINE */}
+                <p className="text-sm text-gray-600 mt-1">
+                  {product.additionalInfo || "Deep nourishment & long lasting hydration"}
+                </p></div>
+
+
+              <div>
+                {/* PRICE BAR */}
+                <div className="flex items-center flex-wrap gap-3 mt-2">
+
+                  {/* MRP */}
+                  {product.mrp && (
+                    <span className="text-sm font-clean text-[#7a7a7a]">
+                      <span className="text-2xl  font-clean text-[#1C371C]">MRP</span> <span className="line-through ml-1">₹{product.mrp}</span>
+                    </span>
+                  )}
+
+                  {/* PRICE */}
+                  <span className="text-2xl  font-clean text-[#1C371C]">
+                    ₹{product.price}
+                  </span>
+
+                  {/* DISCOUNT BADGE */}
+                  {product.mrp && (
+                    <span className="text-xs font-semibold bg-[#a1e7b168] text-[#026a17] px-2.5 py-1 rounded">
+                      {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% OFF
+                    </span>
+                  )}
+
                 </div>
-                <span className="text-gray-500">({rating}/5)</span>
+                <p className="text-[13px] text-gray-500">
+                  (Inclusive of all taxes)
+                </p>
               </div>
 
-              {/* Price */}
-              <div className="flex items-center gap-3">
-                <strike className="text-[#5d655d8d]">
-                  <span className="text-base font-semibold">₹{product.mrp}</span>
-                </strike>
 
-                <span className="text-base font-semibold text-[#1C371C]">
-                  ₹{product.price}
-                </span>
+
+              {/* RATING */}
+              {/* RATING BADGE */}
+              <div className="flex items-center gap-3 mt-2">
+
+                {/* RATING SCORE */}
+                <div className="flex items-center gap-1 bg-[#1C7C54] text-white text-xs font-semibold px-2 py-1 rounded">
+                  <span>★</span>
+                  <span>{rating.toFixed(2)}</span>
+                </div>
+
+                {/* VERIFIED REVIEWS */}
+                <div className="flex items-center gap-1 text-sm text-gray-600 font-clean">
+                  <span className="text-[#026a17]">✔</span>
+                  <span>Verified Reviews</span>
+                </div>
+
               </div>
 
-              {/* Description */}
-              <p className="text-sm sm:text-base content-text leading-relaxed">
-                {product.additionalInfo || "No additional information"}
-              </p>
 
-              <div className="h-px bg-gray-200 my-2" />
-
-              {/* ACTION BUTTONS */}
-              <div className="flex flex-col sm:flex-row gap-3 mt-4">
+              {/* BUTTONS */}
+              <div className="flex flex-col sm:flex-row gap-3">
 
                 <button
                   onClick={() => addToCart(product)}
-                  className="w-full sm:w-auto bg-[#E7A6A1] text-black px-6 py-3 rounded-lg hover:bg-[#dd8f8a] transition active:scale-[0.98]"
+                  className="flex-1 bg-[#b34140] text-white py-3 rounded-xl hover:opacity-90 transition"
                 >
                   Add to Cart
                 </button>
 
                 <button
                   onClick={handleBuyNow}
-                  className="w-full sm:w-auto border border-[#E7A6A1] text-[#1C371C] px-6 py-3 rounded-lg hover:bg-[#fff1ef] transition"
+                  className="flex-1 border border-[#E7A6A1] text-[#1C371C] py-3 rounded-xl hover:bg-[#fff1ef] transition"
                 >
                   Buy Now
                 </button>
 
               </div>
+              {/* WHY YOU'LL LOVE IT */}
+              <div className="border rounded-2xl p-5 bg-[#fff6f5] space-y-3">
+                <div className="font-semibold heading-color text-lg">
+                  Why You'll Love It
+                </div>
+
+                <ul className="space-y-2 text-sm">
+                  {(product.benefits || [
+                    "Deep moisturization",
+                    "Soft & smooth skin",
+                    "Long lasting fragrance",
+                    "Suitable for all skin types"
+                  ]).map((b, i) => (
+                    <li key={i} className="flex gap-2 items-start">
+                      <span className="text-[#E7A6A1] font-bold">✓</span>
+                      <span className="text-gray-700">{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+
+              {/* OFFERS */}
+
             </div>
+
 
           </div>
         </section>
-
         <ProductTab product={product} />
+
       </div>
 
       <Footer />

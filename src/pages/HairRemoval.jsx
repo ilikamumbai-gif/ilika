@@ -15,7 +15,7 @@ const HairRemoval = () => {
   (c) =>
     c.name
       .toLowerCase()
-      .replace(/\s+/g, "") === "hairremoval"
+      .replace(/\s+/g, "") === "hairremovingtools"
 );
 
 
