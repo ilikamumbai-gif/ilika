@@ -71,7 +71,7 @@ const CtmCard = () => {
 
         </div>
       </div>
-      <div className="bg-[#fff5ef] rounded-3xl overflow-hidden shadow-sm grid md:grid-cols-2 gap-6 items-center mt-10">
+      <div className="primary-bg-color rounded-3xl overflow-hidden shadow-sm grid md:grid-cols-2 gap-6 items-center mt-10">
 
 
 

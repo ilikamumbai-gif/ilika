@@ -23,7 +23,7 @@ const Home = () => {
         <CartDrawer />
 
         {/* HERO SECTION */}
-        <Banner className="md:h-[95vh] -mt-15" src={bannerImg} />
+        <Banner className="md:h-[95vh] -mt-5" src={bannerImg} />
 
         {/* CATEGORY NAVIGATION */}
         <CategoryNav categories={categoriesData} />
@@ -39,9 +39,9 @@ const Home = () => {
         <Heading heading="TOP APPLIANCES" />
         <ProductList limit={8} />
 
-        {/* SHOP BY INGREDIENTS */}
+        {/* SHOP BY INGREDIENTS
         <Heading heading="TOP CATEGORY" />
-        <CategoryNav categories={IngredientsData} />
+        <CategoryNav categories={IngredientsData} /> */}
 
         {/* BRAND MANIFESTO */}
         <Menifesto />

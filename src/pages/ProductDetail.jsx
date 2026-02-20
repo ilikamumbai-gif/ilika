@@ -10,6 +10,7 @@ import { auth } from "../../Backend/firebaseConfig";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
 import { Truck, ShieldCheck, BadgeCheck } from "lucide-react";
+import ProductCard from "../components/ProductCard";
 
 const ProductDetail = () => {
   const { products = [] } = useProducts();
@@ -29,36 +30,36 @@ const ProductDetail = () => {
   const [touchEndX, setTouchEndX] = useState(null);
 
   /* ================= FETCH PRODUCT USING SLUG ================= */
-useEffect(() => {
-  const loadProduct = async () => {
-    try {
-      // 1️⃣ First try find locally (fast navigation)
-      let found = products.find(p => createSlug(p.name) === slug);
+  useEffect(() => {
+    const loadProduct = async () => {
+      try {
+        // 1️⃣ First try find locally (fast navigation)
+        let found = products.find(p => createSlug(p.name) === slug);
 
-      // 2️⃣ If found locally
-      if (found) {
-        setProduct(found);
-        setLoading(false);
-        return;
+        // 2️⃣ If found locally
+        if (found) {
+          setProduct(found);
+          setLoading(false);
+          return;
+        }
+
+        // 3️⃣ Otherwise fetch from API using slug
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/slug/${slug}`);
+        if (!res.ok) throw new Error("Not found");
+
+        const data = await res.json();
+        setProduct(data);
+
+      } catch (err) {
+        console.error("Failed to fetch product:", err);
       }
 
-      // 3️⃣ Otherwise fetch from API using slug
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/slug/${slug}`);
-      if (!res.ok) throw new Error("Not found");
+      setLoading(false);
+    };
 
-      const data = await res.json();
-      setProduct(data);
+    if (slug && products.length) loadProduct();
 
-    } catch (err) {
-      console.error("Failed to fetch product:", err);
-    }
-
-    setLoading(false);
-  };
-
-  if (slug && products.length) loadProduct();
-
-}, [slug, products]);
+  }, [slug, products]);
 
 
 
@@ -188,6 +189,14 @@ useEffect(() => {
 
 
   const rating = product.rating || 4;
+  
+  /* ================= RELATED PRODUCTS ================= */
+  const relatedProducts = products
+    .filter(p =>
+      p._id !== productId &&
+      p.categoryName === product.categoryName
+    )
+    .slice(0, 6);
 
   return (
     <>
@@ -412,7 +421,22 @@ useEffect(() => {
           </div>
         </section>
         <ProductTab product={product} />
+        {/* RELATED PRODUCTS */}
+        {relatedProducts.length > 0 && (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
 
+            <h2 className="text-2xl font-semibold heading-color mb-6">
+              You may also like
+            </h2>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+              {relatedProducts.map((item) => (
+                <ProductCard key={item._id} product={item} />
+              ))}
+            </div>
+
+          </section>
+        )}
       </div>
 
       <Footer />
