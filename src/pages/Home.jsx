@@ -22,10 +22,7 @@ const Home = () => {
         <CartDrawer />
 
         {/* HERO SECTION */}
-        <Banner 
-          className="h-[95vh] -mt-20" 
-          src={bannerImg} 
-        />
+        <Banner className="md:h-[95vh] -mt-20" src={bannerImg} />
 
         {/* CATEGORY NAVIGATION */}
         <CategoryNav categories={categoriesData} />
@@ -35,10 +32,7 @@ const Home = () => {
         <ProductList limit={8} />
 
         {/* SECOND PROMO BANNER */}
-        <Banner 
-          className="h-[40vh] mt-0 mb-10" 
-          src={bannerImg} 
-        />
+       <Banner className="md:h-[40vh] mt-0 mb-10" src={bannerImg} />
 
         {/* TOP APPLIANCES (CATEGORY FILTERED) */}
         <Heading heading="TOP APPLIANCES" />

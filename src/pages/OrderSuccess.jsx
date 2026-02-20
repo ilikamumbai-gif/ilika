@@ -53,7 +53,7 @@ const OrderSuccess = () => {
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
 
               <button
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/shopall")}
                 className="flex-1 bg-black text-white py-3 rounded-xl hover:bg-gray-900 transition"
               >
                 Continue Shopping

@@ -25,6 +25,8 @@ const ProductDetail = () => {
   /* VARIANT STATE */
   const [activeVariant, setActiveVariant] = useState(null);
 
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [touchEndX, setTouchEndX] = useState(null);
 
   /* ================= FETCH PRODUCT USING SLUG ================= */
   useEffect(() => {
@@ -146,7 +148,26 @@ const ProductDetail = () => {
 
   };
 
+  const handleSwipe = () => {
+    if (!images || images.length <= 1) return;
 
+    const minSwipeDistance = 50;
+    const distance = touchStartX - touchEndX;
+
+    let currentIndex = images.indexOf(selectedImage);
+
+    // Swipe Left → Next Image
+    if (distance > minSwipeDistance) {
+      const nextIndex = (currentIndex + 1) % images.length;
+      setSelectedImage(images[nextIndex]);
+    }
+
+    // Swipe Right → Previous Image
+    if (distance < -minSwipeDistance) {
+      const prevIndex = (currentIndex - 1 + images.length) % images.length;
+      setSelectedImage(images[prevIndex]);
+    }
+  };
 
   /* ================= DERIVED DATA ================= */
   const productId = product._id || product.id;
@@ -183,14 +204,17 @@ const ProductDetail = () => {
             <div className="flex flex-col gap-4">
 
               {/* MAIN IMAGE */}
-              <div className="relative bg-white rounded-2xl overflow-hidden  shadow-sm">
-
+              <div
+                className="relative bg-white rounded-2xl overflow-hidden shadow-sm select-none"
+                onTouchStart={(e) => setTouchStartX(e.targetTouches[0].clientX)}
+                onTouchMove={(e) => setTouchEndX(e.targetTouches[0].clientX)}
+                onTouchEnd={handleSwipe}
+              >
                 {selectedImage && (
                   <img
                     src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
                     alt={product.name}
-                    className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover transition"
-                  />
+                    className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover transition duration-300 ease-in-out" />
                 )}
 
                 {/* <span className="absolute top-4 right-4 category-bg-color content-text text-xs px-3 py-1 rounded-md capitalize">

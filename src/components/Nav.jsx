@@ -7,7 +7,7 @@ import ProductData from "../Dummy/productsData";
 
 const Nav = ({ mobile, onClose }) => {
   const { openCart } = useCart();
-
+  const menuRef = useRef();
   const [query, setQuery] = useState("");
   const [openMenu, setOpenMenu] = useState(null);
   const searchRef = useRef();
@@ -16,16 +16,20 @@ const Nav = ({ mobile, onClose }) => {
   const filtered =
     query.trim().length > 0
       ? productData
-          .filter((p) =>
-            (p.name + " " + p.category)
-              .toLowerCase()
-              .includes(query.toLowerCase())
-          )
-          .slice(0, 6)
+        .filter((p) =>
+          (p.name + " " + p.category)
+            .toLowerCase()
+            .includes(query.toLowerCase())
+        )
+        .slice(0, 6)
       : [];
 
   const toggleMenu = (menu) => {
-    setOpenMenu(openMenu === menu ? null : menu);
+    if (mobile) {
+      setOpenMenu(openMenu === menu ? null : menu);
+    } else {
+      setOpenMenu(prev => (prev === menu ? null : menu));
+    }
   };
 
   // ✅ Highlight search match
@@ -54,18 +58,30 @@ const Nav = ({ mobile, onClose }) => {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenMenu(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
   return (
     <div
+      ref={menuRef}
       className={`${mobile
-          ? "w-full flex flex-col gap-4 py-3 px-3"
-          : "flex items-center justify-between gap-6 xl:gap-10 w-full"
+        ? "w-full flex flex-col gap-4 py-3 px-3"
+        : "flex items-center justify-between gap-6 xl:gap-10 w-full"
         } heading-2-color`}
     >
       {/* LINKS */}
       <nav
         className={`${mobile
-            ? "flex flex-col gap-4 text-base w-full"
-            : "flex items-center gap-5 lg:gap-7 text-sm lg:text-base whitespace-nowrap flex-1 min-w-0"
+          ? "flex flex-col gap-4 text-base w-full"
+          : "flex items-center gap-5 lg:gap-7 text-sm lg:text-base whitespace-nowrap flex-1 min-w-0"
           }`}
       >
         <Link to="/" onClick={onClose} className="whitespace-nowrap">
@@ -80,7 +96,10 @@ const Nav = ({ mobile, onClose }) => {
         <div className="relative w-full group">
           <div
             className="flex items-center justify-between cursor-pointer"
-            onClick={() => toggleMenu("newarrival")}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleMenu("newarrival");
+            }}
           >
             <Link
               to="/newarrival"
@@ -98,11 +117,12 @@ const Nav = ({ mobile, onClose }) => {
 
           <div
             className={`${mobile
-                ? openMenu === "newarrival"
-                  ? "block mt-2"
-                  : "hidden"
-                : "absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 hidden group-hover:block"
-              } bg-white rounded-md`}
+              ? openMenu === "newarrival"
+                ? "block mt-2"
+                : "hidden"
+              : `absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 ${openMenu === "newarrival" ? "block" : "hidden"
+              }`
+              }`}
           >
             {ProductData.map((item) => (
               <Link
@@ -122,7 +142,10 @@ const Nav = ({ mobile, onClose }) => {
         <div className="relative w-full group">
           <div
             className="flex items-center justify-between cursor-pointer"
-            onClick={() => toggleMenu("skin")}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleMenu("skin");
+            }}
           >
             <Link to="/skin" onClick={onClose} className="whitespace-nowrap">
               Skin
@@ -136,11 +159,12 @@ const Nav = ({ mobile, onClose }) => {
 
           <div
             className={`${mobile
-                ? openMenu === "skin"
-                  ? "block mt-2"
-                  : "hidden"
-                : "absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 hidden group-hover:block"
-              } bg-white rounded-md`}
+              ? openMenu === "skin"
+                ? "block mt-2"
+                : "hidden"
+              : `absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 ${openMenu === "skin" ? "block" : "hidden"
+              }`
+              }`}
           >
             <Link
               to="/skin/face"
@@ -163,7 +187,10 @@ const Nav = ({ mobile, onClose }) => {
         <div className="relative w-full group">
           <div
             className="flex items-center justify-between cursor-pointer"
-            onClick={() => toggleMenu("hair")}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleMenu("hair");
+            }}
           >
             <Link to="/hair" onClick={onClose} className="whitespace-nowrap">
               Hair
@@ -174,14 +201,14 @@ const Nav = ({ mobile, onClose }) => {
                 }`}
             />
           </div>
-
           <div
             className={`${mobile
-                ? openMenu === "hair"
-                  ? "block mt-2"
-                  : "hidden"
-                : "absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 hidden group-hover:block"
-              } bg-white rounded-md`}
+              ? openMenu === "hair"
+                ? "block mt-2"
+                : "hidden"
+              : `absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 ${openMenu === "hair" ? "block" : "hidden"
+              }`
+              }`}
           >
             <Link
               to="/hair/care"
@@ -204,7 +231,10 @@ const Nav = ({ mobile, onClose }) => {
         <div className="relative w-full group">
           <div
             className="flex items-center justify-between cursor-pointer"
-            onClick={() => toggleMenu("grooming")}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleMenu("grooming");
+            }}
           >
             <Link
               to="/grooming"
@@ -222,11 +252,12 @@ const Nav = ({ mobile, onClose }) => {
 
           <div
             className={`${mobile
-                ? openMenu === "grooming"
-                  ? "block mt-2"
-                  : "hidden"
-                : "absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 hidden group-hover:block"
-              } bg-white rounded-md`}
+              ? openMenu === "grooming"
+                ? "block mt-2"
+                : "hidden"
+              : `absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 ${openMenu === "grooming" ? "block" : "hidden"
+              }`
+              }`}
           >
             <Link
               to="/grooming/face"

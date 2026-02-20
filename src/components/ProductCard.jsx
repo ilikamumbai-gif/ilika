@@ -5,7 +5,7 @@ import { createSlug } from "../utils/slugify";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
-const slug = createSlug(product.name);
+  const slug = createSlug(product.name);
   const productId = product._id || product.id;
   /* VARIANT SUPPORT */
   const defaultVariant = product.hasVariants && product.variants?.length

@@ -40,6 +40,7 @@ import Body from "../pages/Body";
 import FaceGrooming from "../pages/FaceGrooming";
 import RollerAndGuasha from "../pages/RollerAndGuasha";
 import HairRemoval from "../pages/HairRemoval";
+import ShopAll from "../pages/ShopAll";
 
 
 
@@ -60,7 +61,7 @@ const NavRoutes = () => {
         <Route path="/skin/face" element={<Face />} />
         <Route path="/skin/body" element={<Body />} />
         <Route path="/hair/care" element={<HairCare />} />
-        <Route path="/hair/style" element={<HairStyle />} />
+        <Route path="/hair/styling" element={<HairStyle />} />
         <Route path="/grooming/roller" element={<RollerAndGuasha />} />
         <Route path="/grooming/face" element={<FaceGrooming />} />
         <Route path="/grooming/remover" element={<HairRemoval />} />
@@ -68,6 +69,7 @@ const NavRoutes = () => {
         <Route path="/ctm" element={<Ctm />} />
         <Route path="/ctmkit" element={<CreateCtm />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/shopall" element={<ShopAll />} />
 
         {/* 🔥 PROTECTED USER ROUTE */}
         <Route
@@ -80,7 +82,7 @@ const NavRoutes = () => {
         />
 
         <Route path="/blog/:id" element={<BlogDetail />} />
-<Route path="/product/:slug" element={<ProductDetail />} />
+        <Route path="/product/:slug" element={<ProductDetail />} />
 
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/termsandcondition" element={<TermsCondition />} />
@@ -89,7 +91,7 @@ const NavRoutes = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/shippingpolicy" element={<ShippingPolicy />} />
         <Route path="/faq" element={<Faq />} />
-        <Route path="/order-success/:id" element={<OrderSuccess/>}/>
+        <Route path="/order-success/:id" element={<OrderSuccess />} />
 
 
         {/* USER AUTH */}
