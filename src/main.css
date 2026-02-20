@@ -62,11 +62,19 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+/* Smooth mobile gallery */
+.snap-x {
+  scroll-snap-type: x mandatory;
+}
 
-/* global.css */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { scrollbar-width: none; }
+.snap-center {
+  scroll-snap-align: center;
+}
 
+/* Hide scrollbar mobile */
+::-webkit-scrollbar {
+  display: none;
+}
 
 .prose h1 { font-size: 1.6rem; font-weight: 600; margin: 12px 0; }
 .prose h2 { font-size: 1.4rem; font-weight: 600; margin: 10px 0; }

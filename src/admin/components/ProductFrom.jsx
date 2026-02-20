@@ -72,7 +72,26 @@ const [form, setForm] = useState({
   points: initialData.benefits ? initialData.benefits.join(", ") : "",
   images: [],
 });
+useEffect(() => {
+  if (!initialData || Object.keys(initialData).length === 0) return;
 
+  setForm({
+    name: initialData.name || "",
+    price: initialData.price || "",
+    mrp: initialData.mrp || "",
+    hasVariants: initialData.hasVariants || false,
+    variants: initialData.variants || [],
+    categoryIds: initialData.categoryIds || [],
+    description: initialData.description || "",
+    additionalInfo: initialData.additionalInfo || "",
+    tagline: initialData.tagline || "",
+    points: initialData.benefits ? initialData.benefits.join(", ") : "",
+    images: [], // important (do not preload here)
+  });
+
+  setPreviewImages(initialData.images || []);
+
+}, [initialData]);
 
   const [previewImages, setPreviewImages] = useState(initialData.images || []);
   const [loading, setLoading] = useState(false);

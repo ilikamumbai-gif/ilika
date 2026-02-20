@@ -12,13 +12,14 @@ import { createSlug } from "../utils/slugify";
 
 
 const ProductDetail = () => {
+  const { products = [] } = useProducts();
   const { state } = useLocation();
-const { slug } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const { addToCart, closeCart, cartItems } = useCart();
 
-const [product, setProduct] = useState(null);
-const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [selectedImage, setSelectedImage] = useState(null);
   /* VARIANT STATE */
@@ -26,36 +27,36 @@ const [loading, setLoading] = useState(true);
 
 
   /* ================= FETCH PRODUCT USING SLUG ================= */
-useEffect(() => {
+  useEffect(() => {
 
-  const loadProduct = async () => {
+    const loadProduct = async () => {
 
-    let productId = state?.id;
+      let productId = state?.id;
 
-    // If user refreshed or opened direct link
-    if (!productId && products.length) {
-      const found = products.find(
-        p => createSlug(p.name) === slug
-      );
-      productId = found?._id || found?.id;
-    }
+      // If user refreshed or opened direct link
+      if (!productId && products.length) {
+        const found = product.find(
+          p => createSlug(p.name) === slug
+        );
+        productId = found?._id || found?.id;
+      }
 
-    if (!productId) return;
+      if (!productId) return;
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${productId}`);
-      const data = await res.json();
-      setProduct(data);
-    } catch (err) {
-      console.error("Failed to fetch product:", err);
-    }
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${productId}`);
+        const data = await res.json();
+        setProduct(data);
+      } catch (err) {
+        console.error("Failed to fetch product:", err);
+      }
 
-    setLoading(false);
-  };
+      setLoading(false);
+    };
 
-  loadProduct();
+    loadProduct();
 
-}, [slug, product]);
+  }, [slug, products]);
 
 
 
@@ -63,14 +64,27 @@ useEffect(() => {
   useEffect(() => {
     if (!product) return;
 
+    let firstImg = null;
+
     if (product.hasVariants && product.variants?.length) {
       const first = product.variants[0];
       setActiveVariant(first);
-      setSelectedImage(first.images?.[0]);
+
+      firstImg =
+        first?.images?.[0] ||
+        first?.image ||
+        product?.images?.[0] ||
+        product?.imageUrl ||
+        product?.image;
     } else {
       setActiveVariant(null);
-      setSelectedImage(product.images?.[0] || product.imageUrl || product.image);
+      firstImg =
+        product?.images?.[0] ||
+        product?.imageUrl ||
+        product?.image;
     }
+
+    setSelectedImage(firstImg || null);
   }, [product]);
 
 
@@ -171,16 +185,17 @@ useEffect(() => {
               {/* MAIN IMAGE */}
               <div className="relative bg-white rounded-2xl overflow-hidden  shadow-sm">
 
-                <img
-                  src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                {selectedImage && (
+                  <img
+                    src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                    alt={product.name}
+                    className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover transition"
+                  />
+                )}
 
-                  alt={product.name}
-                  className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover transition"
-                />
-
-                <span className="absolute top-4 right-4 category-bg-color content-text text-xs px-3 py-1 rounded-md capitalize">
+                {/* <span className="absolute top-4 right-4 category-bg-color content-text text-xs px-3 py-1 rounded-md capitalize">
                   {product.categoryName || "Product"}
-                </span>
+                </span> */}
               </div>
 
               {/* THUMBNAILS */}
@@ -193,15 +208,19 @@ useEffect(() => {
                       className={`rounded-lg overflow-hidden transition 
         ${selectedImage === img ? "border-black" : "border-gray-300 hover:border-black"}`}
                     >
-                      <img
-                        src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-                        alt="thumb"
-                        className="w-full h-20 object-cover"
-                      />
+                      {img && (
+                        <img
+                          src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                          alt="thumb"
+                          className="w-full h-20 object-cover"
+                        />
+                      )}
                     </button>
                   ))}
                 </div>
               )}
+
+
             </div>
 
 
@@ -236,7 +255,7 @@ useEffect(() => {
                         key={v.id}
                         onClick={() => {
                           setActiveVariant(v);
-                          setSelectedImage(v.images?.[0]);
+                          setSelectedImage(v.images?.[0] || v.image || null);
                         }}
                         className={`px-4 py-2 border rounded-lg text-sm transition
           ${activeVariant?.id === v.id
