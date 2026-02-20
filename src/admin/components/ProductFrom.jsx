@@ -143,6 +143,11 @@ const removeVariantImage = (variantIndex, imgIndex) => {
 
     try {
       let imageUrls = [];
+      if (!form.hasVariants && !form.price) {
+  alert("Please enter product price");
+  setLoading(false);
+  return;
+}
 
 if(!form.hasVariants){
   if(form.images.length>0){
@@ -233,6 +238,28 @@ if (form.hasVariants) {
         className="w-full border p-2 rounded"
         required
       />
+      {/* NORMAL PRODUCT PRICE (ONLY WHEN NO VARIANTS) */}
+{!form.hasVariants && (
+  <div className="grid grid-cols-2 gap-3">
+    <input
+      type="number"
+      placeholder="Price"
+      value={form.price}
+      onChange={(e) => setForm({ ...form, price: e.target.value })}
+      className="w-full border p-2 rounded"
+      required
+    />
+
+    <input
+      type="number"
+      placeholder="MRP"
+      value={form.mrp}
+      onChange={(e) => setForm({ ...form, mrp: e.target.value })}
+      className="w-full border p-2 rounded"
+      required
+    />
+  </div>
+)}
 
   {form.variants.map((variant,index)=>(
 
@@ -331,8 +358,17 @@ if (form.hasVariants) {
   <input
     type="checkbox"
     checked={form.hasVariants}
-    onChange={(e)=>setForm({...form,hasVariants:e.target.checked})}
-  />
+onChange={(e)=>{
+  const checked = e.target.checked;
+
+  setForm(prev => ({
+    ...prev,
+    hasVariants: checked,
+    price: checked ? "" : prev.price,
+    mrp: checked ? "" : prev.mrp,
+    variants: checked ? prev.variants : []
+  }));
+}}  />
   This product has variants (Size / Weight / Color)
 </label>
 {/* VARIANTS */}
