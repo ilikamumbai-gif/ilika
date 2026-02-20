@@ -22,7 +22,7 @@ const Home = () => {
         <CartDrawer />
 
         {/* HERO SECTION */}
-        <Banner className="md:h-[95vh] -mt-20" src={bannerImg} />
+        <Banner className="md:h-[95vh] -mt-15" src={bannerImg} />
 
         {/* CATEGORY NAVIGATION */}
         <CategoryNav categories={categoriesData} />

@@ -340,7 +340,7 @@ const Checkout = () => {
 
             <div className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
-              <div className="flex justify-between"><span>Shipping</span><span>Free<strike>99</strike></span></div>
+              <div className="flex justify-between"><span>Shipping</span><span className="text-green-900">Free</span></div>
 
               <hr />
 

@@ -2,6 +2,11 @@
 
 /* BRAND TYPOGRAPHY */
 
+/* Global Sans Serif Font */
+html, body, #root {
+  font-family: "Inter",  sans-serif;
+}
+
 .font-brand {
   font-family: "Playfair Display", serif;
 }

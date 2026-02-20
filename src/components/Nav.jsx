@@ -1,23 +1,27 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, ShoppingBag, User, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
-import productData from "../Dummy/productsData";
 import { useCart } from "../context/CartProvider";
-import ProductData from "../Dummy/productsData";
+import { useProducts } from "../admin/context/ProductContext";
+import { createSlug } from "../utils/slugify";
 
-const Nav = ({ mobile, onClose }) => {
+const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
   const { openCart } = useCart();
   const menuRef = useRef();
   const [query, setQuery] = useState("");
   const [openMenu, setOpenMenu] = useState(null);
   const searchRef = useRef();
+  const { products = [] } = useProducts();
 
+  const newArrivals = [...products]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 6);
   // ✅ Updated search filter (name + category + limit 6)
   const filtered =
     query.trim().length > 0
-      ? productData
+      ? products
         .filter((p) =>
-          (p.name + " " + p.category)
+          (p.name + " " + (p.categoryName || ""))
             .toLowerCase()
             .includes(query.toLowerCase())
         )
@@ -124,15 +128,17 @@ const Nav = ({ mobile, onClose }) => {
               }`
               }`}
           >
-            {ProductData.map((item) => (
+            {newArrivals.map((item) => (
               <Link
-                key={item.id}
-                to={`/product/${item.id}`}
-                state={item}
-                onClick={onClose}
-                className="block px-4 py-3 text-sm hover:bg-gray-100"
+                key={item._id}
+                to={`/product/${createSlug(item.name)}`}
+                state={{ id: item._id }}
+                onClick={() => {
+                  setTimeout(() => onClose?.(), 0);
+                }}
+                className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100"
               >
-                {item.name}
+                <span className="font-medium">{item.name}</span>
               </Link>
             ))}
           </div>

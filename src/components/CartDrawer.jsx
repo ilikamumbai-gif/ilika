@@ -21,9 +21,8 @@ const CartDrawer = () => {
     0
   );
 
-  const gst = Math.round(subtotal * 0.18);
-  const shipping = subtotal > 999 || subtotal === 0 ? 0 : 49;
-  const grandTotal = subtotal + gst + shipping;
+
+  const grandTotal = subtotal ;
 
   return (
     <>
@@ -145,16 +144,13 @@ const CartDrawer = () => {
               <span>₹{subtotal}</span>
             </div>
 
-            <div className="flex justify-between">
-              <span className="text-gray-600">GST (18%)</span>
-              <span>₹{gst}</span>
-            </div>
+            
 
             <div className="flex justify-between">
-              <span className="text-gray-600">Shipping</span>
-              <span className={shipping === 0 ? "text-green-600" : ""}>
-                {shipping === 0 ? "Free" : `₹${shipping}`}
+              <span >
+                Delivery
               </span>
+             <span className="text-green-900">Free </span>
             </div>
 
             <hr />

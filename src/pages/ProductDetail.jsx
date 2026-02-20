@@ -9,7 +9,7 @@ import { useCart } from "../context/CartProvider";
 import { auth } from "../../Backend/firebaseConfig";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
-
+import { Truck, ShieldCheck, BadgeCheck } from "lucide-react";
 
 const ProductDetail = () => {
   const { products = [] } = useProducts();
@@ -29,36 +29,36 @@ const ProductDetail = () => {
   const [touchEndX, setTouchEndX] = useState(null);
 
   /* ================= FETCH PRODUCT USING SLUG ================= */
-  useEffect(() => {
+useEffect(() => {
+  const loadProduct = async () => {
+    try {
+      // 1️⃣ First try find locally (fast navigation)
+      let found = products.find(p => createSlug(p.name) === slug);
 
-    const loadProduct = async () => {
-
-      let productId = state?.id;
-
-      // If user refreshed or opened direct link
-      if (!productId && products.length) {
-        const found = product.find(
-          p => createSlug(p.name) === slug
-        );
-        productId = found?._id || found?.id;
+      // 2️⃣ If found locally
+      if (found) {
+        setProduct(found);
+        setLoading(false);
+        return;
       }
 
-      if (!productId) return;
+      // 3️⃣ Otherwise fetch from API using slug
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/slug/${slug}`);
+      if (!res.ok) throw new Error("Not found");
 
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${productId}`);
-        const data = await res.json();
-        setProduct(data);
-      } catch (err) {
-        console.error("Failed to fetch product:", err);
-      }
+      const data = await res.json();
+      setProduct(data);
 
-      setLoading(false);
-    };
+    } catch (err) {
+      console.error("Failed to fetch product:", err);
+    }
 
-    loadProduct();
+    setLoading(false);
+  };
 
-  }, [slug, products]);
+  if (slug && products.length) loadProduct();
+
+}, [slug, products]);
 
 
 
@@ -314,7 +314,7 @@ const ProductDetail = () => {
 
                   {/* DISCOUNT BADGE */}
                   {mrp && (
-                    <span className="text-xs font-semibold bg-[#a1e7b168] text-[#026a17] px-2.5 py-1 rounded">
+                    <span className="text-xs font-bold border border-[#026a17] text-[#026a17] px-2.5 py-1 rounded">
                       {discount}% OFF
                     </span>
                   )}
@@ -386,12 +386,29 @@ const ProductDetail = () => {
                 </ul>
               </div>
 
+              {/* TRUST BADGES */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
 
-              {/* OFFERS */}
+                {/* FAST SHIPPING */}
+                <div className="flex items-center justify-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm">
+                  <Truck className="w-5 h-5 text-gray-700" />
+                  <span className="text-gray-700 font-medium">Fast Shipping</span>
+                </div>
 
+                {/* SECURE PAYMENT */}
+                <div className="flex items-center justify-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm">
+                  <ShieldCheck className="w-5 h-5 text-gray-700" />
+                  <span className="text-gray-700 font-medium">Secure Payment</span>
+                </div>
+
+                {/* DELIVERY GUARANTEED */}
+                <div className="flex items-center justify-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm col-span-2 sm:col-span-1">
+                  <BadgeCheck className="w-5 h-5 text-gray-700" />
+                  <span className="text-gray-700 font-medium">Delivery Guaranteed</span>
+                </div>
+
+              </div>
             </div>
-
-
           </div>
         </section>
         <ProductTab product={product} />

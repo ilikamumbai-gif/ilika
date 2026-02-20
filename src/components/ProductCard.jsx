@@ -73,7 +73,7 @@ const ProductCard = ({ product }) => {
         <div className="p-4 flex flex-col gap-2 flex-grow">
 
           {/* NAME */}
-          <h3 className="text-[15px]  font-semibold text-[#172917] leading-snug tracking-wide">
+          <h3 className="text-[13px] font-semibold text-[#172917] leading-snug tracking-wide">
             {product.name}
           </h3>
 

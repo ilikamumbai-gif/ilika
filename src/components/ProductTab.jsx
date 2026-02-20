@@ -6,12 +6,13 @@ const ProductTab = ({ product }) => {
   const [reviewRating, setReviewRating] = useState("");
   const [reviewText, setReviewText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [expandedDesc, setExpandedDesc] = useState(false);
+  const [expandedReviews, setExpandedReviews] = useState({});
 
   const tabClass = (tab) =>
-    `pb-3 cursor-pointer text-sm sm:text-base font-medium ${
-      activeTab === tab
-        ? "border-b-2 border-black text-black"
-        : "text-gray-500 hover:text-black"
+    `pb-3 cursor-pointer text-sm sm:text-base font-medium ${activeTab === tab
+      ? "border-b-2 border-black text-black"
+      : "text-gray-500 hover:text-black"
     }`;
 
   /* ===============================
@@ -75,21 +76,32 @@ const ProductTab = ({ product }) => {
 
         {/* ================= DESCRIPTION ================= */}
         {activeTab === "description" && (
-  <>
-    <h3 className="text-lg sm:text-xl font-semibold heading-color">
-      Product Description
-    </h3>
+          <>
+            <h3 className="text-lg sm:text-xl font-semibold heading-color">
+              Product Description
+            </h3>
 
-    {product.description ? (
-      <div
-        className="prose max-w-none text-sm sm:text-base leading-relaxed"
-        dangerouslySetInnerHTML={{ __html: product.description }}
-      />
-    ) : (
-      <p>No description available.</p>
-    )}
-  </>
-)}
+            {product.description ? (
+              <div>
+                <div
+                  className={`prose max-w-none text-sm sm:text-base leading-relaxed transition-all duration-300 ${expandedDesc ? "" : "line-clamp-4"
+                    }`}
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
+
+                {/* READ MORE BUTTON */}
+                <button
+                  onClick={() => setExpandedDesc(!expandedDesc)}
+                  className="heading-color font-medium mt-2 text-sm hover:underline"
+                >
+                  {expandedDesc ? "Read Less ▲" : "Read More ▼"}
+                </button>
+              </div>
+            ) : (
+              <p>No description available.</p>
+            )}
+          </>
+        )}
 
 
         {/* ================= ADDITIONAL INFO ================= */}
@@ -98,24 +110,24 @@ const ProductTab = ({ product }) => {
 
 
             <div className="border p-4 rounded-lg sm:col-span-2">
-            
-              
-                <h4 className="text-base sm:text-lg font-semibold">
-               Aditional INformation
-                </h4>
-              {/* Highlights from Admin */}
-            {product.highlights?.length > 0 && (
-              <>
 
-                <ul className="list-disc pl-5 space-y-2">
-                  {product.highlights.map((point, index) => (
-                    <li key={index}>{point}</li>
-                  ))}
-                </ul>
-              </>
-            )}
+
+              <h4 className="text-base sm:text-lg font-semibold">
+                Aditional INformation
+              </h4>
+              {/* Highlights from Admin */}
+              {product.highlights?.length > 0 && (
+                <>
+
+                  <ul className="list-disc pl-5 space-y-2">
+                    {product.highlights.map((point, index) => (
+                      <li key={index}>{point}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
-            
+
 
           </div>
         )}
