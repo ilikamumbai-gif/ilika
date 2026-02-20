@@ -16,7 +16,7 @@ const TermsCondition = () => {
       <CartDrawer />
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
 
-          <Heading heading="Privacy Policy" />
+          <Heading heading="Our Terms And Conditions" />
 
           <div className="space-y-6 text-sm sm:text-base leading-relaxed content-text">
 

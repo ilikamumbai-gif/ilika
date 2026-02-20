@@ -325,27 +325,30 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               {filtered.length ? (
                 filtered.map((product) => (
                   <Link
-                    key={product.id}
-                    to={`/product/${product.id}`}
-                    state={product}
+                    key={product._id}
+                    to={`/product/${createSlug(product.name)}`}
+                    state={{ id: product._id }}
                     onClick={() => {
                       setQuery("");
-                      onClose?.();
+                      setTimeout(() => onClose?.(), 0);
                     }}
                     className="flex items-center gap-3 px-3 py-3 hover:bg-gray-50"
                   >
                     <img
-                      src={product.image}
+                      src={product.images?.[0] || product.imageUrl}
                       alt={product.name}
                       className="w-12 h-12 object-cover rounded-md border"
                     />
+
                     <div>
                       <p className="text-sm font-medium">
                         {highlightText(product.name)}
                       </p>
+
                       <p className="text-xs text-gray-500 capitalize">
-                        {product.category}
+                        {product.categoryName}
                       </p>
+
                       <p className="text-sm font-semibold text-[#1C371C]">
                         ₹{product.price}
                       </p>

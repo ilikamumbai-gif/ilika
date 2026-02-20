@@ -10,7 +10,8 @@ import Menifesto from "../components/Menifesto";
 import TestimonialList from "../components/TestimonialList";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
-import bannerImg from "../assets/Images/Banner 2.jpg";
+import bannerImg from "../../public/Images/Banner.jpg";
+import bannerImg2 from "../assets/Images/Banner 2.jpg";
 
 const Home = () => {
   return (
@@ -32,7 +33,7 @@ const Home = () => {
         <ProductList limit={8} />
 
         {/* SECOND PROMO BANNER */}
-       <Banner className="md:h-[40vh] mt-0 mb-10" src={bannerImg} />
+       <Banner className="md:h-[40vh] mt-0 mb-10" src={bannerImg2} />
 
         {/* TOP APPLIANCES (CATEGORY FILTERED) */}
         <Heading heading="TOP APPLIANCES" />
