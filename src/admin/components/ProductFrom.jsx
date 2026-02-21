@@ -14,7 +14,12 @@ const storage = getStorage(app);
 const RichTextEditor = ({ value, onChange }) => {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3] },
+        strike: false,
+        horizontalRule: false,
+        underline: false, 
+      }),
       Underline,
       Strike,
       HorizontalRule,
@@ -163,22 +168,22 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     try {
       let imageUrls = [];
 
-if (!form.hasVariants) {
-  for (const file of form.images) {
-    if (typeof file === "string") {
-      // Existing image URL → keep it
-      imageUrls.push(file);
-    } else {
-      // New file → upload it
-      const imageRef = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
-      await uploadBytes(imageRef, file);
-      const url = await getDownloadURL(imageRef);
-      imageUrls.push(url);
-    }
-  }
-}
+      if (!form.hasVariants) {
+        for (const file of form.images) {
+          if (typeof file === "string") {
+            // Existing image URL → keep it
+            imageUrls.push(file);
+          } else {
+            // New file → upload it
+            const imageRef = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
+            await uploadBytes(imageRef, file);
+            const url = await getDownloadURL(imageRef);
+            imageUrls.push(url);
+          }
+        }
+      }
 
-      
+
       let variantData = [];
 
       if (form.hasVariants) {
@@ -281,7 +286,7 @@ if (!form.hasVariants) {
         </div>
       )}
 
-      {form.variants.map((variant, index) => (
+      {form.variants?.map((variant, index) => (
 
         <div key={variant.id} className="border p-4 rounded space-y-3 bg-gray-50">
 
@@ -450,7 +455,7 @@ if (!form.hasVariants) {
 
       {/* CATEGORY */}
       <div className="grid grid-cols-2 gap-2 border p-3 rounded max-h-40 overflow-y-auto">
-        {categories.map(cat => (
+        {(categories || []).map(cat => (
           <label key={cat.id} className="flex gap-2 text-sm">
             <input type="checkbox" checked={form.categoryIds.includes(cat.id)} onChange={() => handleCategoryChange(cat.id)} />
             {cat.name}

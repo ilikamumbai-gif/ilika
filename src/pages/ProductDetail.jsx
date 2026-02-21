@@ -124,7 +124,20 @@ const ProductDetail = () => {
         id: productId,
       };
 
+    // 1️⃣ Existing add to cart logic
     addToCart(item);
+
+    /* ==============================
+       ✅ FACEBOOK PIXEL ADD TO CART
+    ============================== */
+    if (window.fbq) {
+      window.fbq("track", "AddToCart", {
+        content_ids: [productId],
+        content_name: product.name,
+        value: price,
+        currency: "INR",
+      });
+    }
   };
 
   const handleBuyNow = async () => {
@@ -178,7 +191,29 @@ const ProductDetail = () => {
     : product.images || [];
 
   const price = activeVariant ? activeVariant.price : product.price;
-  const mrp = activeVariant ? activeVariant.mrp : product.mrp;
+  const mrp = activeVariant ? activeVariant.mrp : product.mrp;/* ==============================
+   ✅ FACEBOOK PIXEL VIEW CONTENT
+============================== */
+useEffect(() => {
+  if (!product) return;
+
+  if (window.fbq) {
+    window.fbq("track", "ViewContent", {
+      content_ids: [productId],
+      content_name: product.name,
+      value: price,
+      currency: "INR",
+      content_type: "product",
+      contents: [
+        {
+          id: productId,
+          quantity: 1,
+          item_price: price,
+        },
+      ],
+    });
+  }
+}, [productId, product.name, price]);
 
   const discount = mrp ? Math.round(((mrp - price) / mrp) * 100) : 0;
 
@@ -189,7 +224,7 @@ const ProductDetail = () => {
 
 
   const rating = product.rating || 4;
-  
+
   /* ================= RELATED PRODUCTS ================= */
   const relatedProducts = products
     .filter(p =>

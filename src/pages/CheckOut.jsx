@@ -111,25 +111,35 @@ const Checkout = () => {
     0
   );
 
-  
+
   const shipping = 0;
-  const total = subtotal  + shipping;
+  const total = subtotal + shipping;
 
   /* ---------------- PLACE ORDER ---------------- */
 
   const handlePlaceOrder = async () => {
-    if (!currentUser) {
-      alert("Login required");
-      navigate("/login");
-      return;
-    }
+  if (!currentUser) {
+    alert("Login required");
+    navigate("/login");
+    return;
+  }
 
-    if (!selectedAddressId) {
-      alert("Please select address");
-      return;
-    }
+  if (!selectedAddressId) {
+    alert("Please select address");
+    return;
+  }
 
-    try {
+  /* ==============================
+     ✅ FACEBOOK PIXEL INITIATE CHECKOUT
+  ============================== */
+  if (window.fbq) {
+    window.fbq("track", "InitiateCheckout", {
+      value: total,
+      currency: "INR",
+    });
+  }
+
+  try {
       /* =========================
          COD FLOW (UNCHANGED)
       ========================= */
@@ -183,7 +193,7 @@ const Checkout = () => {
         description: "Order Payment",
         handler: async function (response) {
           try {
-            // 3️⃣ Verify payment
+            // 1️⃣ Verify payment
             const verifyRes = await fetch(
               `${API_URL}/api/payments/verify`,
               {
@@ -207,7 +217,20 @@ const Checkout = () => {
             const verifyData = await verifyRes.json();
             if (!verifyRes.ok) throw new Error(verifyData.error);
 
+            /* ==============================
+               ✅ FACEBOOK PIXEL PURCHASE EVENT
+            ============================== */
+            if (window.fbq) {
+              window.fbq("track", "Purchase", {
+                value: total,
+                currency: "INR",
+              });
+            }
+
+            // 2️⃣ Clear cart
             clearCart();
+
+            // 3️⃣ Redirect to success page
             navigate(`/order-success/${verifyData.orderId}`);
 
           } catch (err) {

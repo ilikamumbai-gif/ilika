@@ -6,6 +6,7 @@ import { OrderProvider } from "./admin/context/OrderContext";
 import { UserProvider } from "./admin/context/UserContext";
 import { ProductProvider } from "./admin/context/ProductContext";
 import { CategoryProvider } from "./admin/context/CategoryContext";
+import MetaPixelTracker from "./components/MetaPixelTracker";
 
 const App = () => {
   return (
@@ -14,14 +15,15 @@ const App = () => {
         <OrderProvider>
           <CartProvider>
             <CategoryProvider>
+              <ProductProvider>
+                <UserOrderProvider>
 
-            <ProductProvider>
+                  <MetaPixelTracker />
+                  <NavRoutes />
+                  <ScrollToTopButton />
 
-            <UserOrderProvider>
-              <NavRoutes />
-              <ScrollToTopButton />
-            </UserOrderProvider>
-            </ProductProvider>
+                </UserOrderProvider>
+              </ProductProvider>
             </CategoryProvider>
           </CartProvider>
         </OrderProvider>
