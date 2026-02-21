@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -91,21 +91,7 @@ const ProductDetail = () => {
   }, [product]);
 
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
 
-  if (!product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center primary-bg-color">
-        <p className="text-gray-600">Product not found</p>
-      </div>
-    );
-  }
 
   const handleAddToCart = () => {
     const item = activeVariant
@@ -184,37 +170,83 @@ const ProductDetail = () => {
   };
 
   /* ================= DERIVED DATA ================= */
-  const productId = product._id || product.id;
+  /* ================= SAFE DERIVED DATA ================= */
+  const productId = product?._id || product?.id || null;
 
   const images = activeVariant?.images?.length
     ? activeVariant.images
-    : product.images || [];
+    : product?.images || [];
 
-  const price = activeVariant ? activeVariant.price : product.price;
-  const mrp = activeVariant ? activeVariant.mrp : product.mrp;/* ==============================
-   ✅ FACEBOOK PIXEL VIEW CONTENT
-============================== */
-useEffect(() => {
-  if (!product) return;
+  const price = activeVariant?.price ?? product?.price ?? 0;
+  const mrp = activeVariant?.mrp ?? product?.mrp ?? 0;
 
-  if (window.fbq) {
-    window.fbq("track", "ViewContent", {
-      content_ids: [productId],
-      content_name: product.name,
-      value: price,
-      currency: "INR",
-      content_type: "product",
-      contents: [
-        {
-          id: productId,
-          quantity: 1,
-          item_price: price,
-        },
-      ],
-    });
+  /* ================= FACEBOOK PIXEL VIEW CONTENT ================= */
+  useEffect(() => {
+    if (!productId || !product) return;
+
+    if (window.fbq) {
+      window.fbq("track", "InitiateCheckout", {
+        content_ids: [productId],
+        content_name: product.name,
+        value: price,
+        currency: "INR",
+        contents: [
+          { id: productId, quantity: 1, item_price: price }
+        ],
+        content_type: "product",
+      });
+    }
+  }, [product, productId, price]);
+
+  /* ================= RELATED PRODUCTS ================= */
+const EXCLUDED_CATEGORY = "new"; // <-- change to your real id or slug
+
+const relatedProducts = useMemo(() => {
+  if (!product) return [];
+
+  // remove excluded category from current product
+  const baseCategories = (product.categoryIds || []).filter(
+    id => id !== EXCLUDED_CATEGORY
+  );
+
+  if (baseCategories.length === 0) return [];
+
+  return products
+    .filter(p => {
+      if (!p || p._id === productId) return false;
+      if (!p.categoryIds) return false;
+
+      // remove excluded category from compared product
+      const compareCategories = p.categoryIds.filter(
+        id => id !== EXCLUDED_CATEGORY
+      );
+
+      // check real category match
+      return compareCategories.some(id => baseCategories.includes(id));
+    })
+    .slice(0, 6);
+
+}, [products, product, productId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600 text-lg animate-pulse">
+          Loading product...
+        </p>
+      </div>
+    );
   }
-}, [productId, product.name, price]);
 
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600 text-lg">
+          Product not found
+        </p>
+      </div>
+    );
+  }
   const discount = mrp ? Math.round(((mrp - price) / mrp) * 100) : 0;
 
   const cartId = activeVariant
@@ -225,13 +257,7 @@ useEffect(() => {
 
   const rating = product.rating || 4;
 
-  /* ================= RELATED PRODUCTS ================= */
-  const relatedProducts = products
-    .filter(p =>
-      p._id !== productId &&
-      p.categoryName === product.categoryName
-    )
-    .slice(0, 6);
+
 
   return (
     <>
