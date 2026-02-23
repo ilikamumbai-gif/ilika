@@ -14,7 +14,7 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
       <div className="relative h-56 sm:h-72 w-full overflow-hidden bg-[#f3d6d6]">
 
         <img
-          src={product.image}
+          src={product.images}
           alt={product.name}
           className="
             absolute inset-0

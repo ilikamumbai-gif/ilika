@@ -26,25 +26,25 @@ const CreateCtm = () => {
 
   const cleanserCategory = findCategory("cleanser");
   const tonerCategory = findCategory("toner");
-  const moisturizerCategory = findCategory("moisturizer");
+  const moisturizerCategory = findCategory("moisture");
 
   /* ---------- FILTER PRODUCTS BY CATEGORY ---------- */
   const cleansers = cleanserCategory
     ? products.filter((p) =>
-        p.categoryIds?.includes(cleanserCategory.id)
-      )
+      p.categoryIds?.includes(cleanserCategory.id)
+    )
     : [];
 
   const toners = tonerCategory
     ? products.filter((p) =>
-        p.categoryIds?.includes(tonerCategory.id)
-      )
+      p.categoryIds?.includes(tonerCategory.id)
+    )
     : [];
 
   const moisturizers = moisturizerCategory
     ? products.filter((p) =>
-        p.categoryIds?.includes(moisturizerCategory.id)
-      )
+      p.categoryIds?.includes(moisturizerCategory.id)
+    )
     : [];
 
   /* ---------- SELECTED STATE ---------- */
@@ -67,17 +67,30 @@ const CreateCtm = () => {
       return;
 
     const comboProduct = {
-      id: `ctm-${selected.cleanser.id}-${selected.toner.id}-${selected.moisturizer.id}`,
+      _id: `ctm-${selected.cleanser._id}-${selected.toner._id}-${selected.moisturizer._id}`, // ✅ use _id
+      id: `ctm-${selected.cleanser._id}-${selected.toner._id}-${selected.moisturizer._id}`,  // keep for cart
       name: "CTM Skincare Kit",
-      image: selected.cleanser.images?.[0], // important fix
+      image: selected.cleanser.images?.[0],
       price: KIT_PRICE,
       quantity: 1,
       isCombo: true,
       comboType: "ctm",
+
+      categoryIds: [], // optional but safe
+
       comboItems: [
-        selected.cleanser,
-        selected.toner,
-        selected.moisturizer,
+        {
+          ...selected.cleanser,
+          image: selected.cleanser.images?.[0],
+        },
+        {
+          ...selected.toner,
+          image: selected.toner.images?.[0],
+        },
+        {
+          ...selected.moisturizer,
+          image: selected.moisturizer.images?.[0],
+        },
       ],
     };
 
@@ -190,12 +203,11 @@ const CreateCtm = () => {
                     !selected.moisturizer
                   }
                   className={`px-6 py-3 rounded-lg text-white font-medium whitespace-nowrap
-                    ${
-                      selected.cleanser &&
+                    ${selected.cleanser &&
                       selected.toner &&
                       selected.moisturizer
-                        ? "bg-black hover:bg-gray-900"
-                        : "bg-gray-400 cursor-not-allowed"
+                      ? "bg-black hover:bg-gray-900"
+                      : "bg-gray-400 cursor-not-allowed"
                     }`}
                 >
                   Add Kit To Bag

@@ -163,9 +163,6 @@ const UserDetail = () => {
                     </div>
 
 
-
-
-
                     <Link
                       to="/"
                       className="inline-block bg-black text-white px-6 py-2 rounded-md text-sm"
@@ -197,7 +194,7 @@ const UserDetail = () => {
               </div>
             </div>
             {/* ================= ORDERS ================= */}
-            <Heading heading="Your Order"/>
+            <Heading heading="Your Order" />
             <div className="space-y-4 ">
               {orders.map((order) => {
 
@@ -239,23 +236,38 @@ const UserDetail = () => {
                     </div>
 
                     {/* PRODUCTS PREVIEW */}
+                    {/* PRODUCTS PREVIEW */}
                     {order.items && (
                       <div className="flex items-center gap-3 overflow-x-auto pb-1">
 
-                        {order.items.slice(0, 4).map((item, i) => (
-                          <img
-                            key={i}
-                            src={item.image}
-                            alt={item.name}
-                            className="w-14 h-14 object-cover rounded-lg border"
-                          />
-                        ))}
+                        {order.items.map((item, i) => {
 
-                        {order.items.length > 4 && (
-                          <div className="w-14 h-14 flex items-center justify-center text-xs bg-gray-100 rounded-lg border">
-                            +{order.items.length - 4}
-                          </div>
-                        )}
+                          /* ===============================
+                             🟢 CTM / COMBO PRODUCT
+                          =============================== */
+                          if (item.isCombo && item.comboItems?.length) {
+                            return item.comboItems.slice(0, 4).map((sub, j) => (
+                              <img
+                                key={`${i}-${j}`}
+                                src={sub.image || sub.images?.[0]}
+                                alt={sub.name}
+                                className="w-14 h-14 object-cover rounded-lg border"
+                              />
+                            ));
+                          }
+
+                          /* ===============================
+                             🟢 NORMAL PRODUCT
+                          =============================== */
+                          return (
+                            <img
+                              key={i}
+                              src={item.image || item.images?.[0]}
+                              alt={item.name}
+                              className="w-14 h-14 object-cover rounded-lg border"
+                            />
+                          );
+                        })}
 
                       </div>
                     )}
@@ -264,7 +276,12 @@ const UserDetail = () => {
                     <div className="flex justify-between items-center">
 
                       <p className="text-xs text-gray-500">
-                        {order.items?.length || 1} item(s)
+                        {order.items.reduce((total, item) => {
+                          if (item.isCombo && item.comboItems?.length) {
+                            return total + item.comboItems.length;
+                          }
+                          return total + 1;
+                        }, 0)} item(s)
                       </p>
 
                       <div className="text-right">

@@ -67,7 +67,7 @@ const CtmCard = () => {
         image={Pro1}
         title="1. 🌿 Gentle Cleanser"
         subtitle="Prevent Signs of Aging | 100 ML
-A mild yet effective cleanser designed to gently remove dirt, excess oil, and impurities without stripping the skin’s natural moisture."
+          A mild yet effective cleanser designed to gently remove dirt, excess oil, and impurities without stripping the skin’s natural moisture."
         benefits={[
           "Deeply cleanses while maintaining skin hydration",
           "Helps prevent early signs of aging",

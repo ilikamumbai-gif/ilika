@@ -350,7 +350,7 @@ const handlePlaceOrder = async () => {
             {cartItems.map(item => (
               <div key={item.id} className="flex gap-3 border-b pb-3">
                 <img
-                  src={item.image || item.imageUrl}
+                  src={item.images || item.imageUrl}
                   className="w-16 h-16 rounded-md object-cover"
                 />
                 <div className="flex-1 text-sm">

@@ -244,18 +244,52 @@ app.post("/api/orders", async (req, res) => {
     const validatedItems = [];
 
     for (const item of items) {
-      const productDoc = await db.collection("products").doc(item.id).get();
-      const productData = productDoc.data();
       const quantity = item.quantity || 1;
+
+      /* ===============================
+         🟢 HANDLE CTM / COMBO PRODUCTS
+      =============================== */
+      if (item.isCombo) {
+        totalAmount += Number(item.price) * quantity;
+
+        if (item.isCombo) {
+          validatedItems.push({
+            productId: item.id,
+            name: item.name,
+            price: item.price,
+            quantity,
+            isCombo: true,
+            comboItems: item.comboItems || [],
+          });
+          continue;
+        }
+
+        continue;
+      }
+
+      /* ===============================
+         🟢 NORMAL PRODUCTS
+      =============================== */
+
+      const productDoc = await db.collection("products").doc(item.id).get();
+
+      if (!productDoc.exists) continue;
+
+      const productData = productDoc.data();
+
       totalAmount += Number(productData.price) * quantity;
 
-      validatedItems.push({
-        productId: item.id,
-        name: productData.name,
-        price: productData.price,
-        quantity,
-        source
-      });
+      if (item.isCombo) {
+        validatedItems.push({
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity,
+          isCombo: true,
+          comboItems: item.comboItems || [],
+        });
+        continue;
+      }
     }
 
     const docRef = await db.collection("orders").add({
@@ -266,7 +300,7 @@ app.post("/api/orders", async (req, res) => {
       shippingAddress: addressDoc.data(),
       status: "Placed",
       paymentStatus: "Unpaid",
-     source: detectSource(source),  // ⭐⭐⭐ IMPORTANT
+      source: detectSource(source),  // ⭐⭐⭐ IMPORTANT
       createdAt: new Date(),
     });
 
@@ -390,18 +424,41 @@ app.post("/api/payments/verify", async (req, res) => {
     const validatedItems = [];
 
     for (const item of orderData.items) {
-      const productDoc = await db.collection("products").doc(item.id).get();
-      const productData = productDoc.data();
       const quantity = item.quantity || 1;
+
+      if (item.isCombo) {
+        totalAmount += Number(item.price) * quantity;
+
+        validatedItems.push({
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity,
+          isCombo: true,
+          comboItems: item.comboItems || [],
+        });
+
+        continue;
+      }
+
+      const productDoc = await db.collection("products").doc(item.id).get();
+      if (!productDoc.exists) continue;
+
+      const productData = productDoc.data();
 
       totalAmount += Number(productData.price) * quantity;
 
-      validatedItems.push({
-        productId: item.id,
-        name: productData.name,
-        price: productData.price,
-        quantity,
-      });
+      if (item.isCombo) {
+        validatedItems.push({
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity,
+          isCombo: true,
+          comboItems: item.comboItems || [],
+        });
+        continue;
+      }
     }
 
     const docRef = await db.collection("orders").add({

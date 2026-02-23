@@ -54,7 +54,7 @@ const CartDrawer = () => {
               <div key={item.id} className="flex gap-4 border-b pb-4">
 
                 <img
-                  src={item.image}
+                  src={item.images}
                   alt={item.name}
                   className="w-16 h-16 object-cover rounded"
                 />

@@ -82,12 +82,3 @@ Tightens pores, refreshes the skin, and helps balance the skin’s natural pH le
 
 Locks in hydration, nourishes the skin, and protects the skin barrier for long-lasting softness and glow.
 
-Agar chaho to main isko
-
-Luxury tone,
-
-Dermatologist-style, ya
-
-Short e-commerce bullet version
-
-mein bhi convert kar deta hoon 😊

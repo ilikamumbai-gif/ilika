@@ -6,6 +6,7 @@ export const UserProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
+    
     const fetchUsers = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`);
