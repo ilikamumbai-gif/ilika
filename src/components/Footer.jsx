@@ -91,7 +91,7 @@ const Footer = () => {
                 <Facebook className="w-5 h-5 hover:scale-110 transition" />
               </a>
 
-              <a href="https://youtube.com" target="_blank">
+              <a href="https://whatsApp.com" target="_blank">
                 <Youtube className="w-5 h-5 hover:scale-110 transition" />
               </a>
 
@@ -108,7 +108,7 @@ const Footer = () => {
           {/* MARKETPLACES */}
           <div className="space-y-4">
             <h4 className="heading-color font-semibold text-lg">
-              Also Available On
+              Also Available On 
             </h4>
 
             <div className="flex justify-center md:justify-start gap-6 items-center">
@@ -127,7 +127,7 @@ const Footer = () => {
                   className="h-7 hover:scale-110 transition"
                 />
               </a>
-              <a href="https://www.flipkart.com" target="_blank">
+              <a href="https://www.meesho.com" target="_blank">
               
                 <img
                   src={meesho}
