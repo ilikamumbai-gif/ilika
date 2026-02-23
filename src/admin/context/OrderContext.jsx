@@ -35,6 +35,7 @@ export const OrderProvider = ({ children }) => {
         date: parseDate(o.createdAt),
         items: o.items || [],
         shippingAddress: o.shippingAddress || {},
+        source: o.source 
       }));
 
       setOrders(formatted);

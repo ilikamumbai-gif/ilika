@@ -11,7 +11,6 @@ import Blog from "../pages/Blog";
 import UserDetail from "../pages/UserDetail";
 import BlogDetail from "../pages/BlogDetail";
 import Contact from "../pages/Contact";
-import About from "../pages/About";
 import Privacy from "../pages/Privacy";
 import ProductDetail from "../pages/ProductDetail";
 import Return from "../pages/Return";
@@ -41,6 +40,7 @@ import FaceGrooming from "../pages/FaceGrooming";
 import RollerAndGuasha from "../pages/RollerAndGuasha";
 import HairRemoval from "../pages/HairRemoval";
 import ShopAll from "../pages/ShopAll";
+import About from "../pages/About";
 
 
 

@@ -71,7 +71,7 @@ const CartDrawer = () => {
                         <div key={i} className="flex items-center gap-2">
 
                           <img
-                            src={sub.image}
+                            src={sub.image[0]}
                             alt={sub.name}
                             className="w-10 h-10 rounded object-cover border"
                           />
@@ -143,8 +143,6 @@ const CartDrawer = () => {
               <span className="text-gray-600">Subtotal</span>
               <span>₹{subtotal}</span>
             </div>
-
-            
 
             <div className="flex justify-between">
               <span >

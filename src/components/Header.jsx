@@ -10,7 +10,7 @@ const Header = () => {
   const navigate = useNavigate();
    const [open, setOpen] = useState(false);
   return (
-   <header className="w-full sticky top-0 z-50 bg-white/30 backdrop-blur-md">
+   <header className="w-full sticky top-0 z-50 bg-[#e8adad60]/20 backdrop-blur-md">
 
       <div className="max-w-8xl  flex items-center justify-between px-4  py-3">
 

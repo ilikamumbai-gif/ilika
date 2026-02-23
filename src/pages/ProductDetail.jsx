@@ -91,8 +91,6 @@ const ProductDetail = () => {
   }, [product]);
 
 
-
-
   const handleAddToCart = () => {
     const item = activeVariant
       ? {
@@ -199,34 +197,34 @@ const ProductDetail = () => {
   }, [product, productId, price]);
 
   /* ================= RELATED PRODUCTS ================= */
-const EXCLUDED_CATEGORY = "new"; // <-- change to your real id or slug
+  const EXCLUDED_CATEGORY = "new"; // <-- change to your real id or slug
 
-const relatedProducts = useMemo(() => {
-  if (!product) return [];
+  const relatedProducts = useMemo(() => {
+    if (!product) return [];
 
-  // remove excluded category from current product
-  const baseCategories = (product.categoryIds || []).filter(
-    id => id !== EXCLUDED_CATEGORY
-  );
+    // remove excluded category from current product
+    const baseCategories = (product.categoryIds || []).filter(
+      id => id !== EXCLUDED_CATEGORY
+    );
 
-  if (baseCategories.length === 0) return [];
+    if (baseCategories.length === 0) return [];
 
-  return products
-    .filter(p => {
-      if (!p || p._id === productId) return false;
-      if (!p.categoryIds) return false;
+    return products
+      .filter(p => {
+        if (!p || p._id === productId) return false;
+        if (!p.categoryIds) return false;
 
-      // remove excluded category from compared product
-      const compareCategories = p.categoryIds.filter(
-        id => id !== EXCLUDED_CATEGORY
-      );
+        // remove excluded category from compared product
+        const compareCategories = p.categoryIds.filter(
+          id => id !== EXCLUDED_CATEGORY
+        );
 
-      // check real category match
-      return compareCategories.some(id => baseCategories.includes(id));
-    })
-    .slice(0, 6);
+        // check real category match
+        return compareCategories.some(id => baseCategories.includes(id));
+      })
+      .slice(0, 6);
 
-}, [products, product, productId]);
+  }, [products, product, productId]);
 
   if (loading) {
     return (
@@ -337,7 +335,7 @@ const relatedProducts = useMemo(() => {
 
                 {/* TAGLINE */}
                 <p className="text-sm text-gray-600 mt-1">
-                  {product.additionalInfo || "Deep nourishment & long lasting hydration"}
+                  {product.shortInfo || "Deep nourishment & long lasting hydration"}
                 </p></div>
               {/* VARIANTS */}
               {product.hasVariants && (

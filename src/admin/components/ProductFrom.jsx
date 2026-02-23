@@ -18,7 +18,7 @@ const RichTextEditor = ({ value, onChange }) => {
         heading: { levels: [1, 2, 3] },
         strike: false,
         horizontalRule: false,
-        underline: false, 
+        underline: false,
       }),
       Underline,
       Strike,
@@ -45,7 +45,7 @@ const RichTextEditor = ({ value, onChange }) => {
         <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={btn}><s>S</s></button>
 
         <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btn}>• List</button>
-        <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btn}>1. List</button>
+        <button typez="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btn}>1. List</button>
 
         <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btn}>Quote</button>
         <button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} className={btn}>—</button>
@@ -66,10 +66,11 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
   const [form, setForm] = useState({
     name: initialData.name || "",
+    shortInfo: initialData.shortInfo || "",   // ✅ NEW
     price: initialData.price || "",
     mrp: initialData.mrp || "",
-    hasVariants: initialData.hasVariants || false,   // NEW
-    variants: initialData.variants || [],             // NEW
+    hasVariants: initialData.hasVariants || false,
+    variants: initialData.variants || [],
     categoryIds: initialData.categoryIds || [],
     description: initialData.description || "",
     additionalInfo: initialData.additionalInfo || "",
@@ -82,6 +83,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
     setForm({
       name: initialData.name || "",
+      shortInfo: initialData.shortInfo || "",   // ✅ NEW
       price: initialData.price || "",
       mrp: initialData.mrp || "",
       hasVariants: initialData.hasVariants || false,
@@ -91,7 +93,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       additionalInfo: initialData.additionalInfo || "",
       tagline: initialData.tagline || "",
       points: initialData.benefits ? initialData.benefits.join(", ") : "",
-      images: initialData.images || [],// important (do not preload here)
+      images: initialData.images || [],
     });
 
     setPreviewImages(initialData.images || []);
@@ -168,18 +170,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     try {
       let imageUrls = [];
 
-      if (!form.hasVariants) {
-        for (const file of form.images) {
-          if (typeof file === "string") {
-            // Existing image URL → keep it
-            imageUrls.push(file);
-          } else {
-            // New file → upload it
-            const imageRef = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
-            await uploadBytes(imageRef, file);
-            const url = await getDownloadURL(imageRef);
-            imageUrls.push(url);
-          }
+      for (const file of form.images) {
+        if (typeof file === "string") {
+          imageUrls.push(file);
+        } else {
+          const imageRef = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
+          await uploadBytes(imageRef, file);
+          const url = await getDownloadURL(imageRef);
+          imageUrls.push(url);
         }
       }
 
@@ -218,6 +216,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
       await onSubmit({
         name: form.name,
+        shortInfo: form.shortInfo,   // ✅ NEW
         hasVariants: form.hasVariants,
         price: form.hasVariants ? null : Number(form.price),
         mrp: form.hasVariants ? null : Number(form.mrp),
@@ -262,6 +261,13 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         onChange={e => setForm({ ...form, name: e.target.value })}
         className="w-full border p-2 rounded"
         required
+      />
+      <textarea
+        placeholder="Short Info"
+        value={form.shortInfo}
+        onChange={e => setForm({ ...form, shortInfo: e.target.value })}
+        className="w-full border p-2 rounded"
+        rows={2}
       />
       {/* NORMAL PRODUCT PRICE (ONLY WHEN NO VARIANTS) */}
       {!form.hasVariants && (
@@ -329,8 +335,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
           {/* MULTIPLE IMAGE UPLOAD */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Variant Images</label>
-
+            <label className="text-sm font-medium">Variant Specific Images (Optional)</label>
             <input
               type="file"
               multiple
@@ -466,7 +471,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       {/* IMAGE UPLOAD */}
       <div className="border-2 border-dashed p-5 rounded-xl text-center cursor-pointer" onClick={() => fileInputRef.current.click()}>
         <input ref={fileInputRef} type="file" multiple accept="image/*" hidden onChange={(e) => handleImageSelect(e.target.files)} />
-        Upload Images
+        <h3 className="font-semibold">Common Product Images (Used for listing & default view)</h3>
       </div>
 
       {/* PREVIEW */}

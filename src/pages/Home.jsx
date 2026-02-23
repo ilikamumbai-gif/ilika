@@ -1,7 +1,6 @@
 import React from "react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
-import Banner from "../components/Banner";
 import CategoryNav from "../components/CategoryNav";
 import Heading from "../components/Heading";
 import ProductList from "../components/ProductList";
@@ -10,6 +9,7 @@ import Menifesto from "../components/Menifesto";
 import TestimonialList from "../components/TestimonialList";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import Banner from "../components/Banner";
 import bannerImg from "../../public/Images/Banner.jpg";
 import bannerImg2 from "../assets/Images/Banner 2.jpg";
 
@@ -23,7 +23,7 @@ const Home = () => {
         <CartDrawer />
 
         {/* HERO SECTION */}
-        <Banner className="md:h-[95vh] -mt-5" src={bannerImg} />
+        <Banner  className="md:h-[95vh] -mt-5" src={bannerImg} />
 
         {/* CATEGORY NAVIGATION */}
         <CategoryNav categories={categoriesData} />

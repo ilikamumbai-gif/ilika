@@ -8,7 +8,7 @@ import Footer from '../components/Footer'
 import Heading from '../components/Heading'
 import CartDrawer from '../components/CartDrawer'
 
-const RollerAndGuasha = () => {
+const Skin = () => {
   const { categories } = useCategories();
 
  const hairCategory = categories.find(
@@ -44,4 +44,4 @@ const RollerAndGuasha = () => {
   )
 }
 
-export default RollerAndGuasha
+export default Skin

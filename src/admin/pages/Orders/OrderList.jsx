@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import AdminTable from "../../components/AdminTable";
 import { useOrders } from "../../context/OrderContext";
+
 const getStatusStyle = (status) => {
   switch (status) {
     case "Placed":
@@ -22,12 +23,33 @@ const getStatusStyle = (status) => {
 
 const OrderList = () => {
   const navigate = useNavigate();
-  const { orders, loading, updateOrderStatus  } = useOrders();
+  const { orders, loading, updateOrderStatus } = useOrders();
 
   const handleStatusChange = (id, status) => {
     updateOrderStatus(id, status);
   };
+const normalizeSource = (src) => {
+  if (!src) return "WEBSITE";
 
+  const s = src.toLowerCase();
+
+  if (
+    s.includes("meta") ||
+    s.includes("facebook") ||
+    s.includes("instagram") ||
+    s.includes("fbclid")
+  )
+    return "META ADS";
+
+  if (
+    s.includes("google") ||
+    s.includes("gclid") ||
+    s.includes("search")
+  )
+    return "GOOGLE ADS";
+
+  return "WEBSITE";
+};
   const columns = [
     {
       label: "Order ID",
@@ -61,6 +83,26 @@ const OrderList = () => {
         </span>
       ),
     },
+  {
+  label: "Source",
+  key: "source",
+  render: (row) => {
+    const src = normalizeSource(row?.source);
+
+    return (
+      <span
+        className={`text-xs px-2 py-1 rounded-full font-medium
+        ${src === "META ADS"
+            ? "bg-blue-100 text-blue-700"
+            : src === "GOOGLE ADS"
+              ? "bg-green-100 text-green-700"
+              : "bg-gray-100 text-gray-700"}`}
+      >
+        {src}
+      </span>
+    );
+  }
+},
 
     {
       label: "Total",
@@ -73,11 +115,11 @@ const OrderList = () => {
       label: "Status",
       key: "status",
       render: (row) => (
-      <select
-  value={row?.status || "Placed"}
-  onChange={(e) => handleStatusChange(row.id, e.target.value)}
-  className={`border rounded-md text-xs px-2 py-1 font-medium focus:outline-none ${getStatusStyle(row?.status || "Placed")}`}
->
+        <select
+          value={row?.status || "Placed"}
+          onChange={(e) => handleStatusChange(row.id, e.target.value)}
+          className={`border rounded-md text-xs px-2 py-1 font-medium focus:outline-none ${getStatusStyle(row?.status || "Placed")}`}
+        >
 
           <option value="Placed">Placed</option>
           <option value="Shipped">Shipped</option>

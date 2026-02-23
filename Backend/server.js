@@ -24,6 +24,20 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ];
 
+const detectSource = (source) => {
+  if (!source) return "WEBSITE";
+
+  const s = source.toLowerCase();
+
+  if (s.includes("meta") || s.includes("facebook") || s.includes("instagram"))
+    return "META ADS";
+
+  if (s.includes("google") || s.includes("gclid"))
+    return "GOOGLE ADS";
+
+  return s.toUpperCase();
+};
+
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -220,7 +234,7 @@ app.post("/api/payments/create-order", async (req, res) => {
 /* ============================== ORDERS ============================== */
 app.post("/api/orders", async (req, res) => {
   try {
-    const { userId, userEmail, items, shippingAddressId } = req.body;
+    const { userId, userEmail, items, shippingAddressId, source } = req.body;
     if (!userId || !items?.length) return res.status(400).json({ error: "Invalid order data" });
 
     const addressDoc = await db.collection("users").doc(userId).collection("addresses").doc(shippingAddressId).get();
@@ -240,6 +254,7 @@ app.post("/api/orders", async (req, res) => {
         name: productData.name,
         price: productData.price,
         quantity,
+        source
       });
     }
 
@@ -251,6 +266,7 @@ app.post("/api/orders", async (req, res) => {
       shippingAddress: addressDoc.data(),
       status: "Placed",
       paymentStatus: "Unpaid",
+     source: detectSource(source),  // ⭐⭐⭐ IMPORTANT
       createdAt: new Date(),
     });
 
@@ -345,14 +361,12 @@ app.post("/api/payments/verify", async (req, res) => {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      orderId
+      orderData
     } = req.body;
 
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ success: false, message: "Invalid payment data" });
-    }
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature)
+      return res.status(400).json({ error: "Invalid payment data" });
 
-    // create signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSignature = crypto
@@ -360,33 +374,55 @@ app.post("/api/payments/verify", async (req, res) => {
       .update(body.toString())
       .digest("hex");
 
-    // verify
-    if (expectedSignature === razorpay_signature) {
+    if (expectedSignature !== razorpay_signature)
+      return res.status(400).json({ error: "Invalid signature" });
 
-      // update order payment status in firestore
-      if (orderId) {
-        await db.collection("orders").doc(orderId).update({
-          paymentStatus: "Paid",
-          razorpay_payment_id,
-          paidAt: new Date(),
-        });
-      }
+    /* ---------- CREATE ORDER AFTER PAYMENT ---------- */
 
-      return res.json({
-        success: true,
-        message: "Payment verified successfully"
-      });
+    const addressDoc = await db
+      .collection("users")
+      .doc(orderData.userId)
+      .collection("addresses")
+      .doc(orderData.shippingAddressId)
+      .get();
 
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid signature"
+    let totalAmount = 0;
+    const validatedItems = [];
+
+    for (const item of orderData.items) {
+      const productDoc = await db.collection("products").doc(item.id).get();
+      const productData = productDoc.data();
+      const quantity = item.quantity || 1;
+
+      totalAmount += Number(productData.price) * quantity;
+
+      validatedItems.push({
+        productId: item.id,
+        name: productData.name,
+        price: productData.price,
+        quantity,
       });
     }
 
+    const docRef = await db.collection("orders").add({
+      userId: orderData.userId,
+      userEmail: orderData.userEmail,
+      items: validatedItems,
+      totalAmount,
+      shippingAddress: addressDoc.data(),
+      status: "Placed",
+      paymentStatus: "Paid",
+      source: orderData.source || "WEBSITE",   // ⭐⭐⭐ IMPORTANT
+      razorpay_payment_id,
+      paidAt: new Date(),
+      createdAt: new Date(),
+    });
+
+    res.json({ success: true, orderId: docRef.id });
+
   } catch (error) {
-    console.error("Verification error:", error);
-    res.status(500).json({ success: false, message: "Payment verification failed" });
+    console.error(error);
+    res.status(500).json({ error: "Payment verification failed" });
   }
 });
 

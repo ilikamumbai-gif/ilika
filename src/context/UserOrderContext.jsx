@@ -40,16 +40,19 @@ export const UserOrderProvider = ({ children }) => {
 
     const totals = calculateTotals(cartItems);
 
-    const newOrder = {
-      id: generateOrderId(),
-      userId: currentUser.uid,        // ⭐ CRITICAL
-      userEmail: currentUser.email,   // ⭐ useful for admin
-      date: new Date().toLocaleString(),
-      status: "Pending",
-      address,
-      items: cartItems,
-      ...totals,
-    };
+  const source = localStorage.getItem("traffic_source") || "WEBSITE";
+
+const newOrder = {
+  id: generateOrderId(),
+  userId: currentUser.uid,
+  userEmail: currentUser.email,
+  date: new Date().toLocaleString(),
+  status: "Pending",
+  address,
+  items: cartItems,
+  source,              // ⭐⭐⭐ ADDED
+  ...totals,
+};
 
     // save in user side
     setOrders(prev => [newOrder, ...prev]);

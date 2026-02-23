@@ -117,7 +117,7 @@ const Checkout = () => {
 
   /* ---------------- PLACE ORDER ---------------- */
 
-  const handlePlaceOrder = async () => {
+const handlePlaceOrder = async () => {
   if (!currentUser) {
     alert("Login required");
     navigate("/login");
@@ -129,9 +129,9 @@ const Checkout = () => {
     return;
   }
 
-  /* ==============================
-     ✅ FACEBOOK PIXEL INITIATE CHECKOUT
-  ============================== */
+  // ⭐⭐⭐ MOVE HERE (VERY IMPORTANT)
+  const source = localStorage.getItem("traffic_source") || "WEBSITE";
+
   if (window.fbq) {
     window.fbq("track", "InitiateCheckout", {
       value: total,
@@ -155,6 +155,7 @@ const Checkout = () => {
             totalAmount: total,
             shippingAddressId: selectedAddressId,
             paymentMethod: "COD",
+            source: source
           }),
         });
 
@@ -209,6 +210,7 @@ const Checkout = () => {
                     items: cartItems,
                     totalAmount: total,
                     shippingAddressId: selectedAddressId,
+                    source: source
                   },
                 }),
               }
