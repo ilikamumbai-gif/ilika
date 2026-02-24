@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>
       <ProductProvider>
-        <ScrollToTop/>
+        <ScrollToTop />
         <App />
       </ProductProvider>
     </AuthProvider>

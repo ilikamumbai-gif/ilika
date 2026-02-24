@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import { useAuth } from "./context/AuthContext";
+import LoginPopup from "./components/LoginPopup";
+
 import NavRoutes from "./Routes/NavRoutes";
 import { captureTrafficSource } from "./utils/tracking";
 import { CartProvider } from "./context/CartProvider";
@@ -9,16 +13,16 @@ import { ProductProvider } from "./admin/context/ProductContext";
 import { CategoryProvider } from "./admin/context/CategoryContext";
 import MetaPixelTracker from "./components/MetaPixelTracker";
 
-import { useEffect, useState } from "react";
-import { useAuth } from "./context/AuthContext";
-import LoginPopup from "./components/LoginPopup";
-
 const App = () => {
   const { currentUser } = useAuth();
   const [showLoginPopup, setShowLoginPopup] = useState(false);
 
-  captureTrafficSource();
+  /* ✅ Capture traffic only once */
+  useEffect(() => {
+    captureTrafficSource();
+  }, []);
 
+  /* ✅ Login popup logic */
   useEffect(() => {
     if (currentUser) return;
 
@@ -27,13 +31,14 @@ const App = () => {
     const timer = setTimeout(() => {
       setShowLoginPopup(true);
       sessionStorage.setItem("loginPopupShown", "true");
-    }, 7000); // 7 seconds delay
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, [currentUser]);
 
   return (
     <div className="min-h-screen flex flex-col">
+
       <UserProvider>
         <OrderProvider>
           <CartProvider>
@@ -55,6 +60,7 @@ const App = () => {
           </CartProvider>
         </OrderProvider>
       </UserProvider>
+
     </div>
   );
 };
