@@ -48,6 +48,7 @@ const App = () => {
                   <MetaPixelTracker />
                   <NavRoutes />
                   <ScrollToTopButton />
+
                 </UserOrderProvider>
               </ProductProvider>
             </CategoryProvider>
