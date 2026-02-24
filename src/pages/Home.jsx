@@ -12,10 +12,47 @@ import CartDrawer from "../components/CartDrawer";
 import Banner from "../components/Banner";
 import bannerImg from "../../public/Images/Banner.jpg";
 import bannerImg2 from "../assets/Images/Banner 2.jpg";
+import HoliSplash from "../components/HoliSplash";
+import { useCategories } from "../admin/context/CategoryContext";
 
 const Home = () => {
+
+  const { categories } = useCategories();
+
+  const skincareCategory = categories.find(
+    (c) =>
+      c.name
+        .toLowerCase()
+        .replace(/\s+/g, "") === "skincare"
+  );
+
+
+  const hairstylingCategory = categories.find(
+    (c) =>
+      c.name
+        .toLowerCase()
+        .replace(/\s+/g, "") === "hairstyling"
+  );
+
+  const newCategory = categories.find(
+    (c) =>
+      c.name
+        .toLowerCase()
+        .replace(/\s+/g, "") === "new"
+  );
+
+  const haircareCategory = categories.find(
+    (c) =>
+      c.name
+        .toLowerCase()
+        .replace(/\s+/g, "") === "haircare"
+  );
+
+
   return (
     <>
+   
+
       <MiniDivider />
 
       <div className="relative primary-bg-color">
@@ -23,21 +60,66 @@ const Home = () => {
         <CartDrawer />
 
         {/* HERO SECTION */}
-        <Banner  className="md:h-[95vh] -mt-5" src={bannerImg} />
+        <Banner className="md:h-[95vh] -mt-5" src={bannerImg} />
 
         {/* CATEGORY NAVIGATION */}
         <CategoryNav categories={categoriesData} />
 
         {/* FEATURED PRODUCTS */}
         <Heading heading="HAVE A LOOK !!" />
-        <ProductList limit={8} />
+        {newCategory ? (
+          <ProductList categoryId={newCategory.id} limit={4} />
+        ) : (
+          <p className="text-sm text-gray-500">Loading products...</p>
+        )}
+
+
 
         {/* SECOND PROMO BANNER */}
-       <Banner className="md:h-[40vh] mt-0 mb-10" src={bannerImg2} />
+        <Banner className="md:h-[40vh] mt-0 mb-10" src={bannerImg2} />
 
-        {/* TOP APPLIANCES (CATEGORY FILTERED) */}
+        <Heading heading="OUR SKIN CARE" />
+
+        {skincareCategory ? (
+          <ProductList categoryId={skincareCategory.id} limit={4} />
+        ) : (
+          <p className="text-sm text-gray-500">Loading products...</p>
+        )}
+
+
+
+
+
+
+        <Banner className="md:h-[90vh] mt-0 mb-10" src={bannerImg} />
+
         <Heading heading="TOP APPLIANCES" />
-        <ProductList limit={8} />
+
+        {hairstylingCategory ? (
+          <ProductList categoryId={hairstylingCategory.id} limit={4} />
+        ) : (
+          <p className="text-sm text-gray-500">Loading products...</p>
+        )}
+
+
+
+
+
+        <Banner className="md:h-[40vh] mt-0 mb-10" src={bannerImg2} />
+
+        <Heading heading="OUR TOP HAIR CARE" />
+
+        {haircareCategory ? (
+          <ProductList categoryId={haircareCategory.id} limit={4} />
+        ) : (
+          <p className="text-sm text-gray-500">Loading products...</p>
+        )}
+
+
+
+
+
+
 
         {/* SHOP BY INGREDIENTS
         <Heading heading="TOP CATEGORY" />

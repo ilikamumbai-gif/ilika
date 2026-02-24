@@ -119,48 +119,49 @@ const ProductCard = ({ product }) => {
         <div className="px-4 pb-4">
           <button
             onClick={(e) => {
-  e.preventDefault();
+              e.preventDefault();
 
-  const item = defaultVariant
-    ? {
-        ...product,
-        id: cartId,
-        baseProductId: productId,
-        variantId: defaultVariant.id,
-        variantLabel: defaultVariant.label,
-        price: defaultVariant.price,
-        mrp: defaultVariant.mrp,
-        image: defaultVariant.images?.[0],
-      }
-    : {
-        ...product,
-        id: productId,
-      };
+              const item = defaultVariant
+                ? {
+                  ...product,
+                  id: cartId,
+                  baseProductId: productId,
+                  variantId: defaultVariant.id,
+                  variantLabel: defaultVariant.label,
+                  price: defaultVariant.price,
+                  mrp: defaultVariant.mrp,
+                  image: defaultVariant.images?.[0],
+                }
+                : {
+                  ...product,
+                  id: productId,
+                };
 
-  // 1️⃣ Existing cart logic (UNCHANGED)
-  addToCart(item);
+              // 1️⃣ Existing cart logic (UNCHANGED)
+              addToCart(item);
 
-  /* ==============================
-     ✅ FACEBOOK PIXEL ADD TO CART
-  ============================== */
-  if (window.fbq) {
-    window.fbq("track", "AddToCart", {
-      content_ids: [productId],
-      content_name: product.name,
-      value: displayPrice,
-      currency: "INR",
-      content_type: "product",
-      contents: [
-        {
-          id: productId,
-          quantity: 1,
-          item_price: displayPrice,
-        },
-      ],
-    });
-  }
-}}
+              /* ==============================
+                 ✅ FACEBOOK PIXEL ADD TO CART
+              ============================== */
+              if (window.fbq) {
+                window.fbq("track", "AddToCart", {
+                  content_ids: [productId],
+                  content_name: product.name,
+                  value: displayPrice,
+                  currency: "INR",
+                  content_type: "product",
+                  contents: [
+                    {
+                      id: productId,
+                      quantity: 1,
+                      item_price: displayPrice,
+                    },
+                  ],
+                });
+              }
+            }}
             className="w-full bg-[#E7A6A1] text-black text-[13px] font-clean tracking-widest py-2.5 rounded-lg"
+            // className="w-full bg-[#E7A6A1] text-black text-[13px] font-clean tracking-widest py-2.5 rounded-lg"
           >
             Add To Cart
           </button>

@@ -3,8 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
+import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { app } from "../firebase/firebaseConfig";
+
 
 const Signup = () => {
+  const auth = getAuth(app);
   const navigate = useNavigate();
   const { signInWithGoogle } = useAuth();
 
@@ -12,6 +16,60 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [confirmationResult, setConfirmationResult] = useState(null);
+  const [otpVerified, setOtpVerified] = useState(false);
+
+
+  const setupRecaptcha = () => {
+    window.recaptchaVerifier = new RecaptchaVerifier(
+      "recaptcha-container",
+      {
+        size: "invisible",
+      },
+      auth
+    );
+  };
+  const sendOtp = async () => {
+    if (!phone) {
+      alert("Phone number is required");
+      return;
+    }
+
+    setupRecaptcha();
+
+    const appVerifier = window.recaptchaVerifier;
+
+    try {
+      const result = await signInWithPhoneNumber(
+        auth,
+        `+91${phone}`,
+        appVerifier
+      );
+      setConfirmationResult(result);
+      alert("OTP Sent Successfully");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to send OTP");
+    }
+  };
+  const verifyOtp = async () => {
+    if (!otp) {
+      alert("Enter OTP");
+      return;
+    }
+
+    try {
+      await confirmationResult.confirm(otp);
+      setOtpVerified(true);
+      alert("Phone Verified Successfully");
+    } catch (error) {
+      alert("Invalid OTP");
+    }
+  };
 
   const saveUserToBackend = async (user) => {
     await fetch(`${import.meta.env.VITE_API_URL}/api/users/login`, {
@@ -27,6 +85,10 @@ const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    if (!otpVerified) {
+      alert("Please verify phone number first");
+      return;
+    }
     setError("");
 
     try {
@@ -88,7 +150,30 @@ const Signup = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <input
+            type="text"
+            placeholder="Phone Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+          />
 
+          <button type="button" onClick={sendOtp}>
+            Send OTP
+          </button>
+
+          <input
+            type="text"
+            placeholder="Enter OTP"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+          />
+
+          <button type="button" onClick={verifyOtp}>
+            Verify OTP
+          </button>
+
+          <div id="recaptcha-container"></div>
           {error && (
             <p className="text-red-500 text-sm">{error}</p>
           )}

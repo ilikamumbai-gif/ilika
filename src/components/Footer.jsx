@@ -114,7 +114,7 @@ const Footer = () => {
             </h4>
 
             <div className="flex justify-center md:justify-start gap-6 items-center">
-              <a href="https://www.amazon.in" target="_blank">
+              <a href="https://www.amazon.in/s?srs=88324916031&rh=p_89%3Ailika" target="_blank">
                 <img
                   src={amazon}
                   alt="Amazon"
@@ -122,14 +122,14 @@ const Footer = () => {
                 />
               </a>
 
-              <a href="https://www.flipkart.com" target="_blank">
+              <a href="https://www.flipkart.com/search?q=ilika%20skin%20care&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=off&as=off" target="_blank">
                 <img
                   src={flipcart}
                   alt="Flipkart"
                   className="h-7 hover:scale-110 transition"
                 />
               </a>
-              <a href="https://www.meesho.com" target="_blank">
+              <a href="https://www.meesho.com/ILIKASKINCARE" target="_blank">
               
                 <img
                   src={meesho}
