@@ -9,11 +9,29 @@ import { ProductProvider } from "./admin/context/ProductContext";
 import { CategoryProvider } from "./admin/context/CategoryContext";
 import MetaPixelTracker from "./components/MetaPixelTracker";
 
-import { useEffect } from "react";
-import { getTrafficSource } from "./admin/Utils/trafficSource";
+import { useEffect, useState } from "react";
+import { useAuth } from "./context/AuthContext";
+import LoginPopup from "./components/LoginPopup";
 
 const App = () => {
-  captureTrafficSource();   
+  const { currentUser } = useAuth();
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+  captureTrafficSource();
+
+  useEffect(() => {
+    if (currentUser) return;
+
+    if (sessionStorage.getItem("loginPopupShown")) return;
+
+    const timer = setTimeout(() => {
+      setShowLoginPopup(true);
+      sessionStorage.setItem("loginPopupShown", "true");
+    }, 7000); // 7 seconds delay
+
+    return () => clearTimeout(timer);
+  }, [currentUser]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <UserProvider>
@@ -23,10 +41,13 @@ const App = () => {
               <ProductProvider>
                 <UserOrderProvider>
 
+                  {showLoginPopup && (
+                    <LoginPopup onClose={() => setShowLoginPopup(false)} />
+                  )}
+
                   <MetaPixelTracker />
                   <NavRoutes />
                   <ScrollToTopButton />
-
                 </UserOrderProvider>
               </ProductProvider>
             </CategoryProvider>

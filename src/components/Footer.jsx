@@ -23,6 +23,8 @@ const Footer = () => {
         <div className="whitespace-nowrap animate-marquee text-sm font-medium">
           Best To Use • Best To Use • Best To Use • Best To Use • Best To Use •
           Best To Use • Best To Use • Best To Use • Best To Use • Best To Use •
+          Best To Use • Best To Use • Best To Use • Best To Use • Best To Use •
+          Best To Use • Best To Use • Best To Use • Best To Use • Best To Use •
         </div>
       </div>
 
