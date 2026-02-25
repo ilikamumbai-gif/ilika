@@ -159,6 +159,41 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     setForm({ ...form, variants: updated });
   };
 
+  const handleImageReorder = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex) return;
+
+    const updatedImages = [...form.images];
+    const updatedPreviews = [...previewImages];
+
+    const [movedImage] = updatedImages.splice(fromIndex, 1);
+    const [movedPreview] = updatedPreviews.splice(fromIndex, 1);
+
+    updatedImages.splice(toIndex, 0, movedImage);
+    updatedPreviews.splice(toIndex, 0, movedPreview);
+
+    setForm({ ...form, images: updatedImages });
+    setPreviewImages(updatedPreviews);
+  };
+  const handleVariantReorder = (variantIndex, fromIndex, toIndex) => {
+  if (fromIndex === toIndex) return;
+
+  const updatedVariants = [...form.variants];
+
+  const images = [...(updatedVariants[variantIndex].images || [])];
+  const previews = [...(updatedVariants[variantIndex].preview || [])];
+
+  const [movedImage] = images.splice(fromIndex, 1);
+  const [movedPreview] = previews.splice(fromIndex, 1);
+
+  images.splice(toIndex, 0, movedImage);
+  previews.splice(toIndex, 0, movedPreview);
+
+  updatedVariants[variantIndex].images = images;
+  updatedVariants[variantIndex].preview = previews;
+
+  setForm({ ...form, variants: updatedVariants });
+};
+
   /* REMOVE SINGLE VARIANT IMAGE */
   const removeVariantImage = (variantIndex, imgIndex) => {
     const updated = [...form.variants];
@@ -430,7 +465,19 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             {/* PREVIEW GRID */}
             <div className="grid grid-cols-4 gap-2">
               {(variant.preview || variant.images || []).map((img, i) => (
-                <div key={i} className="relative group">
+                <div
+                  key={i}
+                  draggable
+                  onDragStart={(e) =>
+                    e.dataTransfer.setData("variantIndex", i)
+                  }
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    const dragIndex = e.dataTransfer.getData("variantIndex");
+                    handleVariantReorder(index, dragIndex, i);
+                  }}
+                  className="relative group cursor-move"
+                >
                   <img
                     src={typeof img === "string" ? img : URL.createObjectURL(img)}
                     className="h-20 w-full object-cover rounded border"
@@ -558,12 +605,33 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       </div>
 
       {/* PREVIEW */}
+      {/* PREVIEW */}
       {previewImages.length > 0 && (
         <div className="grid grid-cols-4 gap-3">
-          {previewImages.map((img, i) => (
-            <div key={i} className="relative">
-              <img src={img} className="h-24 w-full object-cover rounded" />
-              <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-black text-white text-xs px-2 rounded">X</button>
+          {previewImages.map((img, index) => (
+            <div
+              key={index}
+              draggable
+              onDragStart={(e) => e.dataTransfer.setData("dragIndex", index)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                const dragIndex = e.dataTransfer.getData("dragIndex");
+                handleImageReorder(dragIndex, index);
+              }}
+              className="relative cursor-move"
+            >
+              <img
+                src={img}
+                className="h-24 w-full object-cover rounded border"
+              />
+
+              <button
+                type="button"
+                onClick={() => removeImage(index)}
+                className="absolute top-1 right-1 bg-black text-white text-xs px-2 rounded"
+              >
+                X
+              </button>
             </div>
           ))}
         </div>
