@@ -12,6 +12,8 @@ import CartDrawer from "../components/CartDrawer";
 import Banner from "../components/Banner";
 import bannerImg from "../../public/Images/Banner.jpg";
 import bannerImg2 from "../assets/Images/Banner 2.jpg";
+import bannerSkincare from "../assets/Images/FacecareBanner.jpg.jpeg";
+import bannerHair from "../assets/Images/HairBanner.jpg.jpeg";
 import HoliSplash from "../components/HoliSplash";
 import { useCategories } from "../admin/context/CategoryContext";
 
@@ -68,7 +70,7 @@ const Home = () => {
         {/* FEATURED PRODUCTS */}
         <Heading heading="HOLI OFFER !!" />
         {newCategory ? (
-          <ProductList productNames={["Hot & Cold Facial Pore Blackhead Remover For Men & Women", "Silicone Jade Vibration Heating Facial Brush", "Ilika Automatic Voice Version Face Mask Maker Machine With Collagen Pills", "Herbal Hair Oil | Prevents Dandruff | 200 ML" ]} limit={4} buttonBg="bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800" buttonText="text-white"/>
+          <ProductList productNames={["Hot & Cold Facial Pore Blackhead Remover For Men & Women", "Silicone Jade Vibration Heating Facial Brush", "Ilika Automatic Voice Version Face Mask Maker Machine With Collagen Pills", "Herbal Hair Oil | Prevents Dandruff | 200 ML" ]} limit={4}/>
         ) : (
           <p className="text-sm text-gray-500">Loading products...</p>
         )}
@@ -76,7 +78,7 @@ const Home = () => {
 
 
         {/* SECOND PROMO BANNER */}
-        <Banner className="md:h-[40vh] mt-0 mb-10" src={bannerImg2} />
+        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerSkincare} />
 
         <Heading heading="OUR SKIN CARE" />
 
@@ -105,7 +107,7 @@ const Home = () => {
 
 
 
-        <Banner className="md:h-[40vh] mt-0 mb-10" src={bannerImg2} />
+        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerHair} />
 
         <Heading heading="OUR TOP HAIR CARE" />
 
