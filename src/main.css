@@ -229,3 +229,36 @@ html, body, #root {
     background-position: 100% 0%;
   }
 }
+
+
+.marquee-wrapper {
+  overflow: hidden;
+  width: 100%;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 18s linear infinite;
+}
+
+.marquee-track span {
+  white-space: nowrap;
+  padding-right: 4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+
+  background: linear-gradient(to right, #ec4899, #ef4444, #fb923c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Seamless movement */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

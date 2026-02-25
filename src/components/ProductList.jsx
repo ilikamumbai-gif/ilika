@@ -1,18 +1,28 @@
 import { useProducts } from "../context/ProductContext";
 import ProductCard from "./ProductCard";
 
-const ProductList = ({ categoryId, limit }) => {
+const ProductList = ({
+  categoryId,
+  limit,
+  buttonBg,
+  buttonText,
+  productNames = [],
+}) => {
   const { products } = useProducts();
 
   let filteredProducts = products
-    // 🔥 1️⃣ Remove inactive products
-    .filter((item) => item.isActive !== false)
-    // 🔥 2️⃣ Apply category filter
-    .filter((item) =>
-      categoryId ? item.categoryIds?.includes(categoryId) : true
-    );
+    .filter((item) => item.isActive !== false);
 
-  /* APPLY LIMIT AFTER FILTER */
+  if (productNames.length > 0) {
+    filteredProducts = filteredProducts.filter((item) =>
+      productNames.includes(item.name)
+    );
+  } else if (categoryId) {
+    filteredProducts = filteredProducts.filter((item) =>
+      item.categoryIds?.includes(categoryId)
+    );
+  }
+
   if (limit) {
     filteredProducts = filteredProducts.slice(0, limit);
   }
@@ -23,7 +33,12 @@ const ProductList = ({ categoryId, limit }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.length ? (
             filteredProducts.map((item) => (
-              <ProductCard key={item._id || item.id} product={item} />
+              <ProductCard
+                key={item._id || item.id}
+                product={item}
+                buttonBg={buttonBg}
+                buttonText={buttonText}
+              />
             ))
           ) : (
             <p className="col-span-full text-sm text-gray-500">

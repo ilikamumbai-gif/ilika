@@ -82,7 +82,7 @@ const NavRoutes = () => {
         />
 
         <Route path="/blog/:id" element={<BlogDetail />} />
-        <Route path="/product/:slug" element={<ProductDetail />} />
+        <Route path="/product/:slug" element={<ProductDetail  />} />
 
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/termsandcondition" element={<TermsCondition />} />

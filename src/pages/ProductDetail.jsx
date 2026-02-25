@@ -12,7 +12,11 @@ import { createSlug } from "../utils/slugify";
 import { Truck, ShieldCheck, BadgeCheck } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 
-const ProductDetail = () => {
+const ProductDetail = ({
+  buttonBg = "bg-[#2b2a29]",
+  buttonText = "text-white",
+  buyNowClass = "border border-[#E7A6A1] text-[#1C371C] hover:bg-[#fff1ef]"
+}) => {
   const { products = [] } = useProducts();
   const { state } = useLocation();
   const { slug } = useParams();
@@ -407,22 +411,24 @@ const ProductDetail = () => {
 
               <div className="flex flex-col sm:flex-row gap-3">
 
+                {/* Add To Cart */}
                 <button
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
                   className={`flex-1 py-3 rounded-xl transition ${product.inStock
-                      ? "bg-[#b34140] text-white hover:opacity-90"
+                      ? `${buttonBg} ${buttonText} hover:opacity-90`
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                 >
-                  {product.inStock === true ? "Add To Cart" : "Out of Stock"}
+                  {product.inStock ? "Add To Cart" : "Out of Stock"}
                 </button>
 
+                {/* Buy Now */}
                 <button
                   onClick={handleBuyNow}
                   disabled={isOutOfStock}
                   className={`flex-1 py-3 rounded-xl transition ${product.inStock
-                      ? "border border-[#E7A6A1] text-[#1C371C] hover:bg-[#fff1ef]"
+                      ? buyNowClass
                       : "bg-gray-200 text-gray-400 cursor-not-allowed border"
                     }`}
                 >
@@ -430,6 +436,8 @@ const ProductDetail = () => {
                 </button>
 
               </div>
+
+              
               {/* WHY YOU'LL LOVE IT */}
               <div className="border rounded-2xl p-5 bg-[#fff6f5] space-y-3">
                 <div className="font-semibold heading-color text-lg">

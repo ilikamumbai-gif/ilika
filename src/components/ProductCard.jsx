@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { createSlug } from "../utils/slugify";
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-white",productNames = [] }) => {
   const { addToCart } = useCart();
   const slug = createSlug(product.name);
   const productId = product._id || product.id;
@@ -67,7 +67,7 @@ const ProductCard = ({ product }) => {
 
           {/* DISCOUNT BADGE (THEME) */}
           {calculatedDiscount && (
-            <div className="absolute top-3 right-3 bg-[#E7A6A1] text-black text-xs font-semibold px-2.5 py-1 rounded-md shadow">
+            <div className="absolute top-3 right-3 bg-[#b34140] text-white text-xs font-semibold px-2.5 py-1 rounded-md shadow">
               {calculatedDiscount}% OFF
             </div>
           )}
@@ -125,8 +125,7 @@ const ProductCard = ({ product }) => {
             disabled={product.inStock === false}
             onClick={(e) => {
               e.preventDefault();
-
-              if (!product.inStock) return; // extra safety
+              if (!product.inStock) return;
 
               const item = defaultVariant
                 ? {
@@ -145,30 +144,13 @@ const ProductCard = ({ product }) => {
                 };
 
               addToCart(item);
-
-              if (window.fbq) {
-                window.fbq("track", "AddToCart", {
-                  content_ids: [productId],
-                  content_name: product.name,
-                  value: displayPrice,
-                  currency: "INR",
-                  content_type: "product",
-                  contents: [
-                    {
-                      id: productId,
-                      quantity: 1,
-                      item_price: displayPrice,
-                    },
-                  ],
-                });
-              }
             }}
             className={`w-full text-[13px] font-clean tracking-widest py-2.5 rounded-lg ${product.inStock
-              ? "bg-[#E7A6A1] text-black"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                ? `${buttonBg} ${buttonText}`
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
           >
-            {product.inStock === true ? "Add To Cart" : "Out of Stock"}
+            {product.inStock ? "Add To Cart" : "Out of Stock"}
           </button>
         </div>
 

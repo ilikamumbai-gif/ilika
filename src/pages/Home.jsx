@@ -66,9 +66,9 @@ const Home = () => {
         <CategoryNav categories={categoriesData} />
 
         {/* FEATURED PRODUCTS */}
-        <Heading heading="HAVE A LOOK !!" />
+        <Heading heading="HOLI OFFER !!" />
         {newCategory ? (
-          <ProductList categoryId={newCategory.id} limit={4} />
+          <ProductList productNames={["Hot & Cold Facial Pore Blackhead Remover For Men & Women", "Silicone Jade Vibration Heating Facial Brush", "Ilika Automatic Voice Version Face Mask Maker Machine With Collagen Pills", "Herbal Hair Oil | Prevents Dandruff | 200 ML" ]} limit={4} buttonBg="bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800" buttonText="text-white"/>
         ) : (
           <p className="text-sm text-gray-500">Loading products...</p>
         )}
