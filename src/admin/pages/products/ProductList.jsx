@@ -11,23 +11,23 @@ const ProductList = () => {
 
   const { products, deleteProduct, fetchProducts } = useProducts();
 
-  
-  
+
+
   const { categories } = useCategories();
   useEffect(() => {
     fetchProducts();
   }, [categories.length]);
 
   const getCategoryNames = (ids = []) => {
-  if (!ids.length) return "N/A";
+    if (!ids.length) return "N/A";
 
-  return ids
-    .map((id) =>
-      categories.find((c) => String(c.id) === String(id))?.name
-    )
-    .filter(Boolean)
-    .join(", ");
-};
+    return ids
+      .map((id) =>
+        categories.find((c) => String(c.id) === String(id))?.name
+      )
+      .filter(Boolean)
+      .join(", ");
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
@@ -46,17 +46,48 @@ const ProductList = () => {
     },
 
     {
-  label: "Categories",
-  key: "categoryIds",
-  render: (row) => getCategoryNames(row.categoryIds),
-},
-
+      label: "Categories",
+      key: "categoryIds",
+      render: (row) => getCategoryNames(row.categoryIds),
+    },
 
     {
       label: "Price",
       key: "price",
       align: "right",
       render: (row) => `₹${row.price}`,
+    },
+
+    /* ✅ ACTIVE STATUS COLUMN */
+    {
+      label: "Status",
+      key: "isActive",
+      render: (row) => (
+        <span
+          className={`px-2 py-1 text-xs rounded-full font-medium ${row.isActive === false
+              ? "bg-red-100 text-red-600"
+              : "bg-green-100 text-green-600"
+            }`}
+        >
+          {row.isActive === false ? "Inactive" : "Active"}
+        </span>
+      ),
+    },
+
+    /* ✅ STOCK STATUS COLUMN */
+    {
+      label: "Stock",
+      key: "inStock",
+      render: (row) => (
+        <span
+          className={`px-2 py-1 text-xs rounded-full font-medium ${row.inStock === false
+              ? "bg-gray-200 text-gray-600"
+              : "bg-blue-100 text-blue-600"
+            }`}
+        >
+          {row.inStock === false ? "Out of Stock" : "In Stock"}
+        </span>
+      ),
     },
   ];
 

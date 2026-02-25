@@ -45,7 +45,7 @@ const RichTextEditor = ({ value, onChange }) => {
         <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={btn}><s>S</s></button>
 
         <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btn}>• List</button>
-        <button typez="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btn}>1. List</button>
+        <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btn}>1. List</button>
 
         <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btn}>Quote</button>
         <button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} className={btn}>—</button>
@@ -66,7 +66,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
   const [form, setForm] = useState({
     name: initialData.name || "",
-    shortInfo: initialData.shortInfo || "",   // ✅ NEW
+    shortInfo: initialData.shortInfo || "",
     price: initialData.price || "",
     mrp: initialData.mrp || "",
     hasVariants: initialData.hasVariants || false,
@@ -77,6 +77,10 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     tagline: initialData.tagline || "",
     points: initialData.benefits ? initialData.benefits.join(", ") : "",
     images: initialData.images || [],
+
+    // ⭐ ADD THESE
+    isActive: initialData.isActive ?? true,
+    inStock: initialData.inStock ?? true,
   });
   useEffect(() => {
     if (!initialData || Object.keys(initialData).length === 0) return;
@@ -94,6 +98,9 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       tagline: initialData.tagline || "",
       points: initialData.benefits ? initialData.benefits.join(", ") : "",
       images: initialData.images || [],
+      // ⭐ ADD THESE
+      isActive: initialData.isActive ?? true,
+      inStock: initialData.inStock ?? true,
     });
 
     setPreviewImages(initialData.images || []);
@@ -216,7 +223,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
       await onSubmit({
         name: form.name,
-        shortInfo: form.shortInfo,   // ✅ NEW
+        shortInfo: form.shortInfo,
         hasVariants: form.hasVariants,
         price: form.hasVariants ? null : Number(form.price),
         mrp: form.hasVariants ? null : Number(form.mrp),
@@ -227,19 +234,28 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         tagline: form.tagline,
         benefits: form.points.split(",").map(p => p.trim()),
         images: imageUrls,
+
+        // ⭐ ADD THESE
+        isActive: form.isActive,
+        inStock: form.inStock,
       });
 
 
       setForm({
         name: "",
+        shortInfo: "",
         price: "",
         mrp: "",
+        hasVariants: false,
+        variants: [],
         categoryIds: [],
         description: "",
         additionalInfo: "",
         tagline: "",
         points: "",
         images: [],
+        isActive: true,
+        inStock: true,
       });
 
       setPreviewImages([]);
@@ -269,6 +285,71 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         className="w-full border p-2 rounded"
         rows={2}
       />
+
+      {/* PRODUCT STATUS */}
+      <div className="grid grid-cols-2 gap-6 border p-4 rounded bg-gray-50">
+
+        {/* ACTIVE STATUS */}
+        <div>
+          <label className="block font-medium mb-2">Product Status</label>
+
+          <div className="flex gap-4">
+            {/* ACTIVE STATUS */}
+            <label>
+              <input
+                type="radio"
+                checked={form.isActive === true}
+                onChange={() =>
+                  setForm({ ...form, isActive: true })
+                }
+              />
+              Active
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                checked={form.isActive === false}
+                onChange={() =>
+                  setForm({ ...form, isActive: false })
+                }
+              />
+              Inactive
+            </label>
+          </div>
+        </div>
+
+        {/* STOCK STATUS */}
+        <div>
+          <label className="block font-medium mb-2">Stock Status</label>
+
+          <div className="flex gap-4">
+            <label>
+              <input
+                type="radio"
+                checked={form.inStock === true}
+                onChange={() =>
+                  setForm({ ...form, inStock: true })
+                }
+              />
+              In Stock
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                checked={form.inStock === false}
+                onChange={() =>
+                  setForm({ ...form, inStock: false })
+                }
+              />
+              Out of Stock
+            </label>
+          </div>
+        </div>
+
+      </div>
+
       {/* NORMAL PRODUCT PRICE (ONLY WHEN NO VARIANTS) */}
       {!form.hasVariants && (
         <div className="grid grid-cols-2 gap-3">
@@ -307,6 +388,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               }}
               className="border p-2 rounded"
             />
+
+
 
             <input
               type="number"

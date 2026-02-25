@@ -1,21 +1,29 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 
 const ProductContext = createContext(null);
 
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
   const API = import.meta.env.VITE_API_URL;
 
-  /* FETCH PRODUCTS */
+  /* ================= FETCH PRODUCTS ================= */
   const fetchProducts = async () => {
     try {
+      setLoading(true);
+
       const res = await fetch(`${API}/api/products`);
       if (!res.ok) throw new Error("Failed to fetch products");
 
       const data = await res.json();
-      setProducts([...data]); // new reference important
+
+      // Always ensure array
+      setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Fetch products error:", error);
+      setProducts([]); // safety fallback
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -23,7 +31,12 @@ export const ProductProvider = ({ children }) => {
     fetchProducts();
   }, []);
 
-  /* ADD PRODUCT */
+  /* ================= DERIVED DATA ================= */
+  const activeProducts = useMemo(() => {
+    return products.filter((p) => p?.isActive !== false);
+  }, [products]);
+
+  /* ================= ADD PRODUCT ================= */
   const addProduct = async (data) => {
     const res = await fetch(`${API}/api/products`, {
       method: "POST",
@@ -33,10 +46,10 @@ export const ProductProvider = ({ children }) => {
 
     if (!res.ok) throw new Error("Failed to add product");
 
-    await fetchProducts(); // refresh list
+    await fetchProducts();
   };
 
-  /* UPDATE PRODUCT */
+  /* ================= UPDATE PRODUCT ================= */
   const updateProduct = async (id, data) => {
     const res = await fetch(`${API}/api/products/${id}`, {
       method: "PUT",
@@ -49,7 +62,7 @@ export const ProductProvider = ({ children }) => {
     await fetchProducts();
   };
 
-  /* DELETE PRODUCT */
+  /* ================= DELETE PRODUCT ================= */
   const deleteProduct = async (id) => {
     const res = await fetch(`${API}/api/products/${id}`, {
       method: "DELETE",
@@ -60,13 +73,16 @@ export const ProductProvider = ({ children }) => {
     await fetchProducts();
   };
 
+  /* ================= GET BY ID ================= */
   const getProductById = (id) =>
     products.find((p) => String(p.id) === String(id));
 
   return (
     <ProductContext.Provider
       value={{
-        products,
+        products,        // All products (Admin)
+        activeProducts,  // Only active (Frontend)
+        loading,
         addProduct,
         updateProduct,
         deleteProduct,
@@ -81,6 +97,7 @@ export const ProductProvider = ({ children }) => {
 
 export const useProducts = () => {
   const ctx = useContext(ProductContext);
-  if (!ctx) throw new Error("useProducts must be used inside ProductProvider");
+  if (!ctx)
+    throw new Error("useProducts must be used inside ProductProvider");
   return ctx;
 };

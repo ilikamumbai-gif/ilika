@@ -13,8 +13,7 @@ import Heading from "../components/Heading";
 const CreateCtm = () => {
   const { addToCart } = useCart();
   const { categories } = useCategories();
-  const { products } = useProducts();
-
+const { activeProducts = [] } = useProducts();
   /* ---------- FIND CATEGORY (Same logic as Skin page) ---------- */
   const findCategory = (slug) =>
     categories.find(
@@ -30,19 +29,19 @@ const CreateCtm = () => {
 
   /* ---------- FILTER PRODUCTS BY CATEGORY ---------- */
   const cleansers = cleanserCategory
-    ? products.filter((p) =>
+    ? activeProducts.filter((p) =>
       p.categoryIds?.includes(cleanserCategory.id)
     )
     : [];
 
   const toners = tonerCategory
-    ? products.filter((p) =>
+    ? activeProducts.filter((p) =>
       p.categoryIds?.includes(tonerCategory.id)
     )
     : [];
 
   const moisturizers = moisturizerCategory
-    ? products.filter((p) =>
+    ? activeProducts.filter((p) =>
       p.categoryIds?.includes(moisturizerCategory.id)
     )
     : [];

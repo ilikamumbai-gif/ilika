@@ -129,6 +129,8 @@ app.post("/api/products", async (req, res) => {
 
     const productData = {
       ...req.body,
+      isActive: req.body.isActive ?? true,   // ⭐ default true
+      inStock: req.body.inStock ?? true,     // ⭐ default true
       createdAt: now,
       updatedAt: now,
     };
@@ -178,14 +180,46 @@ app.get("/api/products", async (req, res) => {
 
 app.put("/api/products/:id", async (req, res) => {
   try {
+    const productRef = db.collection("products").doc(req.params.id);
+    const existingDoc = await productRef.get();
+
+    if (!existingDoc.exists) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    const existingData = existingDoc.data();
+
     const updateData = {
       ...req.body,
-      updatedAt: Date.now(), // ⭐ version bump
+
+      // Preserve boolean fields safely
+      isActive:
+        typeof req.body.isActive === "boolean"
+          ? req.body.isActive
+          : existingData.isActive ?? true,
+
+      inStock:
+        typeof req.body.inStock === "boolean"
+          ? req.body.inStock
+          : existingData.inStock ?? true,
+
+      updatedAt: Date.now(),
     };
 
-    await db.collection("products").doc(req.params.id).update(updateData);
+    await productRef.update(updateData);
 
-    res.json({ message: "Product updated successfully" });
+    // Return updated document
+    const updatedDoc = await productRef.get();
+
+    res.json({
+      message: "Product updated successfully",
+      product: {
+        id: updatedDoc.id,
+        ...updatedDoc.data(),
+      },
+    });
+    console.log("UPDATE BODY:", req.body);
+
   } catch (error) {
     console.error("UPDATE PRODUCT ERROR:", error);
     res.status(500).json({ error: "Failed to update product" });
@@ -276,6 +310,11 @@ app.post("/api/orders", async (req, res) => {
       if (!productDoc.exists) continue;
 
       const productData = productDoc.data();
+
+      if (!productData.isActive) continue; // skip inactive
+      if (!productData.inStock) {
+        return res.status(400).json({ error: `${productData.name} is out of stock` });
+      }
 
       totalAmount += Number(productData.price) * quantity;
 
@@ -445,6 +484,11 @@ app.post("/api/payments/verify", async (req, res) => {
       if (!productDoc.exists) continue;
 
       const productData = productDoc.data();
+
+      if (!productData.isActive) continue; // skip inactive
+      if (!productData.inStock) {
+        return res.status(400).json({ error: `${productData.name} is out of stock` });
+      }
 
       totalAmount += Number(productData.price) * quantity;
 

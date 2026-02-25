@@ -92,6 +92,8 @@ const ProductDetail = () => {
 
 
   const handleAddToCart = () => {
+    if (product?.inStock === false) return;
+
     const item = activeVariant
       ? {
         ...product,
@@ -108,20 +110,7 @@ const ProductDetail = () => {
         id: productId,
       };
 
-    // 1️⃣ Existing add to cart logic
     addToCart(item);
-
-    /* ==============================
-       ✅ FACEBOOK PIXEL ADD TO CART
-    ============================== */
-    if (window.fbq) {
-      window.fbq("track", "AddToCart", {
-        content_ids: [productId],
-        content_name: product.name,
-        value: price,
-        currency: "INR",
-      });
-    }
   };
 
   const handleBuyNow = async () => {
@@ -236,11 +225,11 @@ const ProductDetail = () => {
     );
   }
 
-  if (!product) {
+  if (!product || product.isActive === false) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-600 text-lg">
-          Product not found
+          Product not available
         </p>
       </div>
     );
@@ -254,8 +243,7 @@ const ProductDetail = () => {
 
 
   const rating = product.rating || 4;
-
-
+  const isOutOfStock = product?.inStock === false;
 
   return (
     <>
@@ -416,18 +404,27 @@ const ProductDetail = () => {
 
 
               {/* BUTTONS */}
+
               <div className="flex flex-col sm:flex-row gap-3">
 
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-[#b34140] text-white py-3 rounded-xl hover:opacity-90 transition"
+                  disabled={isOutOfStock}
+                  className={`flex-1 py-3 rounded-xl transition ${product.inStock
+                      ? "bg-[#b34140] text-white hover:opacity-90"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
                 >
-                  Add to Cart
+                  {product.inStock === true ? "Add To Cart" : "Out of Stock"}
                 </button>
 
                 <button
                   onClick={handleBuyNow}
-                  className="flex-1 border border-[#E7A6A1] text-[#1C371C] py-3 rounded-xl hover:bg-[#fff1ef] transition"
+                  disabled={isOutOfStock}
+                  className={`flex-1 py-3 rounded-xl transition ${product.inStock
+                      ? "border border-[#E7A6A1] text-[#1C371C] hover:bg-[#fff1ef]"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed border"
+                    }`}
                 >
                   Buy Now
                 </button>

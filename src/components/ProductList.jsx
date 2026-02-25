@@ -4,22 +4,22 @@ import ProductCard from "./ProductCard";
 const ProductList = ({ categoryId, limit }) => {
   const { products } = useProducts();
 
-  let filteredProducts = categoryId
-    ? products.filter((item) =>
-      item.categoryIds?.includes(categoryId)
-    )
-    : products;
+  let filteredProducts = products
+    // 🔥 1️⃣ Remove inactive products
+    .filter((item) => item.isActive !== false)
+    // 🔥 2️⃣ Apply category filter
+    .filter((item) =>
+      categoryId ? item.categoryIds?.includes(categoryId) : true
+    );
 
   /* APPLY LIMIT AFTER FILTER */
   if (limit) {
     filteredProducts = filteredProducts.slice(0, limit);
   }
 
-
   return (
     <section className="w-full py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4">
-
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.length ? (
             filteredProducts.map((item) => (
@@ -31,7 +31,6 @@ const ProductList = ({ categoryId, limit }) => {
             </p>
           )}
         </div>
-
       </div>
     </section>
   );

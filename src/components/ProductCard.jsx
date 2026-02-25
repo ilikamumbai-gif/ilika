@@ -59,7 +59,11 @@ const ProductCard = ({ product }) => {
   `}
           />
 
-
+          {product.inStock === false && (
+            <div className="absolute top-3 left-3 bg-black text-white text-xs px-2 py-1 rounded">
+              Out of Stock
+            </div>
+          )}
 
           {/* DISCOUNT BADGE (THEME) */}
           {calculatedDiscount && (
@@ -118,8 +122,11 @@ const ProductCard = ({ product }) => {
         {/* BUTTON */}
         <div className="px-4 pb-4">
           <button
+            disabled={product.inStock === false}
             onClick={(e) => {
               e.preventDefault();
+
+              if (!product.inStock) return; // extra safety
 
               const item = defaultVariant
                 ? {
@@ -137,12 +144,8 @@ const ProductCard = ({ product }) => {
                   id: productId,
                 };
 
-              // 1️⃣ Existing cart logic (UNCHANGED)
               addToCart(item);
 
-              /* ==============================
-                 ✅ FACEBOOK PIXEL ADD TO CART
-              ============================== */
               if (window.fbq) {
                 window.fbq("track", "AddToCart", {
                   content_ids: [productId],
@@ -160,10 +163,12 @@ const ProductCard = ({ product }) => {
                 });
               }
             }}
-            className="w-full bg-[#E7A6A1] text-black text-[13px] font-clean tracking-widest py-2.5 rounded-lg"
-            // className="w-full bg-[#E7A6A1] text-black text-[13px] font-clean tracking-widest py-2.5 rounded-lg"
+            className={`w-full text-[13px] font-clean tracking-widest py-2.5 rounded-lg ${product.inStock
+              ? "bg-[#E7A6A1] text-black"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
           >
-            Add To Cart
+            {product.inStock === true ? "Add To Cart" : "Out of Stock"}
           </button>
         </div>
 
