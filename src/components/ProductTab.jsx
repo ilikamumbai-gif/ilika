@@ -117,11 +117,8 @@ const ProductTab = ({ product }) => {
               </h4>
               {/* Highlights from Admin */}
               {product.additionalInfo?.length > 0 ? (
-                <ul className="list-disc pl-5 space-y-2">
-                  {product.additionalInfo.map((point, index) => (
-                    <li key={index}>{point}</li>
-                  ))}
-                </ul>
+                <p>{product.additionalInfo}</p>
+                
               ) : (
                 <p>No additional information available.</p>
               )}
