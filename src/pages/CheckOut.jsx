@@ -111,9 +111,11 @@ const Checkout = () => {
     0
   );
 
+  const total = parseFloat(subtotal.toFixed(2));
 
 
-  
+
+
 
   /* ---------------- PLACE ORDER ---------------- */
 
@@ -224,7 +226,7 @@ const Checkout = () => {
             ============================== */
             if (window.fbq && total > 0 && !isNaN(total)) {
               window.fbq("track", "Purchase", {
-                value: parseFloat(total.toFixed(2)),
+                value: total,
                 currency: "INR",
               });
             }
