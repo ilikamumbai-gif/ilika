@@ -113,7 +113,7 @@ const Checkout = () => {
 
 
 
-  const total = subtotal;
+  
 
   /* ---------------- PLACE ORDER ---------------- */
 
@@ -134,7 +134,7 @@ const Checkout = () => {
 
     if (window.fbq) {
       window.fbq("track", "InitiateCheckout", {
-        value: total,
+        value: subtotal,
         currency: "INR",
       });
     }

@@ -193,7 +193,7 @@ const ProductDetail = ({
   const EXCLUDED_CATEGORY = "new"; // <-- change to your real id or slug
 
   const relatedProducts = useMemo(() => {
-    if (!product) return [];
+    if (!product) return [];  
 
     // remove excluded category from current product
     const baseCategories = (product.categoryIds || []).filter(
