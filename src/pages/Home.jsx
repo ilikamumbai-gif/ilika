@@ -68,7 +68,7 @@ const Home = () => {
 
 
         {/* HOLI FEATURED SECTION */}
-        <div
+        {/* <div
           className="relative overflow-hidden py-20 px-4 sm:px-8 lg:px-16 
   bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${holibg2})` }}
@@ -100,7 +100,7 @@ drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]
               )}
             </div>
           </div>
-        </div>
+        </div> */}
 
 
 

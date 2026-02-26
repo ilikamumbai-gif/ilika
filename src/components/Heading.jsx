@@ -11,9 +11,9 @@ const Heading = ({heading}) => {
                         <div className="flex-1 h-px divider-bg-color"></div>
 
                         {/* Text */}
-                        <h2 className="heading-color text-sm sm:text-lg md:text-2xl font-semibold tracking-wide whitespace-nowrap">
+                        <h1 className="heading-color text-sm sm:text-lg md:text-2xl font-semibold tracking-wide whitespace-nowrap">
                             {heading}
-                        </h2>
+                        </h1>
 
                         {/* Right line */}
                         <div className="flex-1 h-px divider-bg-color"></div>

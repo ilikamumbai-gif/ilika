@@ -257,7 +257,7 @@ const Checkout = () => {
       alert("Failed to process order");
     }
   };
-  console.log(cartItems)
+  // console.log(cartItems)
   /* ---------------- EMPTY CART ---------------- */
 
   if (!cartItems.length)

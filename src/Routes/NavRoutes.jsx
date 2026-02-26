@@ -41,6 +41,7 @@ import RollerAndGuasha from "../pages/RollerAndGuasha";
 import HairRemoval from "../pages/HairRemoval";
 import ShopAll from "../pages/ShopAll";
 import About from "../pages/About";
+import Combos from "../pages/Combos";
 
 
 
@@ -92,6 +93,7 @@ const NavRoutes = () => {
         <Route path="/shippingpolicy" element={<ShippingPolicy />} />
         <Route path="/faq" element={<Faq />} />
         <Route path="/order-success/:id" element={<OrderSuccess />} />
+        <Route path="/combos" element={<Combos />} />
 
 
         {/* USER AUTH */}
