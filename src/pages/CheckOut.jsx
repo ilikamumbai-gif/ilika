@@ -106,13 +106,17 @@ const Checkout = () => {
 
   /* ---------------- CALCULATIONS ---------------- */
 
-  const subtotal = cartItems.reduce(
-    (acc, item) => acc + Number(item.price) * Number(item.quantity),
-    0
-  );
+  const subtotal = cartItems.reduce((acc, item) => {
+    const cleanPrice = Number(
+      String(item.price).replace(/[^0-9.]/g, "")
+    );
+
+    const qty = Number(item.quantity) || 1;
+
+    return acc + cleanPrice * qty;
+  }, 0);
 
   const total = parseFloat(subtotal.toFixed(2));
-
 
 
 
@@ -134,9 +138,9 @@ const Checkout = () => {
     // ⭐⭐⭐ MOVE HERE (VERY IMPORTANT)
     const source = localStorage.getItem("traffic_source") || "WEBSITE";
 
-    if (window.fbq) {
+    if (window.fbq && total > 0 && !isNaN(total)) {
       window.fbq("track", "InitiateCheckout", {
-        value: subtotal,
+        value: total,
         currency: "INR",
       });
     }
@@ -253,7 +257,7 @@ const Checkout = () => {
       alert("Failed to process order");
     }
   };
-
+  console.log(cartItems)
   /* ---------------- EMPTY CART ---------------- */
 
   if (!cartItems.length)

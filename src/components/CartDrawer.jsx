@@ -24,6 +24,8 @@ const CartDrawer = () => {
 
   const grandTotal = subtotal ;
 
+  
+
   return (
     <>
       {/* BACKDROP */}
