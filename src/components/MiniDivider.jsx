@@ -9,10 +9,10 @@ import { Tag, Sparkles, Rocket } from "lucide-react";
 
 const MiniDivider = () => {
   const saleText =
-    "🌸 HOLI SALE 🌸 UP TO 50% OFF 🎉 LIMITED TIME OFFER 🔥 SHOP NOW 🎨";
-    "🌸 HOLI SALE 🌸 UP TO 50% OFF 🎉 LIMITED TIME OFFER 🔥 SHOP NOW 🎨";
-    "🌸 HOLI SALE 🌸 UP TO 50% OFF 🎉 LIMITED TIME OFFER 🔥 SHOP NOW 🎨";
-    "🌸 HOLI SALE 🌸 UP TO 50% OFF 🎉 LIMITED TIME OFFER 🔥 SHOP NOW 🎨";
+    "🌸 HOLI SALE COMING SOON 🌸 UP TO 50% OFF 🎉 LIMITED TIME OFFER 🔥 SHOP NOW 🎨";
+    "🌸 HOLI SALE COMING SOON 🌸 UP TO 50% OFF 🎉 LIMITED TIME OFFER 🔥 SHOP NOW 🎨";
+    "🌸 HOLI SALE COMING SOON 🌸 UP TO 50% OFF 🎉 LIMITED TIME OFFER 🔥 SHOP NOW 🎨";
+    "🌸 HOLI SALE COMING SOON 🌸 UP TO 50% OFF 🎉 LIMITED TIME OFFER 🔥 SHOP NOW 🎨";
    
 
   return (
