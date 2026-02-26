@@ -275,7 +275,9 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         variants: variantData,
         categoryIds: form.categoryIds,
         description: form.description,
-        additionalInfo: form.additionalInfo,
+        additionalInfo: form.additionalInfo
+          ? form.additionalInfo.split(",").map(item => item.trim())
+          : [],
         tagline: form.tagline,
         benefits: form.points.split(",").map(p => p.trim()),
         images: imageUrls,
@@ -582,8 +584,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         className="w-full border p-2 rounded"
       />
 
-      <textarea
-        placeholder="Additional Info"
+      <input
+        placeholder="Additional Information (comma separated)"
         value={form.additionalInfo}
         onChange={e => setForm({ ...form, additionalInfo: e.target.value })}
         className="w-full border p-2 rounded"
