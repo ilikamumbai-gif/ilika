@@ -115,13 +115,25 @@ const ProductTab = ({ product }) => {
               <h4 className="text-base sm:text-lg font-bold pb-4">
                 Aditional Information
               </h4>
-              {/* Highlights from Admin */}
-              {product.additionalInfo?.length > 0 ? (
-                <p>{product.additionalInfo}</p>
-                
-              ) : (
-                <p>No additional information available.</p>
-              )}
+              {(() => {
+                let infoArray = [];
+
+                if (Array.isArray(product.additionalInfo)) {
+                  infoArray = product.additionalInfo;
+                } else if (typeof product.additionalInfo === "string") {
+                  infoArray = product.additionalInfo.split(",").map(i => i.trim());
+                }
+
+                return infoArray.length > 0 ? (
+                  <ul className="list-disc pl-5 space-y-2">
+                    {infoArray.map((point, index) => (
+                      <li key={index}>{point}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No additional information available.</p>
+                );
+              })()}
             </div>
           </div>
         )}
