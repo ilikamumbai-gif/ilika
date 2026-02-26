@@ -112,8 +112,8 @@ const ProductTab = ({ product }) => {
             <div className="border p-4 rounded-lg sm:col-span-2">
 
 
-              <h4 className="text-base sm:text-lg font-semibold">
-                Aditional INformation
+              <h4 className="text-base sm:text-lg font-bold pb-4">
+                Aditional Information
               </h4>
               {/* Highlights from Admin */}
               {product.additionalInfo?.length > 0 ? (
@@ -126,8 +126,6 @@ const ProductTab = ({ product }) => {
                 <p>No additional information available.</p>
               )}
             </div>
-
-
           </div>
         )}
 
