@@ -132,9 +132,9 @@ const Checkout = () => {
     // ⭐⭐⭐ MOVE HERE (VERY IMPORTANT)
     const source = localStorage.getItem("traffic_source") || "WEBSITE";
 
-    if (window.fbq && total > 0 && !isNaN(total)) {
-      window.fbq("track", "Purchase", {
-        value: parseFloat(total.toFixed(2)),
+    if (window.fbq) {
+      window.fbq("track", "InitiateCheckout", {
+        value: total,
         currency: "INR",
       });
     }
@@ -222,9 +222,9 @@ const Checkout = () => {
             /* ==============================
                ✅ FACEBOOK PIXEL PURCHASE EVENT
             ============================== */
-            if (window.fbq) {
+            if (window.fbq && total > 0 && !isNaN(total)) {
               window.fbq("track", "Purchase", {
-                value: total,
+                value: parseFloat(total.toFixed(2)),
                 currency: "INR",
               });
             }
