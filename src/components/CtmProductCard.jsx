@@ -5,13 +5,14 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
   return (
     <div
       onClick={() => onSelect(product)}
-      className={`primary-bg-color rounded-2xl overflow-hidden shadow-sm 
-      hover:shadow-lg transition-all duration-300 w-full group cursor-pointer
-      ${selected ? "ring-2 ring-[#1C371C] scale-[1.02]" : ""}`}
+      className={`primary-bg-color rounded-2xl overflow-hidden 
+      shadow-sm hover:shadow-lg transition-all duration-300 
+      w-full flex flex-col group cursor-pointer
+      ${selected ? "ring-2 ring-[#1C371C]" : ""}`}
     >
 
-      {/* IMAGE SECTION */}
-      <div className="relative h-56 sm:h-72 w-full overflow-hidden bg-[#f3d6d6]">
+      {/* IMAGE AREA (Same as ProductCard) */}
+      <div className="relative aspect-square overflow-hidden flex items-center justify-center">
 
         <img
           src={product.images}
@@ -19,78 +20,71 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
           className="
             absolute inset-0
             w-full h-full
-            object-cover
-            object-center
+            object-contain
+            scale-[1.08]
+            p-3
             transition-transform duration-300
-            group-hover:scale-105
+            group-hover:scale-[1.12]
           "
         />
 
-        {/* bottom gradient */}
-        <div className="
-          absolute bottom-0 left-0
-          w-full h-10
-          bg-gradient-to-t
-          from-[#fff5ef]
-          via-[#fff5ef]/70
-          to-transparent
-          backdrop-blur-sm
-          z-10
-          pointer-events-none
-        " />
 
-        {/* category */}
-        <span className="
-          absolute top-3 right-3 z-20
-          category-bg-color content-text
-          text-xs px-3 py-1 rounded-md
-        ">
-          {product.category}
-        </span>
 
       </div>
 
       {/* CONTENT */}
-      <div className="pb-4 px-4 flex flex-col gap-2">
+      <div className="p-4 flex flex-col gap-2 flex-grow">
 
-        {/* Name + Price */}
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm sm:text-base font-semibold text-[#1C371C] line-clamp-1">
-            {product.name}
-          </h3>
-          <span className="text-sm sm:text-base font-semibold text-[#1C371C]">
+        {/* NAME */}
+        <h3 className="text-[13px] font-semibold text-[#172917] leading-snug tracking-wide">
+          {product.name}
+        </h3>
+
+        {/* Tag Line   */}
+        {product.tagline && (
+          <div className="flex flex-wrap gap-1 mt-1 ">
+            {product.tagline.split(",").map((tag, i, arr) => (
+              <span key={i} className="text-[12px] heading-color font-clean">
+                {tag.trim()}
+                {i !== arr.length - 1 && " • "}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* RATING */}
+        <div className="flex items-center gap-2 text-xs mt-1">
+          <div className="text-[#E7A6A1] tracking-wider">
+            {"★".repeat(product.rating || 4)}
+            {"☆".repeat(5 - (product.rating || 4))}
+          </div>
+        </div>
+
+        {/* PRICE */}
+        <div className="flex items-baseline gap-2 mt-1">
+          <span className="font-semibold text-[#1C371C] text-[16px]">
             ₹{product.price}
           </span>
         </div>
 
-        {/* Description */}
-        <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
-          {product.description}
-        </p>
-
-        {/* Rating + Select Button */}
-        <div className="flex items-center justify-between mt-2">
-
-          <div className="flex text-sm text-black">
-            {"★".repeat(product.rating || 4)}
-            {"☆".repeat(5 - (product.rating || 4))}
-          </div>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(product);
-            }}
-            className={`text-sm px-4 py-1.5 rounded-md transition
-              ${selected
-                ? "bg-green-600 text-white"
-                : "bg-[#E7A6A1] text-black hover:bg-[#dd8f8a]"}`}
-          >
-            {selected ? "Selected" : "Select"}
-          </button>
-
-        </div>
       </div>
+
+      {/* BUTTON (Same feel as Add To Cart) */}
+      <div className="px-4 pb-4">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(product);
+          }}
+          className={`w-full text-[13px] tracking-widest py-2.5 rounded-lg transition
+            ${selected
+              ? "bg-[#1C371C] text-white"
+              : "bg-[#2b2a29] text-white hover:opacity-90"}`}
+        >
+          {selected ? "Selected" : "Select"}
+        </button>
+      </div>
+
     </div>
   );
 };

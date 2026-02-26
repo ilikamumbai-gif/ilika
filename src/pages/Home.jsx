@@ -16,6 +16,8 @@ import bannerSkincare from "../assets/Images/FacecareBanner.jpg.jpeg";
 import bannerHair from "../assets/Images/HairBanner.jpg.jpeg";
 import HoliSplash from "../components/HoliSplash";
 import { useCategories } from "../admin/context/CategoryContext";
+import holibg1 from "../assets/Images/holibg1.jpg"
+import holibg2 from "../assets/Images/holibg2.png"
 
 const Home = () => {
 
@@ -53,7 +55,7 @@ const Home = () => {
 
   return (
     <>
-   
+
 
       <MiniDivider />
 
@@ -64,29 +66,67 @@ const Home = () => {
         {/* HERO SECTION */}
         <Banner className="md:h-[95vh] -mt-5" src={bannerImg} />
 
+
+        {/* HOLI FEATURED SECTION */}
+        {/* <div
+          className="relative overflow-hidden py-20 px-4 sm:px-8 lg:px-16 
+  bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${holibg2})` }}
+        >
+          <div className="absolute inset-0 "></div>
+          <div className="relative z-10 max-w-7xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold 
+text-white tracking-wide 
+drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)] 
+[WebkitTextStroke:2px_black]">
+                HOLI SPECIAL OFFERS
+              </h2>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md 
+      rounded-3xl p-2 sm:p-4 shadow-2xl border border-white/30">
+              {newCategory ? (
+                <ProductList
+                  productNames={[
+                    "Hot & Cold Facial Pore Blackhead Remover For Men & Women",
+                    "Silicone Jade Vibration Heating Facial Brush",
+                    "Ilika Automatic Voice Version Face Mask Maker Machine",
+                    "Herbal Hair Oil | Prevents Dandruff | 200 ML"
+                  ]}
+                  limit={4}
+                />
+              ) : (
+                <p className="text-center text-white">Loading products...</p>
+              )}
+            </div>
+          </div>
+        </div> */}
+
+
+
         {/* CATEGORY NAVIGATION */}
         <CategoryNav categories={categoriesData} />
-
-        {/* FEATURED PRODUCTS */}
-        <Heading heading="HOLI OFFER !!" />
-        {newCategory ? (
-          <ProductList productNames={["Hot & Cold Facial Pore Blackhead Remover For Men & Women", "Silicone Jade Vibration Heating Facial Brush", "Ilika Automatic Voice Version Face Mask Maker Machine With Collagen Pills", "Herbal Hair Oil | Prevents Dandruff | 200 ML" ]} limit={4}/>
-        ) : (
-          <p className="text-sm text-gray-500">Loading products...</p>
-        )}
 
 
 
         {/* SECOND PROMO BANNER */}
         <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerSkincare} />
-
         <Heading heading="OUR SKIN CARE" />
 
-        {skincareCategory ? (
-          <ProductList categoryId={skincareCategory.id} limit={4} />
+        {newCategory ? (
+          <ProductList
+            productNames={[
+              "Red Algae Hydrating Sheet Mask | Hydration & Radiance",
+              "Kumkumadi Face Sheet Mask | Hydration & Rejuvenation",
+              "Tea Tree Face Sheet Mask | Hydration & Acne-Control",
+              "Kakadu Plum Sheet Mask | Glowing & Youthful Skin"
+            ]}
+            limit={4}
+          />
         ) : (
-          <p className="text-sm text-gray-500">Loading products...</p>
+          <p className="text-center text-white">Loading products...</p>
         )}
+
 
 
 

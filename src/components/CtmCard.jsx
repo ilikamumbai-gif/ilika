@@ -1,6 +1,9 @@
 import React from "react";
 import Pro1 from "../assets/Products/Product1.jpg";
 import Pro2 from "../assets/Products/Product2.png";
+import Toner from "../assets/Images/toner.png";
+import Cleanser from "../assets/Images/Cleanser.webp";
+import Moisture from "../assets/Images/Moisturizer.webp";
 
 const Section = ({ image, title, subtitle, benefits, reverse }) => (
   <div
@@ -64,44 +67,41 @@ const CtmCard = () => {
       />
       {/* Cleanser */}
       <Section
-        image={Pro1}
+        image={Cleanser}
         title="1. 🌿 Gentle Cleanser"
-        subtitle="Prevent Signs of Aging | 100 ML
+        subtitle="Prevent Signs of Aging. 
           A mild yet effective cleanser designed to gently remove dirt, excess oil, and impurities without stripping the skin’s natural moisture."
         benefits={[
           "Deeply cleanses while maintaining skin hydration",
           "Helps prevent early signs of aging",
           "Leaves skin fresh, soft, and comfortable",
-          "Suitable for daily use & all skin types",
         ]}
       />
 
       {/* Toner */}
       <Section
-        image={Pro2}
+        image={Toner}
         reverse
-        title="2. ☁️ Foaming Face Wash"
-        subtitle="Soft & Smooth Skin | 100 ML
-A rich foaming face wash that deeply cleanses pores and refreshes your skin."
+        title="2. 🌹 Face Toner"
+        subtitle="Hydrating & Pore Tightening.
+Restore your skin’s pH, tighten pores, and boost hydration with this antioxidant-rich toner infused with natural extracts."
         benefits={[
-          "Removes dirt, oil & pollution effectively",
-          "Gentle foam for a non-drying cleanse",
-          "Improves skin texture and softness",
-          "Ideal for everyday skincare routine",
+          "Restores skin pH and removes leftover impurities",
+          "Minimizes pores & controls excess oil",
+          "Brightens and evens skin tone",
         ]}
       />
 
       {/* Moisturizer */}
       <Section
-        image={Pro2}
-        title="3. 💧 Hydra Gel Face Moisturizer"
-        subtitle="For Dry & Dehydrated Skin | 50 g
+        image={Moisture}
+        title="3. 💧 Face Moisturizer"
+        subtitle="For Dry & Dehydrated Skin.
 A lightweight, fast-absorbing gel moisturizer delivering intense hydration."
         benefits={[
           "Instantly hydrates dry & dehydrated skin",
           "Non-greasy, gel-based formula",
           "Strengthens the skin barrier",
-          "Keeps skin soft, smooth & glowing",
         ]}
       />
 

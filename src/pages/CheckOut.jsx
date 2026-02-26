@@ -112,34 +112,34 @@ const Checkout = () => {
   );
 
 
-  const shipping = 0;
-  const total = subtotal + shipping;
+
+  const total = subtotal;
 
   /* ---------------- PLACE ORDER ---------------- */
 
-const handlePlaceOrder = async () => {
-  if (!currentUser) {
-    alert("Login required");
-    navigate("/login");
-    return;
-  }
+  const handlePlaceOrder = async () => {
+    if (!currentUser) {
+      alert("Login required");
+      navigate("/login");
+      return;
+    }
 
-  if (!selectedAddressId) {
-    alert("Please select address");
-    return;
-  }
+    if (!selectedAddressId) {
+      alert("Please select address");
+      return;
+    }
 
-  // ⭐⭐⭐ MOVE HERE (VERY IMPORTANT)
-  const source = localStorage.getItem("traffic_source") || "WEBSITE";
+    // ⭐⭐⭐ MOVE HERE (VERY IMPORTANT)
+    const source = localStorage.getItem("traffic_source") || "WEBSITE";
 
-  if (window.fbq) {
-    window.fbq("track", "InitiateCheckout", {
-      value: total,
-      currency: "INR",
-    });
-  }
+    if (window.fbq && total > 0 && !isNaN(total)) {
+      window.fbq("track", "Purchase", {
+        value: parseFloat(total.toFixed(2)),
+        currency: "INR",
+      });
+    }
 
-  try {
+    try {
       /* =========================
          COD FLOW (UNCHANGED)
       ========================= */

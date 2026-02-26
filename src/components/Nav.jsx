@@ -92,9 +92,9 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           Home
         </Link>
 
-        <Link to="/offer" onClick={onClose} className="whitespace-nowrap">
+        {/* <Link to="/offer" onClick={onClose} className="whitespace-nowrap">
           Offer
-        </Link>
+        </Link> */}
 
         {/* NEW ARRIVALS */}
         <div className="relative w-full group">
@@ -154,7 +154,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             }}
           >
             <Link to="/skin" onClick={onClose} className="whitespace-nowrap">
-              Skin
+              Skin Care
             </Link>
 
             <ChevronDown
@@ -199,7 +199,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             }}
           >
             <Link to="/hair" onClick={onClose} className="whitespace-nowrap">
-              Hair
+              Hair Care
             </Link>
 
             <ChevronDown

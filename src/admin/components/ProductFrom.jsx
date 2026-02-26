@@ -91,8 +91,10 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       price: initialData.price || "",
       mrp: initialData.mrp || "",
       hasVariants: initialData.hasVariants || false,
-      variants: initialData.variants || [],
-      categoryIds: initialData.categoryIds || [],
+      variants: (initialData.variants || []).map(v => ({
+        ...v,
+        preview: v.images || []
+      })), categoryIds: initialData.categoryIds || [],
       description: initialData.description || "",
       additionalInfo: initialData.additionalInfo || "",
       tagline: initialData.tagline || "",
@@ -175,24 +177,32 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     setPreviewImages(updatedPreviews);
   };
   const handleVariantReorder = (variantIndex, fromIndex, toIndex) => {
-  if (fromIndex === toIndex) return;
+    fromIndex = Number(fromIndex);
+    toIndex = Number(toIndex);
 
-  const updatedVariants = [...form.variants];
+    if (fromIndex === toIndex) return;
 
-  const images = [...(updatedVariants[variantIndex].images || [])];
-  const previews = [...(updatedVariants[variantIndex].preview || [])];
+    setForm(prev => {
+      const updatedVariants = [...prev.variants];
 
-  const [movedImage] = images.splice(fromIndex, 1);
-  const [movedPreview] = previews.splice(fromIndex, 1);
+      const images = [...(updatedVariants[variantIndex].images || [])];
+      const preview = [...(updatedVariants[variantIndex].preview || [])];
 
-  images.splice(toIndex, 0, movedImage);
-  previews.splice(toIndex, 0, movedPreview);
+      const [movedImage] = images.splice(fromIndex, 1);
+      const [movedPreview] = preview.splice(fromIndex, 1);
 
-  updatedVariants[variantIndex].images = images;
-  updatedVariants[variantIndex].preview = previews;
+      images.splice(toIndex, 0, movedImage);
+      preview.splice(toIndex, 0, movedPreview);
 
-  setForm({ ...form, variants: updatedVariants });
-};
+      updatedVariants[variantIndex] = {
+        ...updatedVariants[variantIndex],
+        images,
+        preview
+      };
+
+      return { ...prev, variants: updatedVariants };
+    });
+  };
 
   /* REMOVE SINGLE VARIANT IMAGE */
   const removeVariantImage = (variantIndex, imgIndex) => {
@@ -473,7 +483,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                   }
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
-                    const dragIndex = e.dataTransfer.getData("variantIndex");
+                    const dragIndex = Number(e.dataTransfer.getData("variantIndex"));
                     handleVariantReorder(index, dragIndex, i);
                   }}
                   className="relative group cursor-move"
@@ -615,7 +625,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               onDragStart={(e) => e.dataTransfer.setData("dragIndex", index)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
-                const dragIndex = e.dataTransfer.getData("dragIndex");
+                const dragIndex = Number(e.dataTransfer.getData("dragIndex"));
                 handleImageReorder(dragIndex, index);
               }}
               className="relative cursor-move"
