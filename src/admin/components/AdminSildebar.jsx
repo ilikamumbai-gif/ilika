@@ -11,7 +11,8 @@ import {
   X,
   Image,
   File,
-  Gift,   // ⭐ Added icon for Combo
+  Gift,
+  Star,   // ⭐ Added icon for Combo
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -88,6 +89,7 @@ const AdminSidebar = () => {
           <NavItem to="/admin/users" icon={Users} label="Users" />
 
           <NavItem to="/admin/blogs" icon={Image} label="Blogs" />
+          <NavItem to="/admin/review" icon={Star} label="Reviews" />
           <NavItem to="/admin/reports" icon={File} label="Report" />
         </nav>
       </aside>

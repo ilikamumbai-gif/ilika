@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import AdminLayout from "../../components/AdminLayout";
 import { useOrders } from "../../context/OrderContext";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const OrderDetail = () => {
   const { id } = useParams();
@@ -19,20 +21,75 @@ const OrderDetail = () => {
     );
   }
 
+  const downloadInvoice = () => {
+
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(18);
+    doc.text("Ilika - Invoice", 14, 20);
+
+    doc.setFontSize(10);
+    doc.text(`Order ID: ${order.id}`, 14, 30);
+    doc.text(`Customer: ${order.shippingAddress?.name}`, 14, 36);
+    doc.text(`Email: ${order.userEmail}`, 14, 42);
+    doc.text(
+      `Address: ${order.shippingAddress?.line}, ${order.shippingAddress?.city}, ${order.shippingAddress?.state} - ${order.shippingAddress?.pincode}`,
+      14,
+      48
+    );
+
+    // Table Data
+    const tableData = order.items.map((item) => [
+      item.name,
+      item.quantity,
+      `₹${item.price}`,
+      `₹${item.quantity * item.price}`,
+    ]);
+
+    autoTable(doc, {
+      startY: 55,
+      head: [["Product", "Qty", "Price", "Total"]],
+      body: tableData,
+    });
+
+    // Grand Total
+    doc.setFontSize(14);
+    doc.text(
+      `Grand Total: ₹${order.total}`,
+      140,
+      doc.lastAutoTable.finalY + 15
+    );
+
+    doc.save(`Invoice-${order.id.slice(-6)}.pdf`);
+  };
+
   return (
     <AdminLayout>
 
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center justify-between mb-6">
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 rounded-lg border hover:bg-gray-50"
+          >
+            <ArrowLeft size={18} />
+          </button>
+
+          <h1 className="text-xl font-semibold">
+            Order #{order.id.slice(-6)}
+          </h1>
+        </div>
+
+        {/* DOWNLOAD BUTTON */}
         <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-lg border hover:bg-gray-50"
+          onClick={downloadInvoice}
+          className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:opacity-90"
         >
-          <ArrowLeft size={18} />
+          Download Invoice
         </button>
 
-        <h1 className="text-xl font-semibold">
-          Order #{order.id.slice(-6)}
-        </h1>
       </div>
 
       {/* Shipping Address */}

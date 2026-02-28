@@ -33,8 +33,15 @@ const BlogDetail = () => {
               {blog.excerpt}
             </p>
 
-            <p className="text-xs sm:text-sm content-text">
-              {blog.createdAt} • {blog.author}
+            <p className="text-xs text-gray-500">
+              {blog.createdAt &&
+                new Date(blog.createdAt).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              {" • "}
+              {blog.author}
             </p>
 
           </div>
@@ -70,7 +77,12 @@ const BlogDetail = () => {
             whitespace-pre-line
             "
           >
-            {blog.content}
+            <div
+              className="prose max-w-none"
+              dangerouslySetInnerHTML={{
+                __html: blog.content,
+              }}
+            />
           </div>
 
 

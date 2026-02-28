@@ -25,7 +25,14 @@ const BlogCard = ({ blog }) => {
         <div className="p-4 sm:p-6 space-y-3">
 
           <p className="text-xs text-gray-500">
-            {blog.createdAt} • {blog.author}
+            {blog.createdAt &&
+              new Date(blog.createdAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            {" • "}
+            {blog.author}
           </p>
 
           <h3 className="text-lg sm:text-xl font-semibold heading-color line-clamp-2">

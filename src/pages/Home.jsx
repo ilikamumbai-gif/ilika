@@ -154,10 +154,18 @@ drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]
 
         <Heading heading="OUR TOP HAIR CARE" />
 
-        {haircareCategory ? (
-          <ProductList categoryId={haircareCategory.id} limit={4} />
+                {newCategory ? (
+          <ProductList
+            productNames={[
+              "Herbal Hair Oil | Prevents Dandruff | 200 ML",
+              "Black Seed Hair Oil | Prevents Premature Graying | 200ML",
+              "Frizz Control Hair Serum | Control Frizz & Detangle Hair | 50 ML",
+              "Keratin Rich Shampoo | Natural Shine & Softness | 200 ML"
+            ]}
+            limit={4}
+          />
         ) : (
-          <p className="text-sm text-gray-500">Loading products...</p>
+          <p className="text-center text-white">Loading products...</p>
         )}
 
 

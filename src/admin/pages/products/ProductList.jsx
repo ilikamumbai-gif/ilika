@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
@@ -8,6 +8,7 @@ import { useCategories } from "../../context/CategoryContext";
 
 const ProductList = () => {
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
 
   const { products, deleteProduct, fetchProducts } = useProducts();
 
@@ -28,6 +29,10 @@ const ProductList = () => {
       .filter(Boolean)
       .join(", ");
   };
+
+  const filteredProducts = products.filter((p) =>
+    p.name?.toLowerCase().includes(search.toLowerCase())
+  );
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
@@ -65,8 +70,8 @@ const ProductList = () => {
       render: (row) => (
         <span
           className={`px-2 py-1 text-xs rounded-full font-medium ${row.isActive === false
-              ? "bg-red-100 text-red-600"
-              : "bg-green-100 text-green-600"
+            ? "bg-red-100 text-red-600"
+            : "bg-green-100 text-green-600"
             }`}
         >
           {row.isActive === false ? "Inactive" : "Active"}
@@ -81,8 +86,8 @@ const ProductList = () => {
       render: (row) => (
         <span
           className={`px-2 py-1 text-xs rounded-full font-medium ${row.inStock === false
-              ? "bg-gray-200 text-gray-600"
-              : "bg-blue-100 text-blue-600"
+            ? "bg-gray-200 text-gray-600"
+            : "bg-blue-100 text-blue-600"
             }`}
         >
           {row.inStock === false ? "Out of Stock" : "In Stock"}
@@ -96,21 +101,37 @@ const ProductList = () => {
 
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+
         <h1 className="text-xl font-semibold">Products</h1>
 
-        <button
-          onClick={() => navigate("/admin/products/add")}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black text-white text-sm hover:opacity-90"
-        >
-          <Plus size={16} />
-          Add Product
-        </button>
+        <div className="flex gap-2">
+
+          {/* SEARCH */}
+          <input
+            type="text"
+            placeholder="Search product..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm w-48"
+          />
+
+          {/* ADD BUTTON */}
+          <button
+            onClick={() => navigate("/admin/products/add")}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black text-white text-sm hover:opacity-90"
+          >
+            <Plus size={16} />
+            Add Product
+          </button>
+
+        </div>
+
       </div>
 
       {/* TABLE */}
       <AdminTable
         columns={columns}
-        data={products}
+data={filteredProducts}
         actions={(row) => (
           <div className="flex gap-2 justify-end">
 

@@ -70,6 +70,10 @@ const AdminRoutes = () => {
                       <Route path="users" element={<UserList />} />
                       <Route path="users/:id" element={<UserDetail />} />
 
+                      {/* REVIEWS */}
+                      <Route path="review" element={<UserList />} />
+                      <Route path="review/:id" element={<UserDetail />} />
+
                       {/* ✅ BLOGS */}
                       <Route path="blogs" element={<BlogList />} />
                       <Route path="blogs/create" element={<AddBlog />} />
