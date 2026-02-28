@@ -9,8 +9,9 @@ import {
   LogOut,
   Menu,
   X,
-  Image,        // ✅ added
-  File,         // ✅ added
+  Image,
+  File,
+  Gift,   // ⭐ Added icon for Combo
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -78,11 +79,14 @@ const AdminSidebar = () => {
         <nav className="p-4 space-y-1">
           <NavItem to="/admin" icon={LayoutDashboard} label="Dashboard" />
           <NavItem to="/admin/products" icon={Package} label="Products" />
+
+          {/* ⭐ NEW COMBO SECTION */}
+          <NavItem to="/admin/combos" icon={Gift} label="Combos" />
+
           <NavItem to="/admin/categories" icon={Layers} label="Categories" />
           <NavItem to="/admin/orders" icon={ShoppingCart} label="Orders" />
           <NavItem to="/admin/users" icon={Users} label="Users" />
 
-          {/* ✅ Added */}
           <NavItem to="/admin/blogs" icon={Image} label="Blogs" />
           <NavItem to="/admin/reports" icon={File} label="Report" />
         </nav>

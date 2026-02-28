@@ -26,53 +26,65 @@ import { UserProvider } from "../context/UserContext";
 import { AdminAuthProvider } from "../context/AdminAuthContext";
 import { AdminStatsProvider } from "../context/AdminStatsContext";
 import BlogProvider from "../context/BlogProvider"; // ✅ NEW
+import ComboList from "../pages/Combo/ComboList";
+import AddCombo from "../pages/Combo/AddCombo";
+import EditCombo from "../pages/Combo/EditCombo";
+import { ComboProvider } from "../context/ComboContext";
 
 const AdminRoutes = () => {
   return (
     <AdminAuthProvider>
       <CategoryProvider>
         <ProductProvider>
-          <OrderProvider>
-            <AdminStatsProvider>
-              <UserProvider>
-                <BlogProvider> {/* ✅ ADDED */}
-                  
-                  <Routes>
-                    <Route index element={<Dashboard />} />
+          <ComboProvider>   {/* ⭐ ADD THIS */}
+            <OrderProvider>
+              <AdminStatsProvider>
+                <UserProvider>
+                  <BlogProvider>
 
-                    {/* PRODUCTS */}
-                    <Route path="products" element={<ProductList />} />
-                    <Route path="products/add" element={<AddProduct />} />
-                    <Route path="products/edit/:id" element={<EditProduct />} />
+                    <Routes>
+                      <Route index element={<Dashboard />} />
 
-                    {/* CATEGORIES */}
-                    <Route path="categories" element={<CategoryList />} />
-                    <Route path="categories/add" element={<AddCategory />} />
+                      {/* PRODUCTS */}
+                      <Route path="products" element={<ProductList />} />
+                      <Route path="products/add" element={<AddProduct />} />
+                      <Route path="products/edit/:id" element={<EditProduct />} />
 
-                    {/* ORDERS */}
-                    <Route path="orders" element={<OrderList />} />
-                    <Route path="orders/:id" element={<OrderDetail />} />
-                    <Route path="orders" element={<OrderList />} />
+                      {/* Combos  */}
+                      {/* Combos */}
+                      <Route path="combos" element={<ComboList />} />
+                      <Route path="combos/add" element={<AddCombo />} />
+                      <Route path="combos/edit/:id" element={<EditCombo />} />
+
+                      {/* CATEGORIES */}
+                      <Route path="categories" element={<CategoryList />} />
+                      <Route path="categories/add" element={<AddCategory />} />
+
+                      {/* ORDERS */}
+                      <Route path="orders" element={<OrderList />} />
+                      <Route path="orders/:id" element={<OrderDetail />} />
+                      <Route path="orders" element={<OrderList />} />
 
 
-                    {/* USERS */}
-                    <Route path="users" element={<UserList />} />
-                    <Route path="users/:id" element={<UserDetail />} />
+                      {/* USERS */}
+                      <Route path="users" element={<UserList />} />
+                      <Route path="users/:id" element={<UserDetail />} />
 
-                    {/* ✅ BLOGS */}
-                    <Route path="blogs" element={<BlogList />} />
-                    <Route path="blogs/create" element={<AddBlog />} />
-                    <Route path="blogs/:id" element={<ViewBlogDetails />} />
+                      {/* ✅ BLOGS */}
+                      <Route path="blogs" element={<BlogList />} />
+                      <Route path="blogs/create" element={<AddBlog />} />
+                      <Route path="blogs/:id" element={<ViewBlogDetails />} />
 
-                    {/* ✅ REPORTS */}
-                    <Route path="reports" element={<Report />} />
+                      {/* ✅ REPORTS */}
+                      <Route path="reports" element={<Report />} />
 
-                  </Routes>
+                    </Routes>
 
-                </BlogProvider>
-              </UserProvider>
-            </AdminStatsProvider>
-          </OrderProvider>
+                  </BlogProvider>
+                </UserProvider>
+              </AdminStatsProvider>
+            </OrderProvider>
+          </ComboProvider>   {/* ⭐ ADD THIS */}
         </ProductProvider>
       </CategoryProvider>
     </AdminAuthProvider>

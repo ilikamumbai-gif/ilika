@@ -12,6 +12,7 @@ import { UserProvider } from "./admin/context/UserContext";
 import { ProductProvider } from "./admin/context/ProductContext";
 import { CategoryProvider } from "./admin/context/CategoryContext";
 import MetaPixelTracker from "./components/MetaPixelTracker";
+import { ComboProvider } from "./admin/context/ComboContext";
 
 const App = () => {
   const { currentUser } = useAuth();
@@ -44,17 +45,19 @@ const App = () => {
           <CartProvider>
             <CategoryProvider>
               <ProductProvider>
-                <UserOrderProvider>
+                <ComboProvider>
+                  <UserOrderProvider>
 
-                  {showLoginPopup && (
-                    <LoginPopup onClose={() => setShowLoginPopup(false)} />
-                  )}
+                    {showLoginPopup && (
+                      <LoginPopup onClose={() => setShowLoginPopup(false)} />
+                    )}
 
-                  <MetaPixelTracker />
-                  <NavRoutes />
-                  <ScrollToTopButton />
+                    <MetaPixelTracker />
+                    <NavRoutes />
+                    <ScrollToTopButton />
 
-                </UserOrderProvider>
+                  </UserOrderProvider>
+                </ComboProvider>
               </ProductProvider>
             </CategoryProvider>
           </CartProvider>

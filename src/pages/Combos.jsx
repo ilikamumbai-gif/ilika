@@ -1,150 +1,288 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useCombos } from "../admin/context/ComboContext";
+import { useProducts } from "../admin/context/ProductContext";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
-import { useCart } from "../context/CartProvider";
+import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
+import { useCart } from "../context/CartProvider";
+import { Link } from "react-router-dom";
 
 const Combos = () => {
+  const { combos, fetchCombos } = useCombos();
+  const { products, fetchProducts } = useProducts();
   const { addToCart } = useCart();
 
-  const combos = [
-    {
-      id: "combo_glow",
-      name: "Glow Essentials",
-      price: 1499,
-      mrp: 2199,
-      items: [
-        {
-          id: "rose_serum",
-          name: "Rose Face Serum",
-          image:
-            "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd",
-        },
-        {
-          id: "vitamin_c",
-          name: "Vitamin C Cream",
-          image:
-            "https://images.unsplash.com/photo-1629196914168-5c8b6a4e6a0b",
-        },
-      ],
-    },
-    {
-      id: "combo_hydration",
-      name: "Hydration Ritual",
-      price: 1199,
-      mrp: 1799,
-      items: [
-        {
-          id: "aloe_gel",
-          name: "Aloe Vera Gel",
-          image:
-            "https://images.unsplash.com/photo-1585386959984-a4155224a1ad",
-        },
-        {
-          id: "facewash",
-          name: "Hydrating Face Wash",
-          image:
-            "https://images.unsplash.com/photo-1587854692152-cbe660dbde88",
-        },
-      ],
-    },
-  ];
+  useEffect(() => {
+    fetchCombos();
+    fetchProducts();
+  }, []);
+
+  const activeCombos = combos.filter(
+    (c) => c.isActive !== false
+  );
+
+  const getProductById = (id) =>
+    products.find((p) => p.id === id);
 
   return (
     <>
       <MiniDivider />
-      <Header />
 
-      <section className="max-w-7xl mx-auto px-4 pb-6">
-        
-        {/* Heading */}
-        
-          <Heading heading="Combo Offer" />
-     
-        
-        
+      <div className="primary-bg-color">
+        <Header />
+        <CartDrawer />
 
-        {/* GRID: 2 per row */}
-        <div className="grid md:grid-cols-2 gap-10">
-          {combos.map((combo) => {
-            const discount = Math.round(
-              ((combo.mrp - combo.price) / combo.mrp) * 100
-            );
+        <section className="max-w-7xl mx-auto px-3 sm:px-6 pb-10">
 
-            return (
-              <div
-                key={combo.id}
-                className="border border-[#f0e6e6] rounded-3xl p-8 hover:shadow-md transition"
-              >
-                {/* Combo Name */}
-                <h2 className="text-xl font-luxury text-center heading-2-color mb-8">
-                  {combo.name}
-                </h2>
+          <Heading heading="Exclusive Combos" />
 
-                {/* Products */}
-                <div className="flex items-center justify-center gap-6 mb-10">
-                  {combo.items.map((item, index) => (
-                    <React.Fragment key={item.id}>
-                      <div className="w-40 text-center">
-                        <div className="aspect-square flex items-center justify-center bg-[#fafafa] rounded-2xl p-4">
+          {activeCombos.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center">
+              No combos available.
+            </p>
+          ) : (
+
+            /* ✅ RESPONSIVE GRID */
+            <div className="grid 
+              grid-cols-1 
+              sm:grid-cols-2 
+              lg:grid-cols-3 
+              xl:grid-cols-4 
+              gap-5 sm:gap-6 mt-6"
+            >
+
+              {activeCombos.map((combo) => {
+
+                let img = null;
+
+                if (combo.images?.length > 0) {
+                  if (typeof combo.images[0] === "string") {
+                    img = combo.images[0];
+                  } else if (combo.images[0]?.url) {
+                    img = combo.images[0].url;
+                  }
+                }
+
+                if (!img && combo.image) img = combo.image;
+                if (!img && combo.imageUrl) img = combo.imageUrl;
+
+                const discount =
+                  combo.mrp && combo.mrp > combo.price
+                    ? Math.round(
+                        ((combo.mrp - combo.price) /
+                          combo.mrp) *
+                          100
+                      )
+                    : null;
+
+                return (
+                  <Link
+                    to={`/combo/${combo.id}`}
+                    key={combo.id}
+                    className="w-full"
+                  >
+
+                    <div className="
+                      primary-bg-color 
+                      rounded-2xl 
+                      overflow-hidden 
+                      shadow-sm 
+                      hover:shadow-lg 
+                      transition-all 
+                      duration-300 
+                      flex 
+                      flex-col
+                      h-full
+                    ">
+
+                      {/* IMAGE */}
+                      <div className="
+                        relative 
+                        aspect-square 
+                        overflow-hidden 
+                        flex 
+                        items-center 
+                        justify-center
+                      ">
+
+                        {img ? (
                           <img
-                            src={item.image}
-                            alt={item.name}
-                            className="object-contain h-full"
+                            src={img}
+                            alt={combo.name}
+                            onError={(e) => {
+                              e.target.src = "/placeholder.png";
+                            }}
+                            className="
+                              absolute inset-0
+                              w-full h-full
+                              object-contain
+                              scale-[1.05] sm:scale-[1.08]
+                              p-2 sm:p-3
+                            "
                           />
-                        </div>
-                        <p className="mt-3 text-xs content-text font-medium">
-                          {item.name}
-                        </p>
+                        ) : (
+                          <div className="text-gray-400 text-xs">
+                            No Image
+                          </div>
+                        )}
+
+                        {discount && (
+                          <div className="
+                            absolute 
+                            top-2 right-2
+                            bg-[#b34140]
+                            text-white
+                            text-[10px] sm:text-xs
+                            font-semibold
+                            px-2 py-1
+                            rounded-md
+                          ">
+                            {discount}% OFF
+                          </div>
+                        )}
+
                       </div>
 
-                      {index < combo.items.length - 1 && (
-                        <div className="text-2xl text-gray-300">+</div>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </div>
+                      {/* CONTENT */}
+                      <div className="p-3 sm:p-4 flex flex-col gap-1 flex-grow">
 
-                {/* Pricing */}
-                <div className="text-center border-t pt-6">
-                  <div className="flex justify-center items-center gap-4 mb-5">
-                    <span className="text-2xl font-semibold heading-2-color">
-                      ₹{combo.price}
-                    </span>
+                        {/* NAME */}
+                        <h3 className="
+                          text-[13px] sm:text-[14px]
+                          font-semibold
+                          text-[#172917]
+                          tracking-wide
+                        ">
+                          {combo.name}
+                        </h3>
 
-                    <span className="line-through text-gray-400 text-sm">
-                      ₹{combo.mrp}
-                    </span>
+                        {/* PRODUCTS */}
+                        {combo.productIds?.length > 0 && (
+                          <div>
 
-                    <span className="text-xs px-3 py-1 rounded-full bg-[#b34140] text-white">
-                      SAVE {discount}%
-                    </span>
-                  </div>
+                            <p className="
+                              text-[11px] sm:text-[12px]
+                              heading-color
+                            ">
+                              Includes:
+                            </p>
 
-                  <button
-                    onClick={() =>
-                      addToCart({
-                        id: `combo_${combo.id}`,
-                        name: combo.name,
-                        price: combo.price,
-                        mrp: combo.mrp,
-                        isCombo: true,
-                        quantity: 1,
-                      })
-                    }
-                    className="button-bg-color text-black px-8 py-2.5 rounded-full text-sm tracking-wide hover:opacity-90 transition"
-                  >
-                    Add Ritual To Cart
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+                            <div className="
+                              flex flex-wrap
+                              gap-1
+                              mt-1
+                            ">
 
-      <Footer />
+                              {combo.productIds.map((pid) => {
+                                const product =
+                                  getProductById(pid);
+
+                                return product ? (
+                                  <span
+                                    key={pid}
+                                    className="
+                                      text-[10px] sm:text-[11px]
+                                      text-[#1c371c98]
+                                    "
+                                  >
+                                    {product.name}
+                                  </span>
+                                ) : null;
+                              })}
+
+                            </div>
+                          </div>
+                        )}
+
+                        {/* FREE */}
+                        {combo.freeProductId && (
+                          <div className="
+                            text-[11px] sm:text-[12px]
+                            text-[#b34140]
+                          ">
+                            🎁 Free:{" "}
+                            {
+                              getProductById(
+                                combo.freeProductId
+                              )?.name
+                            }
+                          </div>
+                        )}
+
+                        {/* PRICE */}
+                        <div className="
+                          flex items-baseline
+                          gap-2
+                          mt-1
+                        ">
+
+                          <span className="
+                            font-semibold
+                            text-[#1C371C]
+                            text-[15px] sm:text-[16px]
+                          ">
+                            ₹{combo.price}
+                          </span>
+
+                          {combo.mrp &&
+                            combo.mrp > combo.price && (
+                              <span className="
+                                text-[#1c371c98]
+                                text-[12px]
+                                line-through
+                              ">
+                                ₹{combo.mrp}
+                              </span>
+                            )}
+
+                        </div>
+
+                      </div>
+
+                      {/* BUTTON */}
+                      <div className="px-3 sm:px-4 pb-4">
+
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+
+                            addToCart({
+                              ...combo,
+                              id: `combo_${combo.id}`,
+                              isCombo: true,
+                            });
+                          }}
+                          className="
+                            w-full
+                            text-[12px] sm:text-[13px]
+                            tracking-widest
+                            py-2 sm:py-2.5
+                            rounded-lg
+                            bg-[#2b2a29]
+                            text-white
+                          "
+                        >
+                          Add Combo To Cart
+                        </button>
+
+                      </div>
+
+                    </div>
+
+                  </Link>
+                );
+              })}
+
+            </div>
+          )}
+
+        </section>
+
+        <Footer />
+
+      </div>
     </>
   );
 };

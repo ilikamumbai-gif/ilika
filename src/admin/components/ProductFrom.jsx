@@ -87,16 +87,20 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
     setForm({
       name: initialData.name || "",
-      shortInfo: initialData.shortInfo || "",   // ✅ NEW
+      shortInfo: initialData.shortInfo || "",
       price: initialData.price || "",
       mrp: initialData.mrp || "",
       hasVariants: initialData.hasVariants || false,
       variants: (initialData.variants || []).map(v => ({
         ...v,
         preview: v.images || []
-      })), categoryIds: initialData.categoryIds || [],
+      })),
+      categoryIds: initialData.categoryIds || [],
       description: initialData.description || "",
-      additionalInfo: initialData.additionalInfo || "",
+
+      additionalInfo: Array.isArray(initialData.additionalInfo)
+        ? initialData.additionalInfo.join(", ")
+        : initialData.additionalInfo || "",
       tagline: initialData.tagline || "",
       points: initialData.benefits ? initialData.benefits.join(", ") : "",
       images: initialData.images || [],
@@ -275,9 +279,10 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         variants: variantData,
         categoryIds: form.categoryIds,
         description: form.description,
-        additionalInfo: form.additionalInfo
-          ? form.additionalInfo.split(",").map(item => item.trim())
-          : [],
+        additionalInfo:
+          typeof form.additionalInfo === "string"
+            ? form.additionalInfo.split(",").map(item => item.trim())
+            : [],
         tagline: form.tagline,
         benefits: form.points.split(",").map(p => p.trim()),
         images: imageUrls,
@@ -649,7 +654,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         </div>
       )}
 
-      <button className="bg-black text-white px-4 py-2 rounded">
+      <button type="submit" className="bg-black text-white px-4 py-2 rounded">
         {loading ? "Saving..." : "Save Product"}
       </button>
     </form>

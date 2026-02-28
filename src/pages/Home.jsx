@@ -16,8 +16,10 @@ import bannerSkincare from "../assets/Images/FacecareBanner.jpg.jpeg";
 import bannerHair from "../assets/Images/HairBanner.jpg.jpeg";
 import HoliSplash from "../components/HoliSplash";
 import { useCategories } from "../admin/context/CategoryContext";
+import holimainbanner from "../../public/Images/BannerHoli.jpeg"
 import holibg1 from "../assets/Images/holibg1.jpg"
-import holibg2 from "../assets/Images/holibg2.png"
+import holibg2 from "../assets/Images/holibg3.png"
+import holibg3 from "../assets/Images/holibg2.jpeg"
 
 const Home = () => {
 
@@ -64,11 +66,12 @@ const Home = () => {
         <CartDrawer />
 
         {/* HERO SECTION */}
-        <Banner className="md:h-[95vh] -mt-5" src={bannerImg} />
+        <Banner className="md:h-[87vh] -mt-3" src={holimainbanner} />
 
 
         {/* HOLI FEATURED SECTION */}
-        {/* <div
+        {/* HOLI FEATURED SECTION */}
+        <div
           className="relative overflow-hidden py-20 px-4 sm:px-8 lg:px-16 
   bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${holibg2})` }}
@@ -100,7 +103,7 @@ drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]
               )}
             </div>
           </div>
-        </div> */}
+        </div>
 
 
 

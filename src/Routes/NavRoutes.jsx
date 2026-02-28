@@ -42,6 +42,7 @@ import HairRemoval from "../pages/HairRemoval";
 import ShopAll from "../pages/ShopAll";
 import About from "../pages/About";
 import Combos from "../pages/Combos";
+import ComboDetail from "../pages/ComboDetail";
 
 
 
@@ -93,7 +94,8 @@ const NavRoutes = () => {
         <Route path="/shippingpolicy" element={<ShippingPolicy />} />
         <Route path="/faq" element={<Faq />} />
         <Route path="/order-success/:id" element={<OrderSuccess />} />
-        <Route path="/combos" element={<Combos />} />
+        <Route path="/combo" element={<Combos/>} />
+        <Route path="/combo/:id" element={<ComboDetail />} />
 
 
         {/* USER AUTH */}

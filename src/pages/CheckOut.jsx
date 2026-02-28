@@ -138,11 +138,17 @@ const Checkout = () => {
     // ⭐⭐⭐ MOVE HERE (VERY IMPORTANT)
     const source = localStorage.getItem("traffic_source") || "WEBSITE";
 
-    if (window.fbq && total > 0 && !isNaN(total)) {
-      window.fbq("track", "InitiateCheckout", {
-        value: total,
-        currency: "INR",
-      });
+    if (window.fbq) {
+      const safeTotal = Number(total);
+
+      if (!isNaN(safeTotal) && safeTotal > 0) {
+        window.fbq("track", "InitiateCheckout", {
+          value: safeTotal,
+          currency: "INR",
+          content_type: "product",
+          num_items: cartItems.length,
+        });
+      }
     }
 
     try {
@@ -228,11 +234,25 @@ const Checkout = () => {
             /* ==============================
                ✅ FACEBOOK PIXEL PURCHASE EVENT
             ============================== */
-            if (window.fbq && total > 0 && !isNaN(total)) {
-              window.fbq("track", "Purchase", {
-                value: total,
-                currency: "INR",
-              });
+            /* ==============================
+     ✅ FACEBOOK PIXEL PURCHASE EVENT (SAFE)
+  ============================== */
+
+            const safeTotal = Number(total);
+
+            if (window.fbq && !isNaN(safeTotal) && safeTotal > 0) {
+
+              // Prevent duplicate purchase firing
+              if (!window.__purchaseFired) {
+                window.__purchaseFired = true;
+
+                window.fbq("track", "Purchase", {
+                  value: safeTotal,
+                  currency: "INR",
+                  content_type: "product",
+                  num_items: cartItems.length,
+                });
+              }
             }
 
             // 2️⃣ Clear cart

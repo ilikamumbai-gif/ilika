@@ -235,6 +235,103 @@ app.delete("/api/products/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete product" });
   }
 });
+
+
+
+
+/* ============================== COMBOS ============================== */
+
+
+app.post("/api/combos", async (req, res) => {
+  try {
+    const now = Date.now();
+
+    const comboData = {
+      ...req.body,
+      isActive: req.body.isActive ?? true,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const docRef = await db.collection("combos").add(comboData);
+
+    res.json({ id: docRef.id, ...comboData });
+  } catch (error) {
+    console.error("ADD COMBO ERROR:", error);
+    res.status(500).json({ error: "Failed to add combo" });
+  }
+});
+
+
+/* ============================== COMBOS ============================== */
+
+/* ============================== COMBOS ============================== */
+
+app.post("/api/combos", async (req, res) => {
+  try {
+    const now = Date.now();
+
+    const comboData = {
+      ...req.body,
+      isActive: req.body.isActive ?? true,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const docRef = await db.collection("combos").add(comboData);
+
+    res.json({ id: docRef.id, ...comboData });
+  } catch (error) {
+    console.error("ADD COMBO ERROR:", error);
+    res.status(500).json({ error: "Failed to add combo" });
+  }
+});
+
+app.get("/api/combos", async (req, res) => {
+  try {
+    const snapshot = await db.collection("combos")
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const combos = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.json(combos);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch combos" });
+  }
+});
+
+app.put("/api/combos/:id", async (req, res) => {
+  try {
+    await db.collection("combos")
+      .doc(req.params.id)
+      .update({
+        ...req.body,
+        updatedAt: Date.now(),
+      });
+
+    res.json({ message: "Combo updated successfully" });
+  } catch {
+    res.status(500).json({ error: "Failed to update combo" });
+  }
+});
+
+app.delete("/api/combos/:id", async (req, res) => {
+  try {
+    await db.collection("combos")
+      .doc(req.params.id)
+      .delete();
+
+    res.json({ message: "Combo deleted successfully" });
+  } catch {
+    res.status(500).json({ error: "Failed to delete combo" });
+  }
+});
+
+
 /* ============================== PAYMENTS ============================== */
 
 app.post("/api/payments/create-order", async (req, res) => {

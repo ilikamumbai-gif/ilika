@@ -321,7 +321,7 @@ const ProductDetail = ({
               <div>
                 {/* TITLE */}
                 {/* className="text-[18px] font-luxury font-semibold text-[#172917] leading-tight tracking-tight" */}
-                <h1 className="text-2xl sm:text-3xl font-luxury font-bold  heading-color leading-tight tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-luxury font-bold text-[#2b2a29] leading-tight tracking-tight">
                   {product.name}
                 </h1>
 

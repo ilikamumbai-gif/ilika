@@ -8,25 +8,29 @@ export const ProductProvider = ({ children }) => {
   const API = import.meta.env.VITE_API_URL;
 
   /* ================= FETCH PRODUCTS ================= */
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
+const fetchProducts = async () => {
+  try {
+    setLoading(true);
 
-      const res = await fetch(`${API}/api/products`);
-      if (!res.ok) throw new Error("Failed to fetch products");
+    const res = await fetch(`${API}/api/products`);
+    if (!res.ok) throw new Error("Failed to fetch products");
 
-      const data = await res.json();
+    const data = await res.json();
 
-      // Always ensure array
-      setProducts(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Fetch products error:", error);
-      setProducts([]); // safety fallback
-    } finally {
-      setLoading(false);
-    }
-  };
+    const list = Array.isArray(data) ? data : [];
 
+    setProducts(list);
+
+    return list; // ✅ VERY IMPORTANT
+
+  } catch (error) {
+    console.error("Fetch products error:", error);
+    setProducts([]);
+    return [];
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     fetchProducts();
   }, []);

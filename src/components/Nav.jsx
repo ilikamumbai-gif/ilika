@@ -92,9 +92,9 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           Home
         </Link>
 
-        {/* <Link to="/offer" onClick={onClose} className="whitespace-nowrap">
+        <Link to="/combo" onClick={onClose} className="whitespace-nowrap">
           Offer
-        </Link> */}
+        </Link>
 
         {/* NEW ARRIVALS */}
         <div className="relative w-full group">
