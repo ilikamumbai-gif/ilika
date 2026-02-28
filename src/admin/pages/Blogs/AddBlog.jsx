@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useBlog } from "../../context/BlogProvider";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../../firebase/firebaseConfig";
 
 const AddBlog = () => {
   const navigate = useNavigate();
   const { addBlog } = useBlog();
-
+  const [uploading, setUploading] = useState(false);
   const [blog, setBlog] = useState({
     title: "",
     image: "",
@@ -21,26 +23,43 @@ const AddBlog = () => {
     setBlog({ ...blog, [e.target.name]: e.target.value });
 
   // IMAGE UPLOAD
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
+
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result);
-      setBlog(prev => ({ ...prev, image: reader.result }));
-    };
-    reader.readAsDataURL(file);
+    try {
+
+      setUploading(true);
+
+      const storageRef = ref(
+        storage,
+        `blogs/${Date.now()}_${file.name}`
+      );
+
+      await uploadBytes(storageRef, file);
+
+      const url = await getDownloadURL(storageRef);
+
+      setBlog(prev => ({
+        ...prev,
+        image: url,
+      }));
+
+      setPreview(url);
+
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setUploading(false);
+    }
+
   };
 
   const submitBlog = (e) => {
     e.preventDefault();
 
-    addBlog({
-      ...blog,
-      id: Date.now().toString(),
-      createdAt: new Date().toLocaleDateString(),
-    });
+    addBlog(blog);
 
     navigate("/admin/blogs");
   };
@@ -105,8 +124,11 @@ const AddBlog = () => {
             required
           />
 
-          <button className="bg-black text-white px-6 py-3 rounded-lg w-full">
-            Publish Blog
+          <button
+            disabled={uploading}
+            className="bg-black text-white px-6 py-3 rounded-lg w-full"
+          >
+            {uploading ? "Uploading..." : "Publish Blog"}
           </button>
 
         </form>

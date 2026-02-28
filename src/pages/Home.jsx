@@ -10,13 +10,15 @@ import TestimonialList from "../components/TestimonialList";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Banner from "../components/Banner";
-import bannerImg from "../../public/Images/Banner.jpg";
+// import bannerImg from "../../public/Images/Banner.jpg";
 import bannerImg2 from "../assets/Images/Banner 2.jpg";
 import bannerSkincare from "../assets/Images/FacecareBanner.jpg.jpeg";
 import bannerHair from "../assets/Images/HairBanner.jpg.jpeg";
 import HoliSplash from "../components/HoliSplash";
 import { useCategories } from "../admin/context/CategoryContext";
 import holimainbanner from "../../public/Images/BannerHoli.jpeg"
+
+import bannerStyle from "../../public/Images/Banner2.jpeg"
 import holibg1 from "../assets/Images/holibg1.jpg"
 import holibg2 from "../assets/Images/holibg3.png"
 import holibg3 from "../assets/Images/holibg2.jpeg"
@@ -134,9 +136,7 @@ drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]
 
 
 
-
-
-        <Banner className="md:h-[90vh] mt-0 mb-10" src={bannerImg} />
+        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerStyle} />
 
         <Heading heading="TOP APPLIANCES" />
 

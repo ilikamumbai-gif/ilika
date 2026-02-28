@@ -1,45 +1,59 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const BlogContext = createContext();
 
 export const useBlog = () => useContext(BlogContext);
 
-const STORAGE_KEY = "ilika_blogs";
+const API = import.meta.env.VITE_API_URL;
 
 const BlogProvider = ({ children }) => {
+
   const [blogs, setBlogs] = useState([]);
 
-  // Load from localStorage (only persistence, not logic)
+  // GET BLOGS
+  const fetchBlogs = async () => {
+    const res = await fetch(`${API}/api/blogs`);
+    const data = await res.json();
+    setBlogs(data);
+  };
+
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    setBlogs(saved);
+    fetchBlogs();
   }, []);
 
-  // Save whenever blogs change
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(blogs));
-  }, [blogs]);
+  // ADD BLOG
+  const addBlog = async (blog) => {
 
-  // CREATE BLOG
-  const addBlog = (blog) => {
-    const newBlog = {
-      id: Date.now().toString(),
-      createdAt: new Date().toLocaleDateString(),
-      ...blog,
-    };
-    setBlogs((prev) => [newBlog, ...prev]);
+    await fetch(`${API}/api/blogs`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(blog),
+    });
+
+    fetchBlogs();
   };
 
-  // DELETE BLOG
-  const deleteBlog = (id) => {
-    setBlogs((prev) => prev.filter((b) => b.id !== id));
-  };
+  // DELETE
+  const deleteBlog = async (id) => {
 
-  // GET BLOG
-  const getBlog = (id) => blogs.find((b) => b.id === id);
+    await fetch(`${API}/api/blogs/${id}`, {
+      method: "DELETE",
+    });
+
+    fetchBlogs();
+  };
 
   return (
-    <BlogContext.Provider value={{ blogs, addBlog, deleteBlog, getBlog }}>
+    <BlogContext.Provider
+      value={{
+        blogs,
+        addBlog,
+        deleteBlog,
+        fetchBlogs,
+      }}
+    >
       {children}
     </BlogContext.Provider>
   );
