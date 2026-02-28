@@ -177,14 +177,14 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               onClick={onClose}
               className="block px-4 py-3 text-sm hover:bg-gray-100"
             >
-              Face
+              Face Care
             </Link>
             <Link
               to="/skin/body"
               onClick={onClose}
               className="block px-4 py-3 text-sm hover:bg-gray-100"
             >
-              Body
+              Body Care
             </Link>
           </div>
         </div>
