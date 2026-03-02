@@ -4,80 +4,59 @@ import Header from "../components/Header";
 import CategoryNav from "../components/CategoryNav";
 import Heading from "../components/Heading";
 import ProductList from "../components/ProductList";
-import { categoriesData, IngredientsData } from "../Dummy/categoriesData";
+import { categoriesData } from "../Dummy/categoriesData";
 import Menifesto from "../components/Menifesto";
 import TestimonialList from "../components/TestimonialList";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Banner from "../components/Banner";
-// import bannerImg from "../../public/Images/Banner.jpg";
-import bannerImg2 from "../assets/Images/Banner 2.jpg";
-
-import bannerSkincare from "../assets/Images/FacecareBanner.jpg.jpeg";
-import skinMobile from "../../public/Images/skinMobile.jpeg";
-import hairMobile from "../../public/Images/hairMobile.jpeg";
-
-import bannerHair from "../assets/Images/HairBanner.jpg.jpeg";
-
-
-import styleMobile from "../../public/Images/styleMobile.jpeg";
-
-import HoliSplash from "../components/HoliSplash";
 import { useCategories } from "../admin/context/CategoryContext";
 
-import holimainbanner from "../../public/Images/BannerHoli.jpeg"
-import holiMobile from "../../public/Images/holiMobile.jpeg"
+/* assets (correct import) */
+import bannerSkincare from "../assets/Images/FacecareBanner.jpg.jpeg";
+import bannerHair from "../assets/Images/HairBanner.jpg.jpeg";
+import holibg2 from "../assets/Images/holibg3.png";
 
-import bannerStyle from "../../public/Images/Banner2.jpeg"
-import holibg1 from "../assets/Images/holibg1.jpg"
-import holibg2 from "../assets/Images/holibg3.png"
-import holibg3 from "../assets/Images/holibg2.jpeg"
+/* public images (use path only) */
+const skinMobile = "/Images/skinMobile.jpeg";
+const hairMobile = "/Images/hairMobile.jpeg";
+const styleMobile = "/Images/styleMobile.jpeg";
+
+const holimainbanner = "/Images/BannerHoli.jpeg";
+const holiMobile = "/Images/holiMobile.jpeg";
+
+const bannerStyle = "/Images/Banner2.jpeg";
 
 const Home = () => {
 
   const { categories } = useCategories();
 
   const skincareCategory = categories.find(
-    (c) =>
-      c.name
-        .toLowerCase()
-        .replace(/\s+/g, "") === "skincare"
+    c => c.name.toLowerCase().replace(/\s+/g, "") === "skincare"
   );
 
-
   const hairstylingCategory = categories.find(
-    (c) =>
-      c.name
-        .toLowerCase()
-        .replace(/\s+/g, "") === "hairstyling"
+    c => c.name.toLowerCase().replace(/\s+/g, "") === "hairstyling"
   );
 
   const newCategory = categories.find(
-    (c) =>
-      c.name
-        .toLowerCase()
-        .replace(/\s+/g, "") === "new"
+    c => c.name.toLowerCase().replace(/\s+/g, "") === "new"
   );
 
   const haircareCategory = categories.find(
-    (c) =>
-      c.name
-        .toLowerCase()
-        .replace(/\s+/g, "") === "haircare"
+    c => c.name.toLowerCase().replace(/\s+/g, "") === "haircare"
   );
-
 
   return (
     <>
-
-
       <MiniDivider />
 
       <div className="relative primary-bg-color">
+
         <Header />
         <CartDrawer />
 
-        {/* HERO SECTION */}
+        {/* HERO */}
         <Banner
           className="md:h-[87vh] -mt-3"
           src={holimainbanner}
@@ -85,25 +64,29 @@ const Home = () => {
         />
 
 
-        {/* HOLI FEATURED SECTION */}
-        {/* HOLI FEATURED SECTION */}
+        {/* HOLI SECTION */}
         <div
           className="relative overflow-hidden py-20 px-4 sm:px-8 lg:px-16 
-  bg-cover bg-center bg-no-repeat"
+          bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${holibg2})` }}
         >
-          <div className="absolute inset-0 "></div>
+
           <div className="relative z-10 max-w-7xl mx-auto">
+
             <div className="text-center mb-10">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold 
-text-white tracking-wide 
-drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)] 
-[WebkitTextStroke:2px_black]">
+              text-white tracking-wide 
+              drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)] 
+              [WebkitTextStroke:2px_black]">
+
                 HOLI SPECIAL OFFERS
+
               </h2>
             </div>
+
             <div className="bg-white/10 backdrop-blur-md 
-      rounded-3xl p-2 sm:p-4 shadow-2xl border border-white/30">
+            rounded-3xl p-2 sm:p-4 shadow-2xl border border-white/30">
+
               {newCategory ? (
                 <ProductList
                   productNames={[
@@ -115,21 +98,28 @@ drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]
                   limit={4}
                 />
               ) : (
-                <p className="text-center text-white">Loading products...</p>
+                <p className="text-center text-white">
+                  Loading products...
+                </p>
               )}
+
             </div>
+
           </div>
         </div>
 
 
-
-        {/* CATEGORY NAVIGATION */}
+        {/* CATEGORY NAV */}
         <CategoryNav categories={categoriesData} />
 
 
+        {/* SKIN CARE */}
+        <Banner
+          className="md:h-[60vh] mt-0 mb-10"
+          src={bannerSkincare}
+          mobileSrc={skinMobile}
+        />
 
-        {/* SECOND PROMO BANNER */}
-        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerSkincare} mobileSrc={skinMobile}/>
         <Heading heading="OUR SKIN CARE" />
 
         {newCategory ? (
@@ -143,28 +133,39 @@ drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]
             limit={4}
           />
         ) : (
-          <p className="text-center text-white">Loading products...</p>
+          <p className="text-center text-white">
+            Loading products...
+          </p>
         )}
 
 
-
-
-
-        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerStyle} mobileSrc={styleMobile}/>
+        {/* APPLIANCES */}
+        <Banner
+          className="md:h-[60vh] mt-0 mb-10"
+          src={bannerStyle}
+          mobileSrc={styleMobile}
+        />
 
         <Heading heading="TOP APPLIANCES" />
 
         {hairstylingCategory ? (
-          <ProductList categoryId={hairstylingCategory.id} limit={4} />
+          <ProductList
+            categoryId={hairstylingCategory.id}
+            limit={4}
+          />
         ) : (
-          <p className="text-sm text-gray-500">Loading products...</p>
+          <p className="text-sm text-gray-500">
+            Loading products...
+          </p>
         )}
 
 
-
-
-
-        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerHair} mobileSrc={hairMobile}/>
+        {/* HAIR CARE */}
+        <Banner
+          className="md:h-[60vh] mt-0 mb-10"
+          src={bannerHair}
+          mobileSrc={hairMobile}
+        />
 
         <Heading heading="OUR TOP HAIR CARE" />
 
@@ -179,27 +180,23 @@ drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]
             limit={4}
           />
         ) : (
-          <p className="text-center text-white">Loading products...</p>
+          <p className="text-center text-white">
+            Loading products...
+          </p>
         )}
 
 
-
-
-
-
-
-        {/* SHOP BY INGREDIENTS
-        <Heading heading="TOP CATEGORY" />
-        <CategoryNav categories={IngredientsData} /> */}
-
-        {/* BRAND MANIFESTO */}
+        {/* MANIFESTO */}
         <Menifesto />
 
-        {/* TESTIMONIALS */}
+
+        {/* TESTIMONIAL */}
         <Heading heading="COSTUMER'S STORIES" />
         <TestimonialList />
 
+
         <Footer />
+
       </div>
     </>
   );
