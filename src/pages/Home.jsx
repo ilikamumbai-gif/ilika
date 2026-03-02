@@ -15,9 +15,10 @@ import bannerImg2 from "../assets/Images/Banner 2.jpg";
 
 import bannerSkincare from "../assets/Images/FacecareBanner.jpg.jpeg";
 import skinMobile from "../../public/Images/skinMobile.jpeg";
+import hairMobile from "../../public/Images/hairMobile.jpeg";
 
 import bannerHair from "../assets/Images/HairBanner.jpg.jpeg";
-import hairMobile from "/Images/hairMobile.jpeg";
+
 
 import styleMobile from "../../public/Images/styleMobile.jpeg";
 
