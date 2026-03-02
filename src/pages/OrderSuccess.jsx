@@ -14,12 +14,12 @@ const OrderSuccess = () => {
     <>
       <MiniDivider />
 
-      <div className="primary-bg-color min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col">
         <Header />
         <CartDrawer />
 
         {/* SUCCESS CONTENT */}
-        <div className="flex-1 flex items-center justify-center px-4 py-10 secondary-bg-color shadow-sm">
+        <div className="flex-1 flex items-center justify-center px-4 py-10">
           <div className="bg-white rounded-2xl shadow-md max-w-lg w-full p-8 text-center space-y-6">
 
             {/* ICON */}

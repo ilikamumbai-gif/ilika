@@ -17,25 +17,32 @@ const Report = () => {
   return (
     <AdminLayout>
 
-      <h1 className="text-2xl font-semibold mb-6">Reports & Analytics</h1>
+      <h1 className="text-2xl font-semibold mb-6">
+        Reports & Analytics
+      </h1>
 
-      {/* TAB SWITCHER */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      {/* Tabs */}
+      <div className="flex gap-3 mb-6">
+
         {tabs.map(t => (
+
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition
-              ${tab === t.id
+            ${
+              tab === t.id
                 ? "bg-black text-white"
-                : "bg-gray-100 hover:bg-gray-200"}`}
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
           >
             {t.label}
           </button>
+
         ))}
+
       </div>
 
-      {/* CONTENT */}
       {tab === "revenue" && <RevenueReport />}
       {tab === "customers" && <TopCustomers />}
       {tab === "transfers" && <TransferHistory />}

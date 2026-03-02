@@ -10,6 +10,17 @@ import Underline from "@tiptap/extension-underline";
 import Strike from "@tiptap/extension-strike";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
 import Image from "@tiptap/extension-image";
+import { logActivity } from "../../Utils/logActivity";
+
+
+
+/* ================= LOG FUNCTION ================= */
+
+
+
+
+
+/* ================= RICH EDITOR ================= */
 
 const RichTextEditor = ({ value, onChange }) => {
 
@@ -44,7 +55,8 @@ const RichTextEditor = ({ value, onChange }) => {
 
   if (!editor) return null;
 
-  const btn = "px-2 py-1 border rounded text-sm hover:bg-gray-100";
+  const btn =
+    "px-2 py-1 border rounded text-sm hover:bg-gray-100";
 
 
   const handleInsertImage = async (e) => {
@@ -67,41 +79,67 @@ const RichTextEditor = ({ value, onChange }) => {
 
       <div className="flex flex-wrap gap-2 border-b pb-2">
 
-        <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btn}>B</button>
+        <button type="button"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={btn}
+        >B</button>
 
-        <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={btn}>I</button>
+        <button type="button"
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={btn}
+        >I</button>
 
-        <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={btn}>U</button>
+        <button type="button"
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          className={btn}
+        >U</button>
 
-        <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={btn}>H1</button>
+        <button type="button"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          className={btn}
+        >H1</button>
 
-        <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btn}>H2</button>
+        <button type="button"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={btn}
+        >H2</button>
 
-        <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btn}>• List</button>
+        <button type="button"
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={btn}
+        >• List</button>
 
-        <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btn}>1. List</button>
+        <button type="button"
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={btn}
+        >1. List</button>
 
-        {/* IMAGE BUTTON */}
+        {/* IMAGE */}
 
         <label className={btn}>
           Image
           <input
             type="file"
-            accept="image/*"
             hidden
             onChange={handleInsertImage}
           />
         </label>
 
-        <button type="button" onClick={() => editor.chain().focus().undo().run()} className={btn}>Undo</button>
+        <button type="button"
+          onClick={() => editor.chain().focus().undo().run()}
+          className={btn}
+        >Undo</button>
 
-        <button type="button" onClick={() => editor.chain().focus().redo().run()} className={btn}>Redo</button>
+        <button type="button"
+          onClick={() => editor.chain().focus().redo().run()}
+          className={btn}
+        >Redo</button>
 
       </div>
 
       <EditorContent
         editor={editor}
-        className="min-h-[200px] outline-none prose max-w-none"
+        className="min-h-[200px] prose max-w-none"
       />
 
     </div>
@@ -109,10 +147,18 @@ const RichTextEditor = ({ value, onChange }) => {
 };
 
 
+
+
+/* ================= ADD BLOG ================= */
+
 const AddBlog = () => {
+
   const navigate = useNavigate();
+
   const { addBlog } = useBlog();
+
   const [uploading, setUploading] = useState(false);
+
   const [blog, setBlog] = useState({
     title: "",
     image: "",
@@ -123,13 +169,22 @@ const AddBlog = () => {
 
   const [preview, setPreview] = useState(null);
 
-  const handleChange = (e) =>
-    setBlog({ ...blog, [e.target.name]: e.target.value });
 
-  // IMAGE UPLOAD
+
+  const handleChange = (e) =>
+    setBlog({
+      ...blog,
+      [e.target.name]: e.target.value
+    });
+
+
+
+  /* IMAGE UPLOAD */
+
   const handleImageUpload = async (e) => {
 
     const file = e.target.files[0];
+
     if (!file) return;
 
     try {
@@ -153,27 +208,53 @@ const AddBlog = () => {
       setPreview(url);
 
     } catch (err) {
+
       console.log(err);
+
     } finally {
+
       setUploading(false);
+
     }
 
   };
 
-  const submitBlog = (e) => {
+
+
+  /* ================= SUBMIT ================= */
+
+  const submitBlog = async (e) => {
+
     e.preventDefault();
 
-    addBlog(blog);
+    await addBlog(blog);
+
+    await logActivity(
+  "CREATE_BLOG",
+  `Created blog: ${blog.title}`
+);
 
     navigate("/admin/blogs");
+
   };
 
-  return (
-    <AdminLayout>
-      <div className="max-w-3xl mx-auto p-6">
-        <h1 className="text-2xl font-semibold mb-6">Create Blog</h1>
 
-        <form onSubmit={submitBlog} className="space-y-5">
+
+  return (
+
+    <AdminLayout>
+
+      <div className="max-w-3xl mx-auto p-6">
+
+        <h1 className="text-2xl font-semibold mb-6">
+          Create Blog
+        </h1>
+
+
+        <form
+          onSubmit={submitBlog}
+          className="space-y-5"
+        >
 
           <input
             name="title"
@@ -183,64 +264,73 @@ const AddBlog = () => {
             required
           />
 
+
           <div>
-            <label className="text-sm font-medium">Upload Image</label>
+
+            <label>Upload Image</label>
+
             <input
               type="file"
-              accept="image/*"
-              className="w-full border p-2 rounded"
               onChange={handleImageUpload}
+              className="w-full border p-2"
               required
             />
 
             {preview && (
               <img
                 src={preview}
-                className="w-full h-64 object-cover rounded mt-3"
-                alt="preview"
+                className="w-full h-64 object-cover mt-3"
               />
             )}
+
           </div>
+
 
           <input
             name="author"
             placeholder="Author"
-            className="w-full border p-3 rounded"
+            className="w-full border p-3"
             onChange={handleChange}
             required
           />
+
 
           <textarea
             name="shortDesc"
             placeholder="Short Description"
-            rows="3"
-            className="w-full border p-3 rounded"
+            className="w-full border p-3"
             onChange={handleChange}
             required
           />
 
-          <div>
-            <label className="font-medium">Blog Content</label>
 
-            <RichTextEditor
-              value={blog.content}
-              onChange={(html) =>
-                setBlog({ ...blog, content: html })
-              }
-            />
-          </div>
+          <RichTextEditor
+            value={blog.content}
+            onChange={(html) =>
+              setBlog({
+                ...blog,
+                content: html
+              })
+            }
+          />
+
 
           <button
             disabled={uploading}
-            className="bg-black text-white px-6 py-3 rounded-lg w-full"
+            className="bg-black text-white px-6 py-3 w-full"
           >
-            {uploading ? "Uploading..." : "Publish Blog"}
+            {uploading
+              ? "Uploading..."
+              : "Publish Blog"}
           </button>
 
         </form>
+
       </div>
+
     </AdminLayout>
   );
+
 };
 
 export default AddBlog;

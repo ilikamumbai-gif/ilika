@@ -25,7 +25,7 @@ const CartProductList = () => {
   return (
     <AdminLayout>
 
-      <div className=" max-w-6xl mx-auto">
+      <div className="mx-auto">
 
         <h1 className="text-xl font-semibold mb-6">
           Cart Interest Products

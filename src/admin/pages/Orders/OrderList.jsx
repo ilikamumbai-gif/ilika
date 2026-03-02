@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Eye, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import AdminTable from "../../components/AdminTable";
 import { useOrders } from "../../context/OrderContext";
+import { logActivity } from "../../Utils/logActivity";
+
+/* ================= LOG ================= */
+
+
+/* ================= STYLE ================= */
 
 const getStatusStyle = (status) => {
   switch (status) {
@@ -21,6 +27,7 @@ const getStatusStyle = (status) => {
 };
 
 const OrderList = () => {
+
   const navigate = useNavigate();
 
   const {
@@ -31,11 +38,25 @@ const OrderList = () => {
     deleteOrder,
   } = useOrders();
 
-  const handleStatusChange = (id, status) => {
-    updateOrderStatus(id, status);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [search, setSearch] = useState("");
+
+  /* ================= STATUS ================= */
+
+  const handleStatusChange = async (id, status) => {
+
+    await updateOrderStatus(id, status);
+
+    await logActivity(
+      `Order ${id} status → ${status}`
+    );
+
   };
 
   const normalizeSource = (src) => {
+
     if (!src) return "WEBSITE";
 
     const s = src.toLowerCase();
@@ -43,28 +64,59 @@ const OrderList = () => {
     if (
       s.includes("meta") ||
       s.includes("facebook") ||
-      s.includes("instagram") ||
-      s.includes("fbclid")
+      s.includes("instagram")
     )
       return "META ADS";
 
     if (
       s.includes("google") ||
-      s.includes("gclid") ||
-      s.includes("search")
+      s.includes("gclid")
     )
       return "GOOGLE ADS";
 
     return "WEBSITE";
   };
 
+  /* ================= FILTER ================= */
+
+  const filteredOrders = orders.filter((o) => {
+
+    const statusMatch =
+      !statusFilter || o.status === statusFilter;
+
+    const sourceMatch =
+      !sourceFilter ||
+      normalizeSource(o.source) === sourceFilter;
+
+    const dateMatch =
+      !dateFilter || o.date === dateFilter;
+
+    const searchMatch =
+      !search ||
+      o.userEmail?.toLowerCase().includes(search.toLowerCase()) ||
+      o.shippingAddress?.name
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
+
+    return (
+      statusMatch &&
+      sourceMatch &&
+      dateMatch &&
+      searchMatch
+    );
+
+  });
+
+  /* ================= TABLE ================= */
+
   const columns = [
+
     {
       label: "Order ID",
       key: "id",
       render: (row) => (
-        <span className="font-medium text-gray-700">
-          #{row?.id?.slice(-6)}
+        <span>
+          #{row.id.slice(-6)}
         </span>
       ),
     },
@@ -73,52 +125,22 @@ const OrderList = () => {
       label: "Customer",
       key: "userEmail",
       render: (row) => (
-        <div className="text-sm">
-          <p className="font-medium text-gray-800">
-            {row?.shippingAddress?.name || "Customer"}
+        <div>
+          <p>
+            {row.shippingAddress?.name}
           </p>
-          <p className="text-gray-500">{row?.userEmail}</p>
+          <p>
+            {row.userEmail}
+          </p>
         </div>
       ),
     },
 
     {
-      label: "Payment",
-      key: "paymentMethod",
-      render: (row) => (
-        <span className="text-sm font-medium">
-          {row?.paymentStatus === "Paid" ? "ONLINE" : "COD"}
-        </span>
-      ),
-    },
-
-    {
-      label: "Source",
-      key: "source",
-      render: (row) => {
-        const src = normalizeSource(row?.source);
-
-        return (
-          <span
-            className={`text-xs px-2 py-1 rounded-full font-medium
-            ${src === "META ADS"
-                ? "bg-blue-100 text-blue-700"
-                : src === "GOOGLE ADS"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-700"
-              }`}
-          >
-            {src}
-          </span>
-        );
-      },
-    },
-
-    {
       label: "Total",
       key: "total",
-      align: "right",
-      render: (row) => `₹${row?.total || 0}`,
+      render: (row) =>
+        `₹${row.total}`,
     },
 
     {
@@ -126,90 +148,106 @@ const OrderList = () => {
       key: "status",
       render: (row) => (
         <select
-          value={row?.status || "Placed"}
+          value={row.status}
           onChange={(e) =>
-            handleStatusChange(row.id, e.target.value)
+            handleStatusChange(
+              row.id,
+              e.target.value
+            )
           }
-          className={`border rounded-md text-xs px-2 py-1 font-medium focus:outline-none ${getStatusStyle(
-            row?.status || "Placed"
-          )}`}
+          className={`border px-2 py-1 ${getStatusStyle(row.status)}`}
         >
-          <option value="Placed">Placed</option>
-          <option value="Shipped">Shipped</option>
-          <option value="Delivered">Delivered</option>
-          <option value="Cancelled">Cancelled</option>
+          <option>Placed</option>
+          <option>Shipped</option>
+          <option>Delivered</option>
+          <option>Cancelled</option>
         </select>
       ),
     },
 
-    { label: "Date", key: "date" },
   ];
 
   return (
+
     <AdminLayout>
-      <h1 className="text-xl font-semibold mb-4">
+
+      <h1 className="text-xl mb-4">
         Orders
       </h1>
 
-      {loading ? (
-        <p>Loading orders...</p>
-      ) : (
-        <>
-          {/* DELETE BUTTON */}
-          <button
-            onClick={() => {
-              if (
-                window.confirm(
-                  "Delete all orders permanently?"
+      <button
+        onClick={() => {
+
+          if (
+            window.confirm(
+              "Delete all orders?"
+            )
+          ) {
+
+            deleteAllOrders();
+
+            logActivity(
+              "Deleted all orders"
+            );
+
+          }
+
+        }}
+        className="mb-4 bg-red-600 text-white px-4 py-2"
+      >
+        Delete All Orders
+      </button>
+
+
+      <AdminTable
+        columns={columns}
+        data={filteredOrders}
+        actions={(row) => (
+
+          <div className="flex gap-2">
+
+            <button
+              onClick={() =>
+                navigate(
+                  `/admin/orders/${row.id}`
                 )
-              ) {
-                deleteAllOrders();
               }
-            }}
-            className="mb-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Delete All Orders
-          </button>
+            >
+              <Eye size={16} />
+            </button>
 
-          {/* TABLE */}
-          <AdminTable
-            columns={columns}
-            data={orders}
-            actions={(row) => (
-              <div className="flex gap-2">
 
-                <button
-                  onClick={() =>
-                    navigate(`/admin/orders/${row.id}`)
-                  }
-                  className="p-2 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100"
-                >
-                  <Eye size={16} />
-                </button>
+            <button
+              onClick={() => {
 
-                <button
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        "Delete this order?"
-                      )
-                    ) {
-                      deleteOrder(row.id);
-                    }
-                  }}
-                  className="p-2 rounded-md bg-red-50 text-red-600 hover:bg-red-100"
-                >
-                  <Trash2 size={16} />
-                </button>
+                if (
+                  window.confirm(
+                    "Delete order?"
+                  )
+                ) {
 
-              </div>
-            )}
-            emptyText="No orders found"
-          />
-        </>
-      )}
+                  deleteOrder(row.id);
+
+                  logActivity(
+                    `Deleted order ${row.id}`
+                  );
+
+                }
+
+              }}
+            >
+              <Trash2 size={16} />
+            </button>
+
+          </div>
+
+        )}
+      />
+
     </AdminLayout>
+
   );
+
 };
 
 export default OrderList;

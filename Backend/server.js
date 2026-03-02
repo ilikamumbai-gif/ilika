@@ -512,47 +512,15 @@ app.post("/api/orders", async (req, res) => {
     const validatedItems = [];
 
     for (const item of items) {
+
       const quantity = item.quantity || 1;
 
-      /* ===============================
-         🟢 HANDLE CTM / COMBO PRODUCTS
-      =============================== */
+      /* ========= COMBO ========= */
+
       if (item.isCombo) {
+
         totalAmount += Number(item.price) * quantity;
 
-        if (item.isCombo) {
-          validatedItems.push({
-            productId: item.id,
-            name: item.name,
-            price: item.price,
-            quantity,
-            isCombo: true,
-            comboItems: item.comboItems || [],
-          });
-          continue;
-        }
-
-        continue;
-      }
-
-      /* ===============================
-         🟢 NORMAL PRODUCTS
-      =============================== */
-
-      const productDoc = await db.collection("products").doc(item.id).get();
-
-      if (!productDoc.exists) continue;
-
-      const productData = productDoc.data();
-
-      if (!productData.isActive) continue; // skip inactive
-      if (!productData.inStock) {
-        return res.status(400).json({ error: `${productData.name} is out of stock` });
-      }
-
-      totalAmount += Number(productData.price) * quantity;
-
-      if (item.isCombo) {
         validatedItems.push({
           productId: item.id,
           name: item.name,
@@ -561,8 +529,41 @@ app.post("/api/orders", async (req, res) => {
           isCombo: true,
           comboItems: item.comboItems || [],
         });
+
         continue;
       }
+
+      /* ========= NORMAL PRODUCT ========= */
+
+      const productDoc = await db
+        .collection("products")
+        .doc(item.id)
+        .get();
+
+      if (!productDoc.exists) continue;
+
+      const productData = productDoc.data();
+
+      if (!productData.isActive) continue;
+
+      if (!productData.inStock) {
+        return res.status(400).json({
+          error: `${productData.name} is out of stock`
+        });
+      }
+
+      totalAmount += Number(productData.price) * quantity;
+
+      // ✅ THIS WAS MISSING
+      validatedItems.push({
+        productId: item.id,
+        name: productData.name,
+        price: productData.price,
+        quantity,
+        image: productData.image || "",
+        isCombo: false,
+      });
+
     }
 
     const docRef = await db.collection("orders").add({
@@ -679,6 +680,125 @@ app.put("/api/orders/:id/status", async (req, res) => {
   }
 });
 
+/* ================= GET ALL REVIEWS ================= */
+
+/* ================= GET ALL REVIEWS ================= */
+
+app.get("/api/reviews", async (req, res) => {
+  try {
+
+    const snapshot = await db.collection("products").get();
+
+    let reviews = [];
+
+    snapshot.forEach((doc) => {
+
+      const product = doc.data();
+
+      if (product.reviews && product.reviews.length) {
+
+        product.reviews.forEach((r, index) => {
+
+          reviews.push({
+            id: doc.id + "_" + index,
+
+            productId: doc.id,
+
+            reviewIndex: index,   // ⭐ VERY IMPORTANT
+
+            productName: product.name,
+
+            ...r,
+          });
+
+        });
+
+      }
+
+    });
+
+    res.json(reviews);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: "Failed to fetch reviews",
+    });
+  }
+});
+
+/* ================= DELETE REVIEW ================= */
+
+app.delete("/api/reviews/:productId/:index", async (req, res) => {
+  try {
+
+    const { productId, index } = req.params;
+
+    const ref = db.collection("products").doc(productId);
+
+    const doc = await ref.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    const data = doc.data();
+
+    const reviews = data.reviews || [];
+
+    reviews.splice(index, 1);
+
+    await ref.update({ reviews });
+
+    res.json({ message: "Review deleted" });
+
+  } catch (err) {
+    res.status(500).json({ error: "Delete failed" });
+  }
+});
+
+/* ================= GET SINGLE REVIEW ================= */
+
+app.get("/api/reviews/:productId/:index", async (req, res) => {
+  try {
+
+    const { productId, index } = req.params;
+
+    const doc = await db
+      .collection("products")
+      .doc(productId)
+      .get();
+
+    if (!doc.exists) {
+      return res.status(404).json({
+        error: "Product not found",
+      });
+    }
+
+    const data = doc.data();
+
+    const review = data.reviews?.[index];
+
+    if (!review) {
+      return res.status(404).json({
+        error: "Review not found",
+      });
+    }
+
+    res.json({
+      productId,
+      productName: data.name,
+      ...review,
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      error: "Failed",
+    });
+  }
+});
+
+
 /* ================= CART EVENTS ================= */
 
 app.post("/api/cart-events", async (req, res) => {
@@ -794,9 +914,13 @@ app.post("/api/payments/verify", async (req, res) => {
     const validatedItems = [];
 
     for (const item of orderData.items) {
+
       const quantity = item.quantity || 1;
 
+      /* ========= COMBO ========= */
+
       if (item.isCombo) {
+
         totalAmount += Number(item.price) * quantity;
 
         validatedItems.push({
@@ -811,29 +935,37 @@ app.post("/api/payments/verify", async (req, res) => {
         continue;
       }
 
-      const productDoc = await db.collection("products").doc(item.id).get();
+      /* ========= NORMAL PRODUCT ========= */
+
+      const productDoc = await db
+        .collection("products")
+        .doc(item.id)
+        .get();
+
       if (!productDoc.exists) continue;
 
       const productData = productDoc.data();
 
-      if (!productData.isActive) continue; // skip inactive
+      if (!productData.isActive) continue;
+
       if (!productData.inStock) {
-        return res.status(400).json({ error: `${productData.name} is out of stock` });
+        return res.status(400).json({
+          error: `${productData.name} is out of stock`
+        });
       }
 
       totalAmount += Number(productData.price) * quantity;
 
-      if (item.isCombo) {
-        validatedItems.push({
-          productId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity,
-          isCombo: true,
-          comboItems: item.comboItems || [],
-        });
-        continue;
-      }
+      // ✅ ADD THIS
+      validatedItems.push({
+        productId: item.id,
+        name: productData.name,
+        price: productData.price,
+        quantity,
+        image: productData.image || "",
+        isCombo: false,
+      });
+
     }
 
     const docRef = await db.collection("orders").add({
@@ -856,6 +988,75 @@ app.post("/api/payments/verify", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Payment verification failed" });
   }
+});
+
+/* ================= ADMIN LOG ================= */
+
+app.post("/api/admin-log", async (req, res) => {
+
+  try {
+
+    const {
+      action = "",
+      message = "",
+      admin = "admin"
+    } = req.body;
+
+    const log = {
+      action,
+      message,
+      admin,
+      createdAt: new Date(),
+    };
+
+    const doc = await db
+      .collection("adminLogs")
+      .add(log);
+
+    res.json({
+      id: doc.id,
+      ...log,
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      error: "Log failed"
+    });
+
+  }
+
+});
+
+/* ================= GET ADMIN LOGS ================= */
+
+app.get("/api/admin-log", async (req, res) => {
+
+  try {
+
+    const snapshot = await db
+      .collection("adminLogs")
+      .orderBy("createdAt", "desc")
+      .limit(50)
+      .get();
+
+    const logs = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.json(logs);
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: "Failed"
+    });
+
+  }
+
 });
 
 

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useUsers } from "../../context/UserContext";
 import { useOrders } from "../../context/OrderContext";
 import AdminLayout from "../../components/AdminLayout";
+import { Eye, Trash2 } from "lucide-react";
+import { logActivity } from "../../Utils/logActivity";
 
 const UserList = () => {
 
@@ -10,29 +12,41 @@ const UserList = () => {
   const { users, deleteUser } = useUsers();
   const { orders } = useOrders();
 
+
+  const hasOrder = (userId) =>
+    orders.some(
+      o => String(o.userId) === String(userId)
+    );
+
+
   const getOrderCount = (userId) =>
-    orders?.filter(o => String(o?.userId) === String(userId)).length || 0;
+    orders.filter(
+      o => String(o.userId) === String(userId)
+    ).length;
 
 
-  const handleDelete = (id) => {
+  /* ================= DELETE ================= */
 
-    if (!window.confirm("Delete this user?")) return;
+  const handleDelete = async (user) => {
 
-    deleteUser(id);
+    if (!confirm("Delete user?")) return;
+
+    await deleteUser(user.id);
+
+    await logActivity(
+      `Deleted user: ${user.email}`
+    );
 
   };
 
 
   return (
-
     <AdminLayout>
 
       <h1 className="text-xl font-semibold mb-6">
         Users
       </h1>
 
-
-      {/* TABLE */}
 
       <div className="bg-white border rounded-xl overflow-hidden">
 
@@ -41,10 +55,27 @@ const UserList = () => {
           <thead className="bg-gray-50 border-b">
 
             <tr>
-              <th className="px-4 py-3 text-left">Name</th>
-              <th className="px-4 py-3 text-left">Email</th>
-              <th className="px-4 py-3 text-left">Orders</th>
-              <th className="px-4 py-3 text-right">Action</th>
+
+              <th className="px-4 py-3 text-left">
+                Name
+              </th>
+
+              <th className="px-4 py-3 text-left">
+                Email
+              </th>
+
+              <th className="px-4 py-3 text-left">
+                Status
+              </th>
+
+              <th className="px-4 py-3 text-left">
+                Orders
+              </th>
+
+              <th className="px-4 py-3 text-right">
+                Action
+              </th>
+
             </tr>
 
           </thead>
@@ -52,51 +83,79 @@ const UserList = () => {
 
           <tbody>
 
-            {users.map((user) => (
+            {users.map(user => {
 
-              <tr
-                key={user.id}
-                className="border-b last:border-none hover:bg-gray-50"
-              >
+              const active = hasOrder(user.id);
 
-                <td className="px-4 py-3 font-medium">
-                  {user.name}
-                </td>
+              return (
 
-                <td className="px-4 py-3">
-                  {user.email}
-                </td>
+                <tr
+                  key={user.id}
+                  className="border-b"
+                >
 
-                <td className="px-4 py-3">
-                  {getOrderCount(user.id)}
-                </td>
-
-                <td className="px-4 py-3 text-right space-x-3">
-
-                  {/* VIEW */}
-                  <button
-                    onClick={() =>
-                      navigate(`/admin/users/${user.id}`)
-                    }
-                    className="text-sm font-medium underline"
-                  >
-                    View
-                  </button>
+                  <td className="px-4 py-3 font-medium">
+                    {user.name}
+                  </td>
 
 
-                  {/* DELETE */}
-                  <button
-                    onClick={() => handleDelete(user.id)}
-                    className="text-sm text-red-600 underline"
-                  >
-                    Delete
-                  </button>
+                  <td className="px-4 py-3">
+                    {user.email}
+                  </td>
 
-                </td>
 
-              </tr>
+                  {/* STATUS */}
+                  <td className="px-4 py-3">
 
-            ))}
+                    {active ? (
+
+                      <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                        Active
+                      </span>
+
+                    ) : (
+
+                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
+                        Inactive
+                      </span>
+
+                    )}
+
+                  </td>
+
+
+                  {/* ORDER COUNT */}
+                  <td className="px-4 py-3">
+                    {getOrderCount(user.id)}
+                  </td>
+
+
+                  {/* ACTION */}
+                  <td className="px-4 py-3 text-right flex gap-3 justify-end">
+
+                    <Eye
+                      size={18}
+                      className="cursor-pointer text-blue-600"
+                      onClick={() =>
+                        navigate(`/admin/users/${user.id}`)
+                      }
+                    />
+
+                    <Trash2
+                      size={18}
+                      className="cursor-pointer text-red-600"
+                      onClick={() =>
+                        handleDelete(user)
+                      }
+                    />
+
+                  </td>
+
+                </tr>
+
+              );
+
+            })}
 
           </tbody>
 
@@ -105,9 +164,7 @@ const UserList = () => {
       </div>
 
     </AdminLayout>
-
   );
-
 };
 
 export default UserList;

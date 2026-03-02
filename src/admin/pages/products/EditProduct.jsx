@@ -3,10 +3,17 @@ import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import ProductForm from "../../components/ProductFrom";
 import { useProducts } from "../../context/ProductContext";
+import { logActivity } from "../../Utils/logActivity";
+
+/* ================= LOG ================= */
+
+
+
 
 const EditProduct = () => {
 
   const { id } = useParams();
+
   const navigate = useNavigate();
 
   const {
@@ -18,6 +25,7 @@ const EditProduct = () => {
 
   const [product, setProduct] = useState(null);
 
+
   useEffect(() => {
 
     const load = async () => {
@@ -26,9 +34,11 @@ const EditProduct = () => {
         await fetchProducts();
       }
 
-      const existing = getProductById(id);
+      const existing =
+        getProductById(id);
 
       setProduct(existing || null);
+
     };
 
     load();
@@ -36,21 +46,34 @@ const EditProduct = () => {
   }, [id, products]);
 
 
-
   const handleUpdate = async (data) => {
 
     await updateProduct(id, data);
 
+    await logActivity(
+      `Updated product: ${data.name}`
+    );
+
     navigate("/admin/products");
+
   };
 
 
   if (!product) {
-    return <AdminLayout>Loading...</AdminLayout>;
+
+    return (
+      <AdminLayout>
+        Loading...
+      </AdminLayout>
+    );
+
   }
 
+
   return (
+
     <AdminLayout>
+
       <h1 className="text-xl font-semibold mb-4">
         Edit Product
       </h1>
@@ -61,7 +84,9 @@ const EditProduct = () => {
       />
 
     </AdminLayout>
+
   );
+
 };
 
 export default EditProduct;

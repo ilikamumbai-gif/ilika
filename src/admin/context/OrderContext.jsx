@@ -28,6 +28,7 @@ export const OrderProvider = ({ children }) => {
 
       const formatted = data.map((o) => ({
         id: o.id,
+        userId: o.userId,   // ⭐⭐⭐ IMPORTANT FIX
         userEmail: o.userEmail || "guest@email.com",
         total: o.totalAmount || 0,
         status: o.status || "Placed",

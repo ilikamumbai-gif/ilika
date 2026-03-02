@@ -172,7 +172,7 @@ const Home = () => {
         {newCategory ? (
           <ProductList
             productNames={[
-              "Herbal Hair Oil | Prevents Dandruff | 200 ML",
+              "Keratin Rich Conditioner | For Normal to Damaged Hair | 200 ML",
               "Black Seed Hair Oil | Prevents Premature Graying | 200ML",
               "Frizz Control Hair Serum | Control Frizz & Detangle Hair | 50 ML",
               "Keratin Rich Shampoo | Natural Shine & Softness | 200 ML"

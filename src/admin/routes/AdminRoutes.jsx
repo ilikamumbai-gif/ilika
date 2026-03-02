@@ -32,6 +32,9 @@ import EditCombo from "../pages/Combo/EditCombo";
 import { ComboProvider } from "../context/ComboContext";
 import CartProductList from "../pages/cartproducts/CartProductList";
 import CartProductDetail from "../pages/cartproducts/CartProductDetail";
+import ReviewList from "../pages/Reviews/ReviewList";
+import ReviewDetail from "../pages/Reviews/ReviewDetail";
+import AdminLog from "../pages/AdminLog/AdminLog";
 
 const AdminRoutes = () => {
   return (
@@ -65,7 +68,6 @@ const AdminRoutes = () => {
                       {/* ORDERS */}
                       <Route path="orders" element={<OrderList />} />
                       <Route path="orders/:id" element={<OrderDetail />} />
-                      <Route path="orders" element={<OrderList />} />
 
 
                       {/* CartProduct  */}
@@ -77,8 +79,8 @@ const AdminRoutes = () => {
                       <Route path="users/:id" element={<UserDetail />} />
 
                       {/* REVIEWS */}
-                      <Route path="review" element={<UserList />} />
-                      <Route path="review/:id" element={<UserDetail />} />
+                      <Route path="reviews" element={<ReviewList />} />
+                      <Route path="reviews/:productId/:index" element={<ReviewDetail />} />
 
                       {/* ✅ BLOGS */}
                       <Route path="blogs" element={<BlogList />} />
@@ -87,6 +89,8 @@ const AdminRoutes = () => {
 
                       {/* ✅ REPORTS */}
                       <Route path="reports" element={<Report />} />
+
+                      <Route path="log" element={<AdminLog />} />
 
                     </Routes>
 
