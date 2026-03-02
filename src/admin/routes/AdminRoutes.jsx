@@ -30,6 +30,8 @@ import ComboList from "../pages/Combo/ComboList";
 import AddCombo from "../pages/Combo/AddCombo";
 import EditCombo from "../pages/Combo/EditCombo";
 import { ComboProvider } from "../context/ComboContext";
+import CartProductList from "../pages/cartproducts/CartProductList";
+import CartProductDetail from "../pages/cartproducts/CartProductDetail";
 
 const AdminRoutes = () => {
   return (
@@ -65,6 +67,10 @@ const AdminRoutes = () => {
                       <Route path="orders/:id" element={<OrderDetail />} />
                       <Route path="orders" element={<OrderList />} />
 
+
+                      {/* CartProduct  */}
+                      <Route path="cart-products" element={<CartProductList />} />
+                      <Route path="/cart-products/:productId" element={<CartProductDetail />} />
 
                       {/* USERS */}
                       <Route path="users" element={<UserList />} />

@@ -122,6 +122,44 @@ app.put("/api/users/:uid/address/:addressId", async (req, res) => {
   }
 });
 
+/* ================= DELETE USER ================= */
+
+app.delete("/api/users/:uid", async (req, res) => {
+  try {
+
+    const uid = req.params.uid;
+
+    // delete user doc
+    await db.collection("users")
+      .doc(uid)
+      .delete();
+
+    // delete addresses
+    const addrSnap = await db
+      .collection("users")
+      .doc(uid)
+      .collection("addresses")
+      .get();
+
+    const batch = db.batch();
+
+    addrSnap.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+
+    res.json({
+      message: "User deleted"
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: "Failed to delete user"
+    });
+  }
+});
 /* ============================== PRODUCTS ============================== */
 app.post("/api/products", async (req, res) => {
   try {
@@ -576,6 +614,46 @@ app.get("/api/users/:uid/orders", async (req, res) => {
   }
 });
 
+/* ============================== DELETE ALL ORDERS ============================== */
+
+app.delete("/api/orders", async (req, res) => {
+  try {
+
+    const snapshot = await db.collection("orders").get();
+
+    const batch = db.batch();
+
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+
+    res.json({ message: "All orders deleted" });
+
+  } catch (error) {
+    console.error("DELETE ALL ORDERS ERROR:", error);
+    res.status(500).json({ error: "Failed to delete orders" });
+  }
+});
+
+/* ================= DELETE SINGLE ORDER ================= */
+
+app.delete("/api/orders/:id", async (req, res) => {
+  try {
+
+    await db.collection("orders")
+      .doc(req.params.id)
+      .delete();
+
+    res.json({ message: "Order deleted" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete order" });
+  }
+});
+
 /* ============================== UPDATE ORDER STATUS ============================== */
 /* ============================== UPDATE ORDER STATUS ============================== */
 app.put("/api/orders/:id/status", async (req, res) => {
@@ -601,6 +679,63 @@ app.put("/api/orders/:id/status", async (req, res) => {
   }
 });
 
+/* ================= CART EVENTS ================= */
+
+app.post("/api/cart-events", async (req, res) => {
+  try {
+
+    const {
+      productId,
+      name,
+      price,
+      image,
+      userId,
+      userEmail
+    } = req.body;
+
+    const eventData = {
+      productId,
+      name,
+      price,
+      image,
+      userId: userId || null,
+      userEmail: userEmail || null,
+      createdAt: new Date(),
+    };
+
+    const docRef = await db.collection("cartEvents").add(eventData);
+
+    res.json({
+      id: docRef.id,
+      ...eventData
+    });
+
+  } catch (error) {
+    console.error("CART EVENT ERROR:", error);
+    res.status(500).json({ error: "Failed to save cart event" });
+  }
+});
+
+
+app.get("/api/cart-events", async (req, res) => {
+  try {
+
+    const snapshot = await db
+      .collection("cartEvents")
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const events = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.json(events);
+
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch cart events" });
+  }
+});
 
 /* ============================== CATEGORIES ============================== */
 app.post("/api/categories", async (req, res) => {

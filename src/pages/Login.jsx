@@ -17,6 +17,7 @@ const Login = () => {
   const { signInWithGoogle } = useAuth();
 
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
@@ -34,52 +35,55 @@ const Login = () => {
     else navigate("/user");
   };
 
-const setupRecaptcha = async () => {
-  if (!window.recaptchaVerifier) {
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      "recaptcha-container",
-      {
-        size: "invisible",
-      }
-    );
+  const setupRecaptcha = async () => {
 
-    await window.recaptchaVerifier.render();
-  }
-};
+    if (!window.recaptchaVerifier) {
 
- const sendOtp = async () => {
-  if (!/^[6-9]\d{9}$/.test(phone)) {
-    alert("Enter valid Indian phone number");
-    return;
-  }
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        {
+          size: "invisible",
+        }
+      );
 
-  try {
-    await setupRecaptcha();
-
-    const appVerifier = window.recaptchaVerifier;
-
-    const confirmation = await signInWithPhoneNumber(
-      auth,
-      `+91${phone}`,
-      appVerifier
-    );
-
-    setConfirmationResult(confirmation);
-    alert("OTP Sent Successfully");
-
-  } catch (err) {
-    console.error(err);
-
-    // Reset expired token
-    if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = null;
+      await window.recaptchaVerifier.render();
     }
 
-    alert(err.message);
-  }
-};
+  };
+
+  const sendOtp = async () => {
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      alert("Enter valid Indian phone number");
+      return;
+    }
+
+    try {
+      await setupRecaptcha();
+
+      const appVerifier = window.recaptchaVerifier;
+
+      const confirmation = await signInWithPhoneNumber(
+        auth,
+        `+91${phone}`,
+        appVerifier
+      );
+
+      setConfirmationResult(confirmation);
+      alert("OTP Sent Successfully");
+
+    } catch (err) {
+      console.error(err);
+
+      // Reset expired token
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+
+      alert(err.message);
+    }
+  };
 
   const verifyOtp = async () => {
     if (!otp) return alert("Enter OTP");
@@ -103,6 +107,7 @@ const setupRecaptcha = async () => {
       body: JSON.stringify({
         uid: user.uid,
         email: user.email,
+        name: name || "",
         phone: phone || null
       })
     });
@@ -173,6 +178,16 @@ const setupRecaptcha = async () => {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isRegister && (
+              <input
+                type="text"
+                placeholder="Full Name"
+                className="w-full border rounded-lg px-4 py-3"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            )}
 
             {/* EMAIL */}
             <input

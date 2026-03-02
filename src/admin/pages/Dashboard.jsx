@@ -1,5 +1,5 @@
 import React from "react";
-import { Package, Users, ShoppingCart, IndianRupee, BookOpen, Layers, Boxes } from "lucide-react";
+import { Package, Users, ShoppingCart, IndianRupee, BookOpen, Layers, Boxes, Eye } from "lucide-react";
 import StatCard from "../components/StatCard";
 import AdminLayout from "../components/AdminLayout";
 import { useOrders } from "../context/OrderContext";
@@ -8,6 +8,7 @@ import { useUsers } from "../context/UserContext";
 import { useBlog } from "../context/BlogProvider";
 import { useCategories } from "../context/CategoryContext";
 import { useCombos } from "../context/ComboContext";
+import { useCartEvents } from "../context/CartEventContext";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -18,6 +19,7 @@ const Dashboard = () => {
   const { blogs } = useBlog();
   const { categories } = useCategories();
   const { combos } = useCombos();
+  const { events } = useCartEvents();
   const navigate = useNavigate();
 
   const totalProducts = products.length;
@@ -25,6 +27,7 @@ const Dashboard = () => {
   const totalUsers = users.length;
   const totalBlogs = blogs.length;
   const totalCategories = categories.length;
+  const totalCartInterest = events.length;
   const totalCombos = combos.length;
 
   const totalRevenue = orders.reduce((a, o) => a + o.total, 0);
@@ -105,6 +108,18 @@ const Dashboard = () => {
             textColor="text-orange-600"
           />
         </div>
+        <div
+          onClick={() => navigate("/admin/cart-products")}
+          className="cursor-pointer"
+        >
+          <StatCard
+            title="Cart Interest"
+            value={totalCartInterest}
+            icon={Eye}
+            color="bg-red-100"
+            textColor="text-red-600"
+          />
+        </div>  
 
       </div>
 

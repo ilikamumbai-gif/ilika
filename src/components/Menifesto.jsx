@@ -10,9 +10,7 @@ import {
 
 const manifestoItems = [
   { label: "Natural Ingredients", icon: Leaf },
-  { label: "Derma - Tested", icon: Droplet },
   { label: "Made In India", icon: Flag },
-  { label: "No Toxic Chemicals", icon: FlaskConical },
   { label: "Environment Friendly", icon: Recycle },
   { label: "Earth Safe", icon: Globe },
 ];
@@ -31,7 +29,7 @@ const Menifesto = () => {
                 The Ilika Manifesto
               </h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
+              <div className="grid grid-cols-2 gap-6 sm:gap-8">
                 {manifestoItems.map((item, index) => {
                   const Icon = item.icon;
                   return (

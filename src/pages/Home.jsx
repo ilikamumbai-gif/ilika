@@ -12,11 +12,20 @@ import CartDrawer from "../components/CartDrawer";
 import Banner from "../components/Banner";
 // import bannerImg from "../../public/Images/Banner.jpg";
 import bannerImg2 from "../assets/Images/Banner 2.jpg";
+
 import bannerSkincare from "../assets/Images/FacecareBanner.jpg.jpeg";
+import skinMobile from "../../public/Images/skinMobile.jpeg";
+
 import bannerHair from "../assets/Images/HairBanner.jpg.jpeg";
+import hairMobile from "../../public/Images/hairMobile.jpeg";
+
+import styleMobile from "../../public/Images/styleMobile.jpeg";
+
 import HoliSplash from "../components/HoliSplash";
 import { useCategories } from "../admin/context/CategoryContext";
+
 import holimainbanner from "../../public/Images/BannerHoli.jpeg"
+import holiMobile from "../../public/Images/holiMobile.jpeg"
 
 import bannerStyle from "../../public/Images/Banner2.jpeg"
 import holibg1 from "../assets/Images/holibg1.jpg"
@@ -68,7 +77,11 @@ const Home = () => {
         <CartDrawer />
 
         {/* HERO SECTION */}
-        <Banner className="md:h-[87vh] -mt-3" src={holimainbanner} />
+        <Banner
+          className="md:h-[87vh] -mt-3"
+          src={holimainbanner}
+          mobileSrc={holiMobile}
+        />
 
 
         {/* HOLI FEATURED SECTION */}
@@ -115,7 +128,7 @@ drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]
 
 
         {/* SECOND PROMO BANNER */}
-        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerSkincare} />
+        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerSkincare} mobileSrc={skinMobile}/>
         <Heading heading="OUR SKIN CARE" />
 
         {newCategory ? (
@@ -136,7 +149,7 @@ drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]
 
 
 
-        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerStyle} />
+        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerStyle} mobileSrc={styleMobile}/>
 
         <Heading heading="TOP APPLIANCES" />
 
@@ -150,11 +163,11 @@ drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]
 
 
 
-        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerHair} />
+        <Banner className="md:h-[60vh] mt-0 mb-10" src={bannerHair} mobileSrc={hairMobile}/>
 
         <Heading heading="OUR TOP HAIR CARE" />
 
-                {newCategory ? (
+        {newCategory ? (
           <ProductList
             productNames={[
               "Herbal Hair Oil | Prevents Dandruff | 200 ML",

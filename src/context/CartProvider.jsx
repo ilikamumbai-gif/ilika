@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { auth, db } from "../../Backend/firebaseConfig";
+import { addDoc } from "firebase/firestore";
 import {
   doc,
   setDoc,
@@ -41,6 +42,29 @@ export const CartProvider = ({ children }) => {
 
   /* ADD TO CART (guest allowed) */
   const addToCart = async (product) => {
+
+    // ✅ SAVE CART EVENT
+    try {
+
+      await fetch(`${import.meta.env.VITE_API_URL}/api/cart-events`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.images,
+          userId: auth.currentUser?.uid || null,
+          userEmail: auth.currentUser?.email || null,
+        }),
+      });
+
+    } catch (err) {
+      console.log("cart event error", err);
+    }
+
     const user = auth.currentUser;
 
     // ---------- GUEST ----------
@@ -100,6 +124,14 @@ export const CartProvider = ({ children }) => {
         quantity: newQuantity,
       });
     }
+
+    await addDoc(collection(db, "cartEvents"), {
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      userId: user?.uid || "guest",
+      createdAt: Date.now(),
+    });
 
     setCartItems(prev =>
       prev.map(item =>

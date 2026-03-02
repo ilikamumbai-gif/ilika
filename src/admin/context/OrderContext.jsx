@@ -35,7 +35,7 @@ export const OrderProvider = ({ children }) => {
         date: parseDate(o.createdAt),
         items: o.items || [],
         shippingAddress: o.shippingAddress || {},
-        source: o.source 
+        source: o.source
       }));
 
       setOrders(formatted);
@@ -73,9 +73,37 @@ export const OrderProvider = ({ children }) => {
     }
   };
 
+  const deleteAllOrders = async () => {
+    try {
+
+      await fetch(`${API}/api/orders`, {
+        method: "DELETE",
+      });
+
+      fetchOrders();
+
+    } catch (err) {
+      console.error("Delete all orders failed", err);
+    }
+  };
+
   /* ================= GET ORDER ================= */
   const getOrderById = (id) =>
     orders.find(o => String(o.id) === String(id));
+
+  const deleteOrder = async (id) => {
+    try {
+
+      await fetch(`${API}/api/orders/${id}`, {
+        method: "DELETE",
+      });
+
+      fetchOrders();
+
+    } catch (err) {
+      console.error("Delete order failed", err);
+    }
+  };
 
   return (
     <OrderContext.Provider
@@ -84,7 +112,9 @@ export const OrderProvider = ({ children }) => {
         loading,
         updateOrderStatus,
         getOrderById,
-        refetchOrders: fetchOrders
+        refetchOrders: fetchOrders,
+        deleteAllOrders,
+        deleteOrder,
       }}
     >
       {children}
