@@ -9,6 +9,10 @@ import CartDrawer from "../components/CartDrawer";
 import ComboProductCard from "../components/ComboProductCard";
 import { useCart } from "../context/CartProvider";
 import CouponProductBuilder from "../components/CouponProductBuilder";
+import Banner from "../components/Banner";
+
+const offBanner = "/Images/Tonner.jpeg"
+const offBannerMobile = "/Images/Tonner.jpeg"
 
 const Combos = () => {
 
@@ -134,11 +138,18 @@ const Combos = () => {
 
       <div style={{ background: "#fff8fa" }}>
 
+
         <Header />
         <CartDrawer />
 
-        <section className="max-w-7xl mx-auto px-4 py-12 lg:py-16">
-          <Heading heading="Build Your Skincare Combo" />
+         <Banner
+        className="md:h-[50vh] mt-0 mb-10"
+        src={offBanner}
+        mobileSrc={offBannerMobile}
+      />
+
+
+        <section className="max-w-7xl mx-auto px-4 pb-12 lg:pb-16">
 
           <div className="grid lg:grid-cols-4 gap-12 mt-12">
             {/* ================= PRODUCTS ================= */}
@@ -165,14 +176,19 @@ const Combos = () => {
 
                       <div
                         key={id}
-                        className="transition-all duration-300 hover:scale-[1.03]"                      >
-
+                        className={`
+    transition-all duration-300 hover:scale-[1.03]
+    rounded-2xl p-3
+    ${selected
+                            ? "bg-gradient-to-br from-pink-200 via-pink-100 to-white shadow-lg ring-2 ring-pink-300"
+                            : "bg-white hover:bg-pink-50 border border-pink-100"}
+  `}
+                      >
                         <ComboProductCard
                           product={product}
                           selected={selected}
                           onSelect={toggleToner}
                         />
-
                       </div>
 
                     );
@@ -206,15 +222,15 @@ const Combos = () => {
                     return (
 
                       <div
-  key={id}
-  className={`
-    scale-90 origin-top transition-all duration-300 hover:scale-[0.97]
-    rounded-2xl p-[6px]
-    ${selected
-      ? "bg-gradient-to-br from-pink-200 via-pink-100 to-white shadow-lg ring-2 ring-pink-300"
-      : "bg-white hover:bg-pink-50 border border-pink-100"}
-  `}
->
+                        key={id}
+                        className={`
+                        scale-90 origin-top transition-all duration-300 hover:scale-[0.97]
+                        rounded-2xl p-[6px]
+                        ${selected
+                            ? "bg-gradient-to-br from-pink-200 via-pink-100 to-white shadow-lg ring-2 ring-pink-300"
+                            : "bg-white hover:bg-pink-50 border border-pink-100"}
+                        `}
+                      >
 
                         <ComboProductCard
                           product={product}

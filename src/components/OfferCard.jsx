@@ -2,6 +2,7 @@ import React from "react";
 import { Copy, Gift } from "lucide-react";
 import { Link } from "react-router-dom";
 
+
 const OfferCard = ({
   type = "coupon",
   title,
@@ -21,7 +22,7 @@ const OfferCard = ({
 
     <Link
       to={link}
-      className="block relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition p-6 overflow-hidden"
+      className="block relative bg-white/95 backdrop-blur-md border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition p-6 overflow-hidden"
     >
 
       {/* LEFT BRAND STRIP */}

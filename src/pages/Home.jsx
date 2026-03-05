@@ -21,10 +21,12 @@ import Offers from "./Offer";
 
 /* public images (use path only) */
 const skinMobile = "/Images/skinMobile.jpeg";
+
 const hairMobile = "/Images/hairMobile.jpeg";
+const BannerStyle = "/Images/Banner.jpg";
 const styleMobile = "/Images/styleMobile.jpeg";
 
-const holimainbanner = "/Images/BannerHoli.jpeg";
+const holimainbanner = "/Images/women.jpeg";
 const holiMobile = "/Images/womenMobile.jpeg";
 
 const bannerStyle = "/Images/Banner2.jpeg";
@@ -163,9 +165,9 @@ const Home = () => {
 
         {/* APPLIANCES */}
         <Banner
-          className="md:h-[60vh] mt-0 mb-10"
-          src={bannerStyle}
-          mobileSrc={styleMobile}
+          className="md:h-[80vh] mt-0 mb-10"
+          src={BannerStyle}
+          mobileSrc={BannerStyle}
         />
 
         <Heading heading="TOP APPLIANCES" />

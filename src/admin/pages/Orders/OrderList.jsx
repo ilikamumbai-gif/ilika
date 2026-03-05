@@ -144,6 +144,28 @@ const OrderList = () => {
     },
 
     {
+  label: "Source",
+  key: "source",
+  render: (row) => {
+
+    const src = row.source || "WEBSITE";
+
+    const style =
+      src === "META ADS"
+        ? "bg-blue-100 text-blue-700 border-blue-300"
+        : src === "GOOGLE ADS"
+        ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+        : "bg-gray-100 text-gray-700 border-gray-300";
+
+    return (
+      <span className={`px-2 py-1 text-xs border rounded ${style}`}>
+        {src}
+      </span>
+    );
+  },
+},
+
+    {
       label: "Status",
       key: "status",
       render: (row) => (
