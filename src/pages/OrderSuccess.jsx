@@ -12,17 +12,24 @@ const OrderSuccess = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-  if (window.fbq) {
-    const total = Number(localStorage.getItem("order_total")) || 0;
+    if (!window.fbq) return;
 
-    if (total > 0) {
+    const storedValue = localStorage.getItem("order_total");
+
+    if (!storedValue) return;
+
+    const total = parseFloat(storedValue);
+
+    if (!isNaN(total) && total > 0) {
       window.fbq("track", "Purchase", {
         value: total,
-        currency: "INR",
+        currency: "INR"
       });
+
+      // remove after sending event
+      localStorage.removeItem("order_total");
     }
-  }
-}, []);
+  }, []);
 
   return (
     <>
@@ -73,7 +80,7 @@ const OrderSuccess = () => {
                 Continue Shopping
               </button>
 
-              
+
 
             </div>
 

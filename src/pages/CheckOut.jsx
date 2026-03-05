@@ -189,9 +189,12 @@ const Checkout = () => {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
+        
+// store order total for pixel
+localStorage.setItem("order_total", total);
 
-        clearCart();
-        navigate(`/order-success/${data.orderId}`);
+clearCart();
+navigate(`/order-success/${data.orderId}`);
         return;
       }
 
@@ -271,22 +274,7 @@ const Checkout = () => {
      ✅ FACEBOOK PIXEL PURCHASE EVENT (SAFE)
   ============================== */
 
-            const safeTotal = Number(total);
-
-            if (window.fbq && !isNaN(safeTotal) && safeTotal > 0) {
-
-              // Prevent duplicate purchase firing
-              if (!window.__purchaseFired) {
-                window.__purchaseFired = true;
-
-                window.fbq("track", "Purchase", {
-                  value: safeTotal,
-                  currency: "INR",
-                  content_type: "product",
-                  num_items: cartItems.length,
-                });
-              }
-            }
+           
 
             // 2️⃣ Clear cart
             clearCart();

@@ -1,8 +1,7 @@
 const MiniDivider = () => {
 
   const saleText =
-    // "🌸 WOMEN'S DAY SPECIAL  🌸 CELEBRATE BEAUTY ✨ LIMITED TIME OFFER 🛍️ SHOP NOW";
-    "🌸 CELEBRATE BEAUTY ✨ LIMITED TIME OFFER 🛍️ SHOP NOW";
+    "🌸 WOMEN'S DAY SPECIAL  🌸 CELEBRATE BEAUTY ✨ LIMITED TIME OFFER 🛍️ SHOP NOW";
 
   return (
     <div className="w-full bg-[#79283b] overflow-hidden">
