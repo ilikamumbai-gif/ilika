@@ -8,7 +8,7 @@ const Offers = () => {
       type: "coupon",
       title: "Flat 20% OFF",
       description: "Use this coupon on Ilika styling tools.",
-      code: "SAVE20",
+      code: "WOMEN15",
       link: "/combo"
     },
     {
@@ -20,14 +20,19 @@ const Offers = () => {
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12">
+    <section className="max-w-7xl mx-auto px-4 py-14">
 
-      <Heading heading={"Special Offers"}/>
+      <Heading heading="Special Offers" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
 
         {offers.map((offer, index) => (
-          <OfferCard key={index} {...offer} />
+
+          <OfferCard
+            key={index}
+            {...offer}
+          />
+
         ))}
 
       </div>

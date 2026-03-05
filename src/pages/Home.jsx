@@ -25,7 +25,7 @@ const hairMobile = "/Images/hairMobile.jpeg";
 const styleMobile = "/Images/styleMobile.jpeg";
 
 const holimainbanner = "/Images/BannerHoli.jpeg";
-const holiMobile = "/Images/holiMobile.jpeg";
+const holiMobile = "/Images/womenMobile.jpeg";
 
 const bannerStyle = "/Images/Banner2.jpeg";
 
@@ -65,12 +65,12 @@ const Home = () => {
           mobileSrc={holiMobile}
         />
 
-        {/* <Offers /> */}
+        <Offers />
 
 
 
         {/* HOLI SECTION */}
-        <div
+        {/* <div
           className="relative overflow-hidden py-20 px-4 sm:px-8 lg:px-16 
           bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${holibg2})` }}
@@ -111,7 +111,7 @@ const Home = () => {
             </div>
 
           </div>
-        </div>
+        </div> */}
 
 
         {/* CATEGORY NAV */}

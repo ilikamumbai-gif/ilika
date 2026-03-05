@@ -206,9 +206,15 @@ const Combos = () => {
                     return (
 
                       <div
-                        key={id}
-                        className="scale-90 origin-top transition hover:scale-[0.95]"
-                      >
+  key={id}
+  className={`
+    scale-90 origin-top transition-all duration-300 hover:scale-[0.97]
+    rounded-2xl p-[6px]
+    ${selected
+      ? "bg-gradient-to-br from-pink-200 via-pink-100 to-white shadow-lg ring-2 ring-pink-300"
+      : "bg-white hover:bg-pink-50 border border-pink-100"}
+  `}
+>
 
                         <ComboProductCard
                           product={product}

@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { useProducts } from "../context/ProductContext";
 import { useCart } from "../context/CartProvider";
+import ComboProductCard from "./ComboProductCard";
 
 const coupons = {
-  SAVE10: 10,
-  SAVE20: 20,
-  ILK30: 30
+  WOMEN15: 15
 };
 
 const allowedProducts = [
@@ -29,20 +28,18 @@ const CouponProductBuilder = () => {
 
     if (!product) return 0;
 
-    /* NORMAL PRICE */
     if (product.price) return Number(product.price);
 
-    /* VARIANT PRICE */
     if (product.variants?.length) {
       return Number(product.variants[0].price);
     }
 
-    /* COMBO PRICE */
     if (product.comboPrice) {
       return Number(product.comboPrice);
     }
 
     return 0;
+
   };
 
   /* ================= SAFE IMAGE ================= */
@@ -51,25 +48,23 @@ const CouponProductBuilder = () => {
 
     if (!product) return "/placeholder.png";
 
-    /* VARIANT IMAGE */
-    if (product.variants?.length) {
+    if (product?.variants?.length) {
       const v = product.variants[0];
       if (v.images?.length) return v.images[0];
     }
 
-    /* COMBO IMAGE */
     if (product.comboItems?.length) {
       const combo = product.comboItems[0];
       if (combo.images?.length) return combo.images[0];
     }
 
-    /* NORMAL IMAGE */
     if (product.images?.length) return product.images[0];
 
     if (product.image) return product.image;
     if (product.imageUrl) return product.imageUrl;
 
     return "/placeholder.png";
+
   };
 
   /* ================= FILTER PRODUCTS ================= */
@@ -84,7 +79,12 @@ const CouponProductBuilder = () => {
 
   const applyCoupon = () => {
 
-    const code = coupon.toUpperCase();
+    if (!selectedProduct) {
+      alert("Please select a product first");
+      return;
+    }
+
+    const code = coupon.trim().toUpperCase();
 
     if (coupons[code]) {
       setDiscount(coupons[code]);
@@ -99,9 +99,9 @@ const CouponProductBuilder = () => {
 
   const discountedPrice = selectedProduct
     ? Math.round(
-      getProductPrice(selectedProduct) -
-      (getProductPrice(selectedProduct) * discount) / 100
-    )
+        getProductPrice(selectedProduct) -
+        (getProductPrice(selectedProduct) * discount) / 100
+      )
     : 0;
 
   /* ================= ADD TO CART ================= */
@@ -121,55 +121,64 @@ const CouponProductBuilder = () => {
     };
 
     addToCart(item);
+
   };
 
   return (
 
     <section
-      className="max-w-7xl mx-auto px-4 py-14 rounded-xl"
+      className="max-w-7xl mx-auto px-4 py-16 rounded-2xl"
       style={{
-        background: "#fff8fa"
+        background: "linear-gradient(to bottom, #fff8fa, #fde7ec)"
       }}
-    >      <h2 className="text-2xl font-semibold mb-6 text-[#7a1e35]">
-        🌸 Women’s Day Special Offer
-      </h2>
+    >
 
-      {/* ================= PRODUCT CARDS ================= */}
+      {/* HEADING */}
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+      <div className="text-center mb-10">
+
+        <h2 className="text-3xl font-semibold text-[#7a1e35]">
+          🌸 Women’s Day Special Offer
+        </h2>
+
+        <p className="text-sm text-gray-500 mt-2">
+          Pick your favorite styling tool and unlock exclusive discounts
+        </p>
+
+      </div>
+
+
+      {/* PRODUCT CARDS */}
+
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8 mb-12">
+
         {filteredProducts.map((product) => {
 
           const id = product._id || product.id;
+          const selected = selectedProduct?.id === id;
 
           return (
 
             <div
               key={id}
-              onClick={() =>
-                setSelectedProduct({
-                  ...product,
-                  id
-                })
-              }
-              className={`cursor-pointer border border-gray-200 rounded-xl p-4 text-center hover:shadow-md transition ${selectedProduct?.id === id
-                ? "ring-2 ring-[#f7c9d3]"
-                : ""
-                }`}
+              className={`
+                rounded-2xl p-[6px] transition-all duration-300 hover:scale-[1.03]
+                ${selected
+                  ? "bg-gradient-to-br from-pink-200 via-pink-100 to-white shadow-lg ring-2 ring-pink-300"
+                  : "bg-white hover:bg-pink-50 border border-pink-100"}
+              `}
             >
 
-              <img
-                src={getProductImage(product)}
-                alt={product.name}
-                className="h-24 mx-auto object-contain"
+              <ComboProductCard
+                product={product}
+                selected={selected}
+                onSelect={(p) =>
+                  setSelectedProduct({
+                    ...p,
+                    id
+                  })
+                }
               />
-
-              <p className="text-sm mt-2">
-                {product.name}
-              </p>
-
-              <p className="text-sm font-semibold text-gray-700 mt-1">
-                ₹{getProductPrice(product)}
-              </p>
 
             </div>
 
@@ -179,58 +188,63 @@ const CouponProductBuilder = () => {
 
       </div>
 
-      {/* ================= COUPON INPUT ================= */}
 
-      <div className="flex flex-col sm:flex-row gap-3 max-w-md">
+      {/* COUPON SECTION */}
 
-        <input
-          type="text"
-          placeholder="Enter Coupon Code"
-          value={coupon}
-          onChange={(e) =>
-            setCoupon(e.target.value)
-          }
-          className="border border-gray-300 rounded-lg px-4 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-[#f7c9d3]" />
+      <div className="max-w-md mx-auto">
 
-        <button
-          onClick={applyCoupon}
-          className="text-[#7a1e35] px-4 rounded-lg font-semibold"
-          style={{
-            background: "linear-gradient(to right, #fbd1d8, #f7c9d3, #fde7ec)"
-          }}        >
-          Apply
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3">
+
+          <input
+            type="text"
+            placeholder="Enter Women’s Day Coupon"
+            value={coupon}
+            onChange={(e) =>
+              setCoupon(e.target.value)
+            }
+            className="border border-pink-200 rounded-xl px-4 py-3 flex-1 focus:outline-none focus:ring-2 focus:ring-pink-300"
+          />
+
+          <button
+            onClick={applyCoupon}
+            className="px-6 py-3 rounded-xl font-semibold text-white bg-[#7a1e35] hover:bg-[#64192c] transition-all"
+          >
+            Apply
+          </button>
+
+        </div>
+
+       
 
       </div>
 
-      {/* ================= PRICE SUMMARY ================= */}
+
+      {/* PRICE SUMMARY */}
 
       {selectedProduct && (
 
-        <div className="mt-6">
+        <div className="mt-10 text-center">
 
-          <p className="text-lg font-semibold">
+          <p className="text-lg font-medium text-gray-600">
             Original Price: ₹{getProductPrice(selectedProduct)}
           </p>
 
           {discount > 0 && (
 
-            <p className="text-[#7a1e35] font-semibold">
-              Discount: {discount}% OFF
+            <p className="text-[#7a1e35] font-semibold mt-1">
+              🎉 {discount}% Women’s Day Discount Applied
             </p>
 
           )}
 
-          <p className="text-xl font-bold mt-2">
+          <p className="text-2xl font-bold text-[#7a1e35] mt-2">
             Final Price: ₹{discountedPrice}
           </p>
 
           <button
             onClick={addDiscountedProduct}
-            className="mt-4 px-6 py-3 rounded-lg font-semibold text-[#7a1e35] transition hover:scale-[1.03]"
-            style={{
-              background: "linear-gradient(to right, #fbd1d8, #f7c9d3, #fde7ec)"
-            }}          >
+            className="mt-6 px-8 py-3 rounded-xl font-semibold text-white bg-[#7a1e35] hover:bg-[#64192c] transition-all"
+          >
             Add To Cart
           </button>
 

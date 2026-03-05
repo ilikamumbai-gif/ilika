@@ -11,25 +11,28 @@ const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!window.fbq) return;
+useEffect(() => {
+  const storedValue = localStorage.getItem("order_total");
 
-    const storedValue = localStorage.getItem("order_total");
+  if (!storedValue) return;
 
-    if (!storedValue) return;
+  const total = Number(storedValue);
 
-    const total = parseFloat(storedValue);
+  if (!isNaN(total) && total > 0) {
 
-    if (!isNaN(total) && total > 0) {
+    if (window.fbq) {
       window.fbq("track", "Purchase", {
         value: total,
-        currency: "INR"
+        currency: "INR",
+        content_type: "product",
+        num_items: 1,
+        order_id: id
       });
-
-      // remove after sending event
-      localStorage.removeItem("order_total");
     }
-  }, []);
+
+    localStorage.removeItem("order_total");
+  }
+}, []);
 
   return (
     <>
