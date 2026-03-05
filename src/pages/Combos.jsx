@@ -1,284 +1,385 @@
-import React, { useEffect } from "react";
-import { useCombos } from "../admin/context/ComboContext";
-import { useProducts } from "../admin/context/ProductContext";
+import React, { useState } from "react";
+import { useProducts } from "../context/ProductContext";
+
+import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import MiniDivider from "../components/MiniDivider";
-import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
+import CartDrawer from "../components/CartDrawer";
+import ComboProductCard from "../components/ComboProductCard";
 import { useCart } from "../context/CartProvider";
-import { Link } from "react-router-dom";
+import CouponProductBuilder from "../components/CouponProductBuilder";
 
 const Combos = () => {
-  const { combos, fetchCombos } = useCombos();
-  const { products, fetchProducts } = useProducts();
+
+  const { products } = useProducts();
   const { addToCart } = useCart();
 
-  useEffect(() => {
-    fetchCombos();
-    fetchProducts();
-  }, []);
+  const [selectedToners, setSelectedToners] = useState([]);
+  const [selectedMasks, setSelectedMasks] = useState([]);
 
-  const activeCombos = combos.filter(
-    (c) => c.isActive !== false
+  /* ================= FILTER PRODUCTS ================= */
+
+  const tonerProducts = products.filter(
+    p =>
+      p.isActive !== false &&
+      p.name.toLowerCase().includes("toner")
   );
 
-  const getProductById = (id) =>
-    products.find((p) => p.id === id);
+  const maskProducts = products.filter(
+    p =>
+      p.isActive !== false &&
+      p.name.toLowerCase().includes("sheet mask")
+  );
+
+  /* ================= TONER SELECT ================= */
+
+  const toggleToner = (product) => {
+
+    const id = product._id || product.id;
+
+    if (selectedToners.find(p => p.id === id)) {
+
+      setSelectedToners(
+        selectedToners.filter(p => p.id !== id)
+      );
+
+    } else if (selectedToners.length < 2) {
+
+      setSelectedToners([
+        ...selectedToners,
+        { ...product, id }
+      ]);
+
+    }
+
+  };
+
+  /* ================= MASK SELECT ================= */
+
+  const toggleMask = (product) => {
+
+    const id = product._id || product.id;
+
+    if (selectedMasks.find(p => p.id === id)) {
+
+      setSelectedMasks(
+        selectedMasks.filter(p => p.id !== id)
+      );
+
+    } else if (selectedMasks.length < 1) {
+
+      setSelectedMasks([
+        ...selectedMasks,
+        { ...product, id }
+      ]);
+
+    }
+
+  };
+
+  /* ================= PRICE ================= */
+
+  const totalPrice =
+    selectedMasks.length === 1 ? 799 : 0;
+
+  /* ================= ADD COMBO ================= */
+
+  const addComboToCart = () => {
+
+    if (selectedToners.length !== 2 || selectedMasks.length !== 1) {
+      alert("Please select 2 toners and 1 mask");
+      return;
+    }
+
+    const comboProducts = [
+      ...selectedToners,
+      ...selectedMasks
+    ];
+
+    const comboItem = {
+      id: "toner-mask-combo",
+      name: "Custom Toner Mask Combo",
+      price: 799,
+      quantity: 1,
+
+      // ⭐ IMPORTANT FOR BACKEND
+      isCombo: true,
+
+      image:
+        selectedToners[0]?.images?.[0] ||
+        selectedToners[0]?.image ||
+        selectedToners[0]?.imageUrl ||
+        "/placeholder.png",
+
+      // ⭐ Backend reads this
+      comboItems: comboProducts.map(p => ({
+        id: p.id,
+        name: p.name,
+        image:
+          p.images?.[0] ||
+          p.image ||
+          p.imageUrl ||
+          "/placeholder.png"
+      }))
+    };
+
+    addToCart(comboItem);
+
+  };
 
   return (
     <>
       <MiniDivider />
 
-      <div className="primary-bg-color">
+      <div style={{ background: "#fff8fa" }}>
+
         <Header />
         <CartDrawer />
 
-        <section className="max-w-7xl mx-auto px-3 sm:px-6 pb-10">
+        <section className="max-w-7xl mx-auto px-4 py-12 lg:py-16">
+          <Heading heading="Build Your Skincare Combo" />
 
-          <Heading heading="Exclusive Combos" />
+          <div className="grid lg:grid-cols-4 gap-12 mt-12">
+            {/* ================= PRODUCTS ================= */}
 
-          {activeCombos.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center">
-              No combos available.
-            </p>
-          ) : (
+            <div className="lg:col-span-3 space-y-10">
 
-            /* ✅ RESPONSIVE GRID */
-            <div className="grid 
-              grid-cols-1 
-              sm:grid-cols-2 
-              lg:grid-cols-3 
-              xl:grid-cols-4 
-              gap-5 sm:gap-6 mt-6"
-            >
+              {/* TONERS */}
 
-              {activeCombos.map((combo) => {
+              <div>
 
-                let img = null;
+                <h2 className="text-xl font-semibold mb-6 text-[#7a1e35]">
+                  🌸 Step 1 • Choose Any 2 Toners
+                </h2>
 
-                if (combo.images?.length > 0) {
-                  if (typeof combo.images[0] === "string") {
-                    img = combo.images[0];
-                  } else if (combo.images[0]?.url) {
-                    img = combo.images[0].url;
-                  }
-                }
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 lg:gap-8">
+                  {tonerProducts.map(product => {
 
-                if (!img && combo.image) img = combo.image;
-                if (!img && combo.imageUrl) img = combo.imageUrl;
+                    const id = product._id || product.id;
 
-                const discount =
-                  combo.mrp && combo.mrp > combo.price
-                    ? Math.round(
-                        ((combo.mrp - combo.price) /
-                          combo.mrp) *
-                          100
-                      )
-                    : null;
+                    const selected =
+                      selectedToners.find(p => p.id === id);
 
-                return (
-                  <Link
-                    to={`/combo/${combo.id}`}
-                    key={combo.id}
-                    className="w-full"
-                  >
+                    return (
 
-                    <div className="
-                      primary-bg-color 
-                      rounded-2xl 
-                      overflow-hidden 
-                      shadow-sm 
-                      hover:shadow-lg 
-                      transition-all 
-                      duration-300 
-                      flex 
-                      flex-col
-                      h-full
-                    ">
+                      <div
+                        key={id}
+                        className="transition-all duration-300 hover:scale-[1.03]"                      >
 
-                      {/* IMAGE */}
-                      <div className="
-                        relative 
-                        aspect-square 
-                        overflow-hidden 
-                        flex 
-                        items-center 
-                        justify-center
-                      ">
-
-                        {img ? (
-                          <img
-                            src={img}
-                            alt={combo.name}
-                            onError={(e) => {
-                              e.target.src = "/placeholder.png";
-                            }}
-                            className="
-                              absolute inset-0
-                              w-full h-full
-                              object-contain
-                              scale-[1.05] sm:scale-[1.08]
-                              p-2 sm:p-3
-                            "
-                          />
-                        ) : (
-                          <div className="text-gray-400 text-xs">
-                            No Image
-                          </div>
-                        )}
-
-                        {discount && (
-                          <div className="
-                            absolute 
-                            top-2 right-2
-                            bg-[#b34140]
-                            text-white
-                            text-[10px] sm:text-xs
-                            font-semibold
-                            px-2 py-1
-                            rounded-md
-                          ">
-                            {discount}% OFF
-                          </div>
-                        )}
+                        <ComboProductCard
+                          product={product}
+                          selected={selected}
+                          onSelect={toggleToner}
+                        />
 
                       </div>
 
-                      {/* CONTENT */}
-                      <div className="p-3 sm:p-4 flex flex-col gap-1 flex-grow">
+                    );
 
-                        {/* NAME */}
-                        <h3 className="
-                          text-[13px] sm:text-[14px]
-                          font-semibold
-                          text-[#172917]
-                          tracking-wide
-                        ">
-                          {combo.name}
-                        </h3>
+                  })}
 
-                        {/* PRODUCTS */}
-                        {combo.productIds?.length > 0 && (
-                          <div>
+                </div>
 
-                            <p className="
-                              text-[11px] sm:text-[12px]
-                              heading-color
-                            ">
-                              Includes:
-                            </p>
+              </div>
 
-                            <div className="
-                              flex flex-wrap
-                              gap-1
-                              mt-1
-                            ">
 
-                              {combo.productIds.map((pid) => {
-                                const product =
-                                  getProductById(pid);
+              {/* MASKS */}
 
-                                return product ? (
-                                  <span
-                                    key={pid}
-                                    className="
-                                      text-[10px] sm:text-[11px]
-                                      text-[#1c371c98]
-                                    "
-                                  >
-                                    {product.name}
-                                  </span>
-                                ) : null;
-                              })}
+              <div>
+                <h2 className="text-xl font-semibold mb-2 text-[#7a1e35]">
+                  💖 Step 2 • Choose Your Sheet Mask
+                </h2>
 
-                            </div>
-                          </div>
-                        )}
+                <p className="text-sm content-text mb-6">
+                  Select 1 sheet mask to complete your combo kit
+                </p>
 
-                        {/* FREE */}
-                        {combo.freeProductId && (
-                          <div className="
-                            text-[11px] sm:text-[12px]
-                            text-[#b34140]
-                          ">
-                            🎁 Free:{" "}
-                            {
-                              getProductById(
-                                combo.freeProductId
-                              )?.name
-                            }
-                          </div>
-                        )}
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
+                  {maskProducts.map(product => {
 
-                        {/* PRICE */}
-                        <div className="
-                          flex items-baseline
-                          gap-2
-                          mt-1
-                        ">
+                    const id = product._id || product.id;
 
-                          <span className="
-                            font-semibold
-                            text-[#1C371C]
-                            text-[15px] sm:text-[16px]
-                          ">
-                            ₹{combo.price}
-                          </span>
+                    const selected =
+                      selectedMasks.find(p => p.id === id);
 
-                          {combo.mrp &&
-                            combo.mrp > combo.price && (
-                              <span className="
-                                text-[#1c371c98]
-                                text-[12px]
-                                line-through
-                              ">
-                                ₹{combo.mrp}
-                              </span>
-                            )}
+                    return (
 
-                        </div>
+                      <div
+                        key={id}
+                        className="scale-90 origin-top transition hover:scale-[0.95]"
+                      >
+
+                        <ComboProductCard
+                          product={product}
+                          selected={selected}
+                          onSelect={toggleMask}
+                        />
 
                       </div>
 
-                      {/* BUTTON */}
-                      <div className="px-3 sm:px-4 pb-4">
+                    );
 
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
+                  })}
 
-                            addToCart({
-                              ...combo,
-                              id: `combo_${combo.id}`,
-                              isCombo: true,
-                            });
-                          }}
-                          className="
-                            w-full
-                            text-[12px] sm:text-[13px]
-                            tracking-widest
-                            py-2 sm:py-2.5
-                            rounded-lg
-                            bg-[#2b2a29]
-                            text-white
-                          "
-                        >
-                          Add Combo To Cart
-                        </button>
+                </div>
 
-                      </div>
-
-                    </div>
-
-                  </Link>
-                );
-              })}
+              </div>
 
             </div>
-          )}
+
+
+            {/* ================= SIDEBAR ================= */}
+
+            <div
+              className="rounded-2xl p-6 shadow-md h-fit sticky top-24"
+              style={{
+                background: "linear-gradient(to bottom, #ffffff, #fde7ec)"
+              }}
+            >
+              <h3 className="font-semibold text-xl mb-6 text-[#7a1e35]">
+                💝 Your Women’s Day Combo Kit
+              </h3>
+
+              {/* TONERS */}
+
+              <div className="mb-4">
+
+                <p className="font-medium text-sm mb-2">
+                  Toners
+                </p>
+
+                {selectedToners.length === 0 && (
+                  <p className="text-xs text-gray-500">
+                    No toner selected
+                  </p>
+                )}
+
+                <div className="flex flex-wrap gap-3">
+
+                  {selectedToners.map((p) => {
+
+                    const img =
+                      p.images?.[0] ||
+                      p.image ||
+                      p.imageUrl ||
+                      "/placeholder.png";
+
+                    return (
+
+                      <div key={p.id} className="relative text-center">
+
+                        <img
+                          src={img}
+                          alt={p.name}
+                          className="w-16 h-16 object-contain border border-gray-200 rounded-lg p-1 bg-white shadow-sm"
+                        />
+
+                        {/* REMOVE BUTTON */}
+                        <button
+                          onClick={() => toggleToner(p)}
+                          className="absolute -top-2 -right-2 bg-[#1C371C] text-white w-5 h-5 rounded-full text-xs hover:bg-[#132813]"
+                        >
+                          ×
+                        </button>
+
+                        <p className="text-[10px] mt-1 line-clamp-2 w-16">
+                          {p.name}
+                        </p>
+
+                      </div>
+
+                    );
+
+                  })}
+
+                </div>
+
+              </div>
+
+              {/* MASKS */}
+
+              <div className="mb-4">
+
+                <p className="font-medium text-sm mb-2">
+                  Masks
+                </p>
+
+                {selectedMasks.length === 0 && (
+                  <p className="text-xs text-gray-500">
+                    No mask selected
+                  </p>
+                )}
+
+                <div className="flex flex-wrap gap-3">
+
+                  {selectedMasks.map((p) => {
+
+                    const img =
+                      p.images?.[0] ||
+                      p.image ||
+                      p.imageUrl ||
+                      "/placeholder.png";
+
+                    return (
+
+                      <div key={p.id} className="relative text-center">
+
+                        <img
+                          src={img}
+                          alt={p.name}
+                          className="w-16 h-16 object-contain border rounded-lg p-1 bg-white"
+                        />
+
+                        {/* REMOVE BUTTON */}
+                        <button
+                          onClick={() => toggleMask(p)}
+                          className="absolute -top-2 -right-2 bg-[#1C371C] text-white w-5 h-5 rounded-full text-xs hover:bg-[#132813]"
+                        >
+                          ×
+                        </button>
+
+                        <p className="text-[10px] mt-1 line-clamp-2 w-16">
+                          {p.name}
+                        </p>
+
+                      </div>
+
+                    );
+
+                  })}
+
+                </div>
+
+              </div>
+
+              {/* PRICE */}
+
+              <div className="border-t pt-4 mt-4">
+
+                <p className="text-xl font-bold text-[#7a1e35]">
+                  Total: ₹{totalPrice}
+                </p>
+
+                <button
+                  disabled={selectedToners.length !== 2 || selectedMasks.length !== 1}
+                  onClick={addComboToCart}
+                  className="w-full mt-5 text-[#7a1e35] py-3 rounded-xl font-semibold tracking-wide transition-all hover:scale-[1.02]"
+                  style={{
+                    background: "linear-gradient(to right, #fbd1d8, #f7c9d3, #fde7ec)"
+                  }}
+                >
+                  Add Combo To Cart
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
 
         </section>
+        <CouponProductBuilder />
 
         <Footer />
 

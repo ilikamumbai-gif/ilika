@@ -5,10 +5,24 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
+import { useEffect } from "react";
 
 const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  useEffect(() => {
+  if (window.fbq) {
+    const total = Number(localStorage.getItem("order_total")) || 0;
+
+    if (total > 0) {
+      window.fbq("track", "Purchase", {
+        value: total,
+        currency: "INR",
+      });
+    }
+  }
+}, []);
 
   return (
     <>

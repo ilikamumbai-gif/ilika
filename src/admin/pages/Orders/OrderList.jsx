@@ -204,27 +204,27 @@ const OrderList = () => {
         data={filteredOrders}
         actions={(row) => (
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-end">
+
+            {/* VIEW */}
 
             <button
               onClick={() =>
-                navigate(
-                  `/admin/orders/${row.id}`
-                )
+                navigate(`/admin/orders/${row.id}`)
               }
+              className="p-2 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition"
+              title="View"
             >
               <Eye size={16} />
             </button>
 
 
+            {/* DELETE */}
+
             <button
               onClick={() => {
 
-                if (
-                  window.confirm(
-                    "Delete order?"
-                  )
-                ) {
+                if (window.confirm("Delete order?")) {
 
                   deleteOrder(row.id);
 
@@ -235,6 +235,8 @@ const OrderList = () => {
                 }
 
               }}
+              className="p-2 bg-red-50 text-red-600 rounded hover:bg-red-100 transition"
+              title="Delete"
             >
               <Trash2 size={16} />
             </button>

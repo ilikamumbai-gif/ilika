@@ -11,6 +11,7 @@ import Heading from "../components/Heading";
 const Checkout = () => {
   const { cartItems, clearCart } = useCart();
   const { currentUser } = useAuth();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -107,13 +108,9 @@ const Checkout = () => {
   /* ---------------- CALCULATIONS ---------------- */
 
   const subtotal = cartItems.reduce((acc, item) => {
-    const cleanPrice = Number(
-      String(item.price).replace(/[^0-9.]/g, "")
-    );
-
+    const price = Number(item.price) || 0;
     const qty = Number(item.quantity) || 1;
-
-    return acc + cleanPrice * qty;
+    return acc + price * qty;
   }, 0);
 
   const total = parseFloat(subtotal.toFixed(2));
@@ -124,6 +121,8 @@ const Checkout = () => {
   /* ---------------- PLACE ORDER ---------------- */
 
   const handlePlaceOrder = async () => {
+    if (loading) return;
+    setLoading(true);
     if (!currentUser) {
       alert("Login required");
       navigate("/login");
@@ -163,7 +162,24 @@ const Checkout = () => {
           body: JSON.stringify({
             userId: currentUser.uid,
             userEmail: currentUser.email,
-            items: cartItems,
+            items: cartItems.map(item => ({
+              id: item.id,
+              name: item.name,
+              price: Number(item.price),
+              quantity: Number(item.quantity) || 1,
+              image:
+                item.image ||
+                item.images?.[0] ||
+                item.imageUrl ||
+                "",
+
+              variantLabel: item.variantLabel || null,
+              originalPrice: item.originalPrice || null,
+              discountApplied: item.discountApplied || null,
+
+              isCombo: item.isCombo || false,
+              comboItems: item.comboItems || item.items || []
+            })),
             totalAmount: total,
             shippingAddressId: selectedAddressId,
             paymentMethod: "COD",
@@ -219,7 +235,24 @@ const Checkout = () => {
                   orderData: {
                     userId: currentUser.uid,
                     userEmail: currentUser.email,
-                    items: cartItems,
+                    items: cartItems.map(item => ({
+                      id: item.id,
+                      name: item.name,
+                      price: Number(item.price),
+                      quantity: Number(item.quantity) || 1,
+                      image:
+                        item.image ||
+                        item.images?.[0] ||
+                        item.imageUrl ||
+                        "",
+
+                      variantLabel: item.variantLabel || null,
+                      originalPrice: item.originalPrice || null,
+                      discountApplied: item.discountApplied || null,
+
+                      isCombo: item.isCombo || false,
+                      comboItems: item.comboItems || item.items || []
+                    })),
                     totalAmount: total,
                     shippingAddressId: selectedAddressId,
                     source: source
@@ -259,8 +292,8 @@ const Checkout = () => {
             clearCart();
 
             // 3️⃣ Redirect to success page
+            localStorage.setItem("order_total", total);
             navigate(`/order-success/${verifyData.orderId}`);
-
           } catch (err) {
             console.error("Verification error:", err);
             alert("Payment verification failed");
@@ -276,6 +309,7 @@ const Checkout = () => {
       console.error("Order error:", err);
       alert("Failed to process order");
     }
+    setLoading(false);
   };
   // console.log(cartItems)
   /* ---------------- EMPTY CART ---------------- */
@@ -376,8 +410,12 @@ const Checkout = () => {
             {cartItems.map(item => (
               <div key={item.id} className="flex gap-3 border-b pb-3">
                 <img
-                  src={item.images || item.imageUrl}
-                  className="w-16 h-16 rounded-md object-cover"
+                  src={
+                    item.image ||
+                    item.images?.[0] ||
+                    item.imageUrl ||
+                    "/placeholder.png"
+                  } className="w-16 h-16 rounded-md object-cover"
                 />
                 <div className="flex-1 text-sm">
                   <p className="font-medium">{item.name}</p>
@@ -402,10 +440,11 @@ const Checkout = () => {
             </div>
 
             <button
+              disabled={loading}
               onClick={handlePlaceOrder}
               className="mt-6 w-full bg-black text-white py-3 rounded-xl hover:bg-gray-900 transition"
             >
-              Continue to Payment
+              {loading ? "Processing..." : "Continue to Payment"}
             </button>
           </div>
 

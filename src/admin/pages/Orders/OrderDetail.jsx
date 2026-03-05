@@ -16,12 +16,19 @@ const OrderDetail = () => {
   const order = getOrderById(id);
 
   if (!order) {
-    return (
-      <AdminLayout>
-        Order not found
-      </AdminLayout>
-    );
+    return <AdminLayout>Order not found</AdminLayout>;
   }
+
+  /* ================= IMAGE HELPER ================= */
+
+  const getImage = (item) => {
+    return (
+      item?.image ||
+      item?.images?.[0] ||
+      item?.imageUrl ||
+      "/placeholder.png"
+    );
+  };
 
   /* ================= PDF ================= */
 
@@ -29,35 +36,37 @@ const OrderDetail = () => {
 
     const doc = new jsPDF();
 
-    doc.text("Invoice", 10, 10);
+    doc.text(`Invoice #${order.id.slice(-6)}`, 14, 10);
 
     autoTable(doc, {
-      head: [["Name", "Qty", "Price"]],
+      startY: 20,
+      head: [["Product", "Qty", "Price", "Total"]],
       body: order.items.map(i => [
         i.name,
         i.quantity,
-        i.price
-      ]),
+        `₹${i.price}`,
+        `₹${i.price * i.quantity}`
+      ])
     });
 
-    doc.save("invoice.pdf");
+    const total = order.totalAmount || order.total || 0;
 
-    logActivity(
-      `Downloaded invoice ${order.id}`
+    doc.text(
+      `Grand Total: ₹${total}`,
+      14,
+      doc.lastAutoTable.finalY + 10
     );
 
+    doc.save(`invoice_${order.id}.pdf`);
+
+    logActivity(`Downloaded invoice ${order.id}`);
   };
 
   /* ================= PRINT ================= */
 
   const printOrder = () => {
-
     window.print();
-
-    logActivity(
-      `Printed order ${order.id}`
-    );
-
+    logActivity(`Printed order ${order.id}`);
   };
 
   return (
@@ -83,7 +92,6 @@ const OrderDetail = () => {
 
         </div>
 
-
         <div className="flex gap-2">
 
           <button
@@ -106,7 +114,6 @@ const OrderDetail = () => {
 
       </div>
 
-
       {/* ADDRESS */}
 
       <div className="bg-white border rounded-xl p-4 mb-6">
@@ -117,8 +124,9 @@ const OrderDetail = () => {
 
         <p>{order.shippingAddress?.name}</p>
         <p>{order.shippingAddress?.line}</p>
+
         <p>
-          {order.shippingAddress?.city} ,
+          {order.shippingAddress?.city},
           {order.shippingAddress?.state}
         </p>
 
@@ -126,7 +134,6 @@ const OrderDetail = () => {
         <p>{order.userEmail}</p>
 
       </div>
-
 
       {/* ITEMS */}
 
@@ -137,88 +144,126 @@ const OrderDetail = () => {
           <thead className="bg-gray-50">
 
             <tr>
-
-              <th className="px-4 py-3 text-left">
-                Image
-              </th>
-
-              <th className="px-4 py-3 text-left">
-                Product
-              </th>
-
-              <th className="px-4 py-3 text-center">
-                Qty
-              </th>
-
-              <th className="px-4 py-3 text-right">
-                Price
-              </th>
-
-              <th className="px-4 py-3 text-right">
-                Total
-              </th>
-
+              <th className="px-4 py-3 text-left">Image</th>
+              <th className="px-4 py-3 text-left">Product</th>
+              <th className="px-4 py-3 text-center">Qty</th>
+              <th className="px-4 py-3 text-right">Price</th>
+              <th className="px-4 py-3 text-right">Total</th>
             </tr>
 
           </thead>
 
           <tbody>
 
-            {order.items.map((item, i) => (
+            {order.items?.map((item, i) => {
 
-              <React.Fragment key={i}>
+              const comboList =
+                item.items ||
+                item.comboItems ||
+                [];
 
-                <tr className="border-t">
+              return (
+
+                <tr key={i} className="border-t">
 
                   {/* IMAGE */}
 
                   <td className="px-4 py-3">
 
                     <img
-                      src={item.image}
+                      src={getImage(item)}
                       className="w-12 h-12 object-cover rounded"
                     />
 
                   </td>
 
-
-                  {/* NAME */}
+                  {/* PRODUCT */}
 
                   <td className="px-4 py-3">
 
-                    {item.name}
+                    <p className="font-medium">
+                      {item.name}
+                    </p>
+
+                    {/* VARIANT */}
+
+                    {item.variantLabel && (
+
+                      <p className="text-xs text-gray-500">
+                        Variant: {item.variantLabel}
+                      </p>
+
+                    )}
+
+                    {/* DISCOUNT */}
+
+                    {item.discountApplied && (
+
+                      <p className="text-xs text-green-600">
+                        {item.discountApplied}% OFF
+                      </p>
+
+                    )}
+
+                    {/* ORIGINAL PRICE */}
+
+                    {item.originalPrice && (
+
+                      <p className="text-xs text-gray-400 line-through">
+                        ₹{item.originalPrice}
+                      </p>
+
+                    )}
 
                     {/* COMBO ITEMS */}
 
-                    {item.isCombo &&
-                      item.comboItems?.length > 0 && (
+                    {comboList.length > 0 && (
 
-                        <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-gray-500 mt-2">
 
-                          Combo:
+                        Combo Items:
 
-                          {item.comboItems.map((c, j) => (
-                            <div key={j}>
-                              • {c.name}
-                            </div>
-                          ))}
+                        {comboList.map((c, j) => (
 
-                        </div>
+                          <div
+                            key={j}
+                            className="flex items-center gap-2 mt-1"
+                          >
 
-                      )}
+                            <img
+                              src={
+                                c.image ||
+                                c.images?.[0] ||
+                                "/placeholder.png"
+                              }
+                              className="w-6 h-6 object-contain"
+                            />
+
+                            <span>{c.name}</span>
+
+                          </div>
+
+                        ))}
+
+                      </div>
+
+                    )}
 
                   </td>
 
+                  {/* QTY */}
 
                   <td className="px-4 py-3 text-center">
                     {item.quantity}
                   </td>
 
+                  {/* PRICE */}
 
                   <td className="px-4 py-3 text-right">
                     ₹{item.price}
                   </td>
 
+                  {/* TOTAL */}
 
                   <td className="px-4 py-3 text-right font-medium">
                     ₹{item.price * item.quantity}
@@ -226,16 +271,15 @@ const OrderDetail = () => {
 
                 </tr>
 
-              </React.Fragment>
+              );
 
-            ))}
+            })}
 
           </tbody>
 
         </table>
 
       </div>
-
 
       {/* TOTAL */}
 
@@ -248,7 +292,7 @@ const OrderDetail = () => {
           </p>
 
           <p className="text-xl font-bold">
-            ₹{order.total}
+            ₹{order.totalAmount || order.total || 0}
           </p>
 
         </div>
@@ -256,9 +300,7 @@ const OrderDetail = () => {
       </div>
 
     </AdminLayout>
-
   );
-
 };
 
 export default OrderDetail;

@@ -35,6 +35,7 @@ import CartProductDetail from "../pages/cartproducts/CartProductDetail";
 import ReviewList from "../pages/Reviews/ReviewList";
 import ReviewDetail from "../pages/Reviews/ReviewDetail";
 import AdminLog from "../pages/AdminLog/AdminLog";
+import BlogComments from "../pages/Blogs/BlogComments";
 
 const AdminRoutes = () => {
   return (
@@ -86,6 +87,8 @@ const AdminRoutes = () => {
                       <Route path="blogs" element={<BlogList />} />
                       <Route path="blogs/create" element={<AddBlog />} />
                       <Route path="blogs/:id" element={<ViewBlogDetails />} />
+                      <Route path="/blog-comments" element={<BlogComments />}
+/>
 
                       {/* ✅ REPORTS */}
                       <Route path="reports" element={<Report />} />

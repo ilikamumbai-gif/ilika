@@ -440,7 +440,7 @@ const ProductDetail = ({
               
               {/* WHY YOU'LL LOVE IT */}
               <div className="border rounded-2xl p-5 bg-[#fff6f5] space-y-3">
-                <div className="font-semibold heading-color text-lg">
+                <div className="font-semibold heading-color text-xl">
                   Why You'll Love It
                 </div>
 
@@ -453,7 +453,7 @@ const ProductDetail = ({
                   ]).map((b, i) => (
                     <li key={i} className="flex gap-2 items-start">
                       <span className="text-[#E7A6A1] font-bold">✓</span>
-                      <span className="text-gray-700">{b}</span>
+                      <span className="text-[#2b2a29]">{b}</span>
                     </li>
                   ))}
                 </ul>

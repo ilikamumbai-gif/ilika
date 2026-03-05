@@ -12,9 +12,9 @@ import {
   File,
   Gift,
   Star,
-  ClipboardList,   // ✅ for orders
-  History,          // ✅ for activity logs
-  Logs
+  ClipboardList,
+  Logs,
+  MessageSquare
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -27,7 +27,6 @@ const AdminSidebar = () => {
   const activeClass =
     "bg-pink-100 text-pink-700";
 
-
   const NavItem = ({
     to,
     icon: Icon,
@@ -39,8 +38,7 @@ const AdminSidebar = () => {
       end
       onClick={() => setOpen(false)}
       className={({ isActive }) =>
-        `${linkClass} ${isActive ? activeClass : ""
-        }`
+        `${linkClass} ${isActive ? activeClass : ""}`
       }
     >
       <Icon size={18} />
@@ -48,7 +46,6 @@ const AdminSidebar = () => {
     </NavLink>
 
   );
-
 
   return (
     <>
@@ -61,14 +58,11 @@ const AdminSidebar = () => {
           ILIKA Admin
         </h1>
 
-        <button
-          onClick={() => setOpen(true)}
-        >
+        <button onClick={() => setOpen(true)}>
           <Menu />
         </button>
 
       </div>
-
 
       {/* OVERLAY */}
 
@@ -80,7 +74,6 @@ const AdminSidebar = () => {
         />
 
       )}
-
 
       {/* SIDEBAR */}
 
@@ -114,8 +107,7 @@ const AdminSidebar = () => {
 
         </div>
 
-
-        {/* NAV */}
+        {/* NAVIGATION */}
 
         <nav className="p-4 space-y-1">
 
@@ -161,13 +153,23 @@ const AdminSidebar = () => {
             label="Users"
           />
 
+          {/* BLOGS */}
+
           <NavItem
             to="/admin/blogs"
             icon={Image}
             label="Blogs"
           />
 
-          {/* ✅ FIX review -> reviews */}
+          {/* ⭐ NEW BLOG COMMENTS PANEL */}
+
+          <NavItem
+            to="/admin/blog-comments"
+            icon={MessageSquare}
+            label="Blog Comments"
+          />
+
+          {/* REVIEWS */}
 
           <NavItem
             to="/admin/reviews"
@@ -181,7 +183,7 @@ const AdminSidebar = () => {
             label="Reports"
           />
 
-          {/* ✅ NEW ADMIN LOGS */}
+          {/* ACTIVITY LOG */}
 
           <NavItem
             to="/admin/log"

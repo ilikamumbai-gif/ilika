@@ -375,32 +375,242 @@ app.delete("/api/blogs/:id", async (req, res) => {
 });
 
 
+/* ================= BLOG COMMENTS ================= */
 
-/* ============================== COMBOS ============================== */
-
-
-app.post("/api/combos", async (req, res) => {
+// ADD COMMENT
+app.post("/api/blogs/:id/comments", async (req, res) => {
   try {
-    const now = Date.now();
 
-    const comboData = {
-      ...req.body,
-      isActive: req.body.isActive ?? true,
-      createdAt: now,
-      updatedAt: now,
+    const { name, message } = req.body;
+
+    if (!name || !message) {
+      return res.status(400).json({
+        error: "Name and message required"
+      });
+    }
+
+    const commentData = {
+      name,
+      message,
+      createdAt: new Date(),
     };
 
-    const docRef = await db.collection("combos").add(comboData);
+    const docRef = await db
+      .collection("blogs")
+      .doc(req.params.id)
+      .collection("comments")
+      .add(commentData);
 
-    res.json({ id: docRef.id, ...comboData });
+    res.json({
+      id: docRef.id,
+      ...commentData
+    });
+
   } catch (error) {
-    console.error("ADD COMBO ERROR:", error);
-    res.status(500).json({ error: "Failed to add combo" });
+    console.error(error);
+    res.status(500).json({
+      error: "Failed to add comment"
+    });
+  }
+});
+
+app.put("/api/blogs/:id", async (req, res) => {
+  try {
+
+    const blogRef = db.collection("blogs").doc(req.params.id);
+    const doc = await blogRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({
+        error: "Blog not found"
+      });
+    }
+
+    await blogRef.update({
+      ...req.body,
+      updatedAt: Date.now(),
+    });
+
+    res.json({
+      message: "Blog updated successfully"
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Failed to update blog"
+    });
   }
 });
 
 
-/* ============================== COMBOS ============================== */
+// GET COMMENTS
+app.get("/api/blogs/:id/comments", async (req, res) => {
+  try {
+
+    const snapshot = await db
+      .collection("blogs")
+      .doc(req.params.id)
+      .collection("comments")
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const comments = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.json(comments);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Failed to fetch comments"
+    });
+  }
+});
+
+app.get("/api/admin/blogs/:id/comments", async (req, res) => {
+  try {
+
+    const snapshot = await db
+      .collection("blogs")
+      .doc(req.params.id)
+      .collection("comments")
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const comments = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.json(comments);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Failed to fetch comments",
+    });
+  }
+});
+
+app.delete("/api/admin/blogs/:blogId/comments/:commentId", async (req, res) => {
+  try {
+
+    const { blogId, commentId } = req.params;
+
+    const ref = db
+      .collection("blogs")
+      .doc(blogId)
+      .collection("comments")
+      .doc(commentId);
+
+    const doc = await ref.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({
+        error: "Comment not found"
+      });
+    }
+
+    await ref.delete();
+
+    res.json({
+      message: "Comment deleted",
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Failed to delete comment",
+    });
+  }
+});
+
+app.get("/api/blogs/:id/comment-count", async (req, res) => {
+  try {
+
+    const snapshot = await db
+      .collection("blogs")
+      .doc(req.params.id)
+      .collection("comments")
+      .get();
+
+    res.json({
+      count: snapshot.size
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      error: "Failed to count comments"
+    });
+  }
+});
+
+app.get("/api/admin/all-comments", async (req, res) => {
+  try {
+
+    const blogsSnapshot = await db.collection("blogs").get();
+
+    let comments = [];
+
+    for (const blogDoc of blogsSnapshot.docs) {
+
+      const blogData = blogDoc.data();
+      const blogId = blogDoc.id;
+
+      const commentSnap = await db
+        .collection("blogs")
+        .doc(blogId)
+        .collection("comments")
+        .get();
+
+      commentSnap.forEach((doc) => {
+
+        comments.push({
+          id: doc.id,
+          blogId,
+          blogTitle: blogData.title,
+          ...doc.data(),
+        });
+
+      });
+
+    }
+
+    res.json(comments);
+
+  } catch (error) {
+
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch comments" });
+
+  }
+});
+
+app.delete("/api/admin/comments/:blogId/:commentId", async (req, res) => {
+
+  try {
+
+    const { blogId, commentId } = req.params;
+
+    await db
+      .collection("blogs")
+      .doc(blogId)
+      .collection("comments")
+      .doc(commentId)
+      .delete();
+
+    res.json({ message: "Comment deleted" });
+
+  } catch (err) {
+
+    res.status(500).json({ error: "Delete failed" });
+
+  }
+
+});
 
 /* ============================== COMBOS ============================== */
 
@@ -515,25 +725,40 @@ app.post("/api/orders", async (req, res) => {
 
       const quantity = item.quantity || 1;
 
-      /* ========= COMBO ========= */
+      /* ================= COMBO PRODUCTS ================= */
 
-      if (item.isCombo) {
+      if (item.isCombo || item.items || item.comboItems) {
+
+        const comboProducts = item.items || item.comboItems || [];
 
         totalAmount += Number(item.price) * quantity;
 
         validatedItems.push({
           productId: item.id,
-          name: item.name,
-          price: item.price,
+          name: item.name || "Custom Combo",
+          price: Number(item.price),
           quantity,
+          image:
+            item.image ||
+            productData.image ||
+            productData.images?.[0] ||
+            "",
           isCombo: true,
-          comboItems: item.comboItems || [],
+
+          comboItems: comboProducts.map(p => ({
+            name: p.name,
+            image:
+              p.image ||
+              p.images?.[0] ||
+              p.imageUrl ||
+              ""
+          }))
         });
 
         continue;
       }
 
-      /* ========= NORMAL PRODUCT ========= */
+      /* ================= NORMAL / VARIANT / COUPON PRODUCT ================= */
 
       const productDoc = await db
         .collection("products")
@@ -552,15 +777,31 @@ app.post("/api/orders", async (req, res) => {
         });
       }
 
-      totalAmount += Number(productData.price) * quantity;
+      /* ===== FINAL PRICE (coupon / variant safe) ===== */
 
-      // ✅ THIS WAS MISSING
+      const finalPrice =
+        Number(item.price) || Number(productData.price);
+
+      totalAmount += finalPrice * quantity;
+
       validatedItems.push({
         productId: item.id,
-        name: productData.name,
-        price: productData.price,
+        name: item.name || productData.name,
+        price: finalPrice,
         quantity,
-        image: productData.image || "",
+
+        image:
+          item.image ||
+          item.images?.[0] ||
+          item.imageUrl ||
+          "",
+
+        variantLabel: item.variantLabel || null,
+
+        originalPrice: item.originalPrice || null,
+
+        discountApplied: item.discountApplied || null,
+
         isCombo: false,
       });
 
@@ -917,25 +1158,42 @@ app.post("/api/payments/verify", async (req, res) => {
 
       const quantity = item.quantity || 1;
 
-      /* ========= COMBO ========= */
+      /* ================= COMBO / CTM ================= */
 
-      if (item.isCombo) {
+      if (item.isCombo || item.items || item.comboItems) {
+
+        const comboProducts = item.items || item.comboItems || [];
 
         totalAmount += Number(item.price) * quantity;
 
         validatedItems.push({
           productId: item.id,
-          name: item.name,
-          price: item.price,
+          name: item.name || "Custom Combo",
+          price: Number(item.price),
           quantity,
+
+          image:
+            item.image ||
+            item.images?.[0] ||
+            item.imageUrl ||
+            "",
+
           isCombo: true,
-          comboItems: item.comboItems || [],
+
+          comboItems: comboProducts.map(p => ({
+            name: p.name,
+            image:
+              p.image ||
+              p.images?.[0] ||
+              p.imageUrl ||
+              ""
+          }))
         });
 
         continue;
       }
 
-      /* ========= NORMAL PRODUCT ========= */
+      /* ================= NORMAL PRODUCT ================= */
 
       const productDoc = await db
         .collection("products")
@@ -954,15 +1212,26 @@ app.post("/api/payments/verify", async (req, res) => {
         });
       }
 
-      totalAmount += Number(productData.price) * quantity;
+      const finalPrice =
+        Number(item.price) ||
+        Number(productData.price) ||
+        0;
 
-      // ✅ ADD THIS
+      totalAmount += finalPrice * quantity;
+
       validatedItems.push({
         productId: item.id,
-        name: productData.name,
-        price: productData.price,
+        name: item.name || productData.name,
+        price: finalPrice,
         quantity,
-        image: productData.image || "",
+        image:
+          item.image ||
+          item.images?.[0] ||
+          item.imageUrl ||
+          "",
+        variantLabel: item.variantLabel || null,
+        originalPrice: item.originalPrice || null,
+        discountApplied: item.discountApplied || null,
         isCombo: false,
       });
 

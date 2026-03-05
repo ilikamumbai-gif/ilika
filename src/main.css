@@ -44,7 +44,7 @@ html, body, #root {
 }
 
 .heading-color{
-    color:#b34140;
+    color:#801f1f;
 }
 
 .heading-2-color{
@@ -187,41 +187,35 @@ html, body, #root {
 
 
 /* holi Button  */
-.holi-btn-animated {
+/* Women's Day Button */
+.women-btn-animated {
   padding: 12px 28px;
   border: none;
   border-radius: 50px;
   font-weight: 600;
   font-size: 16px;
-  color: white;
+  color: #fff;
   cursor: pointer;
 
-  background: linear-gradient(
-    90deg,
-    #ff4d4d 0%,
-    #ff4d4d 16%,
-    #ffcc00 16%,
-    #ffcc00 32%,
-    #00e600 32%,
-    #00e600 48%,
-    #00ccff 48%,
-    #00ccff 64%,
-    #9933ff 64%,
-    #9933ff 80%,
-    #ff66cc 80%,
-    #ff66cc 100%
-  );
+background: linear-gradient(
+  90deg,
+  #fbd1d8 0%,
+  #f9dbe1 25%,
+  #fde7ec 50%,
+  #fff0f3 75%,
+  #ffe6eb 100%
+);
 
   background-size: 200% 100%;
-  animation: holiFlow 4s linear infinite;
+  animation: womenFlow 4s linear infinite;
   transition: 0.3s ease;
 }
 
-.holi-btn-animated:hover {
+.women-btn-animated:hover {
   transform: scale(1.08);
 }
 
-@keyframes holiFlow {
+@keyframes womenFlow {
   0% {
     background-position: 0% 0%;
   }
@@ -229,7 +223,6 @@ html, body, #root {
     background-position: 100% 0%;
   }
 }
-
 
 .marquee-wrapper {
   overflow: hidden;
@@ -248,12 +241,11 @@ html, body, #root {
   font-weight: 600;
   font-size: 0.95rem;
 
-  background: linear-gradient(to right, #ec4899, #ef4444, #fb923c);
+  background: linear-gradient(to right, #fbd1d8, #f7c9d3, #fde7ec);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Seamless movement */
 @keyframes marquee {
   0% {
     transform: translateX(0);

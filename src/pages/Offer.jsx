@@ -1,65 +1,39 @@
-import React from "react";
-import OfferCard from "../components/OfferCard";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import Heading from "../components/Heading";
-import MiniDivider from "../components/MiniDivider";
-import CartDrawer from "../components/CartDrawer";
+import OfferCard from "../components/OfferCard";
 
-const offers = [
-  // {
-  //   title: "Flat 20% Off",
-  //   description: "Get flat 20% off on all skincare products.",
-  //   code: "ILIKA20",
-  //   validity: "30 Sep 2024",
-  // },
-  // {
-  //   title: "₹300 Off",
-  //   description: "₹300 off on orders above ₹1999.",
-  //   code: "SAVE300",
-  //   validity: "15 Oct 2024",
-  // },
-  // {
-  //   title: "Free Shipping",
-  //   description: "Enjoy free delivery on prepaid orders.",
-  //   code: "FREESHIP",
-  //   validity: "Limited time",
-  // },
-  // {
-  //   title: "First Order Offer",
-  //   description: "Extra 10% off on your first purchase.",
-  //   code: "WELCOME10",
-  //   validity: "New users only",
-  // },
-];
+const Offers = () => {
 
-const Offer = () => {
+  const offers = [
+    {
+      type: "coupon",
+      title: "Flat 20% OFF",
+      description: "Use this coupon on Ilika styling tools.",
+      code: "SAVE20",
+      link: "/combo"
+    },
+    {
+      type: "deal",
+      title: "Buy 2 Toners Get 1 Mask FREE",
+      description: "Build your toner combo and get a sheet mask free.",
+      link: "/combo"
+    },
+  ];
+
   return (
-    <>
-      <MiniDivider />
+    <section className="max-w-7xl mx-auto px-4 py-12">
 
-      {/* ✅ Added wrapper */}
-      <div className="primary-bg-color">
+      <Heading heading={"Special Offers"}/>
 
-        <Header />
-        <CartDrawer/>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {/* ✅ Added primary-bg-color here */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8 primary-bg-color">
-          <Heading heading="Offers Available" />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-            {offers.map((offer, index) => (
-              <OfferCard key={index} {...offer} />
-            ))}
-          </div>
-        </section>
-
-        <Footer />
+        {offers.map((offer, index) => (
+          <OfferCard key={index} {...offer} />
+        ))}
 
       </div>
-    </>
+
+    </section>
   );
 };
 
-export default Offer;
+export default Offers;
