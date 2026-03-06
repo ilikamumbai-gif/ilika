@@ -241,7 +241,7 @@ const CouponProductBuilder = () => {
             {discount > 0 && (
 
               <p className="text-[#7a1e35] font-semibold mt-1">
-                🎉 {discount}% Women’s Day Discount Applied
+                {discount}% Women’s Day Discount Applied
               </p>
 
             )}

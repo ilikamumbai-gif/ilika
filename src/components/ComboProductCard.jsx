@@ -1,9 +1,14 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { createSlug } from "../utils/slugify";
 
 const ComboProductCard = ({ product, selected, onSelect }) => {
 
+  const slug = createSlug(product.name);
+  const productId = product._id || product.id;
+
   const productImage =
-    product?.variants?.[0]?.images?.[0] ||   // variant image support
+    product?.variants?.[0]?.images?.[0] ||
     product.images?.[0] ||
     product.image ||
     product.imageUrl ||
@@ -11,11 +16,20 @@ const ComboProductCard = ({ product, selected, onSelect }) => {
 
   return (
 
-    <div
-      onClick={() => onSelect(product)}
+    <Link
+      to={`/product/${slug}`}
+      state={{ id: productId }}
+      onClick={(e) => {
+        e.preventDefault(); // prevent navigation
+        onSelect(product);  // single click selects
+      }}
+      onDoubleClick={() => {
+        // double click → allow navigation
+        window.location.href = `/product/${slug}`;
+      }}
       className={`
         relative cursor-pointer rounded-2xl p-4 transition-all duration-300
-        border bg-white hover:bg-pink-50 hover:shadow-md
+        border bg-white hover:bg-pink-50 hover:shadow-md block
         ${selected
           ? "ring-2 ring-pink-400 bg-gradient-to-b from-pink-100 to-white shadow-lg"
           : "border-pink-100"}
@@ -34,7 +48,7 @@ const ComboProductCard = ({ product, selected, onSelect }) => {
         <img
           src={productImage}
           alt={product.name}
-          className="object-contain h-full w-full transition-transform duration-300 hover:scale-105"
+          className="object-contain h-full w-full transition-transform duration-300"
         />
 
       </div>
@@ -43,10 +57,8 @@ const ComboProductCard = ({ product, selected, onSelect }) => {
         {product.name}
       </p>
 
-    </div>
-
+    </Link>
   );
-
 };
 
 export default ComboProductCard;

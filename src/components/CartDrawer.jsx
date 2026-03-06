@@ -22,9 +22,9 @@ const CartDrawer = () => {
   );
 
 
-  const grandTotal = subtotal ;
+  const grandTotal = subtotal;
 
-  
+
 
   return (
     <>
@@ -56,14 +56,26 @@ const CartDrawer = () => {
               <div key={item.id} className="flex gap-4 border-b pb-4">
 
                 <img
-                  src={item.images}
+                  src={
+                    item?.image ||
+                    item?.images?.[0] ||
+                    item?.variants?.find(v => v.label === item.variantLabel)?.images?.[0] ||
+                    item?.variants?.[0]?.images?.[0] ||
+                    "/placeholder.png"
+                  }
                   alt={item.name}
-                  className="w-16 h-16 object-cover rounded"
+                  className="w-16 h-16 object-contain rounded border bg-white"
                 />
 
                 <div className="flex-1">
 
                   <p className="font-medium">{item.name}</p>
+
+                  {item.variantLabel && (
+                    <p className="text-xs text-gray-500 mt-[2px]">
+                      {item.variantLabel}
+                    </p>
+                  )}
 
                   {/* ✅ SHOW KIT PRODUCTS */}
                   {item.isCombo && item.comboItems && (
@@ -73,16 +85,22 @@ const CartDrawer = () => {
                         <div key={i} className="flex items-center gap-2">
 
                           <img
-                            src={sub.image[0]}
+                            src={
+                              Array.isArray(sub.image)
+                                ? sub.image[0]
+                                : sub.image || "/placeholder.png"
+                            }
                             alt={sub.name}
                             className="w-10 h-10 rounded object-cover border"
                           />
 
                           <div className="flex-1">
                             <p className="text-xs font-medium">{sub.name}</p>
-                            <p className="text-[11px] text-gray-500 capitalize">
-                              {sub.category}
-                            </p>
+                            {sub.variantLabel && (
+                              <p className="text-[11px] text-gray-500">
+                                {sub.variantLabel}
+                              </p>
+                            )}
                           </div>
 
                           <span className="text-xs text-gray-400">
@@ -102,7 +120,14 @@ const CartDrawer = () => {
 
                   {/* Normal product price */}
                   {!item.isCombo && (
-                    <p className="text-sm text-gray-500">₹{item.price}</p>
+                    <p className="text-sm text-gray-500">
+                      ₹{
+                        item.price ||
+                        item?.variants?.find(v => v.label === item.variantLabel)?.price ||
+                        item?.variants?.[0]?.price ||
+                        0
+                      }
+                    </p>
                   )}
 
                   {/* QUANTITY CONTROLS */}
@@ -129,7 +154,14 @@ const CartDrawer = () => {
 
                 {/* PRICE */}
                 <p className="font-medium">
-                  ₹{item.price * item.quantity}
+                  ₹{
+                    (
+                      item.price ||
+                      item?.variants?.find(v => v.label === item.variantLabel)?.price ||
+                      item?.variants?.[0]?.price ||
+                      0
+                    ) * item.quantity
+                  }
                 </p>
               </div>
             ))
@@ -150,7 +182,7 @@ const CartDrawer = () => {
               <span >
                 Delivery
               </span>
-             <span className="text-green-900">Free </span>
+              <span className="text-green-900">Free </span>
             </div>
 
             <hr />
