@@ -9,7 +9,7 @@ import { useCart } from "../context/CartProvider";
 import { auth } from "../../Backend/firebaseConfig";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
-import { Truck, ShieldCheck, BadgeCheck } from "lucide-react";
+import { Truck, ShieldCheck, BadgeCheck, Package } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 
 const ProductDetail = ({
@@ -193,7 +193,7 @@ const ProductDetail = ({
   const EXCLUDED_CATEGORY = "new"; // <-- change to your real id or slug
 
   const relatedProducts = useMemo(() => {
-    if (!product) return [];  
+    if (!product) return [];
 
     // remove excluded category from current product
     const baseCategories = (product.categoryIds || []).filter(
@@ -416,8 +416,8 @@ const ProductDetail = ({
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
                   className={`flex-1 py-3 rounded-xl transition ${product.inStock
-                      ? `${buttonBg} ${buttonText} hover:opacity-90`
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    ? `${buttonBg} ${buttonText} hover:opacity-90`
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                 >
                   {product.inStock ? "Add To Cart" : "Out of Stock"}
@@ -428,8 +428,8 @@ const ProductDetail = ({
                   onClick={handleBuyNow}
                   disabled={isOutOfStock}
                   className={`flex-1 py-3 rounded-xl transition ${product.inStock
-                      ? buyNowClass
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed border"
+                    ? buyNowClass
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed border"
                     }`}
                 >
                   Buy Now
@@ -437,7 +437,7 @@ const ProductDetail = ({
 
               </div>
 
-              
+
               {/* WHY YOU'LL LOVE IT */}
               <div className="border rounded-2xl p-5 bg-[#fff6f5] space-y-3">
                 <div className="font-semibold heading-color text-xl">
@@ -460,7 +460,7 @@ const ProductDetail = ({
               </div>
 
               {/* TRUST BADGES */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
 
                 {/* FAST SHIPPING */}
                 <div className="flex items-center justify-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm">
@@ -468,10 +468,17 @@ const ProductDetail = ({
                   <span className="text-gray-700 font-medium">Fast Shipping</span>
                 </div>
 
+
                 {/* SECURE PAYMENT */}
                 <div className="flex items-center justify-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm">
                   <ShieldCheck className="w-5 h-5 text-gray-700" />
                   <span className="text-gray-700 font-medium">Secure Payment</span>
+                </div>
+
+                {/* FREE DELIVERY */}
+                <div className="flex items-center justify-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm">
+                  <Package className="w-5 h-5 text-gray-700" />
+                  <span className="text-gray-700 font-medium">Free Delivery</span>
                 </div>
 
                 {/* DELIVERY GUARANTEED */}
@@ -481,6 +488,7 @@ const ProductDetail = ({
                 </div>
 
               </div>
+              
             </div>
           </div>
         </section>
