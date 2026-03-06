@@ -23,7 +23,7 @@ const Offers = () => {
     <section
       className="
         relative
-        py-10 md:py-20
+        py-5 md:py-20
         px-4
         bg-cover
         bg-center
