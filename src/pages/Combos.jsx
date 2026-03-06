@@ -12,7 +12,7 @@ import CouponProductBuilder from "../components/CouponProductBuilder";
 import Banner from "../components/Banner";
 
 const offBanner = "/Images/Tonner.jpeg"
-const offBannerMobile = "/Images/Tonner.jpeg"
+const offBannerMobile = "/Images/TonnerMobile.jpeg"
 
 const Combos = () => {
 
