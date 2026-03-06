@@ -81,7 +81,7 @@ const Footer = () => {
 
 
         {/* SOCIAL + MARKETPLACES */}
-        <div className="space-y-10 text-center md:text-left max-w-xs mx-auto md:mx-0">
+        <div className="space-y-6 md:space-y-8 text-center md:text-left max-w-xs mx-auto md:mx-0">
           {/* FOLLOW US */}
           <div className="space-y-4">
             <h4 className="heading-color font-semibold text-lg">Follow Us</h4>
@@ -105,12 +105,13 @@ const Footer = () => {
 
 
           {/* EXTRA SPACING DIVIDER */}
-          <div className="h-px bg-gray-300/40 w-full md:w-4/5 mx-auto md:mx-0"></div>
+          <div className="h-px bg-gray-300/40 w-2/3 md:w-3/5 mx-auto md:mx-0"></div>
+
 
           {/* MARKETPLACES */}
           <div className="space-y-4">
             <h4 className="heading-color font-semibold text-lg">
-              Also Available On 
+              Also Available On
             </h4>
 
             <div className="flex justify-center md:justify-start gap-6 items-center">
@@ -130,7 +131,7 @@ const Footer = () => {
                 />
               </a>
               <a href="https://www.meesho.com/ILIKASKINCARE" target="_blank">
-              
+
                 <img
                   src={meesho}
                   alt="Messho"

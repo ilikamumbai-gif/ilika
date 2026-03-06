@@ -17,8 +17,28 @@ const CategoryNav = ({ categories = [] }) => {
         >
           {categories.map((cat, index) => (
             <Link to={cat.link} key={index}>
-              
-              <div className="group flex flex-col items-center cursor-pointer">
+
+              <div className="group flex flex-col items-center cursor-pointer relative">
+
+                {/* FREE BADGE FOR OFFER */}
+                {cat.name?.toLowerCase() === "offers" && (
+                  <span
+                    className="
+                    absolute -top-4 -right-4
+                    text-sm
+                    px-4 py-1.5
+                    bg-[#7a1e35]
+                    text-white
+                    rounded-full
+                    shadow-lg
+                    animate-bounce
+                    z-10
+                    font-semibold
+                    "
+                  >
+                    FREE
+                  </span>
+                )}
 
                 {/* Image */}
                 <div

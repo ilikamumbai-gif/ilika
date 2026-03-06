@@ -1,7 +1,6 @@
 import React from "react";
-import { Copy, Gift } from "lucide-react";
+import { Copy, Gift, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
 
 const OfferCard = ({
   type = "coupon",
@@ -12,64 +11,137 @@ const OfferCard = ({
 }) => {
 
   const copyCode = (e) => {
-    e.preventDefault(); // prevent navigation when copying
+    e.preventDefault();
     if (!code) return;
     navigator.clipboard.writeText(code);
     alert(`Coupon "${code}" copied!`);
   };
 
   return (
-
     <Link
       to={link}
-      className="block relative bg-white/95 backdrop-blur-md border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition p-6 overflow-hidden"
+      state={type === "coupon" ? { scrollToCoupon: true } : {}}
+      className="
+      block relative
+      rounded-2xl
+      p-[1px]
+      bg-gradient-to-r from-pink-300 via-rose-300 to-pink-400
+      hover:scale-[1.02]
+      transition duration-300
+      group
+      "
     >
+      {/* CARD */}
+      <div
+        className="
+        bg-white/90 backdrop-blur-md
+        rounded-2xl
+        p-4 sm:p-6
+        h-full
+        shadow-md
+        group-hover:shadow-xl
+        transition
+        flex flex-col justify-between
+        "
+      >
 
-      {/* LEFT BRAND STRIP */}
-      <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#1C371C]" />
+        <div>
+          {/* TITLE */}
+          <h3 className="text-base sm:text-lg font-semibold text-[#7A2E3A] mb-2">
+            {title}
+          </h3>
 
-      {/* CONTENT */}
-      <div className="ml-3">
+          {/* DESCRIPTION */}
+          <p className="text-xs sm:text-sm text-gray-600 mb-4 leading-relaxed">
+            {description}
+          </p>
 
-        <h3 className="text-lg font-semibold text-[#1C371C] mb-2">
-          {title}
-        </h3>
+          {/* COUPON */}
+          {type === "coupon" && (
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
 
-        <p className="text-sm text-gray-600 mb-4">
-          {description}
-        </p>
+              <span
+                className="
+                border border-dashed border-pink-400
+                px-3 py-1 rounded-md
+                text-xs sm:text-sm font-semibold
+                text-[#7A2E3A]
+                bg-pink-50
+                "
+              >
+                {code}
+              </span>
 
-        {/* COUPON TYPE */}
-        {type === "coupon" && (
-          <div className="flex items-center justify-between">
+              <button
+                onClick={copyCode}
+                className="
+                flex items-center gap-1
+                text-xs sm:text-sm font-medium
+                text-[#7A2E3A]
+                hover:text-pink-600
+                "
+              >
+                <Copy size={16} />
+                Copy Code
+              </button>
 
-            <span className="border border-dashed border-[#1C371C] px-3 py-1 rounded-md text-sm font-semibold text-[#1C371C]">
-              {code}
+            </div>
+          )}
+        </div>
+
+        {/* CTA */}
+        <div
+          className="
+          flex items-center justify-between
+          flex-wrap gap-2
+          text-[#7A2E3A]
+          font-semibold
+          mt-2
+          "
+        >
+
+          <div className="flex items-center gap-2 text-sm sm:text-base">
+            <Gift size={18} className="text-pink-500 shrink-0" />
+            <span>
+              {type === "coupon" ? "Special Coupon Deal" : "Special Combo Deal"}
+            </span>
+          </div>
+
+          <div
+            className="
+              flex items-center gap-1
+              text-sm sm:text-base
+              group-hover:translate-x-1
+              transition
+            "
+          >
+            <span className="relative">
+
+              {type === "coupon" ?"View Deal": "Build Your Combo" }
+
+              <span
+                className="
+                absolute left-0 -bottom-1
+                h-[2px]
+                w-0
+                bg-[#7A2E3A]
+                group-hover:w-full
+                transition-all duration-300
+                "
+              />
+
             </span>
 
-            <button
-              onClick={copyCode}
-              className="flex items-center gap-1 text-sm text-[#1C371C] font-medium hover:underline"
-            >
-              <Copy size={16} />
-              Copy Code
-            </button>
+            <ArrowRight
+              size={16}
+              className="group-hover:translate-x-1 transition shrink-0"
+            />
 
           </div>
-        )}
 
-        {/* DEAL TYPE */}
-        {type === "deal" && (
-          <div className="flex items-center gap-2 text-[#1C371C] font-medium">
-
-            <Gift size={18} />
-            <span>View Offer</span>
-
-          </div>
-        )}
+        </div>
 
       </div>
-
     </Link>
   );
 };

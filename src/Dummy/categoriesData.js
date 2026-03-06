@@ -1,11 +1,11 @@
 export const categoriesData = [
-  { name: "Ilika New", icon: "/Images/New-Cat.jpg" ,link:"/newarrival"},
+  { name: "Ilika New", icon: "/Images/New-Cat.png" ,link:"/newarrival"},
   // { name: "Gift", icon: "/Images/Gifting-Cate.jpg" ,link:"/"},
   { name: "Face Care", icon: "/Images/Girlskin.jpeg" ,link:"skin/face"},
   { name: "Hair Care", icon: "/Images/GirlHair.png" ,link:"/hair"},
   { name: "Body Care", icon: "/Images/GirlBody.jpeg" ,link:"skin/body"},
   { name: "Appliances", icon: "/Images/GirlApp.png" ,link:"/grooming"},
-  { name: "Offers", icon: "/Images/Offer-Cat.jpg" ,link:"/offer"},
+  { name: "Offers", icon: "/Images/Offer-Cat.png" ,link:"/combo"},
 ];
 
 export const IngredientsData =[

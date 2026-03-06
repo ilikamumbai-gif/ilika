@@ -26,7 +26,7 @@ useEffect(() => {
       value: total,
       currency: "INR",
       content_type: "product",
-      num_items: 1,
+      num_items: cartItems.length,
       order_id: id
     });
   }

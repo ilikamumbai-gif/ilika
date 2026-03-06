@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useProducts } from "../context/ProductContext";
 
 import MiniDivider from "../components/MiniDivider";
@@ -11,6 +11,9 @@ import { useCart } from "../context/CartProvider";
 import CouponProductBuilder from "../components/CouponProductBuilder";
 import Banner from "../components/Banner";
 
+import { useLocation } from "react-router-dom";
+import { useRef } from "react";
+
 const offBanner = "/Images/Tonner.jpeg"
 const offBannerMobile = "/Images/TonnerMobile.jpeg"
 
@@ -21,6 +24,17 @@ const Combos = () => {
 
   const [selectedToners, setSelectedToners] = useState([]);
   const [selectedMasks, setSelectedMasks] = useState([]);
+  const location = useLocation();
+  const couponRef = useRef(null);
+
+  useEffect(() => {
+    if (location.state?.scrollToCoupon && couponRef.current) {
+      couponRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  }, [location]);
 
   /* ================= FILTER PRODUCTS ================= */
 
@@ -142,11 +156,11 @@ const Combos = () => {
         <Header />
         <CartDrawer />
 
-         <Banner
-        className="md:h-[50vh] mt-0 mb-10"
-        src={offBanner}
-        mobileSrc={offBannerMobile}
-      />
+        <Banner
+          className="md:h-[50vh] mt-0 mb-10"
+          src={offBanner}
+          mobileSrc={offBannerMobile}
+        />
 
 
         <section className="max-w-7xl mx-auto px-4 pb-12 lg:pb-16">
@@ -401,7 +415,9 @@ const Combos = () => {
           </div>
 
         </section>
-        <CouponProductBuilder />
+        <div className="pt-18" ref={couponRef}>
+          <CouponProductBuilder />
+        </div>
 
         <Footer />
 
