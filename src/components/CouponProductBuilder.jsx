@@ -23,8 +23,11 @@ const CouponProductBuilder = () => {
   const { addToCart } = useCart();
 
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProducts, setSelectedProducts] = useState([]);
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
+
+
 
   /* ================= SAFE PRICE ================= */
 
@@ -83,8 +86,8 @@ const CouponProductBuilder = () => {
 
   const applyCoupon = () => {
 
-    if (!selectedProduct) {
-      alert("Please select a product first");
+    if (!selectedProducts.length) {
+      alert("Please select at least one product");
       return;
     }
 
@@ -108,26 +111,51 @@ const CouponProductBuilder = () => {
     )
     : 0;
 
+  const totalOriginalPrice = selectedProducts.reduce(
+    (acc, product) => acc + getProductPrice(product),
+    0
+  );
+
+  const totalDiscountedPrice = Math.round(
+    totalOriginalPrice - (totalOriginalPrice * discount) / 100
+  );
+
   /* ================= ADD TO CART ================= */
 
   const addDiscountedProduct = () => {
 
-    if (!selectedProduct) return;
+    if (!selectedProducts.length) return;
 
-    const item = {
-      ...selectedProduct,
-      id: `${selectedProduct._id || selectedProduct.id}-coupon`,
-      price: discountedPrice,
-      originalPrice: getProductPrice(selectedProduct),
-      discountApplied: discount,
-      variantLabel: selectedProduct?.variants?.[0]?.label || null,
-      image: getProductImage(selectedProduct)
-    };
+    const perProductDiscount =
+      discount > 0 ? discount / selectedProducts.length : 0;
 
-    addToCart(item);
+    selectedProducts.forEach(product => {
+
+      const originalPrice = getProductPrice(product);
+
+      const finalPrice = Math.round(
+        originalPrice - (originalPrice * discount) / 100
+      );
+
+      const item = {
+        ...product,
+        id: `${product._id || product.id}-coupon`,
+        price: finalPrice,
+        originalPrice: originalPrice,
+        discountApplied: discount,
+        variantLabel: product?.variants?.[0]?.label || null,
+        image: getProductImage(product)
+      };
+
+      addToCart(item);
+
+    });
+
+    setSelectedProducts([]);
+    setCoupon("");
+    setDiscount(0);
 
   };
-
   return (
     <>
       <Banner
@@ -164,8 +192,7 @@ const CouponProductBuilder = () => {
           {filteredProducts.map((product) => {
 
             const id = product._id || product.id;
-            const selected = selectedProduct?.id === id;
-
+            const selected = selectedProducts.some(p => p.id === id);
             return (
 
               <div
@@ -181,12 +208,20 @@ const CouponProductBuilder = () => {
                 <ComboProductCard
                   product={product}
                   selected={selected}
-                  onSelect={(p) =>
-                    setSelectedProduct({
-                      ...p,
-                      id
-                    })
-                  }
+                  onSelect={(p) => {
+
+                    const exists = selectedProducts.find(prod => prod.id === id);
+
+                    if (exists) {
+                      setSelectedProducts(prev => prev.filter(prod => prod.id !== id));
+                    } else {
+                      setSelectedProducts(prev => [
+                        ...prev,
+                        { ...p, id }
+                      ]);
+                    }
+
+                  }}
                 />
 
               </div>
@@ -230,24 +265,21 @@ const CouponProductBuilder = () => {
 
         {/* PRICE SUMMARY */}
 
-        {selectedProduct && (
+        {selectedProducts.length > 0 && (
 
           <div className="mt-10 text-center">
-
             <p className="text-lg font-medium text-gray-600">
-              Original Price: ₹{getProductPrice(selectedProduct)}
+              Total Original Price: ₹{totalOriginalPrice}
             </p>
 
             {discount > 0 && (
-
               <p className="text-[#7a1e35] font-semibold mt-1">
                 {discount}% Women’s Day Discount Applied
               </p>
-
             )}
 
             <p className="text-2xl font-bold text-[#7a1e35] mt-2">
-              Final Price: ₹{discountedPrice}
+              Final Price: ₹{totalDiscountedPrice}
             </p>
 
             <button

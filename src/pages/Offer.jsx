@@ -33,7 +33,7 @@ const Offers = () => {
       style={{ backgroundImage: "url('/Images/Offerbg.png')" }}
     >
       {/* overlay */}
-      <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]" />
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
 
       <div className="relative max-w-7xl mx-auto">
 

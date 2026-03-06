@@ -66,6 +66,7 @@ const Home = () => {
           src={holimainbanner}
           mobileSrc={holiMobile}
         />
+        
 
         <Offers />
 
