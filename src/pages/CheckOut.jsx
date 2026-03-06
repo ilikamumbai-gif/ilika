@@ -189,12 +189,12 @@ const Checkout = () => {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
-        
-// store order total for pixel
-localStorage.setItem("order_total", total);
 
-clearCart();
-navigate(`/order-success/${data.orderId}`);
+        // store order total for pixel
+        localStorage.setItem("order_total", Number(total));
+
+        clearCart();
+        navigate(`/order-success/${data.orderId}`);
         return;
       }
 
@@ -274,13 +274,13 @@ navigate(`/order-success/${data.orderId}`);
      ✅ FACEBOOK PIXEL PURCHASE EVENT (SAFE)
   ============================== */
 
-           
+
 
             // 2️⃣ Clear cart
             clearCart();
 
             // 3️⃣ Redirect to success page
-            localStorage.setItem("order_total", total);
+            localStorage.setItem("order_total", Number(total));
             navigate(`/order-success/${verifyData.orderId}`);
           } catch (err) {
             console.error("Verification error:", err);

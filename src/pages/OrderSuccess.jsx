@@ -18,21 +18,22 @@ useEffect(() => {
 
   const total = Number(storedValue);
 
-  if (!isNaN(total) && total > 0) {
+  // stop pixel if value invalid
+  if (!total || isNaN(total)) return;
 
-    if (window.fbq) {
-      window.fbq("track", "Purchase", {
-        value: total,
-        currency: "INR",
-        content_type: "product",
-        num_items: 1,
-        order_id: id
-      });
-    }
-
-    localStorage.removeItem("order_total");
+  if (window.fbq) {
+    window.fbq("track", "Purchase", {
+      value: total,
+      currency: "INR",
+      content_type: "product",
+      num_items: 1,
+      order_id: id
+    });
   }
-}, []);
+
+  localStorage.removeItem("order_total");
+
+}, [id]);
 
   return (
     <>
