@@ -2,8 +2,10 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
 
+  <!-- ================= BASIC META ================= -->
+
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Ilika - Elegant. Bright. You. | Premium Skincare & Beauty Products</title>
@@ -11,63 +13,50 @@
   <meta name="description"
     content="Ilika offers premium skincare, beauty, and personal care products designed for glowing, healthy, and radiant skin. Shop face wash, creams, masks, hair care, and natural beauty products online in India." />
 
-  <meta name="facebook-domain-verification" content="lzba8bf3opczo1v625rkr90borrv2p" />
-
-  <meta name="google-site-verification" content="gvbdusVAG0a_poII0jsiYxofZGsdj5hIg5mhrQyjEH8" />
-
-  <meta name="keywords"
-    content="Ilika, skincare, beauty products, face wash, skin cream, herbal beauty, glowing skin, personal care, cosmetics India, natural skincare, hair oil, face mask, CTM kit, beauty store" />
-
-  <meta name="author" content="Ilika" />
-
   <meta name="robots" content="index, follow" />
+  <meta name="author" content="Ilika" />
 
   <link rel="canonical" href="https://ilika.in/" />
 
 
+  <!-- ================= SITE VERIFICATION ================= -->
 
-  <!-- ================= Open Graph ================= -->
-
-  <meta property="og:title" content="Ilika - Elegant. Bright. You." />
-
-  <meta property="og:description"
-    content="Premium skincare and beauty products for glowing, healthy skin. Shop Ilika beauty products online." />
-
-  <meta property="og:type" content="website" />
-
-  <meta property="og:url" content="https://ilika.in" />
-
-  <meta property="og:image" content="https://ilika.in/Images/logo.png" />
-
-  <meta property="og:site_name" content="Ilika" />
+  <meta name="facebook-domain-verification" content="lzba8bf3opczo1v625rkr90borrv2p" />
+  <meta name="google-site-verification" content="gvbdusVAG0a_poII0jsiYxofZGsdj5hIg5mhrQyjEH8" />
 
 
-
-  <!-- ================= Twitter ================= -->
-
-  <meta name="twitter:card" content="summary_large_image" />
-
-  <meta name="twitter:title" content="Ilika - Elegant. Bright. You." />
-
-  <meta name="twitter:description" content="Premium skincare & beauty products for glowing skin. Shop Ilika online." />
-
-  <meta name="twitter:image" content="https://ilika.in/Images/logo.png" />
-
-
-
-  <!-- ================= Theme Color ================= -->
+  <!-- ================= THEME ================= -->
 
   <meta name="theme-color" content="#ffffff" />
 
 
+  <!-- ================= OPEN GRAPH ================= -->
 
-  <!-- ================= Favicon ================= -->
+  <meta property="og:title" content="Ilika - Elegant. Bright. You." />
+  <meta property="og:description"
+    content="Premium skincare and beauty products for glowing, healthy skin. Shop Ilika beauty products online." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://ilika.in" />
+  <meta property="og:image" content="https://ilika.in/Images/logo.png" />
+  <meta property="og:site_name" content="Ilika" />
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
 
-  <link rel="icon" type="image/png" href="public/Images/Favicon.png" />
+  <!-- ================= TWITTER ================= -->
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Ilika - Elegant. Bright. You." />
+  <meta name="twitter:description" content="Premium skincare & beauty products for glowing skin. Shop Ilika online." />
+  <meta name="twitter:image" content="https://ilika.in/Images/logo.png" />
 
 
+  <!-- ================= FAVICON ================= -->
 
-  <!-- ================= Fonts ================= -->
+  <link rel="icon" type="image/png" href="/Images/Favicon.png" />
+  <link rel="apple-touch-icon" href="/Images/Favicon.png" />
+
+
+  <!-- ================= FONTS ================= -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,7 +69,25 @@
     rel="stylesheet">
 
 
-  <!-- Meta Pixel Code -->
+  <!-- ================= STRUCTURED DATA ================= -->
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Ilika",
+    "url": "https://ilika.in",
+    "logo": "https://ilika.in/Images/logo.png",
+    "sameAs": [
+      "https://www.instagram.com/",
+      "https://www.facebook.com/"
+    ]
+  }
+  </script>
+
+
+  <!-- ================= META PIXEL ================= -->
+
   <script>
     !function (f, b, e, v, n, t, s) {
       if (f.fbq) return; n = f.fbq = function () {
@@ -93,20 +100,25 @@
       s.parentNode.insertBefore(t, s)
     }(window, document, 'script',
       'https://connect.facebook.net/en_US/fbevents.js');
+
     fbq('init', '1188302548683614');
     fbq('track', 'PageView');
   </script>
-  <!-- End Meta Pixel Code -->
 
 </head>
 
 <body>
-  <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=1188302548683614&ev=PageView&noscript=1" /></noscript>
+
+  <noscript>
+    <img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1188302548683614&ev=PageView&noscript=1" />
+  </noscript>
+
   <div id="root"></div>
 
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script type="module" src="/src/main.jsx"></script>
+
 </body>
 
 </html>
