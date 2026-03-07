@@ -4,16 +4,28 @@ export const logActivity = async (message) => {
 
   try {
 
+    /* GET ADMIN SAFELY */
+    const storedAdmin = localStorage.getItem("admin");
+    let adminName = "admin";
+
+    if (storedAdmin) {
+      try {
+        const parsed = JSON.parse(storedAdmin);
+        adminName = parsed?.username || "admin";
+      } catch {
+        adminName = "admin";
+      }
+    }
+
     await fetch(`${API}/api/admin-log`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify({
         message,
-        admin:
-          localStorage.getItem("adminEmail") || "admin",
+        admin: adminName,
+        createdAt: new Date().toISOString()
       }),
     });
 

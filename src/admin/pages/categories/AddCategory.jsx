@@ -68,10 +68,7 @@ const AddCategory = () => {
 
       /* ✅ ADMIN LOG */
 
-      await logActivity(
-        "ADD_CATEGORY",
-        `Added category: ${formData.name}`
-      );
+   await logActivity(`Added category: ${formData.name}`);
 
       navigate(-1);
 

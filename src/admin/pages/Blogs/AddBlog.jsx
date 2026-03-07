@@ -229,10 +229,7 @@ const AddBlog = () => {
 
     await addBlog(blog);
 
-    await logActivity(
-  "CREATE_BLOG",
-  `Created blog: ${blog.title}`
-);
+    await logActivity(`Created blog: ${blog.title}`);
 
     navigate("/admin/blogs");
 

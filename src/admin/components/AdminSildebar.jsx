@@ -14,7 +14,8 @@ import {
   Star,
   ClipboardList,
   Logs,
-  MessageSquare
+  MessageSquare,
+  ShieldIcon
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -183,6 +184,13 @@ const AdminSidebar = () => {
             label="Reports"
           />
 
+          {/* ADMIN ACCESS  */}
+          <NavItem
+            to="/admin/admins"
+            icon={ShieldIcon}
+            label="Manage Admin"
+          />
+
           {/* ACTIVITY LOG */}
 
           <NavItem
@@ -190,6 +198,9 @@ const AdminSidebar = () => {
             icon={Logs}
             label="Activity Log"
           />
+
+
+
 
         </nav>
 

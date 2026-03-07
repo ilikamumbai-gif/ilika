@@ -1,60 +1,105 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../components/AdminLayout";
+import AdminTable from "../../components/AdminTable";
 
 const AdminLog = () => {
 
-    const [logs, setLogs] = useState([]);
+  const [logs, setLogs] = useState([]);
 
-    const API = import.meta.env.VITE_API_URL;
+  const API = import.meta.env.VITE_API_URL;
 
-    const fetchLogs = async () => {
+  const fetchLogs = async () => {
 
-        const res = await fetch(
-            `${API}/api/admin-log`
-        );
+    const res = await fetch(`${API}/api/admin-log`);
+    const data = await res.json();
 
-        const data = await res.json();
+    setLogs(data);
 
-        setLogs(data);
-    };
+  };
 
-    useEffect(() => {
-        fetchLogs();
-    }, []);
+  useEffect(() => {
+    fetchLogs();
+  }, []);
 
-    return (
 
-        <AdminLayout>
+  /* ================= DATE FORMAT ================= */
+const formatDate = (timestamp) => {
 
-            <h1>Admin Activity</h1>
+  if (!timestamp) return "-";
 
-            <div>
+  let date;
 
-                {logs.map(l => (
+  if (timestamp._seconds) {
+    date = new Date(timestamp._seconds * 1000);
+  } else {
+    date = new Date(timestamp);
+  }
 
-                    <div key={l.id}
-                        className="border p-3 mb-2">
+  const day = date.getDate();
+  const month = date.toLocaleString("en-GB", { month: "short" });
+  const year = date.getFullYear();
 
-                        <p>{l.message}</p>
+  const time = date.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 
-                        <p className="text-sm text-gray-500">
+  return `${day} ${month} ${year}    •      ${time}`;
+};
 
-                            {l.createdAt?._seconds
-                                ? new Date(
-                                    l.createdAt._seconds * 1000
-                                ).toLocaleString()
-                                : ""}
 
-                        </p>
+  /* ================= TABLE COLUMNS ================= */
 
-                    </div>
+  const columns = [
 
-                ))}
+    {
+      label: "Admin",
+      key: "admin",
+      render: (row) => (
+        <span className="font-medium">
+          {row.admin || "Admin"}
+        </span>
+      )
+    },
 
-            </div>
+   
+    {
+      label: "Message",
+      key: "message",
+      render: (row) => (
+        <span className="text-blue-700 font-semibold text-md">
+          {row.message}
+        </span>
+      )
+    },
 
-        </AdminLayout>
-    );
+    {
+      label: "Date & Time",
+      key: "createdAt",
+      render: (row) => formatDate(row.createdAt)
+    }
+
+  ];
+
+
+  return (
+
+    <AdminLayout>
+
+      <h1 className="text-xl font-semibold mb-6">
+        Admin Activity Log
+      </h1>
+
+      <AdminTable
+        columns={columns}
+        data={logs}
+        emptyText="No activity recorded yet"
+      />
+
+    </AdminLayout>
+
+  );
+
 };
 
 export default AdminLog;

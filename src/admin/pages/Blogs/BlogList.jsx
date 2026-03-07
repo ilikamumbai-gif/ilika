@@ -41,10 +41,7 @@ const BlogList = () => {
 
       await deleteBlog(blog.id);
 
-      await logActivity(
-        "DELETE_BLOG",
-        `Deleted blog: ${blog.title}`
-      );
+     await logActivity(`Deleted blog: ${blog.title}`);
 
     } catch (err) {
 

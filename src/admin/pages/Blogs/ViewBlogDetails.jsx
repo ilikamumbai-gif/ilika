@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useBlog } from "../../context/BlogProvider";
+import { logActivity } from "../../Utils/logActivity";
 
 const ViewBlogDetails = () => {
 
@@ -98,6 +99,8 @@ const ViewBlogDetails = () => {
         `${API}/api/admin/blogs/${id}/comments/${commentId}`,
         { method: "DELETE" }
       );
+
+      await logActivity(`Deleted comment by ${c.name} on blog: ${blog.title}`);
 
       setComments(prev =>
         prev.filter(c => c.id !== commentId)

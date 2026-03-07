@@ -39,6 +39,9 @@ const detectSource = (source) => {
 };
 
 
+
+
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) callback(null, true);
@@ -1284,7 +1287,7 @@ app.post("/api/admin-log", async (req, res) => {
 
     res.json({
       id: doc.id,
-      ...log,
+      ...log
     });
 
   } catch (err) {
@@ -1300,6 +1303,66 @@ app.post("/api/admin-log", async (req, res) => {
 });
 
 /* ================= GET ADMIN LOGS ================= */
+
+/* ================= CREATE ADMIN ================= */
+
+app.post("/api/admins", async (req, res) => {
+  try {
+
+    const { username, password, role } = req.body;
+
+    if (!username || !password)
+      return res.status(400).json({ error: "Missing fields" });
+
+    const doc = await db.collection("admins").add({
+      username,
+      password,
+      role: role || "admin",
+      createdAt: new Date(),
+    });
+
+    res.json({
+      id: doc.id,
+      username,
+      role,
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: "Failed to create admin" });
+  }
+});
+
+/* ================= ADMIN LOGIN ================= */
+
+app.post("/api/admin-login", async (req, res) => {
+  try {
+
+    const { username, password } = req.body;
+
+    const snapshot = await db
+      .collection("admins")
+      .where("username", "==", username)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty)
+      return res.status(401).json({ error: "Invalid credentials" });
+
+    const admin = snapshot.docs[0].data();
+
+    if (admin.password !== password)
+      return res.status(401).json({ error: "Invalid credentials" });
+
+    res.json({
+      id: snapshot.docs[0].id,
+      username: admin.username,
+      role: admin.role,
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: "Login failed" });
+  }
+});
 
 app.get("/api/admin-log", async (req, res) => {
 
@@ -1328,7 +1391,121 @@ app.get("/api/admin-log", async (req, res) => {
 
 });
 
+/* ================= GET ADMINS ================= */
 
+app.get("/api/admins", async (req, res) => {
+  try {
+
+    const snapshot = await db
+      .collection("admins")
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const admins = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.json(admins);
+
+  } catch {
+    res.status(500).json({ error: "Failed to fetch admins" });
+  }
+});
+
+/* ================= CREATE ADMIN ================= */
+
+app.post("/api/admins", async (req, res) => {
+  try {
+
+    const { username, password, role } = req.body;
+
+    if (!username || !password)
+      return res.status(400).json({ error: "Missing fields" });
+
+    const docRef = await db.collection("admins").add({
+      username,
+      password,
+      role: role || "admin",
+      createdAt: new Date(),
+    });
+
+    res.json({
+      id: docRef.id,
+      username,
+      role
+    });
+
+  } catch {
+    res.status(500).json({ error: "Failed to create admin" });
+  }
+});
+
+/* ================= DELETE ADMIN ================= */
+
+app.delete("/api/admins/:id", async (req, res) => {
+  try {
+
+    await db.collection("admins")
+      .doc(req.params.id)
+      .delete();
+
+    res.json({ message: "Admin deleted" });
+
+  } catch {
+    res.status(500).json({ error: "Delete failed" });
+  }
+});
+
+/* ================= RESET PASSWORD ================= */
+
+app.put("/api/admins/:id/password", async (req, res) => {
+  try {
+
+    const { password } = req.body;
+
+    await db.collection("admins")
+      .doc(req.params.id)
+      .update({ password });
+
+    res.json({ message: "Password updated" });
+
+  } catch {
+    res.status(500).json({ error: "Update failed" });
+  }
+});
 /* ============================== START ============================== */
+
+
+/* ================= DEFAULT ADMIN ================= */
+
+const createDefaultAdmin = async () => {
+  try {
+
+    const snapshot = await db.collection("admins").limit(1).get();
+
+    // If no admin exists → create default
+    if (snapshot.empty) {
+
+      await db.collection("admins").add({
+        username: "admin",
+        password: "ilika@admin123",
+        role: "superadmin",
+        createdAt: new Date(),
+      });
+
+      console.log("✅ Default Admin Created");
+      console.log("Username: admin");
+      console.log("Password: ilika@admin123");
+
+    }
+
+  } catch (error) {
+    console.error("Default admin creation failed:", error);
+  }
+};
+
+
+createDefaultAdmin(); 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

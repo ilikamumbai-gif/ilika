@@ -31,49 +31,7 @@ const AdminHeader = ({ onMenuClick }) => {
         </h1>
       </div>
 
-      {/* RIGHT: ACTIONS */}
-      <div className="flex items-center gap-4">
-
-        {/* Notifications */}
-        <button className="relative p-2 rounded hover:bg-gray-100">
-          <Bell className="w-5 h-5 text-gray-600" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
-
-        {/* PROFILE */}
-        <div className="relative">
-          <button
-            onClick={() => setOpenProfile(!openProfile)}
-            className="flex items-center gap-2 p-2 rounded hover:bg-gray-100"
-          >
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-              <User className="w-4 h-4 text-gray-600" />
-            </div>
-
-            <span className="hidden sm:block text-sm font-medium text-gray-700">
-              Admin
-            </span>
-
-            <ChevronDown className="w-4 h-4 text-gray-600" />
-          </button>
-
-          {/* DROPDOWN */}
-          {openProfile && (
-            <div className="absolute right-0 mt-2 w-44 bg-white border rounded-md shadow-lg z-50">
-              <button className="w-full px-4 py-2 text-sm text-left hover:bg-gray-100">
-                Profile
-              </button>
-               <button
-        onClick={handleLogout}
-        className="text-sm bg-red-500 text-white px-3 py-1 rounded"
-      >
-        Logout
-      </button>
-            </div>
-          )}
-        </div>
-
-      </div>
+      
     </header>
   );
 };

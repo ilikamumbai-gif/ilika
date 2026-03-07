@@ -50,7 +50,7 @@ const OrderList = () => {
     await updateOrderStatus(id, status);
 
     await logActivity(
-      `Order ${id} status → ${status}`
+      `Updated order #${id.slice(-6)} status → ${status}`
     );
 
   };
@@ -144,26 +144,26 @@ const OrderList = () => {
     },
 
     {
-  label: "Source",
-  key: "source",
-  render: (row) => {
+      label: "Source",
+      key: "source",
+      render: (row) => {
 
-    const src = row.source || "WEBSITE";
+        const src = row.source || "WEBSITE";
 
-    const style =
-      src === "META ADS"
-        ? "bg-blue-100 text-blue-700 border-blue-300"
-        : src === "GOOGLE ADS"
-        ? "bg-yellow-100 text-yellow-700 border-yellow-300"
-        : "bg-gray-100 text-gray-700 border-gray-300";
+        const style =
+          src === "META ADS"
+            ? "bg-blue-100 text-blue-700 border-blue-300"
+            : src === "GOOGLE ADS"
+              ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+              : "bg-gray-100 text-gray-700 border-gray-300";
 
-    return (
-      <span className={`px-2 py-1 text-xs border rounded ${style}`}>
-        {src}
-      </span>
-    );
-  },
-},
+        return (
+          <span className={`px-2 py-1 text-xs border rounded ${style}`}>
+            {src}
+          </span>
+        );
+      },
+    },
 
     {
       label: "Status",
@@ -244,14 +244,14 @@ const OrderList = () => {
             {/* DELETE */}
 
             <button
-              onClick={() => {
+              onClick={async () => {
 
                 if (window.confirm("Delete order?")) {
 
-                  deleteOrder(row.id);
+                  await deleteOrder(row.id);
 
-                  logActivity(
-                    `Deleted order ${row.id}`
+                  await logActivity(
+                    `Deleted order #${row.id.slice(-6)}`
                   );
 
                 }

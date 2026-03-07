@@ -34,7 +34,7 @@ const UserList = () => {
     await deleteUser(user.id);
 
     await logActivity(
-      `Deleted user: ${user.email}`
+      `Deleted user ${user.name} (${user.email})`
     );
 
   };

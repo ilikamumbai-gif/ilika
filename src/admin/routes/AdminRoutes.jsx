@@ -36,6 +36,7 @@ import ReviewList from "../pages/Reviews/ReviewList";
 import ReviewDetail from "../pages/Reviews/ReviewDetail";
 import AdminLog from "../pages/AdminLog/AdminLog";
 import BlogComments from "../pages/Blogs/BlogComments";
+import AdminList from "../pages/Admins/AdminList";
 
 const AdminRoutes = () => {
   return (
@@ -50,6 +51,8 @@ const AdminRoutes = () => {
 
                     <Routes>
                       <Route index element={<Dashboard />} />
+
+                      <Route path="admins" element={<AdminList />} />
 
                       {/* PRODUCTS */}
                       <Route path="products" element={<ProductList />} />
@@ -88,6 +91,8 @@ const AdminRoutes = () => {
                       <Route path="blogs/create" element={<AddBlog />} />
                       <Route path="blogs/:id" element={<ViewBlogDetails />} />
                       <Route path="/blog-comments" element={<BlogComments />}
+
+
 />
 
                       {/* ✅ REPORTS */}

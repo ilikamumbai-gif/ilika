@@ -32,7 +32,7 @@ const OrderDetail = () => {
 
   /* ================= PDF ================= */
 
-  const downloadInvoice = () => {
+  const downloadInvoice = async () => {
 
     const doc = new jsPDF();
 
@@ -58,16 +58,20 @@ const OrderDetail = () => {
     );
 
     doc.save(`invoice_${order.id}.pdf`);
-
-    logActivity(`Downloaded invoice ${order.id}`);
+    await logActivity(`Downloaded invoice for order #${order.id.slice(-6)}`);
   };
 
   /* ================= PRINT ================= */
 
-  const printOrder = () => {
-    window.print();
-    logActivity(`Printed order ${order.id}`);
-  };
+const printOrder = async () => {
+
+  window.print();
+
+  await logActivity(
+    `Printed order #${order.id.slice(-6)}`
+  );
+
+};
 
   return (
 

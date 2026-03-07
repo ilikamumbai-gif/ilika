@@ -1,5 +1,5 @@
 import React from "react";
-import { Package, Users, ShoppingCart, IndianRupee, BookOpen, Layers, Boxes, Eye, Star } from "lucide-react";
+import { Package, Users, ShoppingCart, IndianRupee, BookOpen, Layers, Boxes, Eye, Star, Shield } from "lucide-react";
 import StatCard from "../components/StatCard";
 import AdminLayout from "../components/AdminLayout";
 import { useOrders } from "../context/OrderContext";
@@ -134,6 +134,19 @@ const Dashboard = () => {
             icon={Star}
             color="bg-teal-100"
             textColor="text-teal-600"
+          />
+        </div>
+
+        <div
+          onClick={() => navigate("/admin/admins")}
+          className="cursor-pointer"
+        >
+          <StatCard
+            title="Admins"
+            value={"Manage"}
+            icon={Shield}
+            color="bg-gray-100"
+            textColor="text-gray-700"
           />
         </div>
 

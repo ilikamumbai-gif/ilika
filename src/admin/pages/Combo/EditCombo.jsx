@@ -5,6 +5,7 @@ import { useCombos } from "../../context/ComboContext";
 import { useProducts } from "../../context/ProductContext";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { app } from "../../../firebase/firebaseConfig";
+import { logActivity } from "../../Utils/logActivity";
 
 const EditCombo = () => {
     const { id } = useParams();
@@ -19,7 +20,7 @@ const EditCombo = () => {
     useEffect(() => {
         const existing = combos.find((c) => c.id === id);
         if (existing) {
-         
+
             setCombo(existing);
             setPreviewImages((existing.images || []).filter(Boolean));
         }
@@ -109,12 +110,21 @@ const EditCombo = () => {
                 }
             }
 
+            if (combo.price !== Number(combo.price)) {
+                await logActivity(
+                    `Changed combo price for ${combo.name}`
+                );
+            }
+            
             await updateCombo(id, {
                 ...combo,
                 price: Number(combo.price),
                 mrp: combo.mrp ? Number(combo.mrp) : null,
-                images: uploadedUrls, // ⭐ final clean URLs
+                images: uploadedUrls,
             });
+
+            /* ADMIN LOG */
+            await logActivity(`Updated combo: ${combo.name}`);
 
             navigate("/admin/combos");
 

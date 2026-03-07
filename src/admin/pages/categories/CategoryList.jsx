@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import AdminTable from "../../components/AdminTable";
 import { useCategories } from "../../context/CategoryContext";
+import { logActivity } from "../../Utils/logActivity";
 
 const CategoryList = () => {
   const navigate = useNavigate();
@@ -34,18 +35,21 @@ const CategoryList = () => {
       <AdminTable
         columns={columns}
         data={categories}
-       actions={(row) => (
-  <button
-    onClick={() => {
-      if (window.confirm("Delete this category?"))
-        deleteCategory(row.id);
-    }}
-    className="p-2 rounded-md bg-red-50 text-red-600 hover:bg-red-100"
-    title="Delete"
-  >
-    <Trash2 size={16} />
-  </button>
-)}
+        actions={(row) => (
+          <button
+            onClick={async () => {
+              if (!window.confirm("Delete this category?")) return;
+
+              await deleteCategory(row.id);
+
+              await logActivity(`Deleted category: ${row.name}`);
+            }}
+            className="p-2 rounded-md bg-red-50 text-red-600 hover:bg-red-100"
+            title="Delete"
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
 
       />
     </AdminLayout>

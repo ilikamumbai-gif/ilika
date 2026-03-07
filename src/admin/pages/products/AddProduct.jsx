@@ -4,7 +4,6 @@ import { useCategories } from "../../context/CategoryContext";
 import { useProducts } from "../../context/ProductContext";
 import AdminLayout from "../../components/AdminLayout";
 import ProductForm from "../../components/ProductFrom";
-import { logActivity } from "../../Utils/logActivity";
 
 /* ================= LOG ================= */
 
@@ -33,9 +32,7 @@ const AddProduct = () => {
 
     await addProduct(data);
 
-    await logActivity(
-      `Added product: ${data.name}`
-    );
+
 
     navigate("/admin/products");
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
+import { logActivity } from "../../Utils/logActivity";
 
 const ReviewDetail = () => {
 
@@ -52,14 +53,26 @@ const ReviewDetail = () => {
     if (!window.confirm("Delete this review?"))
       return;
 
-    await fetch(
-      `${API}/api/reviews/${productId}/${index}`,
-      {
-        method: "DELETE",
-      }
-    );
+    try {
 
-    navigate("/admin/reviews");
+      await fetch(
+        `${API}/api/reviews/${productId}/${index}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      await logActivity(
+        `Deleted review by ${review.name || "Anonymous"} on ${review.productName}`
+      );
+
+      navigate("/admin/reviews");
+
+    } catch (err) {
+
+      console.error("Delete review failed", err);
+
+    }
 
   };
 

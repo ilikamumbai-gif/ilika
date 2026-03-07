@@ -7,6 +7,8 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Strike from "@tiptap/extension-strike";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
+import { useAdminAuth } from "../context/AdminAuthContext";
+import { logActivity } from "../Utils/logActivity";
 
 const storage = getStorage(app);
 
@@ -63,6 +65,7 @@ const RichTextEditor = ({ value, onChange }) => {
 const ProductForm = ({ onSubmit, initialData = {} }) => {
   const { categories } = useCategories();
   const fileInputRef = useRef(null);
+  const { admin } = useAdminAuth();
 
   const [form, setForm] = useState({
     name: initialData.name || "",
@@ -269,6 +272,24 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       }
 
 
+      // ================= PRODUCT CHANGE LOG =================
+
+if (initialData?.price && Number(initialData.price) !== Number(form.price)) {
+
+  await logActivity(
+    `${admin?.username || "Admin"} changed price of ${form.name} from ₹${initialData.price} to ₹${form.price}`
+  );
+
+}
+
+if (initialData?.mrp && Number(initialData.mrp) !== Number(form.mrp)) {
+
+  await logActivity(
+    `${admin?.username || "Admin"} changed MRP of ${form.name} from ₹${initialData.mrp} to ₹${form.mrp}`
+  );
+
+}
+
 
       await onSubmit({
         name: form.name,
@@ -292,7 +313,19 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         inStock: form.inStock,
       });
 
+if (!initialData?.id) {
 
+  await logActivity(
+    `${admin?.username || "Admin"} created product: ${form.name}`
+  );
+
+} else {
+
+  await logActivity(
+    `${admin?.username || "Admin"} edited product: ${form.name}`
+  );
+
+}
       setForm({
         name: "",
         shortInfo: "",

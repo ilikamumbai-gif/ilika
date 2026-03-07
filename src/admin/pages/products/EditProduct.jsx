@@ -3,11 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import ProductForm from "../../components/ProductFrom";
 import { useProducts } from "../../context/ProductContext";
-import { logActivity } from "../../Utils/logActivity";
 
 /* ================= LOG ================= */
-
-
 
 
 const EditProduct = () => {
@@ -50,9 +47,7 @@ const EditProduct = () => {
 
     await updateProduct(id, data);
 
-    await logActivity(
-      `Updated product: ${data.name}`
-    );
+   
 
     navigate("/admin/products");
 

@@ -5,6 +5,7 @@ import { useCombos } from "../../context/ComboContext";
 import { useNavigate } from "react-router-dom";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { app } from "../../../firebase/firebaseConfig";
+import { logActivity } from "../../Utils/logActivity";
 
 const AddCombo = () => {
     const { products } = useProducts();
@@ -100,8 +101,11 @@ const AddCombo = () => {
                 ...form,
                 price: Number(form.price),
                 mrp: form.mrp ? Number(form.mrp) : null,
-                images: uploadedUrls,  // ⭐ store URLs only
+                images: uploadedUrls,
             });
+
+            /* ADMIN LOG */
+            await logActivity(`Created combo: ${form.name}`);
 
             navigate("/admin/combos");
 
