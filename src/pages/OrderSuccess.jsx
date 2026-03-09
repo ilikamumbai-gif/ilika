@@ -13,6 +13,7 @@ const OrderSuccess = () => {
 
   useEffect(() => {
     const storedValue = localStorage.getItem("order_total");
+    const itemCount = Number(localStorage.getItem("order_items")) || 1;
 
     if (!storedValue) return;
 
@@ -20,17 +21,18 @@ const OrderSuccess = () => {
 
     if (!total || isNaN(total)) return;
 
-    if (window.fbq) {
+    if (window.fbq && typeof window.fbq === "function") {
       window.fbq("track", "Purchase", {
         value: total,
         currency: "INR",
         content_type: "product",
-        num_items: 1,
+        num_items: itemCount,
         order_id: id
       });
     }
 
     localStorage.removeItem("order_total");
+    localStorage.removeItem("order_items");
 
   }, [id]);
 

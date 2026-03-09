@@ -176,7 +176,7 @@ const ProductDetail = ({
     if (!productId || !product) return;
 
     if (window.fbq) {
-      window.fbq("track", "InitiateCheckout", {
+      window.fbq("track", "ViewContent", {
         content_ids: [productId],
         content_name: product.name,
         value: price,
@@ -488,7 +488,7 @@ const ProductDetail = ({
                 </div>
 
               </div>
-              
+
             </div>
           </div>
         </section>

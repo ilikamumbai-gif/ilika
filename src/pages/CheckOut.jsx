@@ -54,6 +54,21 @@ const Checkout = () => {
     fetchAddresses();
   }, [currentUser]);
 
+  useEffect(() => {
+    if (!cartItems.length) return;
+
+    const safeTotal = Number(total);
+
+    if (window.fbq && safeTotal > 0) {
+      window.fbq("track", "InitiateCheckout", {
+        value: safeTotal,
+        currency: "INR",
+        num_items: cartItems.length,
+        content_type: "product"
+      });
+    }
+  }, []);
+
   /* ---------------- SAVE ADDRESS ---------------- */
 
   const saveAddress = async () => {
@@ -137,18 +152,7 @@ const Checkout = () => {
     // ⭐⭐⭐ MOVE HERE (VERY IMPORTANT)
     const source = localStorage.getItem("traffic_source") || "WEBSITE";
 
-    if (window.fbq) {
-      const safeTotal = Number(total);
 
-      if (!isNaN(safeTotal) && safeTotal > 0) {
-        window.fbq("track", "InitiateCheckout", {
-          value: safeTotal,
-          currency: "INR",
-          content_type: "product",
-          num_items: cartItems.length,
-        });
-      }
-    }
 
     try {
       /* =========================
@@ -192,7 +196,7 @@ const Checkout = () => {
 
         // store order total for pixel
         localStorage.setItem("order_total", Number(total));
-
+        localStorage.setItem("order_items", cartItems.length);
         clearCart();
         navigate(`/order-success/${data.orderId}`);
         return;
@@ -281,6 +285,8 @@ const Checkout = () => {
 
             // 3️⃣ Redirect to success page
             localStorage.setItem("order_total", Number(total));
+            localStorage.setItem("order_items", cartItems.length);
+
             navigate(`/order-success/${verifyData.orderId}`);
           } catch (err) {
             console.error("Verification error:", err);
