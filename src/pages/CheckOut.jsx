@@ -274,9 +274,6 @@ const Checkout = () => {
             /* ==============================
                ✅ FACEBOOK PIXEL PURCHASE EVENT
             ============================== */
-            /* ==============================
-     ✅ FACEBOOK PIXEL PURCHASE EVENT (SAFE)
-  ============================== */
 
 
 

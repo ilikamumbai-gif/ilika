@@ -11,30 +11,66 @@ const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // useEffect(() => {
+  //   const storedValue = localStorage.getItem("order_total");
+  //   const itemCount = Number(localStorage.getItem("order_items")) || 1;
+
+  //   if (!storedValue) return;
+
+  //   const total = Number(storedValue);
+
+  //   if (!total || isNaN(total)) return;
+
+  //   if (window.fbq && typeof window.fbq === "function") {
+  //     window.fbq("track", "Purchase", {
+  //       value: total,
+  //       currency: "INR",
+  //       content_type: "product",
+  //       num_items: itemCount,
+  //       order_id: id
+  //     });
+  //   }
+
+  //   localStorage.removeItem("order_total");
+  //   localStorage.removeItem("order_items");
+
+  // }, [id]);
+
+
+
+
   useEffect(() => {
-    const storedValue = localStorage.getItem("order_total");
-    const itemCount = Number(localStorage.getItem("order_items")) || 1;
 
-    if (!storedValue) return;
+  const alreadyTracked = sessionStorage.getItem("purchase_tracked");
+  if (alreadyTracked) return;
 
-    const total = Number(storedValue);
+  const storedValue = localStorage.getItem("order_total");
+  const items = localStorage.getItem("order_items");
 
-    if (!total || isNaN(total)) return;
+  if (!storedValue) return;
 
-    if (window.fbq && typeof window.fbq === "function") {
-      window.fbq("track", "Purchase", {
-        value: total,
-        currency: "INR",
-        content_type: "product",
-        num_items: itemCount,
-        order_id: id
-      });
-    }
+  const total = Number(storedValue);
 
-    localStorage.removeItem("order_total");
-    localStorage.removeItem("order_items");
+  if (!total || isNaN(total)) return;
 
-  }, [id]);
+  if (window.fbq) {
+    window.fbq("track", "Purchase", {
+      value: total,
+      currency: "INR",
+      content_type: "product",
+      num_items: Number(items) || 1,
+      order_id: id
+    });
+  }
+
+  sessionStorage.setItem("purchase_tracked", "true");
+
+  localStorage.removeItem("order_total");
+  localStorage.removeItem("order_items");
+
+}, [id]);
+
+
 
   return (
     <>
