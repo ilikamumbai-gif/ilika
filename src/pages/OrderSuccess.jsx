@@ -11,66 +11,35 @@ const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const storedValue = localStorage.getItem("order_total");
-  //   const itemCount = Number(localStorage.getItem("order_items")) || 1;
-
-  //   if (!storedValue) return;
-
-  //   const total = Number(storedValue);
-
-  //   if (!total || isNaN(total)) return;
-
-  //   if (window.fbq && typeof window.fbq === "function") {
-  //     window.fbq("track", "Purchase", {
-  //       value: total,
-  //       currency: "INR",
-  //       content_type: "product",
-  //       num_items: itemCount,
-  //       order_id: id
-  //     });
-  //   }
-
-  //   localStorage.removeItem("order_total");
-  //   localStorage.removeItem("order_items");
-
-  // }, [id]);
-
-
-
-
   useEffect(() => {
+    // Guard: only fire once per unique order ID
+    const trackedOrderId = sessionStorage.getItem("purchase_tracked_id");
+    if (trackedOrderId === id) return;
 
-  const alreadyTracked = sessionStorage.getItem("purchase_tracked");
-  if (alreadyTracked) return;
+    const storedValue = localStorage.getItem("order_total");
+    const items = localStorage.getItem("order_items");
 
-  const storedValue = localStorage.getItem("order_total");
-  const items = localStorage.getItem("order_items");
+    if (!storedValue) return;
 
-  if (!storedValue) return;
+    const total = parseFloat(Number(storedValue).toFixed(2));
+    if (!total || isNaN(total)) return;
 
-  const total = Number(storedValue);
+    if (window.fbq && typeof window.fbq === "function") {
+      window.fbq("track", "Purchase", {
+        value: total,
+        currency: "INR",
+        content_type: "product",
+        num_items: Number(items) || 1,
+        order_id: id,
+      });
+    }
 
-  if (!total || isNaN(total)) return;
+    // Mark this specific order as tracked so back-navigation won't re-fire
+    sessionStorage.setItem("purchase_tracked_id", id);
 
-  if (window.fbq) {
-    window.fbq("track", "Purchase", {
-      value: total,
-      currency: "INR",
-      content_type: "product",
-      num_items: Number(items) || 1,
-      order_id: id
-    });
-  }
-
-  sessionStorage.setItem("purchase_tracked", "true");
-
-  localStorage.removeItem("order_total");
-  localStorage.removeItem("order_items");
-
-}, [id]);
-
-
+    localStorage.removeItem("order_total");
+    localStorage.removeItem("order_items");
+  }, [id]);
 
   return (
     <>
@@ -113,16 +82,12 @@ const OrderSuccess = () => {
 
             {/* BUTTONS */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-
               <button
                 onClick={() => navigate("/shopall")}
                 className="flex-1 bg-black text-white py-3 rounded-xl hover:bg-gray-900 transition"
               >
                 Continue Shopping
               </button>
-
-
-
             </div>
 
           </div>

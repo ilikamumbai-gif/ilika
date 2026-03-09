@@ -4,11 +4,11 @@ import { useCart } from "../context/CartProvider";
 import ComboProductCard from "./ComboProductCard";
 import Banner from "./Banner";
 
-const offBanner = "/Images/OffBanner.jpeg"
-const offBannerMobile = "/Images/offBannerMobile.jpeg"
+const offBanner = "/Images/OfferBanner.jpeg"
+const offBannerMobile = "/Images/offerBannerMobile.jpeg"
 
 const coupons = {
-  WOMEN15: 15
+  GUDI15: 15
 };
 
 const allowedProducts = [
@@ -166,7 +166,7 @@ const CouponProductBuilder = () => {
       <section
         className="max-w-7xl mx-auto px-4 pb-16 rounded-2xl"
         style={{
-          background: "linear-gradient(to bottom, #fff8fa, #fde7ec)"
+          background: "linear-gradient(to bottom, #fffaf3, #ffe8cc)"
         }}
       >
 
@@ -174,8 +174,8 @@ const CouponProductBuilder = () => {
 
         <div className="text-center mb-10">
 
-          <h2 className="text-3xl font-semibold text-[#7a1e35]">
-            🌸 Women’s Day Special Offer
+          <h2 className="text-3xl font-semibold text-orange-700">
+            🌼 Gudi Padwa Special Offer
           </h2>
 
           <p className="text-sm text-gray-500 mt-2">
@@ -200,8 +200,8 @@ const CouponProductBuilder = () => {
                 className={`
                 rounded-2xl p-[6px] transition-all duration-300 hover:scale-[1.03]
                 ${selected
-                    ? "bg-gradient-to-br from-pink-200 via-pink-100 to-white shadow-lg ring-2 ring-pink-300"
-                    : "bg-white hover:bg-pink-50 border border-pink-100"}
+                    ? "bg-gradient-to-br from-orange-100 via-yellow-50 to-white shadow-lg ring-2 ring-orange-300"
+                    : "bg-white hover:bg-orange-50 border border-orange-200"}
               `}
               >
 
@@ -241,18 +241,17 @@ const CouponProductBuilder = () => {
 
             <input
               type="text"
-              placeholder="Enter Women’s Day Coupon"
+              placeholder="Enter Festive Coupon"
               value={coupon}
               onChange={(e) =>
                 setCoupon(e.target.value)
               }
-              className="border border-pink-200 rounded-xl px-4 py-3 flex-1 focus:outline-none focus:ring-2 focus:ring-pink-300"
+              className="border border-orange-200 rounded-xl px-4 py-3 flex-1 focus:outline-none focus:ring-2 focus:ring-orange-300"
             />
 
             <button
               onClick={applyCoupon}
-              className="px-6 py-3 rounded-xl font-semibold text-white bg-[#7a1e35] hover:bg-[#64192c] transition-all"
-            >
+              className="px-6 py-3 rounded-xl font-semibold text-white bg-orange-500 hover:bg-orange-600"            >
               Apply
             </button>
 
@@ -273,19 +272,18 @@ const CouponProductBuilder = () => {
             </p>
 
             {discount > 0 && (
-              <p className="text-[#7a1e35] font-semibold mt-1">
-                {discount}% Women’s Day Discount Applied
+              <p className="text-orange-700 font-semibold mt-1">
+                {discount}% Festive Discount Applied
               </p>
             )}
 
-            <p className="text-2xl font-bold text-[#7a1e35] mt-2">
+            <p className="text-2xl font-bold text-orange-700 mt-2">
               Final Price: ₹{totalDiscountedPrice}
             </p>
 
             <button
               onClick={addDiscountedProduct}
-              className="mt-6 px-8 py-3 rounded-xl font-semibold text-white bg-[#7a1e35] hover:bg-[#64192c] transition-all"
-            >
+              className="mt-6 px-8 py-3 rounded-xl font-semibold text-white bg-orange-500 hover:bg-orange-600"            >
               Add To Cart
             </button>
 

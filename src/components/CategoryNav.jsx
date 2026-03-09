@@ -27,7 +27,7 @@ const CategoryNav = ({ categories = [] }) => {
                     absolute -top-4 -right-4
                     text-sm
                     px-4 py-1.5
-                    bg-[#7a1e35]
+                    bg-gradient-to-r from-orange-500 via-yellow-400 to-orange-500
                     text-white
                     rounded-full
                     shadow-lg

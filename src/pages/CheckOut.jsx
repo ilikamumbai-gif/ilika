@@ -57,14 +57,14 @@ const Checkout = () => {
   useEffect(() => {
     if (!cartItems.length) return;
 
-    const safeTotal = Number(total);
+    const safeTotal = parseFloat(Number(subtotal).toFixed(2));
 
-    if (window.fbq && safeTotal > 0) {
+    if (window.fbq && typeof window.fbq === "function" && safeTotal > 0) {
       window.fbq("track", "InitiateCheckout", {
         value: safeTotal,
         currency: "INR",
         num_items: cartItems.length,
-        content_type: "product"
+        content_type: "product",
       });
     }
   }, []);
@@ -130,14 +130,12 @@ const Checkout = () => {
 
   const total = parseFloat(subtotal.toFixed(2));
 
-
-
-
   /* ---------------- PLACE ORDER ---------------- */
 
   const handlePlaceOrder = async () => {
     if (loading) return;
     setLoading(true);
+
     if (!currentUser) {
       alert("Login required");
       navigate("/login");
@@ -146,17 +144,15 @@ const Checkout = () => {
 
     if (!selectedAddressId) {
       alert("Please select address");
+      setLoading(false);
       return;
     }
 
-    // ⭐⭐⭐ MOVE HERE (VERY IMPORTANT)
     const source = localStorage.getItem("traffic_source") || "WEBSITE";
-
-
 
     try {
       /* =========================
-         COD FLOW (UNCHANGED)
+         COD FLOW
       ========================= */
 
       if (paymentMethod === "COD") {
@@ -166,36 +162,29 @@ const Checkout = () => {
           body: JSON.stringify({
             userId: currentUser.uid,
             userEmail: currentUser.email,
-            items: cartItems.map(item => ({
+            items: cartItems.map((item) => ({
               id: item.id,
               name: item.name,
               price: Number(item.price),
               quantity: Number(item.quantity) || 1,
-              image:
-                item.image ||
-                item.images?.[0] ||
-                item.imageUrl ||
-                "",
-
+              image: item.image || item.images?.[0] || item.imageUrl || "",
               variantLabel: item.variantLabel || null,
               originalPrice: item.originalPrice || null,
               discountApplied: item.discountApplied || null,
-
               isCombo: item.isCombo || false,
-              comboItems: item.comboItems || item.items || []
+              comboItems: item.comboItems || item.items || [],
             })),
             totalAmount: total,
             shippingAddressId: selectedAddressId,
             paymentMethod: "COD",
-            source: source
+            source: source,
           }),
         });
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
-        // store order total for pixel
-        localStorage.setItem("order_total", Number(total));
+        localStorage.setItem("order_total", parseFloat(Number(total).toFixed(2)));
         localStorage.setItem("order_items", cartItems.length);
         clearCart();
         navigate(`/order-success/${data.orderId}`);
@@ -207,14 +196,11 @@ const Checkout = () => {
       ========================= */
 
       // 1️⃣ Create Razorpay order
-      const orderRes = await fetch(
-        `${API_URL}/api/payments/create-order`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: total }),
-        }
-      );
+      const orderRes = await fetch(`${API_URL}/api/payments/create-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total }),
+      });
 
       const razorpayOrder = await orderRes.json();
       if (!orderRes.ok) throw new Error(razorpayOrder.error);
@@ -230,60 +216,42 @@ const Checkout = () => {
         handler: async function (response) {
           try {
             // 1️⃣ Verify payment
-            const verifyRes = await fetch(
-              `${API_URL}/api/payments/verify`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                  orderData: {
-                    userId: currentUser.uid,
-                    userEmail: currentUser.email,
-                    items: cartItems.map(item => ({
-                      id: item.id,
-                      name: item.name,
-                      price: Number(item.price),
-                      quantity: Number(item.quantity) || 1,
-                      image:
-                        item.image ||
-                        item.images?.[0] ||
-                        item.imageUrl ||
-                        "",
-
-                      variantLabel: item.variantLabel || null,
-                      originalPrice: item.originalPrice || null,
-                      discountApplied: item.discountApplied || null,
-
-                      isCombo: item.isCombo || false,
-                      comboItems: item.comboItems || item.items || []
-                    })),
-                    totalAmount: total,
-                    shippingAddressId: selectedAddressId,
-                    source: source
-                  },
-                }),
-              }
-            );
+            const verifyRes = await fetch(`${API_URL}/api/payments/verify`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                orderData: {
+                  userId: currentUser.uid,
+                  userEmail: currentUser.email,
+                  items: cartItems.map((item) => ({
+                    id: item.id,
+                    name: item.name,
+                    price: Number(item.price),
+                    quantity: Number(item.quantity) || 1,
+                    image: item.image || item.images?.[0] || item.imageUrl || "",
+                    variantLabel: item.variantLabel || null,
+                    originalPrice: item.originalPrice || null,
+                    discountApplied: item.discountApplied || null,
+                    isCombo: item.isCombo || false,
+                    comboItems: item.comboItems || item.items || [],
+                  })),
+                  totalAmount: total,
+                  shippingAddressId: selectedAddressId,
+                  source: source,
+                },
+              }),
+            });
 
             const verifyData = await verifyRes.json();
             if (!verifyRes.ok) throw new Error(verifyData.error);
 
-            /* ==============================
-               ✅ FACEBOOK PIXEL PURCHASE EVENT
-            ============================== */
-
-
-
-            // 2️⃣ Clear cart
-            clearCart();
-
-            // 3️⃣ Redirect to success page
-            localStorage.setItem("order_total", Number(total));
+            // 2️⃣ Store order info for pixel, clear cart, redirect
+            localStorage.setItem("order_total", parseFloat(Number(total).toFixed(2)));
             localStorage.setItem("order_items", cartItems.length);
-
+            clearCart();
             navigate(`/order-success/${verifyData.orderId}`);
           } catch (err) {
             console.error("Verification error:", err);
@@ -300,9 +268,10 @@ const Checkout = () => {
       console.error("Order error:", err);
       alert("Failed to process order");
     }
+
     setLoading(false);
   };
-  // console.log(cartItems)
+
   /* ---------------- EMPTY CART ---------------- */
 
   if (!cartItems.length)
@@ -332,7 +301,7 @@ const Checkout = () => {
 
             <Heading heading="Select Address" />
 
-            {addresses.map(addr => (
+            {addresses.map((addr) => (
               <label key={addr.id} className="block border rounded-xl p-4 cursor-pointer hover:border-black">
                 <input
                   type="radio"
@@ -398,15 +367,11 @@ const Checkout = () => {
           <div className="bg-white border rounded-xl p-5 h-fit sticky top-24">
             <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
-            {cartItems.map(item => (
+            {cartItems.map((item) => (
               <div key={item.id} className="flex gap-3 border-b pb-3">
                 <img
-                  src={
-                    item.image ||
-                    item.images?.[0] ||
-                    item.imageUrl ||
-                    "/placeholder.png"
-                  } className="w-16 h-16 rounded-md object-cover"
+                  src={item.image || item.images?.[0] || item.imageUrl || "/placeholder.png"}
+                  className="w-16 h-16 rounded-md object-cover"
                 />
                 <div className="flex-1 text-sm">
                   <p className="font-medium">{item.name}</p>
@@ -421,9 +386,7 @@ const Checkout = () => {
             <div className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
               <div className="flex justify-between"><span>Shipping</span><span className="text-green-900">Free</span></div>
-
               <hr />
-
               <div className="flex justify-between font-semibold text-lg">
                 <span>Total</span>
                 <span>₹{total}</span>

@@ -174,7 +174,7 @@ const Combos = () => {
 
               <div>
 
-                <h2 className="text-xl font-semibold mb-6 text-[#7a1e35]">
+                <h2 className="text-xl font-semibold mb-6 text-orange-700">
                   🌸 Step 1 • Choose Any 2 Toners
                 </h2>
 
@@ -194,8 +194,8 @@ const Combos = () => {
     transition-all duration-300 hover:scale-[1.03]
     rounded-2xl p-3
     ${selected
-                            ? "bg-gradient-to-br from-pink-200 via-pink-100 to-white shadow-lg ring-2 ring-pink-300"
-                            : "bg-white hover:bg-pink-50 border border-pink-100"}
+                            ? "bg-gradient-to-br from-orange-100 via-yellow-50 to-white shadow-lg ring-2 ring-orange-300"
+                            : "bg-white hover:bg-orange-50 border border-orange-200"}
   `}
                       >
                         <ComboProductCard
@@ -217,7 +217,7 @@ const Combos = () => {
               {/* MASKS */}
 
               <div>
-                <h2 className="text-xl font-semibold mb-2 text-[#7a1e35]">
+                <h2 className="text-xl font-semibold mb-2 text-orange-700">
                   💖 Step 2 • Choose Your Sheet Mask
                 </h2>
 
@@ -241,8 +241,8 @@ const Combos = () => {
                         scale-90 origin-top transition-all duration-300 hover:scale-[0.97]
                         rounded-2xl p-[6px]
                         ${selected
-                            ? "bg-gradient-to-br from-pink-200 via-pink-100 to-white shadow-lg ring-2 ring-pink-300"
-                            : "bg-white hover:bg-pink-50 border border-pink-100"}
+                            ? "bg-gradient-to-br from-orange-100 via-yellow-50 to-white shadow-lg ring-2 ring-orange-300"
+                            : "bg-white hover:bg-orange-50 border border-orange-200"}
                         `}
                       >
 
@@ -270,11 +270,11 @@ const Combos = () => {
             <div
               className="rounded-2xl p-6 shadow-md h-fit sticky top-24"
               style={{
-                background: "linear-gradient(to bottom, #ffffff, #fde7ec)"
+                background: "linear-gradient(to bottom, #fffaf3, #ffe8cc)"
               }}
             >
-              <h3 className="font-semibold text-xl mb-6 text-[#7a1e35]">
-                💝 Your Women’s Day Combo Kit
+              <h3 className="font-semibold text-xl mb-6 text-orange-700">
+                💝 Your Festive Day Combo Kit
               </h3>
 
               {/* TONERS */}
@@ -282,7 +282,7 @@ const Combos = () => {
               <div className="mb-4">
 
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-[#7a1e35] text-white text-[10px] px-2 py-[2px] rounded-full">
+                  <span className="bg-orange-500 text-white text-[10px] px-2 py-[2px] rounded-full">
                     Step 1
                   </span>
                   <p className="font-medium text-sm">
@@ -343,7 +343,7 @@ const Combos = () => {
               <div className="mb-4">
 
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-[#7a1e35] text-white text-[10px] px-2 py-[2px] rounded-full">
+                  <span className="bg-orange-500 text-white text-[10px] px-2 py-[2px] rounded-full">
                     Step 2
                   </span>
                   <p className="font-medium text-sm">
@@ -403,16 +403,16 @@ const Combos = () => {
 
               <div className="border-t pt-4 mt-4">
 
-                <p className="text-xl font-bold text-[#7a1e35]">
+                <p className="text-xl font-bold text-orange-700">
                   Total: ₹{totalPrice}
                 </p>
 
                 <button
                   disabled={selectedToners.length !== 2 || selectedMasks.length !== 1}
                   onClick={addComboToCart}
-                  className="w-full mt-5 text-[#7a1e35] py-3 rounded-xl font-semibold tracking-wide transition-all hover:scale-[1.02]"
+                  className="w-full mt-5 text-orange-700 py-3 rounded-xl font-semibold tracking-wide transition-all hover:scale-[1.02]"
                   style={{
-                    background: "linear-gradient(to right, #fbd1d8, #f7c9d3, #fde7ec)"
+                    background: "linear-gradient(to right, #fb923c, #fbbf24, #f97316)"
                   }}
                 >
                   Add Combo To Cart

@@ -15,7 +15,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
   const { products = [] } = useProducts();
   const { categories = [] } = useCategories();
   const [showOfferBubble, setShowOfferBubble] = useState(true);
-  
+
 
 
   const newCategory = categories.find(
@@ -26,10 +26,10 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
   );
 
   const newArrivals = newCategory
-  ? products
+    ? products
       .filter((p) => p.categoryIds?.includes(newCategory.id))
       .slice(0, 6)
-  : [];
+    : [];
   // ✅ Updated search filter (name + category + limit 6)
   const filtered =
     query.trim().length > 0
@@ -111,18 +111,23 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           <Link
             to="/combo"
             onClick={onClose}
-            className="whitespace-nowrap font-semibold px-3 py-1 rounded-full
-              bg-gradient-to-r from-pink-200 via-pink-100 to-pink-200
-              text-[#7a1e35] hover:shadow-lg
+            className="
+              whitespace-nowrap font-semibold px-3 py-1 rounded-full
+              bg-gradient-to-r from-orange-200 via-yellow-100 to-orange-200
+              text-orange-700 hover:shadow-lg
               transition-all duration-300
-              animate-[pulse_2.5s_infinite]"
+              animate-[pulse_2.5s_infinite]
+            "
           >
             Offer
           </Link>
 
           <span
-            className="absolute -top-2 -right-3 text-[9px] px-2 py-[2px]
-            bg-[#7a1e35] text-white rounded-full shadow animate-bounce"
+            className="
+              absolute -top-2 -right-3 text-[9px] px-2 py-[2px]
+              bg-orange-500 text-white rounded-full shadow
+              animate-bounce
+            "
           >
             FREE
           </span>

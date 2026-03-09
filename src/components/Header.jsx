@@ -5,10 +5,10 @@ import Nav from "./Nav";
 import { useNavigate } from "react-router-dom";
 
 const Header = () => {
-const navigate = useNavigate();
-const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
-return ( <header className="w-full sticky top-0 z-50 bg-[#e8adad60]/20 backdrop-blur-md"> <div className="max-w-8xl flex items-center justify-between px-4 py-3">
+  return (<header className="w-full sticky top-0 z-50 bg-[#e8adad60]/20 backdrop-blur-md"> <div className="max-w-8xl flex items-center justify-between px-4 py-3">
 
 
     {/* Logo */}
@@ -35,21 +35,31 @@ return ( <header className="w-full sticky top-0 z-50 bg-[#e8adad60]/20 backdrop-
       {!open && (
         <div
           onClick={() => navigate("/combo")}
-          className="relative bg-white text-[#7a1e35]
-          text-[11px] px-3 py-[5px] rounded-lg
-          border border-[#7a1e35] shadow-md
-          animate-[pulse_2s_infinite] cursor-pointer"
+          className="
+      relative
+      bg-gradient-to-r from-orange-100 via-yellow-50 to-orange-100
+      text-orange-700
+      text-[11px]
+      px-3 py-[5px]
+      rounded-lg
+      border border-orange-400
+      shadow-md
+      animate-[pulse_2s_infinite]
+      cursor-pointer
+    "
         >
-          🔥 New Offer
+          🌼 Festive Offer
 
           {/* Arrow pointing to hamburger */}
           <div
-            className="absolute right-[-6px] top-1/2 -translate-y-1/2
-            w-0 h-0
-            border-t-[6px] border-b-[6px]
-            border-l-[6px]
-            border-t-transparent border-b-transparent
-            border-l-[#7a1e35]"
+            className="
+        absolute right-[-6px] top-1/2 -translate-y-1/2
+        w-0 h-0
+        border-t-[6px] border-b-[6px]
+        border-l-[6px]
+        border-t-transparent border-b-transparent
+        border-l-orange-400
+      "
           />
         </div>
       )}
@@ -65,16 +75,16 @@ return ( <header className="w-full sticky top-0 z-50 bg-[#e8adad60]/20 backdrop-
     </div>
   </div>
 
-  {/* Mobile Menu */}
-  {open && (
-    <div className="md:hidden px-4 pb-4">
-      <Nav mobile onClose={() => setOpen(false)} />
-    </div>
-  )}
-</header>
+    {/* Mobile Menu */}
+    {open && (
+      <div className="md:hidden px-4 pb-4">
+        <Nav mobile onClose={() => setOpen(false)} />
+      </div>
+    )}
+  </header>
 
 
-);
+  );
 };
 
 export default Header;

@@ -18,6 +18,7 @@ import bannerHair from "../assets/Images/HairBanner.jpg.jpeg";
 import holibg2 from "../assets/Images/holibg3.png";
 import OfferCard from "../components/OfferCard";
 import Offers from "./Offer";
+import GudiPadwaBanner from "../components/GudiPadwaBanner";
 
 /* public images (use path only) */
 const skinMobile = "/Images/skinMobile.jpeg";
@@ -30,6 +31,7 @@ const holimainbanner = "/Images/women.jpeg";
 const holiMobile = "/Images/womenMobile.jpeg";
 
 const bannerStyle = "/Images/Banner2.jpeg";
+
 
 const Home = () => {
 
@@ -61,12 +63,14 @@ const Home = () => {
         <CartDrawer />
 
         {/* HERO */}
-        <Banner
+        {/* <Banner
           className="md:h-[87vh] -mt-3"
           src={holimainbanner}
           mobileSrc={holiMobile}
-        />
+        /> */}
         
+        <GudiPadwaBanner />
+
 
         <Offers />
 

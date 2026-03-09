@@ -1,10 +1,10 @@
 const MiniDivider = () => {
 
   const saleText =
-    "🌸 WOMEN'S DAY SPECIAL  🌸 CELEBRATE BEAUTY ✨ LIMITED TIME OFFER 🛍️ SHOP NOW";
+    "🌼 HAPPY GUDI PADWA 🌼 FESTIVE BEAUTY OFFERS ✨ NEW YEAR SPECIAL 🛍️ SHOP NOW ✨ CELEBRATE NEW BEGINNINGS";
 
   return (
-    <div className="w-full bg-[#79283b] overflow-hidden">
+    <div className="w-full bg-gradient-to-r from-orange-200 via-yellow-100 to-orange-200 overflow-hidden">
       <div className="marquee-wrapper">
         <div className="marquee-track">
           <span>{saleText}</span>

@@ -25,7 +25,7 @@ const OfferCard = ({
       block relative
       rounded-2xl
       p-[1px]
-      bg-gradient-to-r from-pink-300 via-rose-300 to-pink-400
+      bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500
       hover:scale-[1.02]
       transition duration-300
       group
@@ -34,7 +34,7 @@ const OfferCard = ({
       {/* CARD */}
       <div
         className="
-        bg-white/90 backdrop-blur-md
+        bg-white/95 backdrop-blur-md
         rounded-2xl
         p-4 sm:p-6
         h-full
@@ -46,6 +46,7 @@ const OfferCard = ({
       >
 
         <div>
+
           {/* TITLE */}
           <h3 className="text-base sm:text-lg font-semibold text-[#7A2E3A] mb-2">
             {title}
@@ -62,11 +63,11 @@ const OfferCard = ({
 
               <span
                 className="
-                border border-dashed border-pink-400
+                border border-dashed border-orange-400
                 px-3 py-1 rounded-md
                 text-xs sm:text-sm font-semibold
-                text-[#7A2E3A]
-                bg-pink-50
+                text-orange-700
+                bg-orange-50
                 "
               >
                 {code}
@@ -77,8 +78,8 @@ const OfferCard = ({
                 className="
                 flex items-center gap-1
                 text-xs sm:text-sm font-medium
-                text-[#7A2E3A]
-                hover:text-pink-600
+                text-orange-700
+                hover:text-orange-500
                 "
               >
                 <Copy size={16} />
@@ -94,16 +95,16 @@ const OfferCard = ({
           className="
           flex items-center justify-between
           flex-wrap gap-2
-          text-[#7A2E3A]
+          text-orange-700
           font-semibold
           mt-2
           "
         >
 
           <div className="flex items-center gap-2 text-sm sm:text-base">
-            <Gift size={18} className="text-pink-500 shrink-0" />
+            <Gift size={18} className="text-orange-500 shrink-0" />
             <span>
-              {type === "coupon" ? "Special Coupon Deal" : "Special Combo Deal"}
+              {type === "coupon" ? "Special Festive Deal" : "Special Combo Deal"}
             </span>
           </div>
 
@@ -117,14 +118,14 @@ const OfferCard = ({
           >
             <span className="relative">
 
-              {type === "coupon" ?"View Deal": "Build Your Combo" }
+              {type === "coupon" ? "View Deal" : "Build Your Combo"}
 
               <span
                 className="
                 absolute left-0 -bottom-1
                 h-[2px]
                 w-0
-                bg-[#7A2E3A]
+                bg-orange-500
                 group-hover:w-full
                 transition-all duration-300
                 "
