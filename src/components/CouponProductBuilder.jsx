@@ -175,7 +175,7 @@ const CouponProductBuilder = () => {
         <div className="text-center mb-10">
 
           <h2 className="text-3xl font-semibold text-orange-700">
-            🌼 Gudi Padwa Special Offer
+            Gudi Padwa Special Offer
           </h2>
 
           <p className="text-sm text-gray-500 mt-2">
