@@ -69,20 +69,6 @@ const Checkout = () => {
     localStorage.removeItem('order_items');
   }, []);
 
-  useEffect(() => {
-    if (!cartItems.length) return;
-
-    const safeTotal = parseFloat(Number(subtotal).toFixed(2));
-
-    if (window.fbq && typeof window.fbq === "function" && safeTotal > 0) {
-      window.fbq("track", "InitiateCheckout", {
-        value: safeTotal,
-        currency: "INR",
-        num_items: cartItems.length,
-        content_type: "product",
-      });
-    }
-  }, []);
 
   /* ---------------- SAVE ADDRESS ---------------- */
 

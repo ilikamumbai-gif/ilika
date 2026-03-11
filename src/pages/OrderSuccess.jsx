@@ -6,41 +6,55 @@ import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
 
+const PIXEL_ID = "1188302548683614";
+
 const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Clean up any stale localStorage from old code
-    localStorage.removeItem("order_total");
-    localStorage.removeItem("order_items");
+    if (!id) return;
 
-    // ✅ Fire Purchase ONCE per unique order ID
+    // Prevent duplicate firing for same order
     const trackedId = sessionStorage.getItem("purchase_tracked_id");
     if (trackedId === id) return;
 
-    if (window.fbq && typeof window.fbq === "function") {
-      // Get values passed from Checkout via sessionStorage
-      const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
-      const numItems = parseInt(sessionStorage.getItem("purchase_items") || "1");
+    const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
+    const numItems = parseInt(sessionStorage.getItem("purchase_items") || "1");
 
-      if (value > 0) {
-        window.fbq("track", "Purchase", {
-          value: value,
-          currency: "INR",
-          content_type: "product",
-          num_items: numItems,
-          order_id: id,
-        });
+    if (value <= 0) return;
+
+    // Load Meta Pixel script fresh, then fire Purchase
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://connect.facebook.net/en_US/fbevents.js";
+
+    script.onload = () => {
+      if (!window.fbq) return;
+      fbq("set", "autoConfig", false, PIXEL_ID);
+      fbq("init", PIXEL_ID);
+      fbq("track", "Purchase", {
+        value: value,
+        currency: "INR",
+        content_type: "product",
+        num_items: numItems,
+        order_id: id,
+      });
+
+      // Mark as tracked and clean up
+      sessionStorage.setItem("purchase_tracked_id", id);
+      sessionStorage.removeItem("purchase_value");
+      sessionStorage.removeItem("purchase_items");
+    };
+
+    document.head.appendChild(script);
+
+    // Clean up script tag on unmount
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
       }
-    }
-
-    // Mark this order as tracked
-    sessionStorage.setItem("purchase_tracked_id", id);
-    // Clean up
-    sessionStorage.removeItem("purchase_value");
-    sessionStorage.removeItem("purchase_items");
-
+    };
   }, [id]);
 
   return (
