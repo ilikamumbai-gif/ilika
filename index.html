@@ -103,6 +103,10 @@
       }(window, document, 'script',
         'https://connect.facebook.net/en_US/fbevents.js');
 
+      // Disable automatic event detection — prevents Meta from auto-firing
+      // Purchase/Lead events on button clicks (e.g. "Place Order", "Continue")
+      fbq('set', 'autoConfig', false, '1188302548683614');
+
       fbq('init', '1188302548683614');
       fbq('track', 'PageView');
     }
