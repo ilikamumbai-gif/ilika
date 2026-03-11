@@ -54,19 +54,25 @@ const Checkout = () => {
     fetchAddresses();
   }, [currentUser]);
 
+  // Load Razorpay script only on checkout page (not globally)
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { document.body.removeChild(script); };
+  }, []);
+
   // Clean up any stale localStorage pixel data from old code versions
   useEffect(() => {
-    localStorage.removeItem("order_total");
-    localStorage.removeItem("order_items");
+    localStorage.removeItem('order_total');
+    localStorage.removeItem('order_items');
   }, []);
 
   useEffect(() => {
     if (!cartItems.length) return;
 
-    const computedTotal = cartItems.reduce((acc, item) => {
-      return acc + (Number(item.price) || 0) * (Number(item.quantity) || 1);
-    }, 0);
-    const safeTotal = parseFloat(computedTotal.toFixed(2));
+    const safeTotal = parseFloat(Number(subtotal).toFixed(2));
 
     if (window.fbq && typeof window.fbq === "function" && safeTotal > 0) {
       window.fbq("track", "InitiateCheckout", {
