@@ -6,8 +6,6 @@ import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
 
-const PIXEL_ID = "1188302548683614";
-
 const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,7 +13,7 @@ const OrderSuccess = () => {
   useEffect(() => {
     if (!id) return;
 
-    // Prevent duplicate firing for same order
+    // Fire Purchase ONCE per unique order ID
     const trackedId = sessionStorage.getItem("purchase_tracked_id");
     if (trackedId === id) return;
 
@@ -24,37 +22,20 @@ const OrderSuccess = () => {
 
     if (value <= 0) return;
 
-    // Load Meta Pixel script fresh, then fire Purchase
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = "https://connect.facebook.net/en_US/fbevents.js";
-
-    script.onload = () => {
-      if (!window.fbq) return;
-      fbq("set", "autoConfig", false, PIXEL_ID);
-      fbq("init", PIXEL_ID);
-      fbq("track", "Purchase", {
+    // Pixel is already loaded from index.html — just fire the event
+    if (window.fbq && typeof window.fbq === "function") {
+      window.fbq("track", "Purchase", {
         value: value,
         currency: "INR",
         content_type: "product",
         num_items: numItems,
         order_id: id,
       });
+    }
 
-      // Mark as tracked and clean up
-      sessionStorage.setItem("purchase_tracked_id", id);
-      sessionStorage.removeItem("purchase_value");
-      sessionStorage.removeItem("purchase_items");
-    };
-
-    document.head.appendChild(script);
-
-    // Clean up script tag on unmount
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
+    sessionStorage.setItem("purchase_tracked_id", id);
+    sessionStorage.removeItem("purchase_value");
+    sessionStorage.removeItem("purchase_items");
   }, [id]);
 
   return (
@@ -63,33 +44,22 @@ const OrderSuccess = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         <CartDrawer />
-
         <div className="flex-1 flex items-center justify-center px-4 py-10">
           <div className="bg-white rounded-2xl shadow-md max-w-lg w-full p-8 text-center space-y-6">
-
             <div className="flex justify-center">
               <CheckCircle className="w-20 h-20 text-green-500" />
             </div>
-
             <h1 className="text-2xl sm:text-3xl font-semibold heading-color">
               Order Placed Successfully 🎉
             </h1>
-
-            <p className="text-gray-600">
-              Thank you for shopping with us!
-            </p>
-
+            <p className="text-gray-600">Thank you for shopping with us!</p>
             <div className="bg-gray-50 border rounded-xl py-4">
               <p className="text-sm text-gray-500">Your Order ID</p>
-              <p className="text-lg font-semibold text-[#1C371C] tracking-wider">
-                #{id}
-              </p>
+              <p className="text-lg font-semibold text-[#1C371C] tracking-wider">#{id}</p>
             </div>
-
             <p className="text-sm text-gray-500">
               You will receive order confirmation and delivery updates shortly.
             </p>
-
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 onClick={() => navigate("/shopall")}
@@ -98,10 +68,8 @@ const OrderSuccess = () => {
                 Continue Shopping
               </button>
             </div>
-
           </div>
         </div>
-
         <Footer />
       </div>
     </>
