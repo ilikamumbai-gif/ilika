@@ -142,11 +142,6 @@ const Checkout = () => {
     if (loading) return;
     setLoading(true);
 
-    // ✅ Block any accidental pixel firing during order placement
-    // Temporarily disable fbq so old cached code cannot fire Purchase
-    const realFbq = window.fbq;
-    window.fbq = null;
-
     if (!currentUser) {
       alert("Login required");
       navigate("/login");
@@ -195,8 +190,7 @@ const Checkout = () => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
-        // ✅ Restore fbq and store values for OrderSuccess to fire Purchase
-        window.fbq = realFbq;
+        // ✅ Store order info in sessionStorage for OrderSuccess pixel
         sessionStorage.setItem("purchase_value", parseFloat(Number(total).toFixed(2)));
         sessionStorage.setItem("purchase_items", cartItems.length);
         clearCart();
@@ -261,14 +255,12 @@ const Checkout = () => {
             const verifyData = await verifyRes.json();
             if (!verifyRes.ok) throw new Error(verifyData.error);
 
-            // ✅ Restore fbq and store values for OrderSuccess to fire Purchase
-            window.fbq = realFbq;
+            // ✅ Store order info in sessionStorage for OrderSuccess pixel
             sessionStorage.setItem("purchase_value", parseFloat(Number(total).toFixed(2)));
             sessionStorage.setItem("purchase_items", cartItems.length);
             clearCart();
             navigate(`/order-success/${verifyData.orderId}`);
           } catch (err) {
-            window.fbq = realFbq; // restore on error too
             console.error("Verification error:", err);
             alert("Payment verification failed");
           }
@@ -280,7 +272,6 @@ const Checkout = () => {
       rzp.open();
 
     } catch (err) {
-      window.fbq = realFbq; // restore on error too
       console.error("Order error:", err);
       alert("Failed to process order");
     }
