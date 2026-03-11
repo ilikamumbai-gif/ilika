@@ -115,6 +115,18 @@ const ProductDetail = ({
       };
 
     addToCart(item);
+
+    // ✅ Fire AddToCart pixel event
+    if (window.fbq && typeof window.fbq === "function") {
+      window.fbq("track", "AddToCart", {
+        content_ids: [productId],
+        content_name: product?.name,
+        value: price,
+        currency: "INR",
+        content_type: "product",
+        contents: [{ id: productId, quantity: 1, item_price: price }],
+      });
+    }
   };
 
   const handleBuyNow = async () => {

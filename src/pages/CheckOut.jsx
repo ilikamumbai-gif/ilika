@@ -63,7 +63,10 @@ const Checkout = () => {
   useEffect(() => {
     if (!cartItems.length) return;
 
-    const safeTotal = parseFloat(Number(subtotal).toFixed(2));
+    const computedTotal = cartItems.reduce((acc, item) => {
+      return acc + (Number(item.price) || 0) * (Number(item.quantity) || 1);
+    }, 0);
+    const safeTotal = parseFloat(computedTotal.toFixed(2));
 
     if (window.fbq && typeof window.fbq === "function" && safeTotal > 0) {
       window.fbq("track", "InitiateCheckout", {
