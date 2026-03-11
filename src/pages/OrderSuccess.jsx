@@ -22,7 +22,8 @@ const OrderSuccess = () => {
 
     if (value <= 0) return;
 
-    // ✅ Pixel is already initialized in index.html — just fire the event
+    // ✅ Pixel is already initialized in index.html
+    // DO NOT reload fbevents.js or call fbq('init') again — ever
     if (window.fbq && typeof window.fbq === "function") {
       window.fbq("track", "Purchase", {
         value: value,
@@ -32,7 +33,7 @@ const OrderSuccess = () => {
         order_id: id,
       });
 
-      // Mark as tracked and clean up
+      // Mark this order as tracked + clean up
       sessionStorage.setItem("purchase_tracked_id", id);
       sessionStorage.removeItem("purchase_value");
       sessionStorage.removeItem("purchase_items");
