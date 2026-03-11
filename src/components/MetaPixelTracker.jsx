@@ -5,7 +5,10 @@ function MetaPixelTracker() {
   const location = useLocation();
 
   useEffect(() => {
-    if (window.fbq) {
+    // Never fire any pixel events on admin pages
+    if (location.pathname.startsWith("/admin")) return;
+
+    if (window.fbq && typeof window.fbq === "function") {
       window.fbq("track", "PageView");
     }
   }, [location]);
