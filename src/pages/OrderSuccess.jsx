@@ -5,14 +5,21 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
+import { useEffect } from "react";
 
 const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // ✅ Purchase pixel is now fired directly in Checkout.jsx
-  // No pixel code here — prevents any accidental re-firing
-  // on page refresh, back navigation, or direct URL access
+  useEffect(() => {
+    // Clear any stale localStorage pixel data that may have been
+    // left over from old code versions — prevents ghost Purchase fires
+    localStorage.removeItem("order_total");
+    localStorage.removeItem("order_items");
+  }, []);
+
+  // ✅ Purchase pixel fires directly in Checkout.jsx at point of order
+  // No pixel code here — prevents re-firing on refresh or back navigation
 
   return (
     <>
@@ -22,16 +29,13 @@ const OrderSuccess = () => {
         <Header />
         <CartDrawer />
 
-        {/* SUCCESS CONTENT */}
         <div className="flex-1 flex items-center justify-center px-4 py-10">
           <div className="bg-white rounded-2xl shadow-md max-w-lg w-full p-8 text-center space-y-6">
 
-            {/* ICON */}
             <div className="flex justify-center">
               <CheckCircle className="w-20 h-20 text-green-500" />
             </div>
 
-            {/* TITLE */}
             <h1 className="text-2xl sm:text-3xl font-semibold heading-color">
               Order Placed Successfully 🎉
             </h1>
@@ -40,7 +44,6 @@ const OrderSuccess = () => {
               Thank you for shopping with us!
             </p>
 
-            {/* ORDER ID */}
             <div className="bg-gray-50 border rounded-xl py-4">
               <p className="text-sm text-gray-500">Your Order ID</p>
               <p className="text-lg font-semibold text-[#1C371C] tracking-wider">
@@ -48,12 +51,10 @@ const OrderSuccess = () => {
               </p>
             </div>
 
-            {/* INFO */}
             <p className="text-sm text-gray-500">
               You will receive order confirmation and delivery updates shortly.
             </p>
 
-            {/* BUTTONS */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 onClick={() => navigate("/shopall")}

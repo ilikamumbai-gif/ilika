@@ -54,6 +54,12 @@ const Checkout = () => {
     fetchAddresses();
   }, [currentUser]);
 
+  // Clean up any stale localStorage pixel data from old code versions
+  useEffect(() => {
+    localStorage.removeItem("order_total");
+    localStorage.removeItem("order_items");
+  }, []);
+
   useEffect(() => {
     if (!cartItems.length) return;
 
