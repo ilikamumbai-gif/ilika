@@ -190,16 +190,9 @@ const Checkout = () => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
-        // ✅ Fire Purchase pixel directly — no localStorage needed
-        if (window.fbq && typeof window.fbq === "function") {
-          window.fbq("track", "Purchase", {
-            value: parseFloat(Number(total).toFixed(2)),
-            currency: "INR",
-            content_type: "product",
-            num_items: cartItems.length,
-            order_id: data.orderId,
-          });
-        }
+        // ✅ Store order info in sessionStorage for OrderSuccess pixel
+        sessionStorage.setItem("purchase_value", parseFloat(Number(total).toFixed(2)));
+        sessionStorage.setItem("purchase_items", cartItems.length);
         clearCart();
         navigate(`/order-success/${data.orderId}`);
         return;
@@ -262,16 +255,9 @@ const Checkout = () => {
             const verifyData = await verifyRes.json();
             if (!verifyRes.ok) throw new Error(verifyData.error);
 
-            // ✅ Fire Purchase pixel directly — no localStorage needed
-            if (window.fbq && typeof window.fbq === "function") {
-              window.fbq("track", "Purchase", {
-                value: parseFloat(Number(total).toFixed(2)),
-                currency: "INR",
-                content_type: "product",
-                num_items: cartItems.length,
-                order_id: verifyData.orderId,
-              });
-            }
+            // ✅ Store order info in sessionStorage for OrderSuccess pixel
+            sessionStorage.setItem("purchase_value", parseFloat(Number(total).toFixed(2)));
+            sessionStorage.setItem("purchase_items", cartItems.length);
             clearCart();
             navigate(`/order-success/${verifyData.orderId}`);
           } catch (err) {

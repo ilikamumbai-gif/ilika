@@ -1,30 +1,51 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
-import { useEffect } from "react";
 
 const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Clear any stale localStorage pixel data that may have been
-    // left over from old code versions — prevents ghost Purchase fires
+    // Clean up any stale localStorage from old code
     localStorage.removeItem("order_total");
     localStorage.removeItem("order_items");
-  }, []);
 
-  // ✅ Purchase pixel fires directly in Checkout.jsx at point of order
-  // No pixel code here — prevents re-firing on refresh or back navigation
+    // ✅ Fire Purchase ONCE per unique order ID
+    const trackedId = sessionStorage.getItem("purchase_tracked_id");
+    if (trackedId === id) return;
+
+    if (window.fbq && typeof window.fbq === "function") {
+      // Get values passed from Checkout via sessionStorage
+      const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
+      const numItems = parseInt(sessionStorage.getItem("purchase_items") || "1");
+
+      if (value > 0) {
+        window.fbq("track", "Purchase", {
+          value: value,
+          currency: "INR",
+          content_type: "product",
+          num_items: numItems,
+          order_id: id,
+        });
+      }
+    }
+
+    // Mark this order as tracked
+    sessionStorage.setItem("purchase_tracked_id", id);
+    // Clean up
+    sessionStorage.removeItem("purchase_value");
+    sessionStorage.removeItem("purchase_items");
+
+  }, [id]);
 
   return (
     <>
       <MiniDivider />
-
       <div className="min-h-screen flex flex-col">
         <Header />
         <CartDrawer />

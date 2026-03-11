@@ -11,108 +11,64 @@ import { OrderProvider } from "./admin/context/OrderContext";
 import { UserProvider } from "./admin/context/UserContext";
 import { ProductProvider } from "./admin/context/ProductContext";
 import { CategoryProvider } from "./admin/context/CategoryContext";
-import MetaPixelTracker from "./components/MetaPixelTracker";
 import { ComboProvider } from "./admin/context/ComboContext";
 import BlogProvider from "./admin/context/BlogProvider";
 import { CartEventProvider } from "./admin/context/CartEventContext";
-import { ReviewProvider } from "./admin/context/ReviewContext"; // ✅ NEW
+import { ReviewProvider } from "./admin/context/ReviewContext";
 
+// ✅ MetaPixelTracker REMOVED from App.jsx
+// PageView is now fired individually in each page component
 
 const App = () => {
-
   const { currentUser } = useAuth();
   const [showLoginPopup, setShowLoginPopup] = useState(false);
-
 
   useEffect(() => {
     captureTrafficSource();
   }, []);
 
-
   useEffect(() => {
-
     if (currentUser) return;
-
     if (sessionStorage.getItem("loginPopupShown")) return;
 
     const timer = setTimeout(() => {
-
       setShowLoginPopup(true);
-
-      sessionStorage.setItem(
-        "loginPopupShown",
-        "true"
-      );
-
+      sessionStorage.setItem("loginPopupShown", "true");
     }, 10000);
 
     return () => clearTimeout(timer);
-
   }, [currentUser]);
 
-
   return (
-
     <div className="min-h-screen flex flex-col">
-
       <UserProvider>
-
         <OrderProvider>
-
           <CartProvider>
-
             <CategoryProvider>
-
               <ProductProvider>
-
                 <ComboProvider>
-
                   <CartEventProvider>
-
                     <BlogProvider>
-
-                      {/* ✅ ADDED */}
                       <ReviewProvider>
-
                         <UserOrderProvider>
-
                           {showLoginPopup && (
                             <LoginPopup
-                              onClose={() =>
-                                setShowLoginPopup(false)
-                              }
+                              onClose={() => setShowLoginPopup(false)}
                             />
                           )}
-
-                          <MetaPixelTracker />
-
                           <NavRoutes />
-
                           <ScrollToTopButton />
-
                         </UserOrderProvider>
-
                       </ReviewProvider>
-                      {/* ✅ ADDED */}
-
                     </BlogProvider>
-
                   </CartEventProvider>
-
                 </ComboProvider>
-
               </ProductProvider>
-
             </CategoryProvider>
-
           </CartProvider>
-
         </OrderProvider>
-
       </UserProvider>
-
     </div>
-
   );
 };
 
