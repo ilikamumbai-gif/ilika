@@ -5,41 +5,14 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
-import { useEffect } from "react";
 
 const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Guard: only fire once per unique order ID
-    const trackedOrderId = sessionStorage.getItem("purchase_tracked_id");
-    if (trackedOrderId === id) return;
-
-    const storedValue = localStorage.getItem("order_total");
-    const items = localStorage.getItem("order_items");
-
-    if (!storedValue) return;
-
-    const total = parseFloat(Number(storedValue).toFixed(2));
-    if (!total || isNaN(total)) return;
-
-    if (window.fbq && typeof window.fbq === "function") {
-      window.fbq("track", "Purchase", {
-        value: total,
-        currency: "INR",
-        content_type: "product",
-        num_items: Number(items) || 1,
-        order_id: id,
-      });
-    }
-
-    // Mark this specific order as tracked so back-navigation won't re-fire
-    sessionStorage.setItem("purchase_tracked_id", id);
-
-    localStorage.removeItem("order_total");
-    localStorage.removeItem("order_items");
-  }, [id]);
+  // ✅ Purchase pixel is now fired directly in Checkout.jsx
+  // No pixel code here — prevents any accidental re-firing
+  // on page refresh, back navigation, or direct URL access
 
   return (
     <>
