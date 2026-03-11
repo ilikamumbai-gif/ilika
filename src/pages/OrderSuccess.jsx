@@ -13,7 +13,7 @@ const OrderSuccess = () => {
   useEffect(() => {
     if (!id) return;
 
-    // Fire Purchase ONCE per unique order ID
+    // Prevent duplicate firing for same order
     const trackedId = sessionStorage.getItem("purchase_tracked_id");
     if (trackedId === id) return;
 
@@ -22,7 +22,7 @@ const OrderSuccess = () => {
 
     if (value <= 0) return;
 
-    // Pixel is already loaded from index.html — just fire the event
+    // ✅ Pixel is already initialized in index.html — just fire the event
     if (window.fbq && typeof window.fbq === "function") {
       window.fbq("track", "Purchase", {
         value: value,
@@ -31,11 +31,12 @@ const OrderSuccess = () => {
         num_items: numItems,
         order_id: id,
       });
-    }
 
-    sessionStorage.setItem("purchase_tracked_id", id);
-    sessionStorage.removeItem("purchase_value");
-    sessionStorage.removeItem("purchase_items");
+      // Mark as tracked and clean up
+      sessionStorage.setItem("purchase_tracked_id", id);
+      sessionStorage.removeItem("purchase_value");
+      sessionStorage.removeItem("purchase_items");
+    }
   }, [id]);
 
   return (
@@ -44,6 +45,7 @@ const OrderSuccess = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         <CartDrawer />
+
         <div className="flex-1 flex items-center justify-center px-4 py-10">
           <div className="bg-white rounded-2xl shadow-md max-w-lg w-full p-8 text-center space-y-6">
             <div className="flex justify-center">
@@ -70,6 +72,7 @@ const OrderSuccess = () => {
             </div>
           </div>
         </div>
+
         <Footer />
       </div>
     </>
