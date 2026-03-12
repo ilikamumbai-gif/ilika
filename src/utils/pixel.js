@@ -32,17 +32,19 @@ export const trackPageView = (pathname) => {
 export const trackPurchase = (orderId, value, numItems) => {
   if (!orderId) return;
   if (_firedPurchaseOrders.has(orderId)) return;
+  // Check both current and any legacy key formats
   if (localStorage.getItem(`px_purchase_${orderId}`)) return;
+  if (localStorage.getItem(`purchase_tracked_${orderId}`)) return;
 
   const safeValue = parseFloat(value) || 0;
   if (safeValue <= 0) return;
 
-  // Mark BEFORE firing to block any race
+  // Mark BEFORE firing
   _firedPurchaseOrders.add(orderId);
   localStorage.setItem(`px_purchase_${orderId}`, "1");
 
-  // Temporarily point the URL to /order-success so Meta logs it correctly,
-  // then restore immediately — this does NOT cause a page reload
+  // Temporarily set URL to /order-success so Meta logs the correct page,
+  // then restore immediately — no page reload, no visual change
   const correctUrl = `/order-success/${orderId}`;
   const originalUrl = window.location.href;
   window.history.replaceState(null, "", correctUrl);

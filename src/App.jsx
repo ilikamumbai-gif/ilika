@@ -16,8 +16,22 @@ import BlogProvider from "./admin/context/BlogProvider";
 import { CartEventProvider } from "./admin/context/CartEventContext";
 import { ReviewProvider } from "./admin/context/ReviewContext";
 
-// ✅ MetaPixelTracker REMOVED from App.jsx
-// PageView is now fired individually in each page component
+// One-time cleanup: remove ALL old pixel localStorage keys from previous code versions
+// This runs immediately (not in useEffect) so it happens before any pixel fires
+(function cleanOldPixelKeys() {
+  try {
+    Object.keys(localStorage).forEach((key) => {
+      // Old formats used in previous versions:
+      if (
+        key.startsWith("purchase_tracked_") ||  // version 1
+        key.startsWith("order_total") ||         // version 0
+        key.startsWith("order_items")            // version 0
+      ) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch (e) {}
+})();
 
 const App = () => {
   const { currentUser } = useAuth();
