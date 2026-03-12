@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { trackViewContent, trackAddToCart } from "../utils/pixel";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
@@ -116,17 +117,7 @@ const ProductDetail = ({
 
     addToCart(item);
 
-    // ✅ Fire AddToCart pixel event
-    if (window.fbq && typeof window.fbq === "function") {
-      window.fbq("track", "AddToCart", {
-        content_ids: [productId],
-        content_name: product?.name,
-        value: price,
-        currency: "INR",
-        content_type: "product",
-        contents: [{ id: productId, quantity: 1, item_price: price }],
-      });
-    }
+    trackAddToCart(productId, product?.name, price, 1);
   };
 
   const handleBuyNow = async () => {
@@ -186,19 +177,9 @@ const ProductDetail = ({
   /* ================= FACEBOOK PIXEL VIEW CONTENT ================= */
   useEffect(() => {
     if (!productId || !product) return;
-
-    if (window.fbq) {
-      window.fbq("track", "ViewContent", {
-        content_ids: [productId],
-        content_name: product.name,
-        value: price,
-        currency: "INR",
-        contents: [
-          { id: productId, quantity: 1, item_price: price }
-        ],
-        content_type: "product",
-      });
-    }
+    // trackViewContent deduplicates by productId at module level —
+    // safe to call on every render; only fires once per product per session
+    trackViewContent(productId, product.name, price);
   }, [product, productId, price]);
 
   /* ================= RELATED PRODUCTS ================= */

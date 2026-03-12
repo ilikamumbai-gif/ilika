@@ -5,53 +5,24 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
-
-// ─── MODULE-LEVEL GUARD ───────────────────────────────────────────────────────
-// This Set lives OUTSIDE React entirely. It is never reset by re-renders,
-// unmounts, context provider state changes, or StrictMode double-invocations.
-// Once an orderId is added here, Purchase will never fire again for that order
-// in this browser session, no matter how many times the component mounts.
-const firedOrderIds = new Set();
-// ─────────────────────────────────────────────────────────────────────────────
-
-const firePurchaseOnce = (id) => {
-  // 1. In-memory check (blocks re-renders & remounts within same session)
-  if (firedOrderIds.has(id)) return;
-
-  // 2. Persistent check (blocks hard refresh, new tab, bookmarked URL)
-  if (localStorage.getItem(`purchase_tracked_${id}`)) return;
-
-  const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
-  const numItems = parseInt(sessionStorage.getItem("purchase_items") || "1");
-
-  // 3. Only fire for real checkouts — not bookmarked/shared success URLs
-  if (value <= 0) return;
-
-  if (window.fbq && typeof window.fbq === "function") {
-    // Mark BEFORE firing to block any race condition
-    firedOrderIds.add(id);
-    localStorage.setItem(`purchase_tracked_${id}`, "1");
-
-    window.fbq("track", "Purchase", {
-      value: value,
-      currency: "INR",
-      content_type: "product",
-      num_items: numItems,
-      order_id: id,
-    });
-
-    // Clean up so value can't be reused by another order
-    sessionStorage.removeItem("purchase_value");
-    sessionStorage.removeItem("purchase_items");
-  }
-};
+import { trackPurchase } from "../utils/pixel";
 
 const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (id) firePurchaseOnce(id);
+    if (!id) return;
+    // Read value from sessionStorage (set by CheckOut.jsx before navigating here)
+    const value   = parseFloat(sessionStorage.getItem("purchase_value") || "0");
+    const numItems = parseInt(sessionStorage.getItem("purchase_items")  || "1");
+
+    // trackPurchase has triple-layer dedup (module Set + localStorage + value guard)
+    trackPurchase(id, value, numItems);
+
+    // Clean up sessionStorage after handing off to pixel util
+    sessionStorage.removeItem("purchase_value");
+    sessionStorage.removeItem("purchase_items");
   }, [id]);
 
   return (

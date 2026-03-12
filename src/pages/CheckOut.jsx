@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { trackInitiateCheckout } from "../utils/pixel";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -85,24 +86,10 @@ const Checkout = () => {
 
   useEffect(() => {
     if (!cartItems.length) return;
-
     const safeTotal = parseFloat(Number(subtotal).toFixed(2));
-    if (safeTotal <= 0) return;
-
-    // ✅ Guard: prevent firing twice if component remounts
-    const alreadyFired = sessionStorage.getItem("initcheckout_fired");
-    if (alreadyFired) return;
-
-    if (window.fbq && typeof window.fbq === "function") {
-      window.fbq("track", "InitiateCheckout", {
-        value: safeTotal,
-        currency: "INR",
-        num_items: cartItems.length,
-        content_type: "product",
-      });
-      sessionStorage.setItem("initcheckout_fired", "true");
-    }
-  }, []); // ✅ Empty array — fires once on mount only
+    // trackInitiateCheckout has module-level + sessionStorage dedup built in
+    trackInitiateCheckout(safeTotal, cartItems.length);
+  }, []); // fires once on mount; dedup is handled inside the utility
 
   /* ---------------- SAVE ADDRESS ---------------- */
 
@@ -212,9 +199,6 @@ const Checkout = () => {
         sessionStorage.setItem("purchase_value", parseFloat(Number(total).toFixed(2)));
         sessionStorage.setItem("purchase_items", cartItems.length);
 
-        // ✅ Clear initcheckout guard so it works correctly on next order
-        sessionStorage.removeItem("initcheckout_fired");
-
         clearCart();
         navigate(`/order-success/${data.orderId}`);
         return;
@@ -280,9 +264,6 @@ const Checkout = () => {
             // ✅ Store order info in sessionStorage for OrderSuccess pixel
             sessionStorage.setItem("purchase_value", parseFloat(Number(total).toFixed(2)));
             sessionStorage.setItem("purchase_items", cartItems.length);
-
-            // ✅ Clear initcheckout guard so it works correctly on next order
-            sessionStorage.removeItem("initcheckout_fired");
 
             clearCart();
             navigate(`/order-success/${verifyData.orderId}`);
