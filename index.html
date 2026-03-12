@@ -109,12 +109,9 @@
 
       fbq('init', '1188302548683614');
 
-      // Do NOT fire PageView on order-success — Purchase fires there instead (via OrderSuccess.jsx).
-      // Firing PageView here on order-success causes Meta to register a browsing event
-      // which inflates Purchase counts in the dashboard.
-      if (!window.location.pathname.startsWith('/order-success')) {
-        fbq('track', 'PageView');
-      }
+      // ⚠️ Do NOT call fbq('track', 'PageView') here.
+      // MetaPixelTracker.jsx fires PageView on every SPA route change with deduplication.
+      // Firing here too causes a double PageView on every hard page load.
     }
   </script>
 
