@@ -13,13 +13,17 @@ const OrderSuccess = () => {
   useEffect(() => {
     if (!id) return;
 
-    // Prevent duplicate firing for same order
-    const trackedId = sessionStorage.getItem("purchase_tracked_id");
-    if (trackedId === id) return;
+    // Prevent duplicate firing for the same order across refreshes, new tabs, etc.
+    // localStorage persists across hard refreshes and new tabs — sessionStorage does not.
+    const trackedKey = `purchase_tracked_${id}`;
+    if (localStorage.getItem(trackedKey)) return;
 
     const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
     const numItems = parseInt(sessionStorage.getItem("purchase_items") || "1");
 
+    // Only fire if we have a valid value from the checkout flow.
+    // If value is missing (e.g. user bookmarked the page and returned later),
+    // do NOT fire — this is not a real new purchase event.
     if (value <= 0) return;
 
     // ✅ Pixel is already initialized in index.html
@@ -33,8 +37,9 @@ const OrderSuccess = () => {
         order_id: id,
       });
 
-      // Mark this order as tracked + clean up
-      sessionStorage.setItem("purchase_tracked_id", id);
+      // Mark this order as permanently tracked in localStorage so it never fires again,
+      // even if the user refreshes or shares the success URL.
+      localStorage.setItem(trackedKey, "1");
       sessionStorage.removeItem("purchase_value");
       sessionStorage.removeItem("purchase_items");
     }

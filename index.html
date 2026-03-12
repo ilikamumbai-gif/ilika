@@ -108,7 +108,13 @@
       fbq('set', 'autoConfig', false, '1188302548683614');
 
       fbq('init', '1188302548683614');
-      fbq('track', 'PageView');
+
+      // Do NOT fire PageView on order-success — Purchase fires there instead (via OrderSuccess.jsx).
+      // Firing PageView here on order-success causes Meta to register a browsing event
+      // which inflates Purchase counts in the dashboard.
+      if (!window.location.pathname.startsWith('/order-success')) {
+        fbq('track', 'PageView');
+      }
     }
   </script>
 
