@@ -89,8 +89,15 @@
   <!-- ================= META PIXEL (non-admin only) ================= -->
 
   <script>
-    // Do not load pixel on admin pages
     if (!window.location.pathname.startsWith('/admin')) {
+
+      // ── Disable ALL Meta auto-detection BEFORE the pixel script loads ──
+      // These flags prevent fbevents.js from auto-firing Purchase/Lead/etc
+      // based on page content, URL changes, or button clicks
+      window._fbq = window._fbq || {};
+      window._fbq.disablePushState = true;      // stops URL-change auto tracking
+      window._fbq.autoConfig = false;           // stops button/form auto detection
+
       !function (f, b, e, v, n, t, s) {
         if (f.fbq) return; n = f.fbq = function () {
           n.callMethod ?
@@ -103,15 +110,8 @@
       }(window, document, 'script',
         'https://connect.facebook.net/en_US/fbevents.js');
 
-      // Disable automatic event detection — prevents Meta from auto-firing
-      // Purchase/Lead events on button clicks (e.g. "Place Order", "Continue")
       fbq('set', 'autoConfig', false, '1188302548683614');
-
       fbq('init', '1188302548683614');
-
-      // ⚠️ Do NOT call fbq('track', 'PageView') here.
-      // MetaPixelTracker.jsx fires PageView on every SPA route change with deduplication.
-      // Firing here too causes a double PageView on every hard page load.
     }
   </script>
 
