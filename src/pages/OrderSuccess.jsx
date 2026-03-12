@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
@@ -6,48 +6,52 @@ import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
 
+// ─── MODULE-LEVEL GUARD ───────────────────────────────────────────────────────
+// This Set lives OUTSIDE React entirely. It is never reset by re-renders,
+// unmounts, context provider state changes, or StrictMode double-invocations.
+// Once an orderId is added here, Purchase will never fire again for that order
+// in this browser session, no matter how many times the component mounts.
+const firedOrderIds = new Set();
+// ─────────────────────────────────────────────────────────────────────────────
+
+const firePurchaseOnce = (id) => {
+  // 1. In-memory check (blocks re-renders & remounts within same session)
+  if (firedOrderIds.has(id)) return;
+
+  // 2. Persistent check (blocks hard refresh, new tab, bookmarked URL)
+  if (localStorage.getItem(`purchase_tracked_${id}`)) return;
+
+  const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
+  const numItems = parseInt(sessionStorage.getItem("purchase_items") || "1");
+
+  // 3. Only fire for real checkouts — not bookmarked/shared success URLs
+  if (value <= 0) return;
+
+  if (window.fbq && typeof window.fbq === "function") {
+    // Mark BEFORE firing to block any race condition
+    firedOrderIds.add(id);
+    localStorage.setItem(`purchase_tracked_${id}`, "1");
+
+    window.fbq("track", "Purchase", {
+      value: value,
+      currency: "INR",
+      content_type: "product",
+      num_items: numItems,
+      order_id: id,
+    });
+
+    // Clean up so value can't be reused by another order
+    sessionStorage.removeItem("purchase_value");
+    sessionStorage.removeItem("purchase_items");
+  }
+};
+
 const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  // In-memory guard: ensures Purchase fires at most once per component mount,
-  // even if context providers cause multiple re-renders before the effect cleans up.
-  const hasFired = useRef(false);
 
   useEffect(() => {
-    if (!id) return;
-    if (hasFired.current) return; // already fired this mount
-
-    // Persistent guard: prevents re-firing if user refreshes or opens in new tab.
-    // localStorage persists across hard refreshes — sessionStorage does not.
-    const trackedKey = `purchase_tracked_${id}`;
-    if (localStorage.getItem(trackedKey)) return;
-
-    const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
-    const numItems = parseInt(sessionStorage.getItem("purchase_items") || "1");
-
-    // Only fire if we have a valid value from the checkout flow.
-    // If value is missing (e.g. user bookmarked the page and returned later),
-    // do NOT fire — this is not a real new purchase event.
-    if (value <= 0) return;
-
-    // ✅ Pixel is already initialized in index.html
-    // DO NOT reload fbevents.js or call fbq('init') again — ever
-    if (window.fbq && typeof window.fbq === "function") {
-      hasFired.current = true; // set before the call to block any concurrent re-renders
-      window.fbq("track", "Purchase", {
-        value: value,
-        currency: "INR",
-        content_type: "product",
-        num_items: numItems,
-        order_id: id,
-      });
-
-      // Mark this order as permanently tracked in localStorage so it never fires again,
-      // even if the user refreshes or shares the success URL.
-      localStorage.setItem(trackedKey, "1");
-      sessionStorage.removeItem("purchase_value");
-      sessionStorage.removeItem("purchase_items");
-    }
+    if (id) firePurchaseOnce(id);
   }, [id]);
 
   return (
