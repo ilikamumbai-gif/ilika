@@ -42,14 +42,25 @@ const detectSource = (source) => {
 
 
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
-    else callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
 
+      // allow requests with no origin (mobile apps, curl, postman)
+      if (!origin) return callback(null, true);
+
+      const isAllowed = allowedOrigins.some(o => origin.startsWith(o));
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.log("❌ CORS blocked:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 /* ============================== HEALTH ============================== */
@@ -1506,6 +1517,6 @@ const createDefaultAdmin = async () => {
 };
 
 
-createDefaultAdmin(); 
+createDefaultAdmin();
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
