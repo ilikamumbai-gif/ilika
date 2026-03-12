@@ -7,7 +7,7 @@
 const _firedPurchaseOrders = new Set();
 const _firedViewContent    = new Set();
 const _firedInitCheckout   = new Set();
-const _firedPageViews      = new Set(); // Set instead of single var — tracks ALL fired paths
+const _firedPageViews      = new Set();
 // ─────────────────────────────────────────────────────────────────────────────
 
 const _fbq = (...args) => {
@@ -21,12 +21,14 @@ export const trackPageView = (pathname) => {
   if (!pathname) return;
   if (pathname.startsWith("/admin")) return;
   if (pathname.startsWith("/order-success")) return;
-  if (_firedPageViews.has(pathname)) return; // already fired for this path this session
+  if (_firedPageViews.has(pathname)) return;
   _firedPageViews.add(pathname);
   _fbq("track", "PageView");
 };
 
 // ─── Purchase ────────────────────────────────────────────────────────────────
+// Temporarily sets window.location to the order-success URL before firing
+// so Meta records the correct page. Restores immediately after.
 export const trackPurchase = (orderId, value, numItems) => {
   if (!orderId) return;
   if (_firedPurchaseOrders.has(orderId)) return;
@@ -35,8 +37,15 @@ export const trackPurchase = (orderId, value, numItems) => {
   const safeValue = parseFloat(value) || 0;
   if (safeValue <= 0) return;
 
+  // Mark BEFORE firing to block any race
   _firedPurchaseOrders.add(orderId);
   localStorage.setItem(`px_purchase_${orderId}`, "1");
+
+  // Temporarily point the URL to /order-success so Meta logs it correctly,
+  // then restore immediately — this does NOT cause a page reload
+  const correctUrl = `/order-success/${orderId}`;
+  const originalUrl = window.location.href;
+  window.history.replaceState(null, "", correctUrl);
 
   _fbq("track", "Purchase", {
     value: safeValue,
@@ -45,6 +54,8 @@ export const trackPurchase = (orderId, value, numItems) => {
     num_items: parseInt(numItems) || 1,
     order_id: orderId,
   });
+
+  window.history.replaceState(null, "", originalUrl);
 };
 
 // ─── InitiateCheckout ────────────────────────────────────────────────────────
