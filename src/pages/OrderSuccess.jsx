@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
@@ -9,12 +9,16 @@ import Footer from "../components/Footer";
 const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  // In-memory guard: ensures Purchase fires at most once per component mount,
+  // even if context providers cause multiple re-renders before the effect cleans up.
+  const hasFired = useRef(false);
 
   useEffect(() => {
     if (!id) return;
+    if (hasFired.current) return; // already fired this mount
 
-    // Prevent duplicate firing for the same order across refreshes, new tabs, etc.
-    // localStorage persists across hard refreshes and new tabs — sessionStorage does not.
+    // Persistent guard: prevents re-firing if user refreshes or opens in new tab.
+    // localStorage persists across hard refreshes — sessionStorage does not.
     const trackedKey = `purchase_tracked_${id}`;
     if (localStorage.getItem(trackedKey)) return;
 
@@ -29,6 +33,7 @@ const OrderSuccess = () => {
     // ✅ Pixel is already initialized in index.html
     // DO NOT reload fbevents.js or call fbq('init') again — ever
     if (window.fbq && typeof window.fbq === "function") {
+      hasFired.current = true; // set before the call to block any concurrent re-renders
       window.fbq("track", "Purchase", {
         value: value,
         currency: "INR",
