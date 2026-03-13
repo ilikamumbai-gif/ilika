@@ -66,7 +66,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <MetaPixelTracker />
+
       <UserProvider>
         <OrderProvider>
           <CartProvider>
@@ -82,6 +82,7 @@ const App = () => {
                               onClose={() => setShowLoginPopup(false)}
                             />
                           )}
+                          <MetaPixelTracker />
                           <NavRoutes />
                           <ScrollToTopButton />
                         </UserOrderProvider>
