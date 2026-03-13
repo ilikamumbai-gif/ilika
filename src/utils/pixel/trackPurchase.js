@@ -1,30 +1,19 @@
-import { fbq } from './_pixelCore';
+import { fbq } from "./pixel";
 
-const trackPurchase = (orderId, value, numItems) => {
+const trackPurchase = (orderId, value, items) => {
 
-  // 🚨 HARD SAFETY BLOCK
-if (!window.location.pathname.startsWith("/order-success")) return;
-  if (!orderId) return;
-
-  const safeValue = parseFloat(value) || 0;
-  if (safeValue <= 0) return;
+  if (!window.location.pathname.startsWith("/order-success")) return;
 
   const key = `px_purchase_${orderId}`;
 
-  try {
-    if (localStorage.getItem(key)) return;
-  } catch(e) {}
+  if (localStorage.getItem(key)) return;
 
-  try {
-    localStorage.setItem(key, '1');
-  } catch(e) {}
+  localStorage.setItem(key, "1");
 
-  fbq('track', 'Purchase', {
-    value: safeValue,
-    currency: 'INR',
-    content_type: 'product',
-    num_items: parseInt(numItems) || 1,
-    order_id: orderId,
+  fbq("track", "Purchase", {
+    value: Number(value),
+    currency: "INR",
+    num_items: Number(items),
   });
 };
 

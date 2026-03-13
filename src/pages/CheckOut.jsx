@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import trackInitiateCheckout from '../utils/pixel/trackInitiateCheckout';
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -86,10 +85,10 @@ const Checkout = () => {
 
   useEffect(() => {
     if (!cartItems.length) return;
-    const safeTotal = parseFloat(Number(subtotal).toFixed(2));
-    // trackInitiateCheckout has module-level + sessionStorage dedup built in
-    trackInitiateCheckout(safeTotal, cartItems.length);
-  }, []); // fires once on mount; dedup is handled inside the utility
+
+    trackInitiateCheckout(total, cartItems.length);
+
+  }, [cartItems.length]);// fires once on mount; dedup is handled inside the utility
 
   /* ---------------- SAVE ADDRESS ---------------- */
 

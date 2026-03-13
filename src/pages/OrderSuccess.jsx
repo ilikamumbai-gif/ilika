@@ -5,26 +5,26 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
-import trackPurchase from '../utils/pixel/trackPurchase';
+import trackPurchase from "../utils/pixel/trackPurchase";
 
 const OrderSuccess = () => {
-  const { id } = useParams();
+  const { id: orderId } = useParams();
   const navigate = useNavigate();
 
-useEffect(() => {
-  if (!id) return;
+  // get values saved during checkout
 
-  const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
-  const numItems = parseInt(sessionStorage.getItem("purchase_items") || "1");
+  useEffect(() => {
+    if (!orderId) return;
 
-  if (value > 0) {
-    trackPurchase(id, value, numItems);
-  }
+    const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
+    const items = parseInt(sessionStorage.getItem("purchase_items") || "1");
 
-  sessionStorage.removeItem("purchase_value");
-  sessionStorage.removeItem("purchase_items");
+    trackPurchase(orderId, value, items);
 
-}, [id]);
+    sessionStorage.removeItem("purchase_value");
+    sessionStorage.removeItem("purchase_items");
+
+  }, [orderId]);
 
   return (
     <>
@@ -35,20 +35,30 @@ useEffect(() => {
 
         <div className="flex-1 flex items-center justify-center px-4 py-10">
           <div className="bg-white rounded-2xl shadow-md max-w-lg w-full p-8 text-center space-y-6">
+
             <div className="flex justify-center">
               <CheckCircle className="w-20 h-20 text-green-500" />
             </div>
+
             <h1 className="text-2xl sm:text-3xl font-semibold heading-color">
               Order Placed Successfully 🎉
             </h1>
-            <p className="text-gray-600">Thank you for shopping with us!</p>
+
+            <p className="text-gray-600">
+              Thank you for shopping with us!
+            </p>
+
             <div className="bg-gray-50 border rounded-xl py-4">
               <p className="text-sm text-gray-500">Your Order ID</p>
-              <p className="text-lg font-semibold text-[#1C371C] tracking-wider">#{id}</p>
+              <p className="text-lg font-semibold text-[#1C371C] tracking-wider">
+                #{orderId}
+              </p>
             </div>
+
             <p className="text-sm text-gray-500">
               You will receive order confirmation and delivery updates shortly.
             </p>
+
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 onClick={() => navigate("/shopall")}
@@ -57,6 +67,7 @@ useEffect(() => {
                 Continue Shopping
               </button>
             </div>
+
           </div>
         </div>
 

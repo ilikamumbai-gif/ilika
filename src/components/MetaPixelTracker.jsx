@@ -1,17 +1,16 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import trackPageView from "../utils/pixel/trackPageView";
-import { initPixel } from "../utils/pixel/_pixelCore";
+import { initPixel, fbq } from "../utils/pixel/pixel";
 
 const MetaPixelTracker = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-  initPixel();
-}, []);
+    initPixel();
+  }, []);
 
   useEffect(() => {
-    trackPageView(pathname);
+    fbq("track", "PageView");
   }, [pathname]);
 
   return null;
