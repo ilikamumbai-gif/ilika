@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { trackViewContent, trackAddToCart } from "../utils/pixel";
+import trackViewContent from '../utils/pixel/trackViewContent';
+import trackAddToCart from '../utils/pixel/trackAddToCart';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";

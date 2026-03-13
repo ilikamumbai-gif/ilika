@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { trackInitiateCheckout } from "../utils/pixel";
+import trackInitiateCheckout from '../utils/pixel/trackInitiateCheckout';
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";

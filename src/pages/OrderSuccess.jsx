@@ -5,7 +5,7 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
-import { trackPurchase } from "../utils/pixel";
+import trackPurchase from '../utils/pixel/trackPurchase';
 
 const OrderSuccess = () => {
   const { id } = useParams();
