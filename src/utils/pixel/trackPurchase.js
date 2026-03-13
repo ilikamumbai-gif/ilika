@@ -2,9 +2,12 @@ import { fbq } from "./pixel";
 
 const trackPurchase = (orderId, value, items) => {
 
-  if (!window.location.pathname.startsWith("/order-success")) return;
+  if (!orderId) return;
 
-  const key = `px_purchase_${orderId}`;
+  // Only allow purchase on success page
+  if (!window.location.pathname.includes("order-success")) return;
+
+  const key = `purchase_${orderId}`;
 
   if (localStorage.getItem(key)) return;
 
@@ -13,8 +16,9 @@ const trackPurchase = (orderId, value, items) => {
   fbq("track", "Purchase", {
     value: Number(value),
     currency: "INR",
-    num_items: Number(items),
+    num_items: Number(items)
   });
+
 };
 
 export default trackPurchase;

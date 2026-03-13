@@ -12,17 +12,20 @@ const OrderSuccess = () => {
   const navigate = useNavigate();
 
   // get values saved during checkout
-
   useEffect(() => {
     if (!orderId) return;
 
     const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
     const items = parseInt(sessionStorage.getItem("purchase_items") || "1");
 
-    trackPurchase(orderId, value, items);
+    if (value > 0) {
+      trackPurchase(orderId, value, items);
+    }
 
+    // cleanup
     sessionStorage.removeItem("purchase_value");
     sessionStorage.removeItem("purchase_items");
+    sessionStorage.removeItem("initiate_checkout_fired");
 
   }, [orderId]);
 

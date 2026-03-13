@@ -76,20 +76,20 @@ const Checkout = () => {
     };
   }, []);
 
-  // Clean up any stale localStorage pixel data from old code versions
-  useEffect(() => {
-    localStorage.removeItem("order_total");
-    localStorage.removeItem("order_items");
-  }, []);
+
 
   /* ---------------- INITIATE CHECKOUT PIXEL (fires once on mount) ---------------- */
+useEffect(() => {
+  if (!cartItems.length) return;
 
-  useEffect(() => {
-    if (!cartItems.length) return;
+  // prevent duplicate initiate checkout
+  if (sessionStorage.getItem("initiate_checkout_fired")) return;
 
-    trackInitiateCheckout(total, cartItems.length);
+  trackInitiateCheckout(total, cartItems.length);
 
-  }, [cartItems.length]);// fires once on mount; dedup is handled inside the utility
+  sessionStorage.setItem("initiate_checkout_fired", "1");
+
+}, [cartItems.length]);
 
   /* ---------------- SAVE ADDRESS ---------------- */
 
