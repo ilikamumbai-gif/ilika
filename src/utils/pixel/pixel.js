@@ -2,7 +2,7 @@ const PIXEL_ID = "1188302548683614";
 
 export const initPixel = () => {
   if (typeof window === "undefined") return;
-  if (window.fbq) return;
+  if (window.fbq && window.fbq.loaded) return;
 
   !(function (f, b, e, v, n, t, s) {
     if (f.fbq) return;
@@ -13,11 +13,11 @@ export const initPixel = () => {
     };
     if (!f._fbq) f._fbq = n;
     n.push = n;
-    n.loaded = !0;
+    n.loaded = true;
     n.version = "2.0";
     n.queue = [];
     t = b.createElement(e);
-    t.async = !0;
+    t.async = true;
     t.src = v;
     s = b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t, s);
@@ -29,6 +29,7 @@ export const initPixel = () => {
   );
 
   window.fbq("init", PIXEL_ID);
+  window.fbq("track", "PageView");
 };
 
 export const fbq = (...args) => {
