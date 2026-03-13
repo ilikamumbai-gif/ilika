@@ -10,9 +10,11 @@ export const initPixel = () => {
   if (window._fbqInited) return;
   window._fbqInited = true;
 
+  // ✅ ADD THESE before fbevents.js loads
   window._fbq = window._fbq || {};
   window._fbq.disablePushState = true;
   window._fbq.autoConfig = false;
+  window._fbq.disableAutoEvents = true; // ← ADD THIS LINE
 
   if (!window.fbq) {
     !function(f,b,e,v,n,t,s){
