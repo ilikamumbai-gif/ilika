@@ -2,9 +2,8 @@ import { fbq } from './_pixelCore';
 
 const trackPurchase = (orderId, value, numItems) => {
 
-  // 🚨 block purchase everywhere except order success
-  if (!window.location.pathname.startsWith("/order-success")) return;
-
+  // 🚨 HARD SAFETY BLOCK
+if (!window.location.pathname.startsWith("/order-success")) return;
   if (!orderId) return;
 
   const safeValue = parseFloat(value) || 0;

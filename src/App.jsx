@@ -24,19 +24,29 @@ import MetaPixelTracker from "./components/MetaPixelTracker";
     Object.keys(localStorage).forEach((key) => {
       // Old formats used in previous versions:
       if (
-        key.startsWith("purchase_tracked_") ||  // version 1
-        key.startsWith("order_total") ||         // version 0
+        key.startsWith("px_purchase_") ||
+        key.startsWith("purchase_tracked_") ||
+        key.startsWith("order_total") ||
         key.startsWith("order_items")            // version 0
       ) {
         localStorage.removeItem(key);
       }
     });
-  } catch (e) {}
+  } catch (e) { }
 })();
 
 const App = () => {
   const { currentUser } = useAuth();
   const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+  useEffect(() => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("px_purchase_")) {
+        localStorage.removeItem(key);
+      }
+    });
+  }, []);
+
 
   useEffect(() => {
     captureTrafficSource();
@@ -56,7 +66,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <MetaPixelTracker/>
+      <MetaPixelTracker />
       <UserProvider>
         <OrderProvider>
           <CartProvider>
