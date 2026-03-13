@@ -2,7 +2,7 @@ const PIXEL_ID = "1188302548683614";
 
 export const initPixel = () => {
   if (typeof window === "undefined") return;
-  if (window.fbq) return;
+  if (window.fbq && window.fbq.loaded) return;
 
   !(function (f, b, e, v, n, t, s) {
     if (f.fbq) return;
@@ -13,11 +13,11 @@ export const initPixel = () => {
     };
     if (!f._fbq) f._fbq = n;
     n.push = n;
-    n.loaded = !0;
+    n.loaded = true;
     n.version = "2.0";
     n.queue = [];
     t = b.createElement(e);
-    t.async = !0;
+    t.async = true;
     t.src = v;
     s = b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t, s);
@@ -28,8 +28,12 @@ export const initPixel = () => {
     "https://connect.facebook.net/en_US/fbevents.js"
   );
 
+  // ✅ MUST be before init — disables Meta's automatic event detection
+  // This stops signals/config from auto-firing Purchase based on page content
+  window.fbq("set", "autoConfig", false, PIXEL_ID);
+
   window.fbq("init", PIXEL_ID);
-  // ✅ Do NOT call PageView here — MetaPixelTracker handles PageView on route changes
+  // PageView is handled by MetaPixelTracker — NOT here
 };
 
 export const fbq = (...args) => {

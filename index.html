@@ -43,7 +43,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-
+  <!-- Add this BEFORE your React script tag in index.html -->
+<script>
+  // Prevent Meta signals/config from auto-firing Purchase events
+  window.__fbAutoEvents = false;
+  window.fbq = window.fbq || function() {
+    (window.fbq.queue = window.fbq.queue || []).push(arguments);
+  };
+  window.fbq.disableAutoEvents = true;
+</script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
