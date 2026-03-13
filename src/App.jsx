@@ -6,7 +6,7 @@ import NavRoutes from "./Routes/NavRoutes";
 import { captureTrafficSource } from "./utils/tracking";
 import { CartProvider } from "./context/CartProvider";
 import ScrollToTopButton from "./components/ScrollToTopButton";
-import { UserOrderProvider } from "./context/UserOrderContext";
+// import { UserOrderProvider } from "./context/UserOrderContext";
 import { OrderProvider } from "./admin/context/OrderContext";
 import { UserProvider } from "./admin/context/UserContext";
 import { ProductProvider } from "./admin/context/ProductContext";
@@ -94,7 +94,7 @@ const App = () => {
                   <CartEventProvider>
                     <BlogProvider>
                       <ReviewProvider>
-                        <UserOrderProvider>
+                        {/* <UserOrderProvider> */}
                           {showLoginPopup && (
                             <LoginPopup
                               onClose={() => setShowLoginPopup(false)}
@@ -103,7 +103,7 @@ const App = () => {
                           <MetaPixelTracker />
                           <NavRoutes />
                           <ScrollToTopButton />
-                        </UserOrderProvider>
+                        {/* </UserOrderProvider> */}
                       </ReviewProvider>
                     </BlogProvider>
                   </CartEventProvider>

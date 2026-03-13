@@ -2,7 +2,7 @@ const PIXEL_ID = "1188302548683614";
 
 export const initPixel = () => {
   if (typeof window === "undefined") return;
-  if (window.fbq && window.fbq.loaded) return;
+  if (window.fbq) return;
 
   !(function (f, b, e, v, n, t, s) {
     if (f.fbq) return;
@@ -13,11 +13,11 @@ export const initPixel = () => {
     };
     if (!f._fbq) f._fbq = n;
     n.push = n;
-    n.loaded = true;
+    n.loaded = !0;
     n.version = "2.0";
     n.queue = [];
     t = b.createElement(e);
-    t.async = true;
+    t.async = !0;
     t.src = v;
     s = b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t, s);
@@ -29,7 +29,7 @@ export const initPixel = () => {
   );
 
   window.fbq("init", PIXEL_ID);
-  window.fbq("track", "PageView");
+  // ✅ Do NOT call PageView here — MetaPixelTracker handles PageView on route changes
 };
 
 export const fbq = (...args) => {
