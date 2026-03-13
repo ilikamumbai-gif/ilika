@@ -1,18 +1,21 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { initPixel } from "../utils/pixel/_pixelCore";
 import trackPageView from "../utils/pixel/trackPageView";
 
 const MetaPixelTracker = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    initPixel(); // initialize once
-  }, []);
 
-  useEffect(() => {
+    // clear purchase session when leaving success page
+    if (!pathname.startsWith("/order-success")) {
+      sessionStorage.removeItem("purchase_value");
+      sessionStorage.removeItem("purchase_items");
+    }
+
     trackPageView(pathname);
-  }, [pathname]);
+
+  }, [pathname]); // important
 
   return null;
 };

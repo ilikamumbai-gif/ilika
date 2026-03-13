@@ -11,19 +11,20 @@ const OrderSuccess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!id) return;
-    // Read value from sessionStorage (set by CheckOut.jsx before navigating here)
-    const value   = parseFloat(sessionStorage.getItem("purchase_value") || "0");
-    const numItems = parseInt(sessionStorage.getItem("purchase_items")  || "1");
+useEffect(() => {
+  if (!id) return;
 
-    // trackPurchase has triple-layer dedup (module Set + localStorage + value guard)
+  const value = parseFloat(sessionStorage.getItem("purchase_value") || "0");
+  const numItems = parseInt(sessionStorage.getItem("purchase_items") || "1");
+
+  if (value > 0) {
     trackPurchase(id, value, numItems);
+  }
 
-    // Clean up sessionStorage after handing off to pixel util
-    sessionStorage.removeItem("purchase_value");
-    sessionStorage.removeItem("purchase_items");
-  }, [id]);
+  sessionStorage.removeItem("purchase_value");
+  sessionStorage.removeItem("purchase_items");
+
+}, [id]);
 
   return (
     <>
