@@ -3,6 +3,7 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useCart } from "../context/CartProvider";
+import trackInitiateCheckout from "../utils/pixel/trackInitiateCheckout"
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CartDrawer from "../components/CartDrawer";
