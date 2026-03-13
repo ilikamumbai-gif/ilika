@@ -1,6 +1,5 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import MetaPixelTracker from "../components/MetaPixelTracker";
 
 import Home from "../pages/Home";
 import Offer from "../pages/Offer";
@@ -50,7 +49,6 @@ import ComboDetail from "../pages/ComboDetail";
 const NavRoutes = () => {
   return (
     <AdminAuthProvider>
-      <MetaPixelTracker />
       <Routes>
         {/* PUBLIC ROUTES */}
         <Route path="/" element={<Home />} />

@@ -12,7 +12,7 @@ const MetaPixelTracker = () => {
       sessionStorage.removeItem("purchase_items");
     }
     trackPageView(pathname);
-  }, [pathname]);
+  }, []);
 
   return null;
 };

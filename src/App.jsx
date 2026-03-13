@@ -15,6 +15,7 @@ import { ComboProvider } from "./admin/context/ComboContext";
 import BlogProvider from "./admin/context/BlogProvider";
 import { CartEventProvider } from "./admin/context/CartEventContext";
 import { ReviewProvider } from "./admin/context/ReviewContext";
+import MetaPixelTracker from "./components/MetaPixelTracker";
 
 // One-time cleanup: remove ALL old pixel localStorage keys from previous code versions
 // This runs immediately (not in useEffect) so it happens before any pixel fires
@@ -55,6 +56,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <MetaPixelTracker/>
       <UserProvider>
         <OrderProvider>
           <CartProvider>
