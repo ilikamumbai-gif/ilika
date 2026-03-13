@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import trackPageView from "../utils/pixel/trackPageView";
-// import trackPageView from "../utils/pixel/trackPageView";
 
 const MetaPixelTracker = () => {
   const { pathname } = useLocation();

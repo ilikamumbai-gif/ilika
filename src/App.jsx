@@ -19,20 +19,38 @@ import MetaPixelTracker from "./components/MetaPixelTracker";
 
 // One-time cleanup: remove ALL old pixel localStorage keys from previous code versions
 // This runs immediately (not in useEffect) so it happens before any pixel fires
+// ─────────────────────────────────────────────
+
 (function cleanOldPixelKeys() {
   try {
+    const EXPIRY_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
     Object.keys(localStorage).forEach((key) => {
-      // Old formats used in previous versions:
+      // Remove completely old key formats from previous versions
       if (
         key.startsWith("px_purchase_") ||
         key.startsWith("purchase_tracked_") ||
         key.startsWith("order_total") ||
-        key.startsWith("order_items")            // version 0
+        key.startsWith("order_items")
       ) {
         localStorage.removeItem(key);
+        return;
+      }
+
+      // Expire current-format keys older than 14 days
+      if (key.startsWith("purchase_") && key.endsWith("_time")) {
+        const timeVal = localStorage.getItem(key);
+        if (timeVal && Date.now() - Number(timeVal) > EXPIRY_MS) {
+          // Remove both the flag and timestamp keys
+          const baseKey = key.replace("_time", "");
+          localStorage.removeItem(baseKey);
+          localStorage.removeItem(key);
+        }
       }
     });
-  } catch (e) { }
+  } catch (e) {
+    // localStorage unavailable — safe to ignore
+  }
 })();
 
 const App = () => {

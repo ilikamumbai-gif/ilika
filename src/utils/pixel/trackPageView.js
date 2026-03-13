@@ -1,12 +1,8 @@
 import { fbq } from "./pixel";
 
-const trackPageView = (path) => {
-
-  // do not track admin pages
-  if (path.startsWith("/admin")) return;
-
+const trackPageView = (pathname) => {
+  if (typeof window === "undefined") return;
   fbq("track", "PageView");
-
 };
 
 export default trackPageView;
