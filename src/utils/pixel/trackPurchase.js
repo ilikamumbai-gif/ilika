@@ -1,12 +1,16 @@
 import { fbq } from './_pixelCore';
 
 const trackPurchase = (orderId, value, numItems) => {
+
+  // 🚨 block purchase everywhere except order success
+  if (!window.location.pathname.startsWith("/order-success")) return;
+
   if (!orderId) return;
 
   const safeValue = parseFloat(value) || 0;
   if (safeValue <= 0) return;
 
-  const key = `px_purchase_${orderId}_${safeValue}`;
+  const key = `px_purchase_${orderId}`;
 
   try {
     if (localStorage.getItem(key)) return;
