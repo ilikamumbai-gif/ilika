@@ -14,14 +14,14 @@ try {
       localStorage.removeItem(k);
     }
   });
-} catch (e) {}
+} catch (e) { }
 
 // ─── MODULE-LEVEL GUARDS ──────────────────────────────────────────────────────
 const _firedPurchaseOrders = new Set();
-const _firedViewContent    = new Set();
-const _firedInitCheckout   = new Set();
-const _firedPageViews      = new Set();
-let   _initialized         = false;
+const _firedViewContent = new Set();
+const _firedInitCheckout = new Set();
+const _firedPageViews = new Set();
+let _initialized = false;
 // ─────────────────────────────────────────────────────────────────────────────
 
 const _init = () => {
@@ -32,17 +32,17 @@ const _init = () => {
 
   window._fbq = window._fbq || {};
   window._fbq.disablePushState = true;
-  window._fbq.autoConfig       = false;
+  window._fbq.autoConfig = false;
 
-  !function(f,b,e,v,n,t,s){
-    if(f.fbq)return;
-    n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
-    t=b.createElement(e);t.async=!0;t.src=v;
-    s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)
-  }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  !function (f, b, e, v, n, t, s) {
+    if (f.fbq) return;
+    n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments) };
+    if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
+    t = b.createElement(e); t.async = !0; t.src = v;
+    s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
+  }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 
-  window.fbq('set',  'autoConfig', false, PIXEL_ID);
+  window.fbq('set', 'autoConfig', false, PIXEL_ID);
   window.fbq('init', PIXEL_ID);
 };
 
@@ -65,7 +65,6 @@ export const trackPageView = (pathname) => {
 export const trackPurchase = (orderId, value, numItems) => {
   if (!orderId) return;
   if (_firedPurchaseOrders.has(orderId)) return;
-  // Only check the NEW key format — old keys are cleaned up on module load above
   if (localStorage.getItem(`px_purchase_${orderId}`)) return;
 
   const safeValue = parseFloat(value) || 0;
@@ -74,19 +73,16 @@ export const trackPurchase = (orderId, value, numItems) => {
   _firedPurchaseOrders.add(orderId);
   localStorage.setItem(`px_purchase_${orderId}`, '1');
 
-  const correctUrl  = `/order-success/${orderId}`;
-  const originalUrl = window.location.href;
-  window.history.replaceState(null, '', correctUrl);
+  // ❌ REMOVE the history.replaceState block entirely
+  // Meta Pixel will correctly use whatever page it fires on
 
   _fbq('track', 'Purchase', {
-    value:        safeValue,
-    currency:     'INR',
+    value: safeValue,
+    currency: 'INR',
     content_type: 'product',
-    num_items:    parseInt(numItems) || 1,
-    order_id:     orderId,
+    num_items: parseInt(numItems) || 1,
+    order_id: orderId,
   });
-
-  window.history.replaceState(null, '', originalUrl);
 };
 
 // ─── InitiateCheckout ────────────────────────────────────────────────────────
