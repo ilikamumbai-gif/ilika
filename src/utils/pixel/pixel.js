@@ -28,12 +28,12 @@ export const initPixel = () => {
     "https://connect.facebook.net/en_US/fbevents.js"
   );
 
-  // ✅ MUST be before init — disables Meta's automatic event detection
-  // This stops signals/config from auto-firing Purchase based on page content
-  window.fbq("set", "autoConfig", false, PIXEL_ID);
+  window.fbq("init", PIXEL_ID, {}, {
+    agent: "plwebsite"  // identifies manual setup, suppresses auto-event scanning
+  });
 
-  window.fbq("init", PIXEL_ID);
-  // PageView is handled by MetaPixelTracker — NOT here
+  // Disable automatic event detection after init
+  window.fbq("set", "agent", "plwebsite", PIXEL_ID);
 };
 
 export const fbq = (...args) => {
