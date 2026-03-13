@@ -1,23 +1,21 @@
 /**
- * _pixelCore.js — Pixel init ONLY. No events here.
+ * _pixelCore.js — Pixel init ONLY
  */
 
-const PIXEL_ID = '1188302548683614';
+const PIXEL_ID = "1188302548683614";
 
 export const initPixel = () => {
-  if (typeof window === 'undefined') return;
-  if (window.location.pathname.startsWith('/admin')) return;
+  if (typeof window === "undefined") return;
+  if (window.location.pathname.startsWith("/admin")) return;
   if (window._fbqInited) return;
 
   window._fbqInited = true;
 
-  // Correct place to disable auto behaviour
-  window._fbq = window._fbq || {};
-  window._fbq.disablePushState = true;
-  window._fbq.autoConfig = false;
-  window._fbq.disableAutoEvents = true;
+  // 🔥 reset any previous queues
+  window.fbq = undefined;
+  window._fbq = undefined;
 
-  !function (f, b, e, v, n, t, s) {
+  !(function (f, b, e, v, n, t, s) {
     if (f.fbq) return;
 
     n = f.fbq = function () {
@@ -30,7 +28,7 @@ export const initPixel = () => {
 
     n.push = n;
     n.loaded = true;
-    n.version = '2.0';
+    n.version = "2.0";
     n.queue = [];
 
     t = b.createElement(e);
@@ -39,12 +37,14 @@ export const initPixel = () => {
 
     s = b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t, s);
+  })(
+    window,
+    document,
+    "script",
+    "https://connect.facebook.net/en_US/fbevents.js"
+  );
 
-  }(window, document, 'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-
-  window.fbq('set', 'autoConfig', false, PIXEL_ID);
-  window.fbq('init', PIXEL_ID);
+  window.fbq("init", PIXEL_ID);
 };
 
 export const fbq = (...args) => {
