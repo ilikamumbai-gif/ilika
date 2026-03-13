@@ -23,6 +23,7 @@
     "cors": "^2.8.6",
     "firebase": "^12.9.0",
     "git": "^0.1.5",
+    "grep": "^0.1.0",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.563.0",
