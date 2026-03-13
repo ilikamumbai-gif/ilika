@@ -10,24 +10,24 @@ export const initPixel = () => {
   if (window._fbqInited) return;
   window._fbqInited = true;
 
-  // ✅ ADD THESE before fbevents.js loads
+  // ✅ These MUST be set before fbevents.js loads
   window._fbq = window._fbq || {};
   window._fbq.disablePushState = true;
   window._fbq.autoConfig = false;
-  window._fbq.disableAutoEvents = true; // ← ADD THIS LINE
+  window._fbq.disableAutoEvents = true;  // ← ADD THIS
 
-  if (!window.fbq) {
-    !function(f,b,e,v,n,t,s){
-      if(f.fbq)return;
-      n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
-      t=b.createElement(e);t.async=!0;t.src=v;
-      s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)
-    }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-  }
+  !function (f, b, e, v, n, t, s) {
+    if (f.fbq) return;
+    n = f.fbq = function () {
+      n.callMethod ?
+      n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+    };
+    if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
+    t = b.createElement(e); t.async = !0; t.src = v;
+    s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
+  }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 
-  window.fbq('set',  'autoConfig', false, PIXEL_ID);
+  window.fbq('set', 'autoConfig', false, PIXEL_ID);  // ← KEEP THIS
   window.fbq('init', PIXEL_ID);
 };
 
