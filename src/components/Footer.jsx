@@ -147,7 +147,7 @@ const Footer = () => {
       {/* BOTTOM BAR */}
       <div className="MiniDivider-bg-color text-xs sm:text-sm py-4">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-3 text-center md:text-left">
-          <p>© 2025 Ilika | Designed with Love in India</p>
+          <p>© 2026 Ilika | Powered by PTCGRAM Private Limited</p>
 
           <div className="flex flex-wrap gap-5 justify-center">
             <Link to="/termsandcondition" className="hover:underline">Terms</Link>

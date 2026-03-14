@@ -6,7 +6,7 @@ import NavRoutes from "./Routes/NavRoutes";
 import { captureTrafficSource } from "./utils/tracking";
 import { CartProvider } from "./context/CartProvider";
 import ScrollToTopButton from "./components/ScrollToTopButton";
-// import { UserOrderProvider } from "./context/UserOrderContext";
+import { UserOrderProvider } from "./context/UserOrderContext";
 import { OrderProvider } from "./admin/context/OrderContext";
 import { UserProvider } from "./admin/context/UserContext";
 import { ProductProvider } from "./admin/context/ProductContext";
@@ -15,56 +15,27 @@ import { ComboProvider } from "./admin/context/ComboContext";
 import BlogProvider from "./admin/context/BlogProvider";
 import { CartEventProvider } from "./admin/context/CartEventContext";
 import { ReviewProvider } from "./admin/context/ReviewContext";
-import MetaPixelTracker from "./components/MetaPixelTracker";
 
 // One-time cleanup: remove ALL old pixel localStorage keys from previous code versions
 // This runs immediately (not in useEffect) so it happens before any pixel fires
-// ─────────────────────────────────────────────
-
 (function cleanOldPixelKeys() {
   try {
-    const EXPIRY_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
-
     Object.keys(localStorage).forEach((key) => {
-      // Remove completely old key formats from previous versions
+      // Old formats used in previous versions:
       if (
-        key.startsWith("px_purchase_") ||
-        key.startsWith("purchase_tracked_") ||
-        key.startsWith("order_total") ||
-        key.startsWith("order_items")
+        key.startsWith("purchase_tracked_") ||  // version 1
+        key.startsWith("order_total") ||         // version 0
+        key.startsWith("order_items")            // version 0
       ) {
         localStorage.removeItem(key);
-        return;
-      }
-
-      // Expire current-format keys older than 14 days
-      if (key.startsWith("purchase_") && key.endsWith("_time")) {
-        const timeVal = localStorage.getItem(key);
-        if (timeVal && Date.now() - Number(timeVal) > EXPIRY_MS) {
-          // Remove both the flag and timestamp keys
-          const baseKey = key.replace("_time", "");
-          localStorage.removeItem(baseKey);
-          localStorage.removeItem(key);
-        }
       }
     });
-  } catch (e) {
-    // localStorage unavailable — safe to ignore
-  }
+  } catch (e) {}
 })();
 
 const App = () => {
   const { currentUser } = useAuth();
   const [showLoginPopup, setShowLoginPopup] = useState(false);
-
-  useEffect(() => {
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith("px_purchase_")) {
-        localStorage.removeItem(key);
-      }
-    });
-  }, []);
-
 
   useEffect(() => {
     captureTrafficSource();
@@ -84,7 +55,6 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-
       <UserProvider>
         <OrderProvider>
           <CartProvider>
@@ -94,16 +64,15 @@ const App = () => {
                   <CartEventProvider>
                     <BlogProvider>
                       <ReviewProvider>
-                        {/* <UserOrderProvider> */}
+                        <UserOrderProvider>
                           {showLoginPopup && (
                             <LoginPopup
                               onClose={() => setShowLoginPopup(false)}
                             />
                           )}
-                          <MetaPixelTracker />
                           <NavRoutes />
                           <ScrollToTopButton />
-                        {/* </UserOrderProvider> */}
+                        </UserOrderProvider>
                       </ReviewProvider>
                     </BlogProvider>
                   </CartEventProvider>

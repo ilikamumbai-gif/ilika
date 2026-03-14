@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import trackAddToCart from '../utils/pixel/trackAddToCart';
+import { trackViewContent, trackAddToCart } from "../utils/pixel";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
@@ -175,7 +175,12 @@ const ProductDetail = ({
   const mrp = activeVariant?.mrp ?? product?.mrp ?? 0;
 
   /* ================= FACEBOOK PIXEL VIEW CONTENT ================= */
-
+  useEffect(() => {
+    if (!productId || !product) return;
+    // trackViewContent deduplicates by productId at module level —
+    // safe to call on every render; only fires once per product per session
+    trackViewContent(productId, product.name, price);
+  }, [product, productId, price]);
 
   /* ================= RELATED PRODUCTS ================= */
   const EXCLUDED_CATEGORY = "new"; // <-- change to your real id or slug

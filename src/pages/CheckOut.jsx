@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { trackInitiateCheckout } from "../utils/pixel";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useCart } from "../context/CartProvider";
-import trackInitiateCheckout from "../utils/pixel/trackInitiateCheckout"
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CartDrawer from "../components/CartDrawer";
@@ -76,20 +76,22 @@ const Checkout = () => {
     };
   }, []);
 
-
+  // Clean up any stale pixel data from old code versions
+  useEffect(() => {
+    localStorage.removeItem("order_total");
+    localStorage.removeItem("order_items");
+    sessionStorage.removeItem("purchase_value");
+    sessionStorage.removeItem("purchase_items");
+  }, []);
 
   /* ---------------- INITIATE CHECKOUT PIXEL (fires once on mount) ---------------- */
-useEffect(() => {
-  if (!cartItems.length) return;
 
-  // prevent duplicate initiate checkout
-  if (sessionStorage.getItem("initiate_checkout_fired")) return;
-
-  trackInitiateCheckout(total, cartItems.length);
-
-  sessionStorage.setItem("initiate_checkout_fired", "1");
-
-}, [cartItems.length]);
+  useEffect(() => {
+    if (!cartItems.length) return;
+    const safeTotal = parseFloat(Number(subtotal).toFixed(2));
+    // trackInitiateCheckout has module-level + sessionStorage dedup built in
+    trackInitiateCheckout(safeTotal, cartItems.length);
+  }, []); // fires once on mount; dedup is handled inside the utility
 
   /* ---------------- SAVE ADDRESS ---------------- */
 
@@ -195,9 +197,17 @@ useEffect(() => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
-        // ✅ Store order info in sessionStorage for OrderSuccess pixel
-        sessionStorage.setItem("purchase_value", parseFloat(Number(total).toFixed(2)));
-        sessionStorage.setItem("purchase_items", cartItems.length);
+        // ✅ Fire Purchase event server-side via Meta Conversions API
+        fetch(`${API_URL}/api/meta/purchase`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: data.orderId,
+            value: parseFloat(Number(total).toFixed(2)),
+            numItems: cartItems.length,
+            email: currentUser.email,
+          }),
+        }).catch(() => {}); // fire-and-forget, don't block navigation
 
         clearCart();
         navigate(`/order-success/${data.orderId}`);
@@ -261,9 +271,17 @@ useEffect(() => {
             const verifyData = await verifyRes.json();
             if (!verifyRes.ok) throw new Error(verifyData.error);
 
-            // ✅ Store order info in sessionStorage for OrderSuccess pixel
-            sessionStorage.setItem("purchase_value", parseFloat(Number(total).toFixed(2)));
-            sessionStorage.setItem("purchase_items", cartItems.length);
+            // ✅ Fire Purchase event server-side via Meta Conversions API
+            fetch(`${API_URL}/api/meta/purchase`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderId: verifyData.orderId,
+                value: parseFloat(Number(total).toFixed(2)),
+                numItems: cartItems.length,
+                email: currentUser.email,
+              }),
+            }).catch(() => {}); // fire-and-forget, don't block navigation
 
             clearCart();
             navigate(`/order-success/${verifyData.orderId}`);
