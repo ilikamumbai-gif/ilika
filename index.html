@@ -37,52 +37,62 @@
     var PIXEL_ID = '1188302548683614';
     var _purchaseAllowed = false;
 
-    // Checkout calls this just before firing a real Purchase event
     window.__allowNextPurchase = function() {
       _purchaseAllowed = true;
       setTimeout(function() { _purchaseAllowed = false; }, 5000);
     };
 
-    // Filtered wrapper — applied to the REAL fbq after fbevents.js loads
-    function makeSafeProxy(realFbq) {
-      var proxy = function() {
+    // The purchase filter — applied to ANY dispatch function
+    function purchaseFilter(dispatchFn) {
+      return function() {
         var args = Array.prototype.slice.call(arguments);
-        if (args[0] === 'track' && args[1] === 'Purchase') {
+        // args[0] is the event name when called as callMethod(name, ...)
+        // OR args[0]='track', args[1]='Purchase' when called as fbq('track','Purchase')
+        var isTrack = (args[0] === 'track' && args[1] === 'Purchase');
+        var isCallMethod = (args[0] === 'Purchase'); // callMethod(name, data, options)
+        if (isTrack || isCallMethod) {
           if (!_purchaseAllowed) {
             console.warn('[Ilika] Purchase blocked');
             return;
           }
           _purchaseAllowed = false;
         }
-        return realFbq.apply(this, args);
+        return dispatchFn.apply(this, args);
       };
-      // Copy all properties so fbevents.js internals keep working
-      for (var k in realFbq) {
-        if (realFbq.hasOwnProperty(k)) {
-          try { proxy[k] = realFbq[k]; } catch(e) {}
-        }
-      }
-      proxy.__ilika = true;
-      return proxy;
     }
 
-    // Standard Meta pixel snippet — loads fbevents.js async
-    !function(f,b,e,v,n,t,s){
-      if(f.fbq)return;
-      n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
-      s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s);
+    // Build the fbq stub
+    var fbqStub = function() {
+      fbqStub.callMethod
+        ? fbqStub.callMethod.apply(fbqStub, arguments)
+        : fbqStub.queue.push(arguments);
+    };
+    fbqStub.push    = fbqStub;
+    fbqStub.loaded  = true;
+    fbqStub.version = '2.0';
+    fbqStub.queue   = [];
 
-      // As soon as fbevents.js finishes loading, wrap the real fbq it installs
-      t.addEventListener('load', function() {
-        if (window.fbq && !window.fbq.__ilika) {
-          window.fbq = makeSafeProxy(window.fbq);
-          window._fbq = window.fbq;
-        }
-      });
-    }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    // Use Object.defineProperty to intercept when fbevents.js sets callMethod
+    // fbevents.js does: fbq.callMethod = realDispatcher
+    // Our setter wraps realDispatcher with purchaseFilter before storing it
+    var _realCallMethod = null;
+    Object.defineProperty(fbqStub, 'callMethod', {
+      get: function() { return _realCallMethod; },
+      set: function(fn) {
+        // fbevents.js is setting the real dispatcher — wrap it immediately
+        _realCallMethod = purchaseFilter(fn);
+      },
+      configurable: true
+    });
+
+    window.fbq  = fbqStub;
+    window._fbq = fbqStub;
+
+    // Load fbevents.js
+    var _s = document.createElement('script');
+    _s.async = true;
+    _s.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.getElementsByTagName('script')[0].parentNode.insertBefore(_s, document.getElementsByTagName('script')[0]);
 
     fbq('init', PIXEL_ID);
     fbq('track', 'PageView');
