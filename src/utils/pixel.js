@@ -1,15 +1,16 @@
 /**
- * pixel.js — Complete Meta Pixel controller
- * Pixel is initialized here, NOT in index.html.
- * All deduplication is at module level — outside React entirely.
+ * pixel.js — Meta Pixel controller for ilika.in
  *
- * NOTE: Purchase event is intentionally NOT fired from the browser.
- * It is sent server-side via Meta Conversions API in server.js.
+ * Strategy:
+ *  - Pixel is injected eagerly at module load (not lazily inside React).
+ *  - fbevents.js loads async, so fbq() queues calls until the script arrives.
+ *  - Purchase fires browser-side ONLY after a confirmed order — never on page browse.
+ *  - All events are deduplicated at module level.
  */
 
 const PIXEL_ID = '1188302548683614';
 
-// ─── Clean up ALL old localStorage keys from previous code versions ──────────
+// ─── Clean up stale localStorage keys from old code versions ─────────────────
 try {
   Object.keys(localStorage).forEach((k) => {
     if (
@@ -17,54 +18,58 @@ try {
       k.startsWith('order_total') ||
       k.startsWith('order_items') ||
       k.startsWith('px_purchase_')
-    ) {
-      localStorage.removeItem(k);
-    }
+    ) localStorage.removeItem(k);
   });
 } catch (e) {}
 
-// ─── MODULE-LEVEL GUARDS ──────────────────────────────────────────────────────
-const _firedViewContent    = new Set();
-const _firedInitCheckout   = new Set();
-const _firedPageViews      = new Set();
-let   _initialized         = false;
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── MODULE-LEVEL DEDUP GUARDS ────────────────────────────────────────────────
+const _firedPageViews    = new Set();
+const _firedViewContent  = new Set();
+const _firedInitCheckout = new Set();
+const _firedPurchase     = new Set();
 
-const _init = () => {
-  if (_initialized) return;
-  if (typeof window === 'undefined') return;
-  if (window.location.pathname.startsWith('/admin')) return;
+// ─── EAGER INIT — runs immediately when this module is imported ───────────────
+// fbq() internally queues all calls until fbevents.js finishes loading,
+// so it is safe to call fbq('track', ...) before the script arrives.
+const _isLive = (
+  typeof window !== 'undefined' &&
+  !window.location.pathname.startsWith('/admin') &&
+  (window.location.hostname === 'ilika.in' ||
+   window.location.hostname === 'www.ilika.in')
+);
 
-  // ✅ Only run Meta Pixel on the live production domain — never on localhost or staging
-  const hostname = window.location.hostname;
-  const isLive = hostname === 'ilika.in' || hostname === 'www.ilika.in';
-  if (!isLive) return;
-
-  _initialized = true;
-
+if (_isLive) {
+  // Disable Meta's automatic push-state PageView detection —
+  // we fire PageView manually so it never fires on /order-success.
   window._fbq = window._fbq || {};
   window._fbq.disablePushState = true;
   window._fbq.autoConfig       = false;
 
+  // Inject fbevents.js
+  /* eslint-disable */
   !function(f,b,e,v,n,t,s){
     if(f.fbq)return;
     n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
     if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
     t=b.createElement(e);t.async=!0;t.src=v;
-    s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)
+    s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s);
   }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  /* eslint-enable */
 
   window.fbq('set',  'autoConfig', false, PIXEL_ID);
   window.fbq('init', PIXEL_ID);
-};
+}
 
+// ─── Internal helper — only calls fbq if pixel is active ─────────────────────
 const _fbq = (...args) => {
-  _init();
-  if (window.fbq && typeof window.fbq === 'function') window.fbq(...args);
+  if (_isLive && window.fbq) window.fbq(...args);
 };
 
 // ─── PageView ─────────────────────────────────────────────────────────────────
+// Called by MetaPixelTracker on every route change.
+// Skips /admin and /order-success (purchase confirmation page).
 export const trackPageView = (pathname) => {
+  if (!_isLive) return;
   if (!pathname) return;
   if (pathname.startsWith('/admin')) return;
   if (pathname.startsWith('/order-success')) return;
@@ -74,21 +79,19 @@ export const trackPageView = (pathname) => {
 };
 
 // ─── Purchase ─────────────────────────────────────────────────────────────────
-// Fired browser-side immediately after a confirmed order (COD placed or online payment verified).
-// Uses orderId as event_id to deduplicate if the same event is ever sent twice.
-const _firedPurchase = new Set();
-
+// Fired ONLY after a confirmed order (COD placed or Razorpay payment verified).
+// orderId is used as eventID to prevent double-counting.
 export const trackPurchase = (orderId, value, numItems) => {
   if (!orderId) return;
   if (_firedPurchase.has(orderId)) return;
   _firedPurchase.add(orderId);
   _fbq('track', 'Purchase', {
-    value: parseFloat(value) || 0,
-    currency: 'INR',
-    num_items: parseInt(numItems) || 1,
+    value:        parseFloat(value) || 0,
+    currency:     'INR',
+    num_items:    parseInt(numItems) || 1,
     content_type: 'product',
-    order_id: orderId,
-  }, { eventID: `purchase_${orderId}` }); // eventID for dedup
+    order_id:     orderId,
+  }, { eventID: `purchase_${orderId}` });
 };
 
 // ─── InitiateCheckout ────────────────────────────────────────────────────────
@@ -101,8 +104,10 @@ export const trackInitiateCheckout = (value, numItems) => {
   _firedInitCheckout.add(key);
   sessionStorage.setItem(`px_initcheckout_${key}`, '1');
   _fbq('track', 'InitiateCheckout', {
-    value: safeValue, currency: 'INR',
-    num_items: parseInt(numItems) || 1, content_type: 'product',
+    value:        safeValue,
+    currency:     'INR',
+    num_items:    parseInt(numItems) || 1,
+    content_type: 'product',
   });
 };
 
@@ -112,18 +117,23 @@ export const trackViewContent = (productId, productName, price) => {
   if (_firedViewContent.has(productId)) return;
   _firedViewContent.add(productId);
   _fbq('track', 'ViewContent', {
-    content_ids: [productId], content_name: productName || '',
-    value: parseFloat(price) || 0, currency: 'INR',
+    content_ids:  [productId],
+    content_name: productName || '',
+    value:        parseFloat(price) || 0,
+    currency:     'INR',
     content_type: 'product',
-    contents: [{ id: productId, quantity: 1, item_price: parseFloat(price) || 0 }],
+    contents:     [{ id: productId, quantity: 1, item_price: parseFloat(price) || 0 }],
   });
 };
 
 // ─── AddToCart ───────────────────────────────────────────────────────────────
 export const trackAddToCart = (productId, productName, price, quantity = 1) => {
   _fbq('track', 'AddToCart', {
-    content_ids: [productId], content_name: productName || '',
-    value: parseFloat(price) || 0, currency: 'INR',
-    content_type: 'product', num_items: quantity,
+    content_ids:  [productId],
+    content_name: productName || '',
+    value:        parseFloat(price) || 0,
+    currency:     'INR',
+    content_type: 'product',
+    num_items:    quantity,
   });
 };
