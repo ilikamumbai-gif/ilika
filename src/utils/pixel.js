@@ -1,104 +1,84 @@
 /**
- * pixel.js — Meta Pixel event helpers for ilika.in
- *
- * index.html fires fbq('init') + fbq('track','PageView') for the first page.
- * This module handles all SPA route PageViews and specific events.
- *
- * PURCHASE PROTECTION: We intercept window.fbq here and block any Purchase
- * call that didn't come from trackPurchase(). This stops Meta's autoConfig
- * from firing Purchase on browse pages with prices/products.
+ * pixel.js — Meta Pixel for ilika.in
+ * 
+ * index.html fires: fbq('init') + fbq('track','PageView') on first load.
+ * This file handles SPA route changes + blocks rogue Purchase events.
  */
 
-// ─── INSTALL PURCHASE BLOCKER immediately when this module loads ──────────────
-// We wrap window.fbq so every Purchase must be explicitly authorised.
-(function installPurchaseBlocker() {
-  if (typeof window === 'undefined') return;
-  if (window.__purchaseBlockerInstalled) return;
-  window.__purchaseBlockerInstalled = true;
+// ── Purchase blocker: wraps window.fbq to block any Purchase
+//    not explicitly authorised by trackPurchase() ────────────────────────────
+let _purchaseUnlocked = false;
 
-  var _allowed = false;
+window.__allowNextPurchase = function () {
+  _purchaseUnlocked = true;
+  setTimeout(function () { _purchaseUnlocked = false; }, 5000);
+};
 
-  window.__allowNextPurchase = function() {
-    _allowed = true;
-    setTimeout(function() { _allowed = false; }, 5000);
-  };
+// Wrap fbq immediately — if fbevents.js hasn't loaded yet it will wrap
+// the stub, which is fine because the stub queues and replays calls.
+(function blockRoguePurchase() {
+  const original = window.fbq;
+  if (!original || original.__ilika_wrapped) return;
 
-  // Poll until window.fbq is the real SDK function (not just the stub)
-  // then wrap it. We check every 100ms for up to 10s.
-  var attempts = 0;
-  var interval = setInterval(function() {
-    attempts++;
-    if (attempts > 100) { clearInterval(interval); return; } // give up after 10s
-
-    var fbq = window.fbq;
-    if (!fbq || typeof fbq !== 'function') return;
-    if (fbq.__purchaseBlocked) return; // already wrapped
-
-    // Wrap fbq
-    var original = fbq;
-    window.fbq = function() {
-      var args = Array.prototype.slice.call(arguments);
-      if (args[0] === 'track' && args[1] === 'Purchase') {
-        if (!_allowed) {
-          console.warn('[Ilika Pixel] Purchase blocked — not from checkout');
-          return;
-        }
-        _allowed = false; // single use
+  const wrapped = function (...args) {
+    if (args[0] === 'track' && args[1] === 'Purchase') {
+      if (!_purchaseUnlocked) {
+        console.warn('[Pixel] Purchase blocked — not from checkout');
+        return;
       }
-      return original.apply(this, args);
-    };
-    // Copy all properties from original
-    Object.keys(original).forEach(function(k) {
-      try { window.fbq[k] = original[k]; } catch(e) {}
+      _purchaseUnlocked = false;
+    }
+    return original.apply(this, args);
+  };
+  Object.assign(wrapped, original);
+  wrapped.__ilika_wrapped = true;
+  window.fbq = wrapped;
+
+  // fbevents.js replaces window.fbq when it loads — re-wrap it then too
+  const script = document.querySelector('script[src*="fbevents"]');
+  if (script) {
+    script.addEventListener('load', function () {
+      if (window.fbq && !window.fbq.__ilika_wrapped) {
+        blockRoguePurchase();
+      }
     });
-    window.fbq.__purchaseBlocked = true;
-    clearInterval(interval);
-  }, 100);
+  }
 })();
 
-// ─── DEDUP GUARDS ─────────────────────────────────────────────────────────────
-let _lastPageViewPath  = null;
-let _firstPageViewDone = false; // index.html fires the first one
-
+// ── Dedup guards ──────────────────────────────────────────────────────────────
+let _lastPath            = null;   // last path PageView fired for
+let _initPageViewDone    = false;  // skip first call (index.html fired it)
 const _firedViewContent  = new Set();
 const _firedInitCheckout = new Set();
 const _firedPurchase     = new Set();
 
-// ─── Safe fbq caller ─────────────────────────────────────────────────────────
 const _fbq = (...args) => {
-  if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
-    window.fbq(...args);
-  }
+  if (typeof window.fbq === 'function') window.fbq(...args);
 };
 
-// ─── PageView ─────────────────────────────────────────────────────────────────
+// ── PageView ──────────────────────────────────────────────────────────────────
 export const trackPageView = (pathname) => {
   if (!pathname) return;
   if (pathname.startsWith('/admin')) return;
   if (pathname.startsWith('/order-success')) return;
-  if (pathname === _lastPageViewPath) return;
-  _lastPageViewPath = pathname;
+  if (pathname === _lastPath) return;   // same route re-render — skip
+  _lastPath = pathname;
 
-  // Skip the first call — index.html already fired PageView on initial load
-  if (!_firstPageViewDone) {
-    _firstPageViewDone = true;
-    return;
+  if (!_initPageViewDone) {
+    _initPageViewDone = true;
+    return; // index.html already fired PageView for this first load
   }
   _fbq('track', 'PageView');
 };
 
-// ─── Purchase ─────────────────────────────────────────────────────────────────
-// ONLY called from CheckOut.jsx after a confirmed order.
+// ── Purchase ──────────────────────────────────────────────────────────────────
+// Called ONLY from CheckOut.jsx after order confirmed.
 export const trackPurchase = (orderId, value, numItems) => {
-  if (!orderId) return;
-  if (_firedPurchase.has(orderId)) return;
+  if (!orderId || _firedPurchase.has(orderId)) return;
   _firedPurchase.add(orderId);
-  // Unlock the blocker for exactly this one call
-  if (typeof window.__allowNextPurchase === 'function') {
-    window.__allowNextPurchase();
-  }
+  window.__allowNextPurchase();
   _fbq('track', 'Purchase', {
-    value:        parseFloat(value) || 0,
+    value:        parseFloat(value)  || 0,
     currency:     'INR',
     num_items:    parseInt(numItems) || 1,
     content_type: 'product',
@@ -106,46 +86,38 @@ export const trackPurchase = (orderId, value, numItems) => {
   }, { eventID: `purchase_${orderId}` });
 };
 
-// ─── InitiateCheckout ─────────────────────────────────────────────────────────
+// ── InitiateCheckout ──────────────────────────────────────────────────────────
 export const trackInitiateCheckout = (value, numItems) => {
-  const safeValue = parseFloat(value) || 0;
-  if (safeValue <= 0) return;
-  const key = `${safeValue}_${numItems}`;
+  const v = parseFloat(value) || 0;
+  if (v <= 0) return;
+  const key = `${v}_${numItems}`;
   if (_firedInitCheckout.has(key)) return;
-  if (sessionStorage.getItem(`px_initcheckout_${key}`)) return;
+  if (sessionStorage.getItem(`px_ic_${key}`)) return;
   _firedInitCheckout.add(key);
-  sessionStorage.setItem(`px_initcheckout_${key}`, '1');
+  sessionStorage.setItem(`px_ic_${key}`, '1');
   _fbq('track', 'InitiateCheckout', {
-    value:        safeValue,
-    currency:     'INR',
-    num_items:    parseInt(numItems) || 1,
-    content_type: 'product',
+    value: v, currency: 'INR',
+    num_items: parseInt(numItems) || 1, content_type: 'product',
   });
 };
 
-// ─── ViewContent ──────────────────────────────────────────────────────────────
+// ── ViewContent ───────────────────────────────────────────────────────────────
 export const trackViewContent = (productId, productName, price) => {
-  if (!productId) return;
-  if (_firedViewContent.has(productId)) return;
+  if (!productId || _firedViewContent.has(productId)) return;
   _firedViewContent.add(productId);
   _fbq('track', 'ViewContent', {
-    content_ids:  [productId],
-    content_name: productName || '',
-    value:        parseFloat(price) || 0,
-    currency:     'INR',
+    content_ids: [productId], content_name: productName || '',
+    value: parseFloat(price) || 0, currency: 'INR',
     content_type: 'product',
-    contents:     [{ id: productId, quantity: 1, item_price: parseFloat(price) || 0 }],
+    contents: [{ id: productId, quantity: 1, item_price: parseFloat(price) || 0 }],
   });
 };
 
-// ─── AddToCart ────────────────────────────────────────────────────────────────
+// ── AddToCart ─────────────────────────────────────────────────────────────────
 export const trackAddToCart = (productId, productName, price, quantity = 1) => {
   _fbq('track', 'AddToCart', {
-    content_ids:  [productId],
-    content_name: productName || '',
-    value:        parseFloat(price) || 0,
-    currency:     'INR',
-    content_type: 'product',
-    num_items:    quantity,
+    content_ids: [productId], content_name: productName || '',
+    value: parseFloat(price) || 0, currency: 'INR',
+    content_type: 'product', num_items: quantity,
   });
 };
