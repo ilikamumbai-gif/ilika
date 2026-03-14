@@ -8,7 +8,7 @@
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Ilika" />
   <link rel="canonical" href="https://ilika.in/" />
-  <meta name="facebook-domain-verification" content="lzba8bf3opczo1v625rkr90borrv2p" />
+  <meta name="facebook-domain-verification" content="lzba8bf3opczo1v625rkr90borrv2b" />
   <meta name="google-site-verification" content="gvbdusVAG0a_poII0jsiYxofZGsdj5hIg5mhrQyjEH8" />
   <meta name="theme-color" content="#ffffff" />
   <meta property="og:title" content="Ilika - Elegant. Bright. You." />
@@ -33,15 +33,79 @@
   {"@context":"https://schema.org","@type":"Organization","name":"Ilika","url":"https://ilika.in","logo":"https://ilika.in/Images/logo.png","sameAs":["https://www.instagram.com/","https://www.facebook.com/"]}
   </script>
 
-  <!-- Meta Pixel — standard install -->
   <script>
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-    document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init','1188302548683614');
-    fbq('track','PageView');
+    // ─── STEP 1: Create the fbq stub with Purchase blocker BEFORE fbevents.js loads
+    // This runs synchronously — fbevents.js cannot fire anything before this.
+    (function() {
+      var PIXEL_ID = '1188302548683614';
+      var _purchaseAllowed = false;
+
+      // Checkout calls this to authorise exactly one Purchase event
+      window.__allowNextPurchase = function() {
+        _purchaseAllowed = true;
+        setTimeout(function() { _purchaseAllowed = false; }, 5000);
+      };
+
+      // Build the fbq queue stub — identical to Meta's standard snippet
+      // but with our Purchase filter baked in
+      function fbqProxy() {
+        var args = Array.prototype.slice.call(arguments);
+
+        // BLOCK any Purchase not authorised by __allowNextPurchase()
+        if (args[0] === 'track' && args[1] === 'Purchase') {
+          if (!_purchaseAllowed) {
+            console.warn('[Ilika] Purchase blocked — not from checkout');
+            return;
+          }
+          _purchaseAllowed = false; // consume — single use only
+        }
+
+        // Queue the call (fbevents.js will replay the queue when it loads)
+        fbqProxy.queue.push(args);
+      }
+      fbqProxy.push    = fbqProxy;
+      fbqProxy.loaded  = true;
+      fbqProxy.version = '2.0';
+      fbqProxy.queue   = [];
+
+      window.fbq  = fbqProxy;
+      window._fbq = fbqProxy;
+
+      // ─── STEP 2: Load fbevents.js asynchronously
+      var t = document.createElement('script');
+      t.async = true;
+      t.src = 'https://connect.facebook.net/en_US/fbevents.js';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(t, s);
+
+      // ─── STEP 3: When fbevents.js loads, it replaces window.fbq with the real
+      // function and replays queue. We then re-wrap it to keep our Purchase filter.
+      t.addEventListener('load', function() {
+        var realFbq = window.fbq;
+        if (!realFbq || realFbq === fbqProxy || realFbq.__ilika) return;
+
+        window.fbq = function() {
+          var args = Array.prototype.slice.call(arguments);
+          if (args[0] === 'track' && args[1] === 'Purchase') {
+            if (!_purchaseAllowed) {
+              console.warn('[Ilika] Purchase blocked — not from checkout');
+              return;
+            }
+            _purchaseAllowed = false;
+          }
+          return realFbq.apply(this, args);
+        };
+        // Copy all properties so fbevents.js internals still work
+        Object.keys(realFbq).forEach(function(k) {
+          try { window.fbq[k] = realFbq[k]; } catch(e) {}
+        });
+        window.fbq.__ilika = true;
+      });
+
+      // ─── STEP 4: Init pixel + fire first PageView
+      window.fbq('init', PIXEL_ID);
+      window.fbq('track', 'PageView');
+    })();
   </script>
   <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1188302548683614&ev=PageView&noscript=1"/></noscript>
