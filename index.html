@@ -8,7 +8,7 @@
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Ilika" />
   <link rel="canonical" href="https://ilika.in/" />
-  <meta name="facebook-domain-verification" content="lzba8bf3opczo1v625rkr90borrv2b" />
+  <meta name="facebook-domain-verification" content="lzba8bf3opczo1v625rkr90borrv2p" />
   <meta name="google-site-verification" content="gvbdusVAG0a_poII0jsiYxofZGsdj5hIg5mhrQyjEH8" />
   <meta name="theme-color" content="#ffffff" />
   <meta property="og:title" content="Ilika - Elegant. Bright. You." />
@@ -34,78 +34,58 @@
   </script>
 
   <script>
-    // ─── STEP 1: Create the fbq stub with Purchase blocker BEFORE fbevents.js loads
-    // This runs synchronously — fbevents.js cannot fire anything before this.
-    (function() {
-      var PIXEL_ID = '1188302548683614';
-      var _purchaseAllowed = false;
+    var PIXEL_ID = '1188302548683614';
+    var _purchaseAllowed = false;
 
-      // Checkout calls this to authorise exactly one Purchase event
-      window.__allowNextPurchase = function() {
-        _purchaseAllowed = true;
-        setTimeout(function() { _purchaseAllowed = false; }, 5000);
-      };
+    // Checkout calls this just before firing a real Purchase event
+    window.__allowNextPurchase = function() {
+      _purchaseAllowed = true;
+      setTimeout(function() { _purchaseAllowed = false; }, 5000);
+    };
 
-      // Build the fbq queue stub — identical to Meta's standard snippet
-      // but with our Purchase filter baked in
-      function fbqProxy() {
+    // Filtered wrapper — applied to the REAL fbq after fbevents.js loads
+    function makeSafeProxy(realFbq) {
+      var proxy = function() {
         var args = Array.prototype.slice.call(arguments);
-
-        // BLOCK any Purchase not authorised by __allowNextPurchase()
         if (args[0] === 'track' && args[1] === 'Purchase') {
           if (!_purchaseAllowed) {
-            console.warn('[Ilika] Purchase blocked — not from checkout');
+            console.warn('[Ilika] Purchase blocked');
             return;
           }
-          _purchaseAllowed = false; // consume — single use only
+          _purchaseAllowed = false;
         }
-
-        // Queue the call (fbevents.js will replay the queue when it loads)
-        fbqProxy.queue.push(args);
+        return realFbq.apply(this, args);
+      };
+      // Copy all properties so fbevents.js internals keep working
+      for (var k in realFbq) {
+        if (realFbq.hasOwnProperty(k)) {
+          try { proxy[k] = realFbq[k]; } catch(e) {}
+        }
       }
-      fbqProxy.push    = fbqProxy;
-      fbqProxy.loaded  = true;
-      fbqProxy.version = '2.0';
-      fbqProxy.queue   = [];
+      proxy.__ilika = true;
+      return proxy;
+    }
 
-      window.fbq  = fbqProxy;
-      window._fbq = fbqProxy;
+    // Standard Meta pixel snippet — loads fbevents.js async
+    !function(f,b,e,v,n,t,s){
+      if(f.fbq)return;
+      n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
+      s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s);
 
-      // ─── STEP 2: Load fbevents.js asynchronously
-      var t = document.createElement('script');
-      t.async = true;
-      t.src = 'https://connect.facebook.net/en_US/fbevents.js';
-      var s = document.getElementsByTagName('script')[0];
-      s.parentNode.insertBefore(t, s);
-
-      // ─── STEP 3: When fbevents.js loads, it replaces window.fbq with the real
-      // function and replays queue. We then re-wrap it to keep our Purchase filter.
+      // As soon as fbevents.js finishes loading, wrap the real fbq it installs
       t.addEventListener('load', function() {
-        var realFbq = window.fbq;
-        if (!realFbq || realFbq === fbqProxy || realFbq.__ilika) return;
-
-        window.fbq = function() {
-          var args = Array.prototype.slice.call(arguments);
-          if (args[0] === 'track' && args[1] === 'Purchase') {
-            if (!_purchaseAllowed) {
-              console.warn('[Ilika] Purchase blocked — not from checkout');
-              return;
-            }
-            _purchaseAllowed = false;
-          }
-          return realFbq.apply(this, args);
-        };
-        // Copy all properties so fbevents.js internals still work
-        Object.keys(realFbq).forEach(function(k) {
-          try { window.fbq[k] = realFbq[k]; } catch(e) {}
-        });
-        window.fbq.__ilika = true;
+        if (window.fbq && !window.fbq.__ilika) {
+          window.fbq = makeSafeProxy(window.fbq);
+          window._fbq = window.fbq;
+        }
       });
+    }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
-      // ─── STEP 4: Init pixel + fire first PageView
-      window.fbq('init', PIXEL_ID);
-      window.fbq('track', 'PageView');
-    })();
+    fbq('init', PIXEL_ID);
+    fbq('track', 'PageView');
   </script>
   <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1188302548683614&ev=PageView&noscript=1"/></noscript>
