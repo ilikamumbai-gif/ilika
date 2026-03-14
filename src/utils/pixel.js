@@ -1,21 +1,70 @@
 /**
  * pixel.js — Meta Pixel event helpers for ilika.in
  *
- * fbevents.js is loaded in index.html. This file calls window.fbq() safely.
+ * index.html fires fbq('init') + fbq('track','PageView') for the first page.
+ * This module handles all SPA route PageViews and specific events.
  *
- * IMPORTANT: trackPurchase() calls window.__allowNextPurchase() first.
- * That function is defined in index.html and unlocks the fbq interceptor
- * for exactly one Purchase call. Any Purchase not coming through this
- * function is automatically blocked by the interceptor.
+ * PURCHASE PROTECTION: We intercept window.fbq here and block any Purchase
+ * call that didn't come from trackPurchase(). This stops Meta's autoConfig
+ * from firing Purchase on browse pages with prices/products.
  */
 
+// ─── INSTALL PURCHASE BLOCKER immediately when this module loads ──────────────
+// We wrap window.fbq so every Purchase must be explicitly authorised.
+(function installPurchaseBlocker() {
+  if (typeof window === 'undefined') return;
+  if (window.__purchaseBlockerInstalled) return;
+  window.__purchaseBlockerInstalled = true;
+
+  var _allowed = false;
+
+  window.__allowNextPurchase = function() {
+    _allowed = true;
+    setTimeout(function() { _allowed = false; }, 5000);
+  };
+
+  // Poll until window.fbq is the real SDK function (not just the stub)
+  // then wrap it. We check every 100ms for up to 10s.
+  var attempts = 0;
+  var interval = setInterval(function() {
+    attempts++;
+    if (attempts > 100) { clearInterval(interval); return; } // give up after 10s
+
+    var fbq = window.fbq;
+    if (!fbq || typeof fbq !== 'function') return;
+    if (fbq.__purchaseBlocked) return; // already wrapped
+
+    // Wrap fbq
+    var original = fbq;
+    window.fbq = function() {
+      var args = Array.prototype.slice.call(arguments);
+      if (args[0] === 'track' && args[1] === 'Purchase') {
+        if (!_allowed) {
+          console.warn('[Ilika Pixel] Purchase blocked — not from checkout');
+          return;
+        }
+        _allowed = false; // single use
+      }
+      return original.apply(this, args);
+    };
+    // Copy all properties from original
+    Object.keys(original).forEach(function(k) {
+      try { window.fbq[k] = original[k]; } catch(e) {}
+    });
+    window.fbq.__purchaseBlocked = true;
+    clearInterval(interval);
+  }, 100);
+})();
+
 // ─── DEDUP GUARDS ─────────────────────────────────────────────────────────────
-let   _lastPageViewPath  = null;
+let _lastPageViewPath  = null;
+let _firstPageViewDone = false; // index.html fires the first one
+
 const _firedViewContent  = new Set();
 const _firedInitCheckout = new Set();
 const _firedPurchase     = new Set();
 
-// ─── Internal helper ──────────────────────────────────────────────────────────
+// ─── Safe fbq caller ─────────────────────────────────────────────────────────
 const _fbq = (...args) => {
   if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
     window.fbq(...args);
@@ -23,25 +72,28 @@ const _fbq = (...args) => {
 };
 
 // ─── PageView ─────────────────────────────────────────────────────────────────
-// Fires on every route change EXCEPT /admin and /order-success.
 export const trackPageView = (pathname) => {
   if (!pathname) return;
   if (pathname.startsWith('/admin')) return;
   if (pathname.startsWith('/order-success')) return;
   if (pathname === _lastPageViewPath) return;
   _lastPageViewPath = pathname;
+
+  // Skip the first call — index.html already fired PageView on initial load
+  if (!_firstPageViewDone) {
+    _firstPageViewDone = true;
+    return;
+  }
   _fbq('track', 'PageView');
 };
 
 // ─── Purchase ─────────────────────────────────────────────────────────────────
 // ONLY called from CheckOut.jsx after a confirmed order.
-// Calls __allowNextPurchase() to unlock the interceptor in index.html — 
-// any Purchase that doesn't go through here is blocked automatically.
 export const trackPurchase = (orderId, value, numItems) => {
   if (!orderId) return;
   if (_firedPurchase.has(orderId)) return;
   _firedPurchase.add(orderId);
-  // Unlock the interceptor for exactly this one Purchase call
+  // Unlock the blocker for exactly this one call
   if (typeof window.__allowNextPurchase === 'function') {
     window.__allowNextPurchase();
   }

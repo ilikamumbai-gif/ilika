@@ -58,113 +58,25 @@
   }
   </script>
 
-  <!--
-    META PIXEL — FULLY CONTROLLED SETUP
-    =====================================
-    All fbq() calls are intercepted by our proxy before reaching Meta's SDK.
-
-    Rules enforced by the proxy:
-      PageView  → allowed freely, but the FIRST one fired by fbq('init')
-                  auto-trigger is suppressed. Only our MetaPixelTracker.jsx
-                  fires PageView (once per route, skipping /order-success).
-      Purchase  → BLOCKED unless checkout code calls __allowNextPurchase() first.
-      All else  → passed through untouched (AddToCart, ViewContent, etc.)
-
-    This means we fire exactly 1 PageView per page and 1 Purchase per real order.
-  -->
+  <!-- META PIXEL -->
   <script>
-    (function() {
-      var PIXEL_ID = '1188302548683614';
-      var _purchaseAllowed  = false;
-      var _initPageViewSuppressed = false; // suppress the auto-PageView from fbq('init')
-
-      // ── Expose unlock for checkout code ──────────────────────────────────
-      window.__allowNextPurchase = function() {
-        _purchaseAllowed = true;
-        setTimeout(function() { _purchaseAllowed = false; }, 5000);
-      };
-
-      // ── Build the fbq stub (queues calls until fbevents.js loads) ─────────
-      window._fbq = window._fbq || {};
-      window._fbq.disablePushState = true;
-      window._fbq.autoConfig       = false;
-
-      var fbqStub = function() {
-        fbqStub.callMethod
-          ? fbqStub.callMethod.apply(fbqStub, arguments)
-          : fbqStub.queue.push(arguments);
-      };
-      fbqStub.push    = fbqStub;
-      fbqStub.loaded  = true;
-      fbqStub.version = '2.0';
-      fbqStub.queue   = [];
-
-      // ── Wrap the stub so our rules apply even to queued calls ─────────────
-      function makeProxy(realFn) {
-        return function() {
-          var args = Array.prototype.slice.call(arguments);
-          var cmd   = args[0];
-          var event = args[1];
-
-          // Block Purchase unless explicitly unlocked
-          if (cmd === 'track' && event === 'Purchase') {
-            if (!_purchaseAllowed) {
-              console.warn('[Ilika Pixel] Purchase blocked — not from checkout');
-              return;
-            }
-            _purchaseAllowed = false; // single-use
-          }
-
-          // Suppress the ONE automatic PageView that fbq('init') fires
-          if (cmd === 'track' && event === 'PageView' && !_initPageViewSuppressed) {
-            _initPageViewSuppressed = true;
-            console.log('[Ilika Pixel] Suppressed auto PageView from init');
-            return; // drop it — MetaPixelTracker.jsx will fire the real one
-          }
-
-          return realFn.apply(this, args);
-        };
-      }
-
-      window.fbq = makeProxy(fbqStub);
-
-      // Copy stub internals onto the proxy so fbevents.js can find them
-      window.fbq.push    = fbqStub.push;
-      window.fbq.loaded  = fbqStub.loaded;
-      window.fbq.version = fbqStub.version;
-      window.fbq.queue   = fbqStub.queue;
-      if (!window._fbq) window._fbq = window.fbq;
-
-      // ── Load fbevents.js ──────────────────────────────────────────────────
-      var t = document.createElement('script');
-      t.async = true;
-      t.src   = 'https://connect.facebook.net/en_US/fbevents.js';
-      var s   = document.getElementsByTagName('script')[0];
-      s.parentNode.insertBefore(t, s);
-
-      // ── After fbevents.js loads, re-wrap the REAL fbq function ────────────
-      // fbevents.js replaces window.fbq with a new real function.
-      // We poll for it and wrap it the same way.
-      var _checkInterval = setInterval(function() {
-        if (window.fbq && window.fbq !== makeProxy && window.fbq.queue !== fbqStub.queue) {
-          var realFbq = window.fbq;
-          window.fbq  = makeProxy(realFbq);
-          Object.keys(realFbq).forEach(function(k) {
-            try { window.fbq[k] = realFbq[k]; } catch(e) {}
-          });
-          clearInterval(_checkInterval);
-        }
-      }, 50);
-
-      // ── Init the pixel ────────────────────────────────────────────────────
-      window.fbq('init', PIXEL_ID);
-      // No fbq('track','PageView') here — MetaPixelTracker.jsx handles it.
-    })();
+    !function(f,b,e,v,n,t,s){
+      if(f.fbq)return;
+      n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1188302548683614');
+    fbq('track', 'PageView');
   </script>
   <noscript>
     <img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=1188302548683614&ev=PageView&noscript=1"/>
   </noscript>
+  <!-- END META PIXEL -->
 
 </head>
 
