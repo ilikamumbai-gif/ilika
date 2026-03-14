@@ -1,23 +1,21 @@
 /**
  * pixel.js — Meta Pixel event helpers for ilika.in
  *
- * The pixel script (fbevents.js) is loaded in index.html, NOT here.
- * This file only contains functions that call window.fbq() safely.
+ * fbevents.js is loaded in index.html. This file calls window.fbq() safely.
  *
- * Rules:
- *  - PageView  → fires on every route except /admin and /order-success
- *  - Purchase  → fires ONLY after a confirmed order (COD or Razorpay verified)
- *                called from CheckOut.jsx — never on page browse
- *  - All events are deduplicated to prevent double-firing
+ * IMPORTANT: trackPurchase() calls window.__allowNextPurchase() first.
+ * That function is defined in index.html and unlocks the fbq interceptor
+ * for exactly one Purchase call. Any Purchase not coming through this
+ * function is automatically blocked by the interceptor.
  */
 
-// ─── MODULE-LEVEL DEDUP GUARDS ────────────────────────────────────────────────
+// ─── DEDUP GUARDS ─────────────────────────────────────────────────────────────
 let   _lastPageViewPath  = null;
 const _firedViewContent  = new Set();
 const _firedInitCheckout = new Set();
 const _firedPurchase     = new Set();
 
-// ─── Internal helper ─────────────────────────────────────────────────────────
+// ─── Internal helper ──────────────────────────────────────────────────────────
 const _fbq = (...args) => {
   if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
     window.fbq(...args);
@@ -25,6 +23,7 @@ const _fbq = (...args) => {
 };
 
 // ─── PageView ─────────────────────────────────────────────────────────────────
+// Fires on every route change EXCEPT /admin and /order-success.
 export const trackPageView = (pathname) => {
   if (!pathname) return;
   if (pathname.startsWith('/admin')) return;
@@ -35,10 +34,17 @@ export const trackPageView = (pathname) => {
 };
 
 // ─── Purchase ─────────────────────────────────────────────────────────────────
+// ONLY called from CheckOut.jsx after a confirmed order.
+// Calls __allowNextPurchase() to unlock the interceptor in index.html — 
+// any Purchase that doesn't go through here is blocked automatically.
 export const trackPurchase = (orderId, value, numItems) => {
   if (!orderId) return;
   if (_firedPurchase.has(orderId)) return;
   _firedPurchase.add(orderId);
+  // Unlock the interceptor for exactly this one Purchase call
+  if (typeof window.__allowNextPurchase === 'function') {
+    window.__allowNextPurchase();
+  }
   _fbq('track', 'Purchase', {
     value:        parseFloat(value) || 0,
     currency:     'INR',

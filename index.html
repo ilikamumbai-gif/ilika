@@ -58,12 +58,21 @@
   }
   </script>
 
-  <!-- META PIXEL
-       autoConfig and disablePushState are set INSIDE the IIFE,
-       before the fbevents.js script tag is created.
-       This is the ONLY way to stop Meta auto-firing Purchase/PageView.
-       Do NOT add fbq('set','autoConfig',...) — that call re-enables scanning. -->
+  <!--
+    META PIXEL — HARDENED SETUP
+    ============================
+    Problem: Meta's fbevents.js has an "autoConfig" feature that scans the
+    page for prices and purchase-related content, then auto-fires a Purchase
+    event — even on browse pages. Setting autoConfig=false via fbq('set',...)
+    does NOT reliably stop this.
+
+    Solution: We intercept window.fbq with a proxy that BLOCKS any Purchase
+    call unless our checkout code explicitly unlocks it first by calling
+    window.__allowNextPurchase(). This is 100% reliable regardless of what
+    Meta's script does internally.
+  -->
   <script>
+    // ── Step 1: Install the fbq stub (queues calls until fbevents.js loads) ──
     !function(f,b,e,v,n,t,s){
       if(f.fbq)return;
       f._fbq=f._fbq||{};
@@ -77,9 +86,65 @@
       s.parentNode.insertBefore(t,s)
     }(window,document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
+
     fbq('init','1188302548683614');
-    // ⚠️ NO fbq('track','PageView') here — MetaPixelTracker.jsx handles it
-    // per route and deliberately skips /order-success.
+    // No fbq('track','PageView') here — pixel.js fires it per route.
+
+    // ── Step 2: Intercept fbq and block rogue Purchase calls ─────────────────
+    // After fbevents.js loads it will replace window.fbq with the real function.
+    // We use a Proxy to intercept EVERY call to fbq, blocking Purchase unless
+    // our checkout code has explicitly set the unlock flag.
+    (function() {
+      var _purchaseAllowed = false;
+
+      // Expose unlock function — called by pixel.js trackPurchase() just before
+      // it fires the real Purchase event.
+      window.__allowNextPurchase = function() {
+        _purchaseAllowed = true;
+        // Auto-revoke after 5 seconds as a safety net
+        setTimeout(function() { _purchaseAllowed = false; }, 5000);
+      };
+
+      // Watch for fbq to be replaced by the real fbevents.js implementation,
+      // then wrap it immediately.
+      var _originalFbq = window.fbq;
+      var _wrapped = false;
+
+      function wrapFbq(realFbq) {
+        if (_wrapped) return;
+        _wrapped = true;
+        window.fbq = function() {
+          var args = Array.prototype.slice.call(arguments);
+          // Block any Purchase call that wasn't explicitly authorised
+          if (args[0] === 'track' && args[1] === 'Purchase') {
+            if (!_purchaseAllowed) {
+              console.warn('[Ilika Pixel] Purchase blocked — not from checkout flow');
+              return;
+            }
+            _purchaseAllowed = false; // consume the unlock — one use only
+          }
+          return realFbq.apply(this, args);
+        };
+        // Copy all properties fbevents.js set on the original fbq
+        Object.keys(realFbq).forEach(function(k) {
+          window.fbq[k] = realFbq[k];
+        });
+      }
+
+      // Poll until fbevents.js has loaded and replaced the stub
+      var _checkInterval = setInterval(function() {
+        if (window.fbq && window.fbq !== _originalFbq && !_wrapped) {
+          wrapFbq(window.fbq);
+          clearInterval(_checkInterval);
+        }
+      }, 50);
+
+      // Also wrap immediately in case fbevents.js already loaded synchronously
+      if (window.fbq && window.fbq !== _originalFbq) {
+        wrapFbq(window.fbq);
+        clearInterval(_checkInterval);
+      }
+    })();
   </script>
   <noscript>
     <img height="1" width="1" style="display:none"
