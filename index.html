@@ -43,15 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <!-- Add this BEFORE your React script tag in index.html -->
-<script>
-  // Prevent Meta signals/config from auto-firing Purchase events
-  window.__fbAutoEvents = false;
-  window.fbq = window.fbq || function() {
-    (window.fbq.queue = window.fbq.queue || []).push(arguments);
-  };
-  window.fbq.disableAutoEvents = true;
-</script>
+
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -66,10 +58,39 @@
   }
   </script>
 
-  <!-- Meta Pixel is initialized in src/utils/pixel.js — NOT here.
-       Initializing here gives Meta's script access to the DOM before React
-       mounts, causing it to auto-detect and fire Purchase/Lead events
-       based on page content. All pixel logic is controlled from React. -->
+  <!-- ═══════════════════════════════════════════════════════════
+       META PIXEL
+       - Loaded here in index.html so it is guaranteed to be
+         present before React mounts — no async race conditions.
+       - disablePushState stops Meta auto-firing PageView on every
+         SPA route change. Our MetaPixelTracker.jsx fires PageView
+         manually and deliberately skips /order-success.
+       - Purchase is fired from CheckOut.jsx ONLY after a confirmed
+         order. It never fires on page browse.
+       ═══════════════════════════════════════════════════════════ -->
+  <script>
+    !function(f,b,e,v,n,t,s){
+      if(f.fbq)return;
+      f._fbq=f._fbq||{};
+      f._fbq.disablePushState=true;
+      f._fbq.autoConfig=false;
+      n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    }(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('set','autoConfig',false,'1188302548683614');
+    fbq('init','1188302548683614');
+    // ⚠️ Do NOT call fbq('track','PageView') here.
+    // MetaPixelTracker.jsx fires it per route and skips /order-success.
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1188302548683614&ev=PageView&noscript=1"/>
+  </noscript>
 
 </head>
 

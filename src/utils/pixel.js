@@ -1,86 +1,40 @@
 /**
- * pixel.js — Meta Pixel controller for ilika.in
+ * pixel.js — Meta Pixel event helpers for ilika.in
  *
- * Strategy:
- *  - Pixel is injected eagerly at module load (not lazily inside React).
- *  - fbevents.js loads async, so fbq() queues calls until the script arrives.
- *  - Purchase fires browser-side ONLY after a confirmed order — never on page browse.
- *  - All events are deduplicated at module level.
+ * The pixel script (fbevents.js) is loaded in index.html, NOT here.
+ * This file only contains functions that call window.fbq() safely.
+ *
+ * Rules:
+ *  - PageView  → fires on every route except /admin and /order-success
+ *  - Purchase  → fires ONLY after a confirmed order (COD or Razorpay verified)
+ *                called from CheckOut.jsx — never on page browse
+ *  - All events are deduplicated to prevent double-firing
  */
 
-const PIXEL_ID = '1188302548683614';
-
-// ─── Clean up stale localStorage keys from old code versions ─────────────────
-try {
-  Object.keys(localStorage).forEach((k) => {
-    if (
-      k.startsWith('purchase_tracked_') ||
-      k.startsWith('order_total') ||
-      k.startsWith('order_items') ||
-      k.startsWith('px_purchase_')
-    ) localStorage.removeItem(k);
-  });
-} catch (e) {}
-
 // ─── MODULE-LEVEL DEDUP GUARDS ────────────────────────────────────────────────
-const _firedPageViews    = new Set();
+let   _lastPageViewPath  = null;
 const _firedViewContent  = new Set();
 const _firedInitCheckout = new Set();
 const _firedPurchase     = new Set();
 
-// ─── EAGER INIT — runs immediately when this module is imported ───────────────
-// fbq() internally queues all calls until fbevents.js finishes loading,
-// so it is safe to call fbq('track', ...) before the script arrives.
-const _isLive = (
-  typeof window !== 'undefined' &&
-  !window.location.pathname.startsWith('/admin') &&
-  (window.location.hostname === 'ilika.in' ||
-   window.location.hostname === 'www.ilika.in')
-);
-
-if (_isLive) {
-  // Disable Meta's automatic push-state PageView detection —
-  // we fire PageView manually so it never fires on /order-success.
-  window._fbq = window._fbq || {};
-  window._fbq.disablePushState = true;
-  window._fbq.autoConfig       = false;
-
-  // Inject fbevents.js
-  /* eslint-disable */
-  !function(f,b,e,v,n,t,s){
-    if(f.fbq)return;
-    n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
-    t=b.createElement(e);t.async=!0;t.src=v;
-    s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s);
-  }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-  /* eslint-enable */
-
-  window.fbq('set',  'autoConfig', false, PIXEL_ID);
-  window.fbq('init', PIXEL_ID);
-}
-
-// ─── Internal helper — only calls fbq if pixel is active ─────────────────────
+// ─── Internal helper ─────────────────────────────────────────────────────────
 const _fbq = (...args) => {
-  if (_isLive && window.fbq) window.fbq(...args);
+  if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+    window.fbq(...args);
+  }
 };
 
 // ─── PageView ─────────────────────────────────────────────────────────────────
-// Called by MetaPixelTracker on every route change.
-// Skips /admin and /order-success (purchase confirmation page).
 export const trackPageView = (pathname) => {
-  if (!_isLive) return;
   if (!pathname) return;
   if (pathname.startsWith('/admin')) return;
   if (pathname.startsWith('/order-success')) return;
-  if (_firedPageViews.has(pathname)) return;
-  _firedPageViews.add(pathname);
+  if (pathname === _lastPageViewPath) return;
+  _lastPageViewPath = pathname;
   _fbq('track', 'PageView');
 };
 
 // ─── Purchase ─────────────────────────────────────────────────────────────────
-// Fired ONLY after a confirmed order (COD placed or Razorpay payment verified).
-// orderId is used as eventID to prevent double-counting.
 export const trackPurchase = (orderId, value, numItems) => {
   if (!orderId) return;
   if (_firedPurchase.has(orderId)) return;
@@ -94,7 +48,7 @@ export const trackPurchase = (orderId, value, numItems) => {
   }, { eventID: `purchase_${orderId}` });
 };
 
-// ─── InitiateCheckout ────────────────────────────────────────────────────────
+// ─── InitiateCheckout ─────────────────────────────────────────────────────────
 export const trackInitiateCheckout = (value, numItems) => {
   const safeValue = parseFloat(value) || 0;
   if (safeValue <= 0) return;
@@ -111,7 +65,7 @@ export const trackInitiateCheckout = (value, numItems) => {
   });
 };
 
-// ─── ViewContent ─────────────────────────────────────────────────────────────
+// ─── ViewContent ──────────────────────────────────────────────────────────────
 export const trackViewContent = (productId, productName, price) => {
   if (!productId) return;
   if (_firedViewContent.has(productId)) return;
@@ -126,7 +80,7 @@ export const trackViewContent = (productId, productName, price) => {
   });
 };
 
-// ─── AddToCart ───────────────────────────────────────────────────────────────
+// ─── AddToCart ────────────────────────────────────────────────────────────────
 export const trackAddToCart = (productId, productName, price, quantity = 1) => {
   _fbq('track', 'AddToCart', {
     content_ids:  [productId],

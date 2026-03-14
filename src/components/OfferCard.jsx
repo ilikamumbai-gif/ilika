@@ -36,7 +36,7 @@ const OfferCard = ({
         className="
         bg-white/95 backdrop-blur-md
         rounded-2xl
-        p-4 sm:p-6
+p-3 sm:p-6
         h-full
         shadow-md
         group-hover:shadow-xl
@@ -48,26 +48,23 @@ const OfferCard = ({
         <div>
 
           {/* TITLE */}
-          <h3 className="text-base sm:text-lg font-semibold text-[#7A2E3A] mb-2">
-            {title}
+          <h3 className="text-sm sm:text-lg font-semibold text-[#7A2E3A] mb-1 sm:mb-2">            {title}
           </h3>
 
           {/* DESCRIPTION */}
-          <p className="text-xs sm:text-sm text-gray-600 mb-4 leading-relaxed">
-            {description}
+          <p className="text-[11px] sm:text-sm text-gray-600 mb-2 sm:mb-4 leading-snug sm:leading-relaxed">            {description}
           </p>
 
           {/* COUPON */}
           {type === "coupon" && (
-            <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-2 sm:mb-4">
               <span
                 className="
-                border border-dashed border-orange-400
+                border border-dashed border-orange-700
                 px-3 py-1 rounded-md
                 text-xs sm:text-sm font-semibold
-                text-orange-700
-                bg-orange-50
+                text-white
+                bg-orange-400
                 "
               >
                 {code}
@@ -97,7 +94,7 @@ const OfferCard = ({
           flex-wrap gap-2
           text-orange-700
           font-semibold
-          mt-2
+          mt-1 sm:mt-2
           "
         >
 
