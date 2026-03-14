@@ -5,7 +5,7 @@ import { auth } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { app } from "../firebase/firebaseConfig";
-
+import { trackCompleteRegistration } from "../utils/pixel";
 
 const Signup = () => {
   const auth = getAuth(app);
@@ -17,38 +17,28 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [otpVerified, setOtpVerified] = useState(false);
 
-
   const setupRecaptcha = () => {
     window.recaptchaVerifier = new RecaptchaVerifier(
       "recaptcha-container",
-      {
-        size: "invisible",
-      },
+      { size: "invisible" },
       auth
     );
   };
+
   const sendOtp = async () => {
     if (!phone) {
       alert("Phone number is required");
       return;
     }
-
     setupRecaptcha();
-
     const appVerifier = window.recaptchaVerifier;
-
     try {
-      const result = await signInWithPhoneNumber(
-        auth,
-        `+91${phone}`,
-        appVerifier
-      );
+      const result = await signInWithPhoneNumber(auth, `+91${phone}`, appVerifier);
       setConfirmationResult(result);
       alert("OTP Sent Successfully");
     } catch (error) {
@@ -56,12 +46,12 @@ const Signup = () => {
       alert("Failed to send OTP");
     }
   };
+
   const verifyOtp = async () => {
     if (!otp) {
       alert("Enter OTP");
       return;
     }
-
     try {
       await confirmationResult.confirm(otp);
       setOtpVerified(true);
@@ -78,8 +68,8 @@ const Signup = () => {
       body: JSON.stringify({
         uid: user.uid,
         email: user.email,
-        name: user.displayName || name
-      })
+        name: user.displayName || name,
+      }),
     });
   };
 
@@ -90,17 +80,12 @@ const Signup = () => {
       return;
     }
     setError("");
-
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await saveUserToBackend(userCredential.user);
+      // ✅ META PIXEL: CompleteRegistration — email signup
+      trackCompleteRegistration('email');
       navigate("/user");
-
     } catch (err) {
       setError(err.message);
     }
@@ -110,6 +95,8 @@ const Signup = () => {
     try {
       const result = await signInWithGoogle();
       await saveUserToBackend(result.user);
+      // ✅ META PIXEL: CompleteRegistration — Google signup
+      trackCompleteRegistration('google');
       navigate("/user");
     } catch (err) {
       setError(err.message);
@@ -150,33 +137,37 @@ const Signup = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
           <input
             type="text"
             placeholder="Phone Number"
+            className="w-full border p-2 rounded"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
           />
 
-          <button type="button" onClick={sendOtp}>
+          <button type="button" onClick={sendOtp}
+            className="w-full border py-2 rounded text-sm hover:bg-gray-50 transition">
             Send OTP
           </button>
 
           <input
             type="text"
             placeholder="Enter OTP"
+            className="w-full border p-2 rounded"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
           />
 
-          <button type="button" onClick={verifyOtp}>
+          <button type="button" onClick={verifyOtp}
+            className="w-full border py-2 rounded text-sm hover:bg-gray-50 transition">
             Verify OTP
           </button>
 
           <div id="recaptcha-container"></div>
-          {error && (
-            <p className="text-red-500 text-sm">{error}</p>
-          )}
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button
             type="submit"
@@ -186,7 +177,6 @@ const Signup = () => {
           </button>
         </form>
 
-        {/* 🔥 GOOGLE BUTTON */}
         <button
           onClick={handleGoogleSignup}
           className="w-full mt-4 border py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition"

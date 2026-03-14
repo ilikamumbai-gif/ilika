@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { trackInitiateCheckout } from "../utils/pixel";
+import { trackInitiateCheckout, trackPurchase, trackAddPaymentInfo } from "../utils/pixel";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -84,15 +84,6 @@ const Checkout = () => {
     sessionStorage.removeItem("purchase_items");
   }, []);
 
-  /* ---------------- INITIATE CHECKOUT PIXEL (fires once on mount) ---------------- */
-
-  useEffect(() => {
-    if (!cartItems.length) return;
-    const safeTotal = parseFloat(Number(subtotal).toFixed(2));
-    // trackInitiateCheckout has module-level + sessionStorage dedup built in
-    trackInitiateCheckout(safeTotal, cartItems.length);
-  }, []); // fires once on mount; dedup is handled inside the utility
-
   /* ---------------- SAVE ADDRESS ---------------- */
 
   const saveAddress = async () => {
@@ -163,6 +154,12 @@ const Checkout = () => {
 
     const source = localStorage.getItem("traffic_source") || "WEBSITE";
 
+    // ✅ Fire InitiateCheckout when user actually submits — not on page load
+    trackInitiateCheckout(total, cartItems.length);
+
+    // ✅ Fire AddPaymentInfo — user has committed to paying (COD or Online)
+    trackAddPaymentInfo(total, cartItems.length);
+
     try {
       /* =========================
          COD FLOW
@@ -197,20 +194,11 @@ const Checkout = () => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
-        // ✅ Fire Purchase event server-side via Meta Conversions API
-        fetch(`${API_URL}/api/meta/purchase`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderId: data.orderId,
-            value: parseFloat(Number(total).toFixed(2)),
-            numItems: cartItems.length,
-            email: currentUser.email,
-          }),
-        }).catch(() => {}); // fire-and-forget, don't block navigation
+        // ✅ Fire Purchase pixel event — browser-side, blocked until this call
+        trackPurchase(data.orderId, parseFloat(Number(total).toFixed(2)), cartItems.length);
 
-        clearCart();
         navigate(`/order-success/${data.orderId}`);
+        clearCart(); // clear AFTER navigate so empty-cart guard never triggers
         return;
       }
 
@@ -271,20 +259,11 @@ const Checkout = () => {
             const verifyData = await verifyRes.json();
             if (!verifyRes.ok) throw new Error(verifyData.error);
 
-            // ✅ Fire Purchase event server-side via Meta Conversions API
-            fetch(`${API_URL}/api/meta/purchase`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                orderId: verifyData.orderId,
-                value: parseFloat(Number(total).toFixed(2)),
-                numItems: cartItems.length,
-                email: currentUser.email,
-              }),
-            }).catch(() => {}); // fire-and-forget, don't block navigation
+            // ✅ Fire Purchase pixel event — browser-side, blocked until this call
+            trackPurchase(verifyData.orderId, parseFloat(Number(total).toFixed(2)), cartItems.length);
 
-            clearCart();
             navigate(`/order-success/${verifyData.orderId}`);
+            clearCart(); // clear AFTER navigate so empty-cart guard never triggers
           } catch (err) {
             console.error("Verification error:", err);
             alert("Payment verification failed");

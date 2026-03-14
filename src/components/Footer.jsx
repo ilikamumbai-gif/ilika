@@ -152,7 +152,7 @@ const Footer = () => {
           <div className="flex flex-wrap gap-5 justify-center">
             <Link to="/termsandcondition" className="hover:underline">Terms</Link>
             <Link to="/privacy" className="hover:underline">Privacy</Link>
-            <Link to="/return" className="hover:underline">Returns</Link>
+            <Link to="/return" className="hover:underline">Returns/Refund</Link>
             <Link to="/shippingpolicy" className="hover:underline">Shipping</Link>
             <Link to="/faq" className="hover:underline">FAQ</Link>
           </div>

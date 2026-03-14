@@ -1,40 +1,41 @@
-/**
- * pixel.js — Meta Pixel event helpers for ilika.in
- *
- * Purchase blocking is handled in index.html — this file just calls fbq safely.
- * index.html fires PageView on first load, so we skip the first call here.
- */
 
-let _firstPageViewSkipped = false;
+const PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID;
+
+
+// ── Dedup guards ──────────────────────────────────────────────
+let _firstPageViewSkipped = false; // index.html fires the first one
 let _lastPath             = null;
 const _firedViewContent   = new Set();
 const _firedInitCheckout  = new Set();
 const _firedPurchase      = new Set();
-
-const _fbq = (...args) => {
-  if (typeof window.fbq === 'function') window.fbq(...args);
+ 
+// ── Safe fbq caller ───────────────────────────────────────────
+const fbq = (...args) => {
+  if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+    window.fbq(...args);
+  }
 };
-
-// ── PageView ──────────────────────────────────────────────────────────────────
-// index.html already fired PageView on first load — skip that first call.
-// After that, fire once per unique route (not on /admin or /order-success).
+ 
+// ── PageView ──────────────────────────────────────────────────
+// Fires on every SPA route change except /admin and /order-success.
+// Skips the very first call because index.html already fired it.
 export const trackPageView = (pathname) => {
   if (!pathname) return;
   if (pathname.startsWith('/admin')) return;
   if (pathname.startsWith('/order-success')) return;
   if (pathname === _lastPath) return;
   _lastPath = pathname;
-
+ 
   if (!_firstPageViewSkipped) {
     _firstPageViewSkipped = true;
-    return; // index.html fired this one already
+    return; // index.html already fired PageView on first load
   }
-
-  _fbq('track', 'PageView');
+ 
+  fbq('track', 'PageView');
 };
-
-// ── Purchase ──────────────────────────────────────────────────────────────────
-// Only called from CheckOut.jsx after a confirmed order.
+ 
+// ── Purchase ──────────────────────────────────────────────────
+// Called ONLY from CheckOut.jsx after a confirmed order.
 // Calls __allowNextPurchase() to unlock the blocker in index.html.
 export const trackPurchase = (orderId, value, numItems) => {
   if (!orderId || _firedPurchase.has(orderId)) return;
@@ -42,16 +43,46 @@ export const trackPurchase = (orderId, value, numItems) => {
   if (typeof window.__allowNextPurchase === 'function') {
     window.__allowNextPurchase();
   }
-  _fbq('track', 'Purchase', {
+  fbq('track', 'Purchase', {
+    content_ids:  [orderId],
+    content_type: 'product',
+    num_items:    parseInt(numItems) || 1,
     value:        parseFloat(value)  || 0,
     currency:     'INR',
-    num_items:    parseInt(numItems) || 1,
-    content_type: 'product',
     order_id:     orderId,
-  }, { eventID: `purchase_${orderId}` });
+  });
 };
-
-// ── InitiateCheckout ──────────────────────────────────────────────────────────
+ 
+// ── ViewContent ───────────────────────────────────────────────
+// Fires when a product detail page is viewed.
+export const trackViewContent = (productId, productName, price) => {
+  if (!productId || _firedViewContent.has(productId)) return;
+  _firedViewContent.add(productId);
+  fbq('track', 'ViewContent', {
+    content_ids:  [productId],
+    content_name: productName || '',
+    content_type: 'product',
+    value:        parseFloat(price) || 0,
+    currency:     'INR',
+    contents:     [{ id: productId, quantity: 1, item_price: parseFloat(price) || 0 }],
+  });
+};
+ 
+// ── AddToCart ─────────────────────────────────────────────────
+// Fires when user adds a product to cart.
+export const trackAddToCart = (productId, productName, price, quantity = 1) => {
+  fbq('track', 'AddToCart', {
+    content_ids:  [productId],
+    content_name: productName || '',
+    content_type: 'product',
+    value:        parseFloat(price) * quantity || 0,
+    currency:     'INR',
+    num_items:    quantity,
+  });
+};
+ 
+// ── InitiateCheckout ──────────────────────────────────────────
+// Fires once when user reaches the checkout page.
 export const trackInitiateCheckout = (value, numItems) => {
   const v = parseFloat(value) || 0;
   if (v <= 0) return;
@@ -60,35 +91,43 @@ export const trackInitiateCheckout = (value, numItems) => {
   if (sessionStorage.getItem(`px_ic_${key}`)) return;
   _firedInitCheckout.add(key);
   sessionStorage.setItem(`px_ic_${key}`, '1');
-  _fbq('track', 'InitiateCheckout', {
-    value: v, currency: 'INR',
-    num_items: parseInt(numItems) || 1,
+  fbq('track', 'InitiateCheckout', {
     content_type: 'product',
-  });
-};
-
-// ── ViewContent ───────────────────────────────────────────────────────────────
-export const trackViewContent = (productId, productName, price) => {
-  if (!productId || _firedViewContent.has(productId)) return;
-  _firedViewContent.add(productId);
-  _fbq('track', 'ViewContent', {
-    content_ids:  [productId],
-    content_name: productName || '',
-    value:        parseFloat(price) || 0,
+    num_items:    parseInt(numItems) || 1,
+    value:        v,
     currency:     'INR',
-    content_type: 'product',
-    contents:     [{ id: productId, quantity: 1, item_price: parseFloat(price) || 0 }],
   });
 };
-
-// ── AddToCart ─────────────────────────────────────────────────────────────────
-export const trackAddToCart = (productId, productName, price, quantity = 1) => {
-  _fbq('track', 'AddToCart', {
-    content_ids:  [productId],
-    content_name: productName || '',
-    value:        parseFloat(price) || 0,
+ 
+// ── CompleteRegistration ──────────────────────────────────────
+// Fires on successful signup.
+export const trackCompleteRegistration = (method = 'email') => {
+  fbq('track', 'CompleteRegistration', {
+    content_name: 'Signup',
+    status:       true,
+    method,
+  });
+};
+ 
+// ── Search ────────────────────────────────────────────────────
+export const trackSearch = (searchString) => {
+  if (!searchString) return;
+  fbq('track', 'Search', {
+    search_string: searchString,
+  });
+};
+ 
+// ── AddPaymentInfo ────────────────────────────────────────────
+// Fires when user clicks the payment button (COD or Online).
+// Signals payment intent to Meta — useful for optimising ads.
+export const trackAddPaymentInfo = (value, numItems) => {
+  const v = parseFloat(value) || 0;
+  if (v <= 0) return;
+  fbq('track', 'AddPaymentInfo', {
+    value:        v,
     currency:     'INR',
+    num_items:    parseInt(numItems) || 1,
     content_type: 'product',
-    num_items:    quantity,
   });
 };
+ 

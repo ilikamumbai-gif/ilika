@@ -44,6 +44,11 @@ const ProductDetail = ({
         // 2️⃣ If found locally
         if (found) {
           setProduct(found);
+          // Fire ViewContent as soon as we have the product — price uses base price here;
+          // trackViewContent deduplicates by productId so it only ever fires once per session
+          const pid = found._id || found.id;
+          const basePrice = found.variants?.[0]?.price ?? found.price ?? 0;
+          trackViewContent(pid, found.name, basePrice);
           setLoading(false);
           return;
         }
@@ -54,6 +59,10 @@ const ProductDetail = ({
 
         const data = await res.json();
         setProduct(data);
+        // Fire ViewContent after API fetch too
+        const pid = data._id || data.id;
+        const basePrice = data.variants?.[0]?.price ?? data.price ?? 0;
+        trackViewContent(pid, data.name, basePrice);
 
       } catch (err) {
         console.error("Failed to fetch product:", err);
@@ -130,12 +139,14 @@ const ProductDetail = ({
     }
 
     if (!isInCart) {
-      handleAddToCart();
+      handleAddToCart(); // fires trackAddToCart inside
       setTimeout(() => {
         closeCart();
         navigate("/checkout");
       }, 150);
     } else {
+      // Already in cart — still track AddToCart for Buy Now intent
+      trackAddToCart(productId, product?.name, price, 1);
       closeCart();
       navigate("/checkout");
     }
@@ -173,14 +184,6 @@ const ProductDetail = ({
 
   const price = activeVariant?.price ?? product?.price ?? 0;
   const mrp = activeVariant?.mrp ?? product?.mrp ?? 0;
-
-  /* ================= FACEBOOK PIXEL VIEW CONTENT ================= */
-  useEffect(() => {
-    if (!productId || !product) return;
-    // trackViewContent deduplicates by productId at module level —
-    // safe to call on every render; only fires once per product per session
-    trackViewContent(productId, product.name, price);
-  }, [product, productId, price]);
 
   /* ================= RELATED PRODUCTS ================= */
   const EXCLUDED_CATEGORY = "new"; // <-- change to your real id or slug
