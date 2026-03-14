@@ -58,16 +58,11 @@
   }
   </script>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       META PIXEL
-       - Loaded here in index.html so it is guaranteed to be
-         present before React mounts — no async race conditions.
-       - disablePushState stops Meta auto-firing PageView on every
-         SPA route change. Our MetaPixelTracker.jsx fires PageView
-         manually and deliberately skips /order-success.
-       - Purchase is fired from CheckOut.jsx ONLY after a confirmed
-         order. It never fires on page browse.
-       ═══════════════════════════════════════════════════════════ -->
+  <!-- META PIXEL
+       autoConfig and disablePushState are set INSIDE the IIFE,
+       before the fbevents.js script tag is created.
+       This is the ONLY way to stop Meta auto-firing Purchase/PageView.
+       Do NOT add fbq('set','autoConfig',...) — that call re-enables scanning. -->
   <script>
     !function(f,b,e,v,n,t,s){
       if(f.fbq)return;
@@ -82,10 +77,9 @@
       s.parentNode.insertBefore(t,s)
     }(window,document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('set','autoConfig',false,'1188302548683614');
     fbq('init','1188302548683614');
-    // ⚠️ Do NOT call fbq('track','PageView') here.
-    // MetaPixelTracker.jsx fires it per route and skips /order-success.
+    // ⚠️ NO fbq('track','PageView') here — MetaPixelTracker.jsx handles it
+    // per route and deliberately skips /order-success.
   </script>
   <noscript>
     <img height="1" width="1" style="display:none"
