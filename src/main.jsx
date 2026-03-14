@@ -7,9 +7,11 @@ import "./main.css";
 import { AuthProvider } from "./context/AuthContext";
 import { ProductProvider } from "./context/ProductContext";
 import ScrollToTop from "./components/ScrollToTop";
+import MetaPixelTracker from "./components/MetaPixelTracker";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
+    <MetaPixelTracker />
     <AuthProvider>
       <ProductProvider>
         <ScrollToTop />

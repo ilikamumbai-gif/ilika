@@ -50,7 +50,6 @@ import ComboDetail from "../pages/ComboDetail";
 const NavRoutes = () => {
   return (
     <AdminAuthProvider>
-      <MetaPixelTracker />
       <Routes>
         {/* PUBLIC ROUTES */}
         <Route path="/" element={<Home />} />
