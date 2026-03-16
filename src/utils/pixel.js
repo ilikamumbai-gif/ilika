@@ -50,36 +50,30 @@ export const trackPurchase = (orderId, value, numItems) => {
 
   if (!orderId) return;
 
-  const lsKey = `px_purchase_${orderId}`;
+  const key = `px_purchase_${orderId}`;
 
   try {
 
-    const existing = localStorage.getItem(lsKey);
-
-    if (existing) {
-      const { ts } = JSON.parse(existing);
-
-      if (Date.now() - ts < PURCHASE_TTL_MS) {
-        return;
-      }
-
-      localStorage.removeItem(lsKey);
+    if (localStorage.getItem(key)) {
+      return;
     }
 
-    localStorage.setItem(lsKey, JSON.stringify({ ts: Date.now() }));
+    localStorage.setItem(key, Date.now());
 
-  } catch (_) {
-    // ignore storage errors
+  } catch (e) { }
+
+  if (typeof window.fbq === "function") {
+
+    window.fbq("track", "Purchase", {
+      content_ids: [orderId],
+      content_type: "product",
+      value: parseFloat(value) || 0,
+      currency: "INR",
+      num_items: parseInt(numItems) || 1
+    });
+
   }
 
-  fbq("track", "Purchase", {
-    content_ids: [orderId],
-    content_type: "product",
-    num_items: parseInt(numItems) || 1,
-    value: parseFloat(value) || 0,
-    currency: "INR",
-    order_id: orderId
-  });
 };
 
 // ─────────────────────────────────────────────
