@@ -1,27 +1,17 @@
-# ⚠️ CRITICAL FIX — index.html Meta Pixel Snippet
+# ✅ Meta Pixel Fix — index.html
 
-## The Bug
-Your `index.html` currently has `fbq('track', 'Purchase')` inside the Meta Pixel
-base code snippet. This fires a Purchase event on **every single page load**,
-poisoning all your Meta Ads conversion data.
+## Root Cause
+Your `index.html` has `fbq('track', 'Purchase')` inside the base Meta Pixel
+snippet. This fires a Purchase event on **every single page load** — home page,
+product pages, blog, everywhere — completely poisoning your Meta Ads conversion data.
 
-## Find This in Your index.html
-Look for the Meta Pixel `<script>` block in your `<head>`. It probably looks like:
+## Find and Replace in Your index.html
 
-```html
-<!-- WRONG — what you have now -->
-<script>
-  !function(f,b,e,v,n,t,s){...}(window,...,'fbevents.js');
-  fbq('init', '1188302548683614');
-  fbq('track', 'PageView');
-  fbq('track', 'Purchase');   ← DELETE THIS LINE
-</script>
-```
-
-## The Fix — Replace With This Exactly
+Find the Meta Pixel `<script>` block in your `<head>`. Delete the entire block
+and replace it with this:
 
 ```html
-<!-- CORRECT — paste this into your <head> -->
+<!-- ✅ CORRECT — Meta Pixel base snippet (no Purchase here) -->
 <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -32,8 +22,11 @@ Look for the Meta Pixel `<script>` block in your `<head>`. It probably looks lik
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
 
+  fbq('init', '1188302548683614');
   fbq('track', 'PageView');
-  /* ✅ NO Purchase here. Purchase is fired ONLY from CheckOut.jsx after order confirmation. */
+
+  /* ✅ NO fbq('track','Purchase') here.
+     Purchase fires ONLY from CheckOut.jsx after a real confirmed order. */
 </script>
 <noscript>
   <img height="1" width="1" style="display:none"
@@ -41,14 +34,24 @@ Look for the Meta Pixel `<script>` block in your `<head>`. It probably looks lik
 </noscript>
 ```
 
-## What Changed
-- Removed `fbq('track', 'Purchase')` from the base snippet
-- Purchase is now fired ONLY from `CheckOut.jsx` after a real order is confirmed
-- The React app handles SPA PageView tracking via `PixelPageTracker` in `NavRoutes.jsx`
+## What Was Wrong (Before)
+```html
+<!-- ❌ WRONG — what causes the bug -->
+fbq('init', '1188302548683614');
+fbq('track', 'PageView');
+fbq('track', 'Purchase');   ← THIS LINE fires on every page load
+```
 
-## After Fixing index.html
-1. Deploy the updated `index.html`
-2. Deploy the updated `src/` files from `src_fixed.zip`
-3. Open Meta Pixel Helper in an incognito tab and browse your site
-4. You should see ONLY `PageView` events while browsing — zero `Purchase` events
-5. Place a test order — ONLY THEN should Purchase fire, once
+## What the Fixed Code Does
+- `fbq('init', ...)` — initialises the pixel once ✅
+- `fbq('track', 'PageView')` — fires on initial hard load ✅
+- SPA PageView on route changes — handled by `PixelPageTracker` in `NavRoutes.jsx` ✅
+- `Purchase` — fires ONLY from `CheckOut.jsx` after `trackPurchase()` is called
+  with a real `orderId` from the order API response ✅
+
+## Verification Steps After Deploying
+1. Install **Meta Pixel Helper** Chrome extension
+2. Open an incognito tab and browse your site (home, products, blog, etc.)
+3. You should see **only PageView** events — zero Purchase events
+4. Place a real test order through checkout
+5. **Only then** should you see exactly one Purchase event fire
