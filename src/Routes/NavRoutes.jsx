@@ -1,5 +1,18 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { trackPageView } from "../utils/pixel";
+
+// ── SPA PageView tracker ──────────────────────────────────────
+// Fires trackPageView on every route change.
+// trackPageView() internally skips the first call (index.html already fired it),
+// skips /admin, and skips /order-success to avoid duplicate events.
+const PixelPageTracker = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    trackPageView(pathname);
+  }, [pathname]);
+  return null;
+};
 
 import Home from "../pages/Home";
 import Offer from "../pages/Offer";
@@ -49,6 +62,7 @@ import ComboDetail from "../pages/ComboDetail";
 const NavRoutes = () => {
   return (
     <AdminAuthProvider>
+      <PixelPageTracker />
       <Routes>
         {/* PUBLIC ROUTES */}
         <Route path="/" element={<Home />} />
