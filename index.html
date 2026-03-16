@@ -40,61 +40,22 @@
 -->
 
 <script>
-  /* ── Meta Pixel base code ── */
-  !function(f,b,e,v,n,t,s)
-  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-  n.queue=[];t=b.createElement(e);t.async=!0;
-  t.src=v;s=b.getElementsByTagName(e)[0];
-  s.parentNode.insertBefore(t,s)}(window, document,'script',
-  'https://connect.facebook.net/en_US/fbevents.js');
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
 
-  /* ── Purchase guard ── */
-  /* DEFAULT = false = ALL Purchase events blocked until explicitly unlocked */
-  /* BUG WAS: var _purchaseAllowed = true  ← allowed first call on every page */
-  var _purchaseAllowed = false;
+fbq('init', '1188302548683614');
+fbq('track', 'PageView');
 
-  /* Called by CheckOut.jsx → trackPurchase() to allow exactly ONE real purchase through */
-  window.__allowNextPurchase = function() {
-    _purchaseAllowed = true;
-  };
-
-  /* Wraps fbq to intercept and block unauthorized Purchase events */
-  function purchaseFilter(dispatchFn) {
-    return function(...args) {
-      var isTrack      = (args[0] === 'track'    && args[1] === 'Purchase');
-      var isCallMethod = (args[0] === 'Purchase');
-      if (isTrack || isCallMethod) {
-        if (!_purchaseAllowed) {
-          console.warn('[Ilika] Purchase blocked');
-          return;
-        }
-        _purchaseAllowed = false; /* reset — only one fires per unlock */
-      }
-      return dispatchFn.apply(this, args);
-    };
-  }
-
-  /* Build the fbq stub */
-  var fbqStub = function() {
-    fbqStub.callMethod
-      ? fbqStub.callMethod.apply(fbqStub, arguments)
-      : fbqStub.queue.push(arguments);
-  };
-  fbqStub.push    = fbqStub;
-  fbqStub.loaded  = true;
-  fbqStub.version = '2.0';
-  fbqStub.queue   = [];
-
-  /* Wrap the stub with the purchase filter BEFORE assigning to window.fbq */
-  window.fbq  = purchaseFilter(fbqStub);
-  window._fbq = fbqStub;
-
-  /* Standard pixel init — PageView only, NO Purchase here */
-  fbq('init', '1188302548683614');
-  fbq('track', 'PageView');
+/* purchase guard */
+window.__allowNextPurchase = false;
 </script>
+
 <noscript>
   <img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1188302548683614&ev=PageView&noscript=1"/>

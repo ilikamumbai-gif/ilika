@@ -97,16 +97,18 @@ export const trackPurchase = (orderId, value, numItems) => {
   // Calling window.__allowNextPurchase() sets _purchaseAllowed = true so the
   // NEXT fbq('track','Purchase') call passes through, then resets to false.
   if (typeof window.__allowNextPurchase === "function") {
-    window.__allowNextPurchase();
+    if (!window.__allowNextPurchase) return;
+
+    window.__allowNextPurchase = false;
   }
 
   fbq("track", "Purchase", {
-    content_ids:  [orderId],
+    content_ids: [orderId],
     content_type: "product",
-    num_items:    parseInt(numItems) || 1,
-    value:        parseFloat(value)  || 0,
-    currency:     "INR",
-    order_id:     orderId,
+    num_items: parseInt(numItems) || 1,
+    value: parseFloat(value) || 0,
+    currency: "INR",
+    order_id: orderId,
   });
 };
 
@@ -118,14 +120,14 @@ export const trackViewContent = (productId, productName, price) => {
   sessionStorage.setItem(key, "1");
 
   fbq("track", "ViewContent", {
-    content_ids:  [productId],
+    content_ids: [productId],
     content_name: productName || "",
     content_type: "product",
-    value:        parseFloat(price) || 0,
-    currency:     "INR",
+    value: parseFloat(price) || 0,
+    currency: "INR",
     contents: [{
-      id:         productId,
-      quantity:   1,
+      id: productId,
+      quantity: 1,
       item_price: parseFloat(price) || 0,
     }],
   });
@@ -134,12 +136,12 @@ export const trackViewContent = (productId, productName, price) => {
 // ── AddToCart ─────────────────────────────────────────────────
 export const trackAddToCart = (productId, productName, price, quantity = 1) => {
   fbq("track", "AddToCart", {
-    content_ids:  [productId],
+    content_ids: [productId],
     content_name: productName || "",
     content_type: "product",
-    value:        (parseFloat(price) || 0) * quantity,
-    currency:     "INR",
-    num_items:    quantity,
+    value: (parseFloat(price) || 0) * quantity,
+    currency: "INR",
+    num_items: quantity,
   });
 };
 
@@ -157,9 +159,9 @@ export const trackInitiateCheckout = (value, numItems) => {
 
   fbq("track", "InitiateCheckout", {
     content_type: "product",
-    num_items:    parseInt(numItems) || 1,
-    value:        v,
-    currency:     "INR",
+    num_items: parseInt(numItems) || 1,
+    value: v,
+    currency: "INR",
   });
 };
 
@@ -167,7 +169,7 @@ export const trackInitiateCheckout = (value, numItems) => {
 export const trackCompleteRegistration = (method = "email") => {
   fbq("track", "CompleteRegistration", {
     content_name: "Signup",
-    status:       true,
+    status: true,
     method,
   });
 };
@@ -183,9 +185,9 @@ export const trackAddPaymentInfo = (value, numItems) => {
   const v = parseFloat(value) || 0;
   if (v <= 0) return;
   fbq("track", "AddPaymentInfo", {
-    value:        v,
-    currency:     "INR",
-    num_items:    parseInt(numItems) || 1,
+    value: v,
+    currency: "INR",
+    num_items: parseInt(numItems) || 1,
     content_type: "product",
   });
 };
