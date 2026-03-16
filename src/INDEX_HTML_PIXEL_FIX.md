@@ -32,7 +32,6 @@ Look for the Meta Pixel `<script>` block in your `<head>`. It probably looks lik
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
 
-  fbq('init', '1188302548683614');
   fbq('track', 'PageView');
   /* ✅ NO Purchase here. Purchase is fired ONLY from CheckOut.jsx after order confirmation. */
 </script>
