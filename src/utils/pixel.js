@@ -1,15 +1,26 @@
 // ─────────────────────────────────────────────────────────────
 //  Meta Pixel Utility  —  ilika.in
-//  RULE: Purchase may ONLY fire from CheckOut.jsx, never globally.
+//
+//  HOW THE PURCHASE GUARD WORKS (two layers):
+//
+//  Layer 1 — index.html purchaseFilter:
+//    index.html wraps fbq with a filter that blocks ALL Purchase calls
+//    by default (_purchaseAllowed = false).
+//    To allow ONE real purchase through, call window.__allowNextPurchase()
+//    BEFORE calling fbq('track','Purchase'). The filter then lets it fire
+//    once and resets the block.
+//
+//  Layer 2 — localStorage TTL dedup (this file):
+//    Even if Layer 1 is bypassed, a px_purchase_{orderId} key with a
+//    10-minute TTL prevents duplicate fires from re-renders or double-calls.
+//
+//  Purchase may ONLY be called from CheckOut.jsx after a confirmed order API response.
 // ─────────────────────────────────────────────────────────────
 
 const PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID;
-
-// How long (ms) to remember a fired Purchase so duplicate tabs / refreshes
-// don't re-fire. 10 minutes is long enough to cover the success-page visit.
 const PURCHASE_TTL_MS = 10 * 60 * 1000; // 10 min
 
-// ── In-memory dedup (survives within one tab session) ─────────
+// ── In-memory dedup ───────────────────────────────────────────
 let _firstPageViewSkipped = false;
 let _lastPath = null;
 const _firedInitCheckout = new Set();
@@ -42,13 +53,12 @@ export const initPixel = () => {
 export const trackPageView = (pathname) => {
   if (!pathname) return;
   if (pathname.startsWith("/admin")) return;
-  if (pathname.startsWith("/order-success")) return;  // success page never fires PageView
-  if (pathname === _lastPath) return;                 // no duplicate on same route
+  if (pathname.startsWith("/order-success")) return;
+  if (pathname === _lastPath) return;
 
   _lastPath = pathname;
 
   if (!_firstPageViewSkipped) {
-    // index.html's inline pixel already fired PageView — skip this first one
     _firstPageViewSkipped = true;
     return;
   }
@@ -57,37 +67,37 @@ export const trackPageView = (pathname) => {
 };
 
 // ── Purchase ──────────────────────────────────────────────────
-// MUST only be called from CheckOut.jsx right after a confirmed order API response.
-// Uses localStorage with a TTL so duplicate tabs / refreshes cannot re-fire.
-// Also checks that the caller is actually on /checkout to prevent any stray calls.
+// ONLY called from CheckOut.jsx after a confirmed order API response.
+//
+// Step 1: calls window.__allowNextPurchase() to unlock the index.html filter
+// Step 2: localStorage TTL check to catch any duplicate calls
+// Step 3: fires fbq('track','Purchase')
 export const trackPurchase = (orderId, value, numItems) => {
   if (!orderId) return;
 
-  // ① Path guard — Purchase is ONLY valid when the user is on /checkout
-  if (
-    typeof window !== "undefined" &&
-    !window.location.pathname.startsWith("/checkout")
-  ) {
-    console.warn("[Pixel] trackPurchase called outside /checkout — blocked.");
-    return;
-  }
-
-  // ② localStorage dedup with TTL
+  // ── Layer 2: localStorage TTL dedup ──────────────────────────
   const lsKey = `px_purchase_${orderId}`;
   try {
     const existing = localStorage.getItem(lsKey);
     if (existing) {
       const { ts } = JSON.parse(existing);
       if (Date.now() - ts < PURCHASE_TTL_MS) {
-        // Already fired for this order within the last 10 min
+        // Already fired for this order within the last 10 min — skip
         return;
       }
-      // Expired — clean it up and allow re-fire (edge case: same orderId reused)
       localStorage.removeItem(lsKey);
     }
     localStorage.setItem(lsKey, JSON.stringify({ ts: Date.now() }));
   } catch (_) {
-    // localStorage blocked (private browsing etc.) — fall through and fire anyway
+    // localStorage blocked (private browsing) — continue anyway
+  }
+
+  // ── Layer 1: unlock the index.html purchaseFilter for ONE call ─
+  // index.html sets _purchaseAllowed = false by default (blocks all Purchase events).
+  // Calling window.__allowNextPurchase() sets _purchaseAllowed = true so the
+  // NEXT fbq('track','Purchase') call passes through, then resets to false.
+  if (typeof window.__allowNextPurchase === "function") {
+    window.__allowNextPurchase();
   }
 
   fbq("track", "Purchase", {
@@ -101,10 +111,8 @@ export const trackPurchase = (orderId, value, numItems) => {
 };
 
 // ── ViewContent ───────────────────────────────────────────────
-// Fires when a product detail page opens — once per product per browser session.
 export const trackViewContent = (productId, productName, price) => {
   if (!productId) return;
-
   const key = `px_vc_${productId}`;
   if (sessionStorage.getItem(key)) return;
   sessionStorage.setItem(key, "1");
@@ -136,7 +144,6 @@ export const trackAddToCart = (productId, productName, price, quantity = 1) => {
 };
 
 // ── InitiateCheckout ──────────────────────────────────────────
-// Fires once per cart value when the user actually submits the order form.
 export const trackInitiateCheckout = (value, numItems) => {
   const v = parseFloat(value) || 0;
   if (v <= 0) return;
