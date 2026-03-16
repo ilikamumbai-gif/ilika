@@ -64,7 +64,7 @@ const AdminSidebar = ({ open, onClose }) => {
           ${open ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0
         `}
-        style={{ background: "#111111", borderRight: "1px solid #222" }}
+        style={{ background: "#fff", borderRight: "1px solid #222" }}
       >
         {/* LOGO */}
         <div className="flex items-center justify-between px-6 h-[64px] shrink-0" style={{ borderBottom: "1px solid #222" }}>
@@ -73,7 +73,7 @@ const AdminSidebar = ({ open, onClose }) => {
               <span className="text-white font-black text-xs">IL</span>
             </div>
             <div>
-              <p className="text-white font-bold text-sm tracking-wide leading-none">ILIKA</p>
+              <p className="text-black font-bold text-sm tracking-wide leading-none">ILIKA</p>
               <p className="text-xs leading-none mt-0.5" style={{ color: "#666" }}>Admin Panel</p>
             </div>
           </div>
@@ -100,10 +100,10 @@ const AdminSidebar = ({ open, onClose }) => {
                       `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group
                       ${isActive
                         ? "text-white"
-                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                        : "text-gray-600 hover:text-black hover:bg-black/5"
                       }`
                     }
-                    style={({ isActive }) => isActive ? { background: "linear-gradient(135deg,rgba(233,30,140,0.2),rgba(255,107,53,0.15))", color: "#fff" } : {}}
+                    style={({ isActive }) => isActive ? { background: "linear-gradient(135deg,rgba(233,30,140),rgba(255,107,53))", color: "#fff" } : {}}
                   >
                     <div className="flex items-center gap-3">
                       <Icon size={16} />
