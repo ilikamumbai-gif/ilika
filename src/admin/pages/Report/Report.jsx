@@ -3,50 +3,43 @@ import AdminLayout from "../../components/AdminLayout";
 import RevenueReport from "./RevenueReport";
 import TopCustomers from "./TopCustomers";
 import TransferHistory from "./TransferHistory";
+import { BarChart2, Users, ArrowLeftRight } from "lucide-react";
+
+const TABS = [
+  { id: "revenue",   label: "Revenue",         icon: BarChart2        },
+  { id: "customers", label: "Top Customers",    icon: Users            },
+  { id: "transfers", label: "Transfer History", icon: ArrowLeftRight   },
+];
 
 const Report = () => {
-
   const [tab, setTab] = useState("revenue");
-
-  const tabs = [
-    { id: "revenue", label: "Revenue" },
-    { id: "customers", label: "Top Customers" },
-    { id: "transfers", label: "Transfer History" },
-  ];
 
   return (
     <AdminLayout>
-
-      <h1 className="text-2xl font-semibold mb-6">
-        Reports & Analytics
-      </h1>
-
-      {/* Tabs */}
-      <div className="flex gap-3 mb-6">
-
-        {tabs.map(t => (
-
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition
-            ${
-              tab === t.id
-                ? "bg-black text-white"
-                : "bg-gray-100 hover:bg-gray-200"
-            }`}
-          >
-            {t.label}
-          </button>
-
-        ))}
-
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-gray-900">Reports & Analytics</h1>
+        <p className="text-sm text-gray-400 mt-0.5">Track revenue, top customers, and transfers</p>
       </div>
 
-      {tab === "revenue" && <RevenueReport />}
+      {/* Tab bar */}
+      <div className="bg-white rounded-2xl p-1.5 inline-flex gap-1 mb-6" style={{ border: "1px solid #EBEBEB" }}>
+        {TABS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150
+              ${tab === id ? "text-white shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+            style={tab === id ? { background: "linear-gradient(135deg,#E91E8C,#FF6B35)" } : {}}
+          >
+            <Icon size={15} />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "revenue"   && <RevenueReport />}
       {tab === "customers" && <TopCustomers />}
       {tab === "transfers" && <TransferHistory />}
-
     </AdminLayout>
   );
 };

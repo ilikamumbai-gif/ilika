@@ -46,7 +46,6 @@ const newOrder = {
   id: generateOrderId(),
   userId: currentUser.uid,
   userEmail: currentUser.email,
-  date: new Date().toLocaleString(),
   status: "Pending",
   address,
   items: cartItems,

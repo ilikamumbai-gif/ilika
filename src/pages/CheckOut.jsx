@@ -22,6 +22,7 @@ const Checkout = () => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [pincodeLoading, setPincodeLoading] = useState(false);
 
   const [address, setAddress] = useState({
     name: "",
@@ -34,6 +35,35 @@ const Checkout = () => {
 
   const handleChange = (e) =>
     setAddress({ ...address, [e.target.name]: e.target.value });
+
+  // Auto-fill city & state from pincode using India Post API
+  const handlePincodeChange = async (e) => {
+    const pin = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setAddress((prev) => ({ ...prev, pincode: pin, city: "", state: "" }));
+
+    if (pin.length === 6) {
+      setPincodeLoading(true);
+      try {
+        const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+        const data = await res.json();
+        if (data?.[0]?.Status === "Success") {
+          const post = data[0].PostOffice?.[0];
+          if (post) {
+            setAddress((prev) => ({
+              ...prev,
+              pincode: pin,
+              city: post.District || post.Name || "",
+              state: post.State || "",
+            }));
+          }
+        }
+      } catch (_) {
+        // silent fail — user can fill manually
+      } finally {
+        setPincodeLoading(false);
+      }
+    }
+  };
 
   /* ---------------- CALCULATIONS (moved up so useEffect can use subtotal) ---------------- */
 
@@ -92,10 +122,15 @@ const Checkout = () => {
       return;
     }
 
-    if (!address.name || !address.phone || !address.addressLine) {
-      alert("Fill complete address");
-      return;
-    }
+    const phoneRegex = /^[6-9]\d{9}$/;
+    const pincodeRegex = /^\d{6}$/;
+
+    if (!address.name.trim()) { alert("Please enter your full name"); return; }
+    if (!phoneRegex.test(address.phone)) { alert("Please enter a valid 10-digit Indian mobile number"); return; }
+    if (!pincodeRegex.test(address.pincode)) { alert("Please enter a valid 6-digit pincode"); return; }
+    if (!address.city.trim()) { alert("Please enter your city"); return; }
+    if (!address.state.trim()) { alert("Please enter your state"); return; }
+    if (!address.addressLine.trim()) { alert("Please enter your full address"); return; }
 
     try {
       const res = await fetch(
@@ -338,12 +373,24 @@ const Checkout = () => {
 
             {showForm && (
               <div className="grid sm:grid-cols-2 gap-4 border p-4 rounded-xl">
-                <input name="name" placeholder="Full Name" className="border p-3 rounded-lg" onChange={handleChange} />
-                <input name="phone" placeholder="Phone Number" className="border p-3 rounded-lg" onChange={handleChange} />
-                <input name="pincode" placeholder="Pincode" className="border p-3 rounded-lg" onChange={handleChange} />
-                <input name="city" placeholder="City" className="border p-3 rounded-lg" onChange={handleChange} />
-                <input name="state" placeholder="State" className="border p-3 rounded-lg sm:col-span-2" onChange={handleChange} />
-                <textarea name="addressLine" placeholder="Full Address" rows="3" className="border p-3 rounded-lg sm:col-span-2" onChange={handleChange} />
+                <input name="name" placeholder="Full Name *" className="border p-3 rounded-lg" onChange={handleChange} value={address.name} />
+                <input name="phone" placeholder="Phone Number * (10 digits)" maxLength={10} className="border p-3 rounded-lg" onChange={handleChange} value={address.phone} />
+                <div className="relative">
+                  <input
+                    name="pincode"
+                    placeholder="Pincode * (6 digits)"
+                    maxLength={6}
+                    className="border p-3 rounded-lg w-full"
+                    onChange={handlePincodeChange}
+                    value={address.pincode}
+                  />
+                  {pincodeLoading && (
+                    <span className="absolute right-3 top-3.5 text-xs text-gray-400">Fetching...</span>
+                  )}
+                </div>
+                <input name="city" placeholder="City *" className="border p-3 rounded-lg" onChange={handleChange} value={address.city} />
+                <input name="state" placeholder="State *" className="border p-3 rounded-lg sm:col-span-2" onChange={handleChange} value={address.state} />
+                <textarea name="addressLine" placeholder="House No., Street, Area, Landmark *" rows="3" className="border p-3 rounded-lg sm:col-span-2" onChange={handleChange} value={address.addressLine} />
                 <button onClick={saveAddress} className="bg-black text-white py-2 rounded-lg sm:col-span-2">
                   Save Address
                 </button>

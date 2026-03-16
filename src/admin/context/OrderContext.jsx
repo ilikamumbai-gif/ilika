@@ -28,15 +28,20 @@ export const OrderProvider = ({ children }) => {
 
       const formatted = data.map((o) => ({
         id: o.id,
-        userId: o.userId,   // ⭐⭐⭐ IMPORTANT FIX
+        userId: o.userId,
         userEmail: o.userEmail || "guest@email.com",
         total: o.totalAmount || 0,
+        totalAmount: o.totalAmount || 0,
         status: o.status || "Placed",
         paymentStatus: o.paymentStatus || "Unpaid",
+        paymentMethod: o.paymentMethod || (o.razorpay_payment_id ? "ONLINE" : "COD"),
+        razorpay_payment_id: o.razorpay_payment_id || null,
         date: parseDate(o.createdAt),
+        createdAt: o.createdAt || null,
+        paidAt: o.paidAt || null,
         items: o.items || [],
         shippingAddress: o.shippingAddress || {},
-        source: o.source
+        source: o.source || "WEBSITE",
       }));
 
       setOrders(formatted);

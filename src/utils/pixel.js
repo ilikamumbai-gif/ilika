@@ -6,7 +6,6 @@ const PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID;
 let _firstPageViewSkipped = false; // index.html fires the first one
 let _lastPath = null;
 
-const _firedViewContent = new Set();
 const _firedInitCheckout = new Set();
 const _firedPurchase = new Set();
 
@@ -18,14 +17,19 @@ const fbq = (...args) => {
 };
 
 // ── Initialize Pixel ──────────────────────────────────────────
+let _pixelInitialized = false;
+
 export const initPixel = () => {
   if (!PIXEL_ID) {
     console.warn("Meta Pixel ID missing in .env");
     return;
   }
 
+  if (_pixelInitialized) return;
+
   if (typeof window !== "undefined" && typeof window.fbq === "function") {
     window.fbq("init", PIXEL_ID);
+    _pixelInitialized = true;
   }
 };
 
@@ -70,11 +74,13 @@ export const trackPurchase = (orderId, value, numItems) => {
 };
 
 // ── ViewContent ───────────────────────────────────────────────
-// Fires when product detail page opens
+// Fires when product detail page opens — once per product per session
 export const trackViewContent = (productId, productName, price) => {
-  if (!productId || _firedViewContent.has(productId)) return;
+  if (!productId) return;
 
-  _firedViewContent.add(productId);
+  const key = `px_vc_${productId}`;
+  if (sessionStorage.getItem(key)) return;
+  sessionStorage.setItem(key, "1");
 
   fbq("track", "ViewContent", {
     content_ids: [productId],
