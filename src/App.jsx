@@ -20,14 +20,27 @@ import { ReviewProvider } from "./admin/context/ReviewContext";
 // This runs immediately (not in useEffect) so it happens before any pixel fires
 (function cleanOldPixelKeys() {
   try {
+    const PURCHASE_TTL_MS = 10 * 60 * 1000; // 10 min — must match pixel.js
     Object.keys(localStorage).forEach((key) => {
-      // Old formats used in previous versions:
+      // Remove old legacy formats from previous code versions
       if (
-        key.startsWith("purchase_tracked_") ||  // version 1
-        key.startsWith("order_total") ||         // version 0
-        key.startsWith("order_items")            // version 0
+        key.startsWith("purchase_tracked_") ||
+        key.startsWith("order_total") ||
+        key.startsWith("order_items")
       ) {
         localStorage.removeItem(key);
+        return;
+      }
+      // Remove expired px_purchase_ TTL entries so storage doesn't grow forever
+      if (key.startsWith("px_purchase_")) {
+        try {
+          const { ts } = JSON.parse(localStorage.getItem(key));
+          if (Date.now() - ts > PURCHASE_TTL_MS) {
+            localStorage.removeItem(key);
+          }
+        } catch (_) {
+          localStorage.removeItem(key); // corrupt entry — remove it
+        }
       }
     });
   } catch (e) {}

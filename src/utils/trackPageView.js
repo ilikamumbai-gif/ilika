@@ -1,11 +1,11 @@
-// This file is kept for legacy compatibility.
-// PageView tracking is handled inside pixel.js → trackPageView()
-// Do NOT fire fbq directly here to avoid double-firing.
+// ── LEGACY STUB ──────────────────────────────────────────────
+// This file is intentionally empty of any pixel calls.
+// PageView tracking is handled exclusively inside pixel.js → trackPageView(pathname).
+// Keeping this file prevents any import errors in case it is referenced elsewhere.
 
 const trackPageView = () => {
-  if (typeof window !== "undefined" && typeof window.fbq === "function") {
-    window.fbq("track", "PageView");
-  }
+  // No-op: do NOT call fbq directly here.
+  // Use trackPageView(pathname) from pixel.js instead.
 };
 
 export default trackPageView;
