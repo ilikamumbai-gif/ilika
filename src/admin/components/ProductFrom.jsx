@@ -12,26 +12,18 @@ import { logActivity } from "../Utils/logActivity";
 
 const storage = getStorage(app);
 
-/* ================= RICH TEXT EDITOR ================= */
+/* ── Rich Text Editor ── */
 const RichTextEditor = ({ value, onChange }) => {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
-        strike: false,
-        horizontalRule: false,
-        underline: false,
-      }),
-      Underline,
-      Strike,
-      HorizontalRule,
+      StarterKit.configure({ heading: { levels: [1, 2, 3] }, strike: false, horizontalRule: false, underline: false }),
+      Underline, Strike, HorizontalRule,
     ],
     content: value || "<p>Write product description...</p>",
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
   });
 
   if (!editor) return null;
-
   const btn = "px-2 py-1 border rounded text-sm hover:bg-gray-100";
 
   return (
@@ -40,111 +32,126 @@ const RichTextEditor = ({ value, onChange }) => {
         <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={btn}>H1</button>
         <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btn}>H2</button>
         <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={btn}>H3</button>
-
         <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={btn}><b>B</b></button>
         <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={btn}><i>I</i></button>
         <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={btn}><u>U</u></button>
         <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={btn}><s>S</s></button>
-
         <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={btn}>• List</button>
         <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btn}>1. List</button>
-
         <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btn}>Quote</button>
         <button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} className={btn}>—</button>
-
         <button type="button" onClick={() => editor.chain().focus().undo().run()} className={btn}>Undo</button>
         <button type="button" onClick={() => editor.chain().focus().redo().run()} className={btn}>Redo</button>
       </div>
-
       <EditorContent editor={editor} className="min-h-[180px] outline-none prose max-w-none" />
     </div>
   );
 };
 
-/* ================= PRODUCT FORM ================= */
+/* ── Image Upload Cell — used for before/after pairs ── */
+const ImageUploadCell = ({ label, value, previewUrl, onFileChange, onUrlChange }) => {
+  const inputRef = useRef(null);
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
+
+      {/* Preview */}
+      {previewUrl ? (
+        <div className="relative group">
+          <img src={previewUrl} alt={label}
+            className="w-full h-28 object-cover rounded-lg border"
+            onError={e => { e.target.style.display = "none"; }}
+          />
+          <button type="button"
+            onClick={() => { onFileChange(null); onUrlChange(""); }}
+            className="absolute top-1 right-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition"
+          >Remove</button>
+        </div>
+      ) : (
+        <div
+          onClick={() => inputRef.current?.click()}
+          className="w-full h-28 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-gray-400 transition bg-gray-50"
+        >
+          <span className="text-2xl text-gray-300">+</span>
+          <span className="text-xs text-gray-400">Click to upload</span>
+        </div>
+      )}
+
+      <input ref={inputRef} type="file" accept="image/*" hidden
+        onChange={e => { if (e.target.files[0]) onFileChange(e.target.files[0]); }}
+      />
+
+      {/* URL fallback */}
+      <input type="text" placeholder="…or paste image URL"
+        value={typeof value === "string" ? value : ""}
+        onChange={e => onUrlChange(e.target.value)}
+        className="w-full border border-gray-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+      />
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════
+   PRODUCT FORM
+══════════════════════════════════════ */
 const ProductForm = ({ onSubmit, initialData = {} }) => {
   const { categories } = useCategories();
   const fileInputRef = useRef(null);
   const { admin } = useAdminAuth();
 
-  const [form, setForm] = useState({
-    name: initialData.name || "",
-    shortInfo: initialData.shortInfo || "",
-    price: initialData.price || "",
-    mrp: initialData.mrp || "",
-    hasVariants: initialData.hasVariants || false,
-    variants: initialData.variants || [],
-    categoryIds: initialData.categoryIds || [],
-    description: initialData.description || "",
-    additionalInfo: initialData.additionalInfo || "",
-    tagline: initialData.tagline || "",
-    points: initialData.benefits ? initialData.benefits.join(", ") : "",
-    images: initialData.images || [],
+  const emptyForm = {
+    name: "", shortInfo: "", price: "", mrp: "",
+    hasVariants: false, variants: [], categoryIds: [],
+    description: "", additionalInfo: "", tagline: "", points: "",
+    images: [], isActive: true, inStock: true,
+    beforeAfter: [], hasBeforeAfter: false,
+  };
 
-    // ⭐ ADD THESE
-    isActive: initialData.isActive ?? true,
-    inStock: initialData.inStock ?? true,
+  const fromInitial = (d) => ({
+    name: d.name || "",
+    shortInfo: d.shortInfo || "",
+    price: d.price || "",
+    mrp: d.mrp || "",
+    hasVariants: d.hasVariants || false,
+    variants: (d.variants || []).map(v => ({ ...v, preview: v.images || [] })),
+    categoryIds: d.categoryIds || [],
+    description: d.description || "",
+    additionalInfo: Array.isArray(d.additionalInfo)
+      ? d.additionalInfo.join(", ")
+      : d.additionalInfo || "",
+    tagline: d.tagline || "",
+    points: d.benefits ? d.benefits.join(", ") : "",
+    images: d.images || [],
+    isActive: d.isActive ?? true,
+    inStock: d.inStock ?? true,
+    beforeAfter: (d.beforeAfter || []).map(p => ({ ...p, _beforeFile: null, _afterFile: null })),
+    hasBeforeAfter: !!(d.beforeAfter?.length),
   });
-  useEffect(() => {
-    if (!initialData || Object.keys(initialData).length === 0) return;
 
-    setForm({
-      name: initialData.name || "",
-      shortInfo: initialData.shortInfo || "",
-      price: initialData.price || "",
-      mrp: initialData.mrp || "",
-      hasVariants: initialData.hasVariants || false,
-      variants: (initialData.variants || []).map(v => ({
-        ...v,
-        preview: v.images || []
-      })),
-      categoryIds: initialData.categoryIds || [],
-      description: initialData.description || "",
-
-      additionalInfo: Array.isArray(initialData.additionalInfo)
-        ? initialData.additionalInfo.join(", ")
-        : initialData.additionalInfo || "",
-      tagline: initialData.tagline || "",
-      points: initialData.benefits ? initialData.benefits.join(", ") : "",
-      images: initialData.images || [],
-      // ⭐ ADD THESE
-      isActive: initialData.isActive ?? true,
-      inStock: initialData.inStock ?? true,
-    });
-
-    setPreviewImages(initialData.images || []);
-
-  }, [initialData]);
-
-  const [previewImages, setPreviewImages] = useState([]);
+  const [form, setForm] = useState(fromInitial(initialData));
+  const [previewImages, setPreviewImages] = useState(initialData.images || []);
   const [loading, setLoading] = useState(false);
 
-  /* CLEANUP PREVIEW URLS */
   useEffect(() => {
-    return () => {
-      previewImages.forEach(img => {
-        if (img.startsWith("blob:")) URL.revokeObjectURL(img);
-      });
-    };
+    if (!initialData || Object.keys(initialData).length === 0) return;
+    setForm(fromInitial(initialData));
+    setPreviewImages(initialData.images || []);
+  }, [initialData]);
+
+  useEffect(() => {
+    return () => previewImages.forEach(img => { if (img.startsWith("blob:")) URL.revokeObjectURL(img); });
   }, [previewImages]);
 
-  /* IMAGE SELECT */
+  /* ── helpers ── */
   const handleImageSelect = (files) => {
     const arr = Array.from(files);
-
     setForm(prev => ({ ...prev, images: [...prev.images, ...arr] }));
-
-    const previews = arr.map(file => URL.createObjectURL(file));
-    setPreviewImages(prev => [...prev, ...previews]);
+    setPreviewImages(prev => [...prev, ...arr.map(f => URL.createObjectURL(f))]);
   };
-
-  /* REMOVE IMAGE */
-  const removeImage = (index) => {
-    setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
-    setPreviewImages(prev => prev.filter((_, i) => i !== index));
+  const removeImage = (i) => {
+    setForm(prev => ({ ...prev, images: prev.images.filter((_, j) => j !== i) }));
+    setPreviewImages(prev => prev.filter((_, j) => j !== i));
   };
-
-  /* CATEGORY */
   const handleCategoryChange = (id) => {
     setForm(prev => ({
       ...prev,
@@ -153,485 +160,264 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         : [...prev.categoryIds, id],
     }));
   };
-  /* ================= VARIANT IMAGE SELECT ================= */
-  const handleVariantImageSelect = (files, index) => {
+  const handleVariantImageSelect = (files, idx) => {
     const arr = Array.from(files);
-
     const updated = [...form.variants];
-
-    updated[index].images = [...(updated[index].images || []), ...arr];
-    updated[index].preview = [
-      ...(updated[index].preview || []),
-      ...arr.map(file => URL.createObjectURL(file))
-    ];
-
+    updated[idx].images = [...(updated[idx].images || []), ...arr];
+    updated[idx].preview = [...(updated[idx].preview || []), ...arr.map(f => URL.createObjectURL(f))];
     setForm({ ...form, variants: updated });
   };
-
-  const handleImageReorder = (fromIndex, toIndex) => {
-    if (fromIndex === toIndex) return;
-
-    const updatedImages = [...form.images];
-    const updatedPreviews = [...previewImages];
-
-    const [movedImage] = updatedImages.splice(fromIndex, 1);
-    const [movedPreview] = updatedPreviews.splice(fromIndex, 1);
-
-    updatedImages.splice(toIndex, 0, movedImage);
-    updatedPreviews.splice(toIndex, 0, movedPreview);
-
-    setForm({ ...form, images: updatedImages });
-    setPreviewImages(updatedPreviews);
+  const removeVariantImage = (vi, ii) => {
+    const updated = [...form.variants];
+    updated[vi].images.splice(ii, 1);
+    updated[vi].preview.splice(ii, 1);
+    setForm({ ...form, variants: updated });
   };
-  const handleVariantReorder = (variantIndex, fromIndex, toIndex) => {
-    fromIndex = Number(fromIndex);
-    toIndex = Number(toIndex);
-
-    if (fromIndex === toIndex) return;
-
+  const handleImageReorder = (from, to) => {
+    if (from === to) return;
+    const imgs = [...form.images]; const prvs = [...previewImages];
+    const [mi] = imgs.splice(from, 1); const [mp] = prvs.splice(from, 1);
+    imgs.splice(to, 0, mi); prvs.splice(to, 0, mp);
+    setForm({ ...form, images: imgs }); setPreviewImages(prvs);
+  };
+  const handleVariantReorder = (vi, from, to) => {
+    from = Number(from); to = Number(to);
+    if (from === to) return;
     setForm(prev => {
-      const updatedVariants = [...prev.variants];
-
-      const images = [...(updatedVariants[variantIndex].images || [])];
-      const preview = [...(updatedVariants[variantIndex].preview || [])];
-
-      const [movedImage] = images.splice(fromIndex, 1);
-      const [movedPreview] = preview.splice(fromIndex, 1);
-
-      images.splice(toIndex, 0, movedImage);
-      preview.splice(toIndex, 0, movedPreview);
-
-      updatedVariants[variantIndex] = {
-        ...updatedVariants[variantIndex],
-        images,
-        preview
-      };
-
-      return { ...prev, variants: updatedVariants };
+      const vs = [...prev.variants];
+      const imgs = [...(vs[vi].images || [])]; const prvs = [...(vs[vi].preview || [])];
+      const [mi] = imgs.splice(from, 1); const [mp] = prvs.splice(from, 1);
+      imgs.splice(to, 0, mi); prvs.splice(to, 0, mp);
+      vs[vi] = { ...vs[vi], images: imgs, preview: prvs };
+      return { ...prev, variants: vs };
     });
   };
 
-  /* REMOVE SINGLE VARIANT IMAGE */
-  const removeVariantImage = (variantIndex, imgIndex) => {
-    const updated = [...form.variants];
-
-    updated[variantIndex].images.splice(imgIndex, 1);
-    updated[variantIndex].preview.splice(imgIndex, 1);
-
-    setForm({ ...form, variants: updated });
+  /* ── before/after helpers ── */
+  const updatePair = (idx, patch) => {
+    setForm(prev => {
+      const ba = [...prev.beforeAfter];
+      ba[idx] = { ...ba[idx], ...patch };
+      return { ...prev, beforeAfter: ba };
+    });
   };
 
-  /* SUBMIT */
+  const uploadBAImage = async (file) => {
+    const r = ref(storage, `products/beforeafter/${crypto.randomUUID()}-${file.name}`);
+    await uploadBytes(r, file);
+    return getDownloadURL(r);
+  };
+
+  /* ── submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      let imageUrls = [];
-
+      /* main images */
+      const imageUrls = [];
       for (const file of form.images) {
-        if (typeof file === "string") {
-          imageUrls.push(file);
-        } else {
-          const imageRef = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
-          await uploadBytes(imageRef, file);
-          const url = await getDownloadURL(imageRef);
-          imageUrls.push(url);
+        if (typeof file === "string") { imageUrls.push(file); continue; }
+        const r = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
+        await uploadBytes(r, file);
+        imageUrls.push(await getDownloadURL(r));
+      }
+
+      /* variants */
+      let variantData = [];
+      if (form.hasVariants) {
+        for (const v of form.variants) {
+          const uploaded = [];
+          for (const file of v.images || []) {
+            if (typeof file === "string") { uploaded.push(file); continue; }
+            const r = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
+            await uploadBytes(r, file);
+            uploaded.push(await getDownloadURL(r));
+          }
+          variantData.push({ id: v.id, label: v.label, price: Number(v.price), mrp: Number(v.mrp), images: uploaded });
         }
       }
 
-
-      let variantData = [];
-
-      if (form.hasVariants) {
-        for (const variant of form.variants) {
-
-          const uploadedImages = [];
-
-          for (const file of variant.images || []) {
-            if (typeof file === "string") {
-              // already uploaded image (editing product)
-              uploadedImages.push(file);
-            } else {
-              // new image upload
-              const imageRef = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
-              await uploadBytes(imageRef, file);
-              const url = await getDownloadURL(imageRef);
-              uploadedImages.push(url);
-            }
-          }
-
-          variantData.push({
-            id: variant.id,
-            label: variant.label,
-            price: Number(variant.price),
-            mrp: Number(variant.mrp),
-            images: uploadedImages,
+      /* before/after — upload any File objects */
+      let beforeAfterData = [];
+      if (form.hasBeforeAfter) {
+        for (const pair of form.beforeAfter) {
+          let beforeUrl = typeof pair.before === "string" ? pair.before : "";
+          let afterUrl = typeof pair.after === "string" ? pair.after : "";
+          if (pair._beforeFile instanceof File) beforeUrl = await uploadBAImage(pair._beforeFile);
+          if (pair._afterFile instanceof File) afterUrl = await uploadBAImage(pair._afterFile);
+          beforeAfterData.push({
+            before: beforeUrl, after: afterUrl,
+            beforeLabel: pair.beforeLabel || "Before",
+            afterLabel: pair.afterLabel || "After",
+            title: pair.title || "", description: pair.description || "",
+            duration: pair.duration || "",
+            beforeDesc: pair.beforeDesc || "", afterDesc: pair.afterDesc || "",
           });
         }
       }
 
-
-      // ================= PRODUCT CHANGE LOG =================
-
-if (initialData?.price && Number(initialData.price) !== Number(form.price)) {
-
-  await logActivity(
-    `${admin?.username || "Admin"} changed price of ${form.name} from ₹${initialData.price} to ₹${form.price}`
-  );
-
-}
-
-if (initialData?.mrp && Number(initialData.mrp) !== Number(form.mrp)) {
-
-  await logActivity(
-    `${admin?.username || "Admin"} changed MRP of ${form.name} from ₹${initialData.mrp} to ₹${form.mrp}`
-  );
-
-}
-
+      /* change log */
+      if (initialData?.price && Number(initialData.price) !== Number(form.price))
+        await logActivity(`${admin?.username || "Admin"} changed price of ${form.name} from ₹${initialData.price} to ₹${form.price}`);
+      if (initialData?.mrp && Number(initialData.mrp) !== Number(form.mrp))
+        await logActivity(`${admin?.username || "Admin"} changed MRP of ${form.name} from ₹${initialData.mrp} to ₹${form.mrp}`);
 
       await onSubmit({
-        name: form.name,
-        shortInfo: form.shortInfo,
+        name: form.name, shortInfo: form.shortInfo,
         hasVariants: form.hasVariants,
         price: form.hasVariants ? null : Number(form.price),
         mrp: form.hasVariants ? null : Number(form.mrp),
-        variants: variantData,
-        categoryIds: form.categoryIds,
+        variants: variantData, categoryIds: form.categoryIds,
         description: form.description,
-        additionalInfo:
-          typeof form.additionalInfo === "string"
-            ? form.additionalInfo.split(",").map(item => item.trim())
-            : [],
+        additionalInfo: typeof form.additionalInfo === "string"
+          ? form.additionalInfo.split(",").map(i => i.trim())
+          : [],
         tagline: form.tagline,
         benefits: form.points.split(",").map(p => p.trim()),
         images: imageUrls,
-
-        // ⭐ ADD THESE
-        isActive: form.isActive,
-        inStock: form.inStock,
+        isActive: form.isActive, inStock: form.inStock,
+        beforeAfter: beforeAfterData,
       });
 
-if (!initialData?.id) {
+      await logActivity(initialData?.id
+        ? `${admin?.username || "Admin"} edited product: ${form.name}`
+        : `${admin?.username || "Admin"} created product: ${form.name}`
+      );
 
-  await logActivity(
-    `${admin?.username || "Admin"} created product: ${form.name}`
-  );
-
-} else {
-
-  await logActivity(
-    `${admin?.username || "Admin"} edited product: ${form.name}`
-  );
-
-}
-      setForm({
-        name: "",
-        shortInfo: "",
-        price: "",
-        mrp: "",
-        hasVariants: false,
-        variants: [],
-        categoryIds: [],
-        description: "",
-        additionalInfo: "",
-        tagline: "",
-        points: "",
-        images: [],
-        isActive: true,
-        inStock: true,
-      });
-
+      setForm(emptyForm);
       setPreviewImages([]);
-
     } catch (err) {
       console.error("PRODUCT SAVE ERROR:", err);
     }
-
     setLoading(false);
   };
 
+  /* ══════════════ JSX ══════════════ */
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-xl">
 
-      <input
-        name="name"
-        placeholder="Product Name"
-        value={form.name}
+      <input name="name" placeholder="Product Name" value={form.name}
         onChange={e => setForm({ ...form, name: e.target.value })}
-        className="w-full border p-2 rounded"
-        required
+        className="w-full border p-2 rounded" required
       />
-      <textarea
-        placeholder="Short Info"
-        value={form.shortInfo}
+      <textarea placeholder="Short Info" value={form.shortInfo}
         onChange={e => setForm({ ...form, shortInfo: e.target.value })}
-        className="w-full border p-2 rounded"
-        rows={2}
+        className="w-full border p-2 rounded" rows={2}
       />
 
-      {/* PRODUCT STATUS */}
+      {/* STATUS */}
       <div className="grid grid-cols-2 gap-6 border p-4 rounded bg-gray-50">
-
-        {/* ACTIVE STATUS */}
         <div>
           <label className="block font-medium mb-2">Product Status</label>
-
           <div className="flex gap-4">
-            {/* ACTIVE STATUS */}
-            <label>
-              <input
-                type="radio"
-                checked={form.isActive === true}
-                onChange={() =>
-                  setForm({ ...form, isActive: true })
-                }
-              />
-              Active
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                checked={form.isActive === false}
-                onChange={() =>
-                  setForm({ ...form, isActive: false })
-                }
-              />
-              Inactive
-            </label>
+            {[true, false].map(v => (
+              <label key={String(v)}>
+                <input type="radio" checked={form.isActive === v} onChange={() => setForm({ ...form, isActive: v })} />
+                {" "}{v ? "Active" : "Inactive"}
+              </label>
+            ))}
           </div>
         </div>
-
-        {/* STOCK STATUS */}
         <div>
           <label className="block font-medium mb-2">Stock Status</label>
-
           <div className="flex gap-4">
-            <label>
-              <input
-                type="radio"
-                checked={form.inStock === true}
-                onChange={() =>
-                  setForm({ ...form, inStock: true })
-                }
-              />
-              In Stock
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                checked={form.inStock === false}
-                onChange={() =>
-                  setForm({ ...form, inStock: false })
-                }
-              />
-              Out of Stock
-            </label>
+            {[true, false].map(v => (
+              <label key={String(v)}>
+                <input type="radio" checked={form.inStock === v} onChange={() => setForm({ ...form, inStock: v })} />
+                {" "}{v ? "In Stock" : "Out of Stock"}
+              </label>
+            ))}
           </div>
         </div>
-
       </div>
 
-      {/* NORMAL PRODUCT PRICE (ONLY WHEN NO VARIANTS) */}
+      {/* PRICE */}
       {!form.hasVariants && (
         <div className="grid grid-cols-2 gap-3">
-          <input
-            type="number"
-            placeholder="Price"
-            value={form.price}
-            onChange={(e) => setForm({ ...form, price: e.target.value })}
-            className="w-full border p-2 rounded"
-            required
+          <input type="number" placeholder="Price" value={form.price}
+            onChange={e => setForm({ ...form, price: e.target.value })}
+            className="w-full border p-2 rounded" required
           />
-
-          <input
-            type="number"
-            placeholder="MRP"
-            value={form.mrp}
-            onChange={(e) => setForm({ ...form, mrp: e.target.value })}
-            className="w-full border p-2 rounded"
-            required
+          <input type="number" placeholder="MRP" value={form.mrp}
+            onChange={e => setForm({ ...form, mrp: e.target.value })}
+            className="w-full border p-2 rounded" required
           />
         </div>
       )}
 
+      {/* VARIANT ROWS */}
       {form.variants?.map((variant, index) => (
-
         <div key={variant.id} className="border p-4 rounded space-y-3 bg-gray-50">
-
           <div className="grid grid-cols-3 gap-3">
-            <input
-              placeholder="Label (50ml / Small)"
-              value={variant.label}
-              onChange={e => {
-                const updated = [...form.variants];
-                updated[index].label = e.target.value;
-                setForm({ ...form, variants: updated });
-              }}
+            <input placeholder="Label (50ml / Small)" value={variant.label}
+              onChange={e => { const u = [...form.variants]; u[index].label = e.target.value; setForm({ ...form, variants: u }); }}
               className="border p-2 rounded"
             />
-
-
-
-            <input
-              type="number"
-              placeholder="Price"
-              value={variant.price}
-              onChange={e => {
-                const updated = [...form.variants];
-                updated[index].price = e.target.value;
-                setForm({ ...form, variants: updated });
-              }}
+            <input type="number" placeholder="Price" value={variant.price}
+              onChange={e => { const u = [...form.variants]; u[index].price = e.target.value; setForm({ ...form, variants: u }); }}
               className="border p-2 rounded"
             />
-
-            <input
-              type="number"
-              placeholder="MRP"
-              value={variant.mrp}
-              onChange={e => {
-                const updated = [...form.variants];
-                updated[index].mrp = e.target.value;
-                setForm({ ...form, variants: updated });
-              }}
+            <input type="number" placeholder="MRP" value={variant.mrp}
+              onChange={e => { const u = [...form.variants]; u[index].mrp = e.target.value; setForm({ ...form, variants: u }); }}
               className="border p-2 rounded"
             />
           </div>
-
-          {/* MULTIPLE IMAGE UPLOAD */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Variant Specific Images (Optional)</label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={(e) => handleVariantImageSelect(e.target.files, index)}
+            <label className="text-sm font-medium">Variant Images (Optional)</label>
+            <input type="file" multiple accept="image/*"
+              onChange={e => handleVariantImageSelect(e.target.files, index)}
               className="block w-full text-sm"
             />
-
-            {/* PREVIEW GRID */}
             <div className="grid grid-cols-4 gap-2">
               {(variant.preview || variant.images || []).map((img, i) => (
-                <div
-                  key={i}
-                  draggable
-                  onDragStart={(e) =>
-                    e.dataTransfer.setData("variantIndex", i)
-                  }
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    const dragIndex = Number(e.dataTransfer.getData("variantIndex"));
-                    handleVariantReorder(index, dragIndex, i);
-                  }}
+                <div key={i} draggable
+                  onDragStart={e => e.dataTransfer.setData("variantIndex", i)}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => handleVariantReorder(index, e.dataTransfer.getData("variantIndex"), i)}
                   className="relative group cursor-move"
                 >
-                  <img
-                    src={typeof img === "string" ? img : URL.createObjectURL(img)}
-                    className="h-20 w-full object-cover rounded border"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => removeVariantImage(index, i)}
+                  <img src={typeof img === "string" ? img : URL.createObjectURL(img)} className="h-20 w-full object-cover rounded border" />
+                  <button type="button" onClick={() => removeVariantImage(index, i)}
                     className="absolute top-1 right-1 bg-black text-white text-xs px-2 rounded opacity-0 group-hover:opacity-100"
-                  >
-                    X
-                  </button>
+                  >X</button>
                 </div>
               ))}
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              setForm({
-                ...form,
-                variants: form.variants.filter((_, i) => i !== index)
-              })
-            }}
+          <button type="button" onClick={() => setForm({ ...form, variants: form.variants.filter((_, i) => i !== index) })}
             className="text-red-500 text-sm"
-          >
-            Remove Variant
-          </button>
-
+          >Remove Variant</button>
         </div>
-
       ))}
-
 
       {/* VARIANT TOGGLE */}
       <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={form.hasVariants}
-          onChange={(e) => {
-            const checked = e.target.checked;
-
-            setForm(prev => ({
-              ...prev,
-              hasVariants: checked,
-              price: checked ? "" : prev.price,
-              mrp: checked ? "" : prev.mrp,
-              variants: checked ? prev.variants : []
-            }));
-          }} />
+        <input type="checkbox" checked={form.hasVariants}
+          onChange={e => setForm(prev => ({ ...prev, hasVariants: e.target.checked, price: e.target.checked ? "" : prev.price, mrp: e.target.checked ? "" : prev.mrp, variants: e.target.checked ? prev.variants : [] }))}
+        />
         This product has variants (Size / Weight / Color)
       </label>
-      {/* VARIANTS */}
       {form.hasVariants && (
         <div className="border rounded-xl p-4 space-y-4">
-
           <div className="flex justify-between items-center">
             <h3 className="font-semibold text-lg">Variants</h3>
-            <button
-              type="button"
-              onClick={() => {
-                setForm(prev => ({
-                  ...prev,
-                  variants: [
-                    ...prev.variants,
-                    {
-                      id: crypto.randomUUID(),
-                      label: "",
-                      price: "",
-                      mrp: "",
-                      images: []
-                    }
-                  ]
-                }))
-              }}
+            <button type="button"
+              onClick={() => setForm(prev => ({ ...prev, variants: [...prev.variants, { id: crypto.randomUUID(), label: "", price: "", mrp: "", images: [] }] }))}
               className="bg-black text-white px-3 py-1 rounded"
-            >
-              Add Variant
-            </button>
+            >Add Variant</button>
           </div>
-
-
-
         </div>
       )}
 
-      <input
-        placeholder="Tagline (comma separated)"
-        value={form.tagline}
+      <input placeholder="Tagline (comma separated)" value={form.tagline}
         onChange={e => setForm({ ...form, tagline: e.target.value })}
         className="w-full border p-2 rounded"
       />
-
-      <input
-        placeholder="Additional Information (comma separated)"
-        value={form.additionalInfo}
+      <input placeholder="Additional Information (comma separated)" value={form.additionalInfo}
         onChange={e => setForm({ ...form, additionalInfo: e.target.value })}
         className="w-full border p-2 rounded"
       />
-
-      <input
-        placeholder="Benefits (comma separated)"
-        value={form.points}
+      <input placeholder="Benefits (comma separated)" value={form.points}
         onChange={e => setForm({ ...form, points: e.target.value })}
         className="w-full border p-2 rounded"
       />
@@ -648,44 +434,134 @@ if (!initialData?.id) {
         ))}
       </div>
 
-      {/* IMAGE UPLOAD */}
-      <div className="border-2 border-dashed p-5 rounded-xl text-center cursor-pointer" onClick={() => fileInputRef.current.click()}>
-        <input ref={fileInputRef} type="file" multiple accept="image/*" hidden onChange={(e) => handleImageSelect(e.target.files)} />
+      {/* PRODUCT IMAGES */}
+      <div className="border-2 border-dashed p-5 rounded-xl text-center cursor-pointer"
+        onClick={() => fileInputRef.current.click()}
+      >
+        <input ref={fileInputRef} type="file" multiple accept="image/*" hidden
+          onChange={e => handleImageSelect(e.target.files)}
+        />
         <h3 className="font-semibold">Common Product Images (Used for listing & default view)</h3>
       </div>
-
-      {/* PREVIEW */}
-      {/* PREVIEW */}
       {previewImages.length > 0 && (
         <div className="grid grid-cols-4 gap-3">
-          {previewImages.map((img, index) => (
-            <div
-              key={index}
-              draggable
-              onDragStart={(e) => e.dataTransfer.setData("dragIndex", index)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                const dragIndex = Number(e.dataTransfer.getData("dragIndex"));
-                handleImageReorder(dragIndex, index);
-              }}
+          {previewImages.map((img, i) => (
+            <div key={i} draggable
+              onDragStart={e => e.dataTransfer.setData("dragIndex", i)}
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => handleImageReorder(Number(e.dataTransfer.getData("dragIndex")), i)}
               className="relative cursor-move"
             >
-              <img
-                src={img}
-                className="h-24 w-full object-cover rounded border"
-              />
-
-              <button
-                type="button"
-                onClick={() => removeImage(index)}
+              <img src={img} className="h-24 w-full object-cover rounded border" />
+              <button type="button" onClick={() => removeImage(i)}
                 className="absolute top-1 right-1 bg-black text-white text-xs px-2 rounded"
-              >
-                X
-              </button>
+              >X</button>
             </div>
           ))}
         </div>
       )}
+
+      {/* ══════════════════════════════════════════════════
+          BEFORE / AFTER IMAGES
+      ══════════════════════════════════════════════════ */}
+      <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={form.hasBeforeAfter}
+            onChange={e => setForm(prev => ({ ...prev, hasBeforeAfter: e.target.checked }))}
+          />
+          <span className="font-semibold text-sm">This product has Before / After images</span>
+        </label>
+
+        {form.hasBeforeAfter && (
+          <div className="space-y-5">
+            <p className="text-xs text-gray-500">
+              Each pair shows an interactive drag-slider on the product page. Upload images directly or paste a URL.
+            </p>
+
+            {(form.beforeAfter || []).map((pair, idx) => (
+              <div key={idx} className="border rounded-xl p-4 bg-white space-y-4">
+                {/* pair header */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-gray-700">Pair {idx + 1}</span>
+                  <button type="button"
+                    onClick={() => setForm(prev => ({ ...prev, beforeAfter: prev.beforeAfter.filter((_, i) => i !== idx) }))}
+                    className="text-red-500 text-xs hover:underline"
+                  >Remove</button>
+                </div>
+
+                {/* before / after image upload */}
+                <div className="grid grid-cols-2 gap-4">
+                  <ImageUploadCell
+                    label="Before"
+                    value={pair.before}
+                    previewUrl={pair._beforeFile ? URL.createObjectURL(pair._beforeFile) : (typeof pair.before === "string" ? pair.before : "")}
+                    onFileChange={file => updatePair(idx, { _beforeFile: file, before: file ? "" : pair.before })}
+                    onUrlChange={url => updatePair(idx, { before: url, _beforeFile: null })}
+                  />
+                  <ImageUploadCell
+                    label="After"
+                    value={pair.after}
+                    previewUrl={pair._afterFile ? URL.createObjectURL(pair._afterFile) : (typeof pair.after === "string" ? pair.after : "")}
+                    onFileChange={file => updatePair(idx, { _afterFile: file, after: file ? "" : pair.after })}
+                    onUrlChange={url => updatePair(idx, { after: url, _afterFile: null })}
+                  />
+                </div>
+
+                {/* labels */}
+                <div className="grid grid-cols-2 gap-3">
+                  <input type="text" placeholder="Before label" value={pair.beforeLabel || ""}
+                    onChange={e => updatePair(idx, { beforeLabel: e.target.value })}
+                    className="w-full border p-2 rounded text-sm"
+                  />
+                  <input type="text" placeholder="After label" value={pair.afterLabel || ""}
+                    onChange={e => updatePair(idx, { afterLabel: e.target.value })}
+                    className="w-full border p-2 rounded text-sm"
+                  />
+                </div>
+
+                {/* meta */}
+                <input type="text" placeholder="Title (e.g. 4 Weeks Result)" value={pair.title || ""}
+                  onChange={e => updatePair(idx, { title: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                />
+                <input type="text" placeholder="Sub-description" value={pair.description || ""}
+                  onChange={e => updatePair(idx, { description: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                />
+                <input type="text" placeholder="Duration badge (e.g. After 30 days)" value={pair.duration || ""}
+                  onChange={e => updatePair(idx, { duration: e.target.value })}
+                  className="w-full border p-2 rounded text-sm"
+                />
+
+                {/* stat text */}
+                <div className="grid grid-cols-2 gap-3">
+                  <input type="text" placeholder="Before stat text (shown below slider)" value={pair.beforeDesc || ""}
+                    onChange={e => updatePair(idx, { beforeDesc: e.target.value })}
+                    className="w-full border p-2 rounded text-sm"
+                  />
+                  <input type="text" placeholder="After stat text (shown below slider)" value={pair.afterDesc || ""}
+                    onChange={e => updatePair(idx, { afterDesc: e.target.value })}
+                    className="w-full border p-2 rounded text-sm"
+                  />
+                </div>
+              </div>
+            ))}
+
+            <button type="button"
+              onClick={() => setForm(prev => ({
+                ...prev,
+                beforeAfter: [...(prev.beforeAfter || []), {
+                  before: "", after: "", _beforeFile: null, _afterFile: null,
+                  beforeLabel: "Before", afterLabel: "After",
+                  title: "", description: "", duration: "",
+                  beforeDesc: "", afterDesc: "",
+                }],
+              }))}
+              className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+            >+ Add Before / After Pair</button>
+          </div>
+        )}
+      </div>
 
       <button type="submit" className="bg-black text-white px-4 py-2 rounded">
         {loading ? "Saving..." : "Save Product"}

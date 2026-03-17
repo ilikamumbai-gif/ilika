@@ -4,6 +4,7 @@ import LoginPopup from "./components/LoginPopup";
 
 import NavRoutes from "./Routes/NavRoutes";
 import { captureTrafficSource } from "./utils/tracking";
+import { initAutoTrack } from "./utils/autoTrack";
 import { CartProvider } from "./context/CartProvider";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import { UserOrderProvider } from "./context/UserOrderContext";
@@ -52,6 +53,8 @@ const App = () => {
 
   useEffect(() => {
     captureTrafficSource();
+    const cleanup = initAutoTrack();
+    return cleanup;
   }, []);
 
   useEffect(() => {
