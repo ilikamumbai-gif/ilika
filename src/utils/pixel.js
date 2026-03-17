@@ -28,17 +28,7 @@ const fbq = (...args) => {
 // ── Pixel init guard ──────────────────────────────────────────
 let _pixelInitialized = false;
 
-export const initPixel = () => {
-  if (!PIXEL_ID) {
-    console.warn("[Pixel] VITE_META_PIXEL_ID missing in .env");
-    return;
-  }
-  if (_pixelInitialized) return;
-  if (typeof window !== "undefined" && typeof window.fbq === "function") {
-    window.fbq("init", PIXEL_ID);
-    _pixelInitialized = true;
-  }
-};
+export const initPixel = () => {};
 
 // ── PageView ──────────────────────────────────────────────────
 // Fires on every SPA route change except /admin and /order-success.
