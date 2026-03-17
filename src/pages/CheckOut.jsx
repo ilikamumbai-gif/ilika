@@ -230,8 +230,17 @@ const Checkout = () => {
         if (!res.ok) throw new Error(data.error);
 
         // ✅ Fire Purchase pixel event — browser-side, blocked until this call
-        trackPurchase(data.orderId, parseFloat(Number(total).toFixed(2)), cartItems.length);
+        // 🔥 Allow purchase event (required)
+        if (window.__allowNextPurchase) {
+          window.__allowNextPurchase();
+        }
 
+        // 🔥 Fire Purchase
+        trackPurchase(
+          data.orderId,
+          parseFloat(Number(total).toFixed(2)),
+          cartItems.length
+        );
         navigate(`/order-success/${data.orderId}`);
         clearCart(); // clear AFTER navigate so empty-cart guard never triggers
         return;
@@ -295,8 +304,17 @@ const Checkout = () => {
             if (!verifyRes.ok) throw new Error(verifyData.error);
 
             // ✅ Fire Purchase pixel event — browser-side, blocked until this call
-            trackPurchase(verifyData.orderId, parseFloat(Number(total).toFixed(2)), cartItems.length);
+            // 🔥 Allow purchase event (required)
+            if (window.__allowNextPurchase) {
+              window.__allowNextPurchase();
+            }
 
+            // 🔥 Fire Purchase
+            trackPurchase(
+              verifyData.orderId,
+              parseFloat(Number(total).toFixed(2)),
+              cartItems.length
+            );
             navigate(`/order-success/${verifyData.orderId}`);
             clearCart(); // clear AFTER navigate so empty-cart guard never triggers
           } catch (err) {
