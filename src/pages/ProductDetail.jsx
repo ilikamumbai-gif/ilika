@@ -117,6 +117,42 @@ const BeforeAfterSlider = ({
   );
 };
 
+
+/* ═══════════════════════════════════════════════════
+   VIDEO - FROM YOUTUBE OR GOOGLE DRIVE
+═══════════════════════════════════════════════════ */
+const getVideoEmbedUrl = (url) => {
+  if (!url) return "";
+
+  // ✅ YOUTUBE (all formats)
+  if (url.includes("youtube.com") || url.includes("youtu.be")) {
+    let videoId = "";
+
+    if (url.includes("youtu.be")) {
+      videoId = url.split("youtu.be/")[1]?.split("?")[0];
+    } else {
+      const params = new URL(url).searchParams;
+      videoId = params.get("v");
+    }
+
+    return videoId
+      ? `https://www.youtube.com/embed/${videoId}`
+      : "";
+  }
+
+  // ✅ GOOGLE DRIVE
+  if (url.includes("drive.google.com")) {
+    const match = url.match(/\/d\/(.*?)\//);
+    return match
+      ? `https://drive.google.com/file/d/${match[1]}/preview`
+      : "";
+  }
+
+  // fallback
+  return url;
+};
+
+
 /* ═══════════════════════════════════════════════════
    STAR RATING
 ═══════════════════════════════════════════════════ */
@@ -592,6 +628,49 @@ const ProductDetail = ({
             </div>
           </section>
         )}
+
+
+        {/* ════ YOUTUBE OR GOOGLE DRIVE VIDEO ════ */}
+        {product.videos?.length > 0 && (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16">
+            <h2 className="text-xl font-semibold mb-6">
+              Watch Product in Action
+            </h2>
+
+            <div className="space-y-10">
+              {product.videos.map((vid, idx) => (
+                <div key={idx} className="grid lg:grid-cols-2 gap-6 items-center">
+
+                  {/* VIDEO */}
+                  <iframe
+                    src={getVideoEmbedUrl(vid.url)}
+                    className="w-full h-[300px] rounded-xl"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                  />
+
+                  {/* CONTENT */}
+                  <div className="space-y-3">
+                    {vid.subtitle && (
+                      <p className="text-xs uppercase text-gray-400 font-semibold tracking-wide">
+                        {vid.subtitle}
+                      </p>
+                    )}
+
+                    <h3 className="text-lg font-semibold">
+                      {vid.title}
+                    </h3>
+
+                    <p className="text-sm text-gray-500 leading-relaxed">
+                      {vid.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
 
         {/* ════ REVIEWS ════ */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">

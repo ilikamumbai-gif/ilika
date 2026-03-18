@@ -105,6 +105,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     description: "", additionalInfo: "", tagline: "", points: "",
     images: [], isActive: true, inStock: true,
     beforeAfter: [], hasBeforeAfter: false,
+    hasVideo: false,
+    videos: [],
   };
 
   const fromInitial = (d) => ({
@@ -126,6 +128,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     inStock: d.inStock ?? true,
     beforeAfter: (d.beforeAfter || []).map(p => ({ ...p, _beforeFile: null, _afterFile: null })),
     hasBeforeAfter: !!(d.beforeAfter?.length),
+    videos: (d.videos || []).map(v => ({ ...v })),
+    hasVideo: !!(d.videos?.length),
   });
 
   const [form, setForm] = useState(fromInitial(initialData));
@@ -202,6 +206,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     });
   };
 
+  const updateVideo = (idx, patch) => {
+    setForm(prev => {
+      const vids = [...prev.videos];
+      vids[idx] = { ...vids[idx], ...patch };
+      return { ...prev, videos: vids };
+    });
+  };
+
   const uploadBAImage = async (file) => {
     const r = ref(storage, `products/beforeafter/${crypto.randomUUID()}-${file.name}`);
     await uploadBytes(r, file);
@@ -256,6 +268,16 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         }
       }
 
+      let videoData = [];
+      if (form.hasVideo) {
+        videoData = form.videos.map(v => ({
+          url: v.url,
+          title: v.title,
+          subtitle: v.subtitle,
+          description: v.description,
+        }));
+      }
+
       /* change log */
       if (initialData?.price && Number(initialData.price) !== Number(form.price))
         await logActivity(`${admin?.username || "Admin"} changed price of ${form.name} from ₹${initialData.price} to ₹${form.price}`);
@@ -277,6 +299,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         images: imageUrls,
         isActive: form.isActive, inStock: form.inStock,
         beforeAfter: beforeAfterData,
+        videos: videoData,
       });
 
       await logActivity(initialData?.id
@@ -559,6 +582,114 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               }))}
               className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition"
             >+ Add Before / After Pair</button>
+          </div>
+        )}
+      </div>
+
+
+
+      {/* ══════════════════════════════════════════════════
+    PRODUCT VIDEOS (CLEAN)
+══════════════════════════════════════════════════ */}
+      <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.hasVideo}
+            onChange={e =>
+              setForm(prev => ({ ...prev, hasVideo: e.target.checked }))
+            }
+          />
+          <span className="font-semibold text-sm">
+            This product has Videos
+          </span>
+        </label>
+
+        {form.hasVideo && (
+          <div className="space-y-5">
+            {(form.videos || []).map((video, idx) => (
+              <div key={idx} className="border rounded-xl p-4 bg-white space-y-3">
+
+                {/* HEADER */}
+                <div className="flex justify-between">
+                  <span className="text-sm font-semibold">
+                    Video {idx + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm(prev => ({
+                        ...prev,
+                        videos: prev.videos.filter((_, i) => i !== idx),
+                      }))
+                    }
+                    className="text-red-500 text-xs"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                {/* VIDEO LINK */}
+                <input
+                  type="text"
+                  placeholder="Paste YouTube or Drive link"
+                  value={video.url || ""}
+                  onChange={e =>
+                    updateVideo(idx, { url: e.target.value })
+                  }
+                  className="w-full border p-2 rounded text-sm"
+                />
+
+                {/* TITLE */}
+                <input
+                  type="text"
+                  placeholder="Title"
+                  value={video.title || ""}
+                  onChange={e =>
+                    updateVideo(idx, { title: e.target.value })
+                  }
+                  className="w-full border p-2 rounded text-sm"
+                />
+
+                {/* SUBTITLE */}
+                <input
+                  type="text"
+                  placeholder="Subtitle (optional)"
+                  value={video.subtitle || ""}
+                  onChange={e =>
+                    updateVideo(idx, { subtitle: e.target.value })
+                  }
+                  className="w-full border p-2 rounded text-sm"
+                />
+
+                {/* DESCRIPTION */}
+                <textarea
+                  placeholder="Description"
+                  value={video.description || ""}
+                  onChange={e =>
+                    updateVideo(idx, { description: e.target.value })
+                  }
+                  className="w-full border p-2 rounded text-sm"
+                  rows={3}
+                />
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() =>
+                setForm(prev => ({
+                  ...prev,
+                  videos: [
+                    ...(prev.videos || []),
+                    { url: "", title: "", subtitle: "", description: "" },
+                  ],
+                }))
+              }
+              className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg"
+            >
+              + Add Video
+            </button>
           </div>
         )}
       </div>
