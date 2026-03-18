@@ -245,7 +245,15 @@ app.put("/api/products/:id", async (req, res) => {
     const updateData = {
       ...req.body,
 
-      // Preserve boolean fields safely
+      // ✅ sanitize reviews with image
+      reviews: (req.body.reviews || []).map(r => ({
+        name: r.name || "",
+        rating: r.rating || 0,
+        comment: r.comment || "",
+        image: r.image || null,   // ✅ NEW FIELD
+        createdAt: r.createdAt || new Date()
+      })),
+
       isActive:
         typeof req.body.isActive === "boolean"
           ? req.body.isActive
@@ -957,14 +965,15 @@ app.get("/api/reviews", async (req, res) => {
 
           reviews.push({
             id: doc.id + "_" + index,
-
             productId: doc.id,
-
-            reviewIndex: index,   // ⭐ VERY IMPORTANT
-
+            reviewIndex: index,
             productName: product.name,
 
-            ...r,
+            name: r.name || "",
+            rating: r.rating || 0,
+            comment: r.comment || "",
+            image: r.image || null,   // ✅ ADD THIS
+            createdAt: r.createdAt || null,
           });
 
         });
@@ -1002,8 +1011,12 @@ app.delete("/api/reviews/:productId/:index", async (req, res) => {
 
     const reviews = data.reviews || [];
 
-    reviews.splice(index, 1);
+    if (index < 0 || index >= reviews.length) {
+      return res.status(400).json({ error: "Invalid index" });
+    }
 
+    reviews.splice(index, 1);
+    
     await ref.update({ reviews });
 
     res.json({ message: "Review deleted" });
@@ -1044,7 +1057,11 @@ app.get("/api/reviews/:productId/:index", async (req, res) => {
     res.json({
       productId,
       productName: data.name,
-      ...review,
+      name: review.name || "",
+      rating: review.rating || 0,
+      comment: review.comment || "",
+      image: review.image || null,   // ✅ ADD THIS
+      createdAt: review.createdAt || null,
     });
 
   } catch (err) {
@@ -1518,6 +1535,6 @@ const createDefaultAdmin = async () => {
 };
 
 
-createDefaultAdmin(); 
+createDefaultAdmin();
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

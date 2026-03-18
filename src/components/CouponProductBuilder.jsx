@@ -4,8 +4,8 @@ import { useCart } from "../context/CartProvider";
 import ComboProductCard from "./ComboProductCard";
 import Banner from "./Banner";
 
-const offBanner = "/Images/OfferBanner.jpeg";
-const offBannerMobile = "/Images/offerBannerMobile.jpeg";
+const offBanner = "/Images/offerBanner.gif";
+const offBannerMobile = "/Images/offerBannerMobile.gif";
 
 const coupons = {
   GUDI15: 15,
