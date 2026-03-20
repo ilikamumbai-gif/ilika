@@ -28,16 +28,16 @@ const ComboProductCard = ({ product, selected, onSelect }) => {
       }}
       className={`
         relative cursor-pointer rounded-2xl p-4 transition-all duration-300
-        border bg-white hover:bg-orange-50 hover:shadow-md block
+        border bg-white hover:bg-[#FFF4EA] hover:shadow-md block
         ${selected
-          ? "ring-2 ring-orange-400 bg-gradient-to-b from-orange-100 to-white shadow-lg"
-          : "border-orange-200"}
+          ? "ring-2 ring-[#E96A6A] bg-gradient-to-b from-[#FAD4C0] to-white shadow-lg"
+          : "border-[#FAD4C0]"}
       `}
     >
 
       {/* Selected Badge */}
       {selected && (
-        <span className="absolute top-2 left-2 text-[10px] bg-orange-500 text-white px-2 py-[2px] rounded-full">
+        <span className="absolute top-2 left-2 text-[10px] bg-[#E96A6A] text-white px-2 py-[2px] rounded-full">
           Selected
         </span>
       )}
@@ -52,7 +52,7 @@ const ComboProductCard = ({ product, selected, onSelect }) => {
 
       </div>
 
-      <p className="text-sm font-semibold mt-3 text-center text-orange-700 line-clamp-2">
+      <p className="text-sm font-semibold mt-3 text-center text-[#7A2E3A] line-clamp-2">
         {product.name}
       </p>
 

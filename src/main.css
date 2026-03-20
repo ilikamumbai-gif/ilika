@@ -194,6 +194,12 @@ body,
   width: 100%;
 }
 
+
+
+
+
+
+
 /* ================= SCROLLING TRACK ================= */
 
 .marquee-track {
@@ -210,16 +216,8 @@ body,
   font-weight: 600;
   font-size: 0.95rem;
 
-  background: linear-gradient(
-    to right,
-    #c05621,
-    #c05621,
-    #c05621,
-    #c05621
-  );
-
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: white;
+text-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
 /* ================= MARQUEE ANIMATION ================= */

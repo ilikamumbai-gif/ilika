@@ -7,7 +7,7 @@ const offers = [
     title: "Flat 15% OFF on ILIKA Hair Appliances",
     description:
       "Get 15% OFF on Ilika hair styling tools using this coupon.",
-    code: "GUDI15",
+    code: "EID15",
     link: "/combo"
   },
   {

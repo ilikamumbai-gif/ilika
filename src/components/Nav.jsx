@@ -113,8 +113,8 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             onClick={onClose}
             className="
               whitespace-nowrap font-semibold px-3 py-1 rounded-full
-              bg-gradient-to-r from-orange-200 via-yellow-100 to-orange-200
-              text-orange-700 hover:shadow-lg
+               bg-gradient-to-r from-[#ecaca7] via-[#E96A6A] to-[#D45A5A]
+              text-white hover:shadow-lg
               transition-all duration-300
               animate-[pulse_2.5s_infinite]
             "
@@ -125,7 +125,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           <span
             className="
               absolute -top-2 -right-3 text-[9px] px-2 py-[2px]
-              bg-orange-500 text-white rounded-full shadow
+              bg-[#E96A6A] text-white rounded-full shadow
               animate-bounce
             "
           >

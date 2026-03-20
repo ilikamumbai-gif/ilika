@@ -63,20 +63,19 @@ const Home = () => {
         <CartDrawer />
 
         {/* HERO */}
-        {/* <Banner
+        <Banner
           className="md:h-[87vh] -mt-3"
           src={holimainbanner}
           mobileSrc={holiMobile}
-        /> */}
+        />
         
-        <GudiPadwaBanner />
 
 
         <Offers />
 
 
 
-   
+
 
 
         {/* CATEGORY NAV */}

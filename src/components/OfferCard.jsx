@@ -25,7 +25,7 @@ const OfferCard = ({
       block relative
       rounded-2xl
       p-[1px]
-      bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500
+bg-gradient-to-r from-[#FAD4C0] via-[#E96A6A] to-[#D45A5A]
       hover:scale-[1.02]
       transition duration-300
       group
@@ -34,7 +34,7 @@ const OfferCard = ({
       {/* CARD */}
       <div
         className="
-        bg-white/95 backdrop-blur-md
+        bg-[#FFF4EA]/90 backdrop-blur-md
         rounded-2xl
 p-3 sm:p-6
         h-full
@@ -60,11 +60,10 @@ p-3 sm:p-6
             <div className="flex items-center justify-between flex-wrap gap-2 mb-2 sm:mb-4">
               <span
                 className="
-                border border-dashed border-orange-700
+                border border-dashed 
                 px-3 py-1 rounded-md
                 text-xs sm:text-sm font-semibold
-                text-white
-                bg-orange-400
+                bg-[#E96A6A] border-[#D45A5A] text-white
                 "
               >
                 {code}
@@ -75,8 +74,7 @@ p-3 sm:p-6
                 className="
                 flex items-center gap-1
                 text-xs sm:text-sm font-medium
-                text-orange-700
-                hover:text-orange-500
+                text-[#D45A5A] hover:text-[#E96A6A]
                 "
               >
                 <Copy size={16} />
@@ -92,14 +90,14 @@ p-3 sm:p-6
           className="
           flex items-center justify-between
           flex-wrap gap-2
-          text-orange-700
+text-[#7A2E3A]
           font-semibold
           mt-1 sm:mt-2
           "
         >
 
           <div className="flex items-center gap-2 text-sm sm:text-base">
-            <Gift size={18} className="text-orange-500 shrink-0" />
+<Gift size={18} className="text-[#E96A6A] shrink-0" />
             <span>
               {type === "coupon" ? "Special Festive Deal" : "Special Combo Deal"}
             </span>
@@ -122,7 +120,7 @@ p-3 sm:p-6
                 absolute left-0 -bottom-1
                 h-[2px]
                 w-0
-                bg-orange-500
+                bg-[#E96A6A]
                 group-hover:w-full
                 transition-all duration-300
                 "

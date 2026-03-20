@@ -4,11 +4,11 @@ import { useCart } from "../context/CartProvider";
 import ComboProductCard from "./ComboProductCard";
 import Banner from "./Banner";
 
-const offBanner = "/Images/offerBanner.gif";
-const offBannerMobile = "/Images/offerBannerMobile.gif";
+const offBanner = "/Images/OfferBanner.jpeg";
+const offBannerMobile = "/Images/offerBannerMobile.jpeg";
 
 const coupons = {
-  GUDI15: 15,
+  EID15: 15,
 };
 
 const allowedProducts = [
@@ -37,7 +37,7 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-orange-700">
+          <h3 className="text-lg font-semibold text-[#7A2E3A]">
             Choose a Variant
           </h3>
           <button
@@ -60,11 +60,10 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
               <button
                 key={idx}
                 onClick={() => setSelected(v)}
-                className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
-                  isActive
-                    ? "border-orange-400 bg-orange-50"
-                    : "border-gray-200 hover:border-orange-200 bg-white"
-                }`}
+                className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${isActive
+                  ? "border-[#E96A6A] bg-[#FFF4EA]"
+                  : "border-gray-200 hover:border-[#FAD4C0] bg-white"
+                  }`}
               >
                 <img
                   src={thumb}
@@ -75,12 +74,12 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
                   <p className="text-sm font-medium text-gray-700 truncate">
                     {v.label}
                   </p>
-                  <p className="text-sm font-semibold text-orange-600">
+                  <p className="text-sm font-semibold text-[#E96A6A]">
                     ₹{Number(v.price)}
                   </p>
                 </div>
                 {isActive && (
-                  <span className="text-orange-500 text-lg">✓</span>
+                  <span className="text-[#E96A6A] text-lg">✓</span>
                 )}
               </button>
             );
@@ -90,7 +89,7 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
         {/* Confirm */}
         <button
           onClick={() => onConfirm(selected)}
-          className="w-full py-3 rounded-xl font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+          className="w-full py-3 rounded-xl font-semibold text-white bg-[#E96A6A] hover:bg-[#D45A5A] transition-colors"
         >
           Select Variant
         </button>
@@ -258,12 +257,15 @@ const CouponProductBuilder = () => {
 
       <section
         className="max-w-7xl mx-auto px-4 pb-16 rounded-2xl"
-        style={{ background: "linear-gradient(to bottom, #fffaf3, #ffe8cc)" }}
+        style={{
+          background: "linear-gradient(to bottom, #ffffff, #FFF4EA, #FAD4C0)"
+        }}
       >
+        
         {/* Heading */}
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-semibold text-orange-700">
-            Gudi Padwa Special Offer
+          <h2 className="text-3xl font-semibold text-[#7A2E3A]">
+            EID Special Offer
           </h2>
           <p className="text-sm text-gray-500 mt-2">
             Pick your favorite styling tool and unlock exclusive discounts
@@ -285,11 +287,10 @@ const CouponProductBuilder = () => {
             return (
               <div
                 key={id}
-                className={`rounded-2xl p-[6px] transition-all duration-300 hover:scale-[1.03] ${
-                  selected
-                    ? "bg-gradient-to-br from-orange-100 via-yellow-50 to-white shadow-lg ring-2 ring-orange-300"
-                    : "bg-white hover:bg-orange-50 border border-orange-200"
-                }`}
+                className={`rounded-2xl p-[6px] transition-all duration-300 hover:scale-[1.03] ${selected
+                  ? "bg-gradient-to-br from-[#FAD4C0] via-[#FFF4EA] to-white ring-2 ring-[#E96A6A] shadow-lg  "
+                  : "bg-white hover:bg-[#FFF4EA] border border-[#FAD4C0]"
+                  }`}
               >
                 <ComboProductCard
                   product={product}
@@ -300,7 +301,7 @@ const CouponProductBuilder = () => {
                 {/* Selected variant badge */}
                 {selected && chosenVariantLabel && (
                   <div className="mt-2 mb-1 text-center">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-orange-700 bg-orange-100 border border-orange-200 rounded-full px-3 py-1">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-[#7A2E3A] bg-[#FFF4EA] border border-[#FAD4C0] rounded-full px-3 py-1">
                       <span>✓</span>
                       {chosenVariantLabel}
                     </span>
@@ -312,7 +313,7 @@ const CouponProductBuilder = () => {
                   <div className="text-center mb-1">
                     <button
                       onClick={() => setModalProduct(product)}
-                      className="text-xs text-orange-500 underline underline-offset-2 hover:text-orange-700"
+                      className="text-xs text-[#E96A6A] underline underline-offset-2 hover:text-[#7A2E3A]"
                     >
                       Change Variant
                     </button>
@@ -325,21 +326,31 @@ const CouponProductBuilder = () => {
 
         {/* Coupon Section */}
         <div className="max-w-md mx-auto">
+
+          {/* 🔥 COUPON HINT */}
+          <div className="mb-3 text-center">
+            <p className="text-sm text-[#7A2E3A] font-medium">
+              🎉 Use code <span className="text-[#E96A6A] font-semibold">EID15</span> to get 15% OFF
+            </p>
+          </div>
+
+          {/* Input + Button */}
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
               placeholder="Enter Festive Coupon"
               value={coupon}
               onChange={(e) => setCoupon(e.target.value)}
-              className="border border-orange-200 rounded-xl px-4 py-3 flex-1 focus:outline-none focus:ring-2 focus:ring-orange-300"
+              className="border border-[#FAD4C0] rounded-xl px-4 py-3 flex-1 focus:outline-none focus:ring-2 focus:ring-[#FAD4C0]"
             />
             <button
               onClick={applyCoupon}
-              className="px-6 py-3 rounded-xl font-semibold text-white bg-orange-500 hover:bg-orange-600"
+              className="px-6 py-3 rounded-xl font-semibold text-white bg-[#E96A6A] hover:bg-[#D45A5A]"
             >
               Apply
             </button>
           </div>
+
         </div>
 
         {/* Price Summary */}
@@ -352,7 +363,7 @@ const CouponProductBuilder = () => {
                   {product.name}
                   {variant?.label ? ` — ${variant.label}` : ""}
                   {" · "}
-                  <span className="text-orange-600 font-medium">
+                  <span className="text-[#E96A6A] font-medium">
                     ₹{getVariantPrice(product, variant)}
                   </span>
                 </span>
@@ -364,18 +375,18 @@ const CouponProductBuilder = () => {
             </p>
 
             {discount > 0 && (
-              <p className="text-orange-700 font-semibold mt-1">
+              <p className="text-[#7A2E3A] font-semibold mt-1">
                 {discount}% Festive Discount Applied
               </p>
             )}
 
-            <p className="text-2xl font-bold text-orange-700 mt-2">
+            <p className="text-2xl font-bold text-[#7A2E3A] mt-2">
               Final Price: ₹{totalDiscountedPrice}
             </p>
 
             <button
               onClick={addDiscountedProduct}
-              className="mt-6 px-8 py-3 rounded-xl font-semibold text-white bg-orange-500 hover:bg-orange-600"
+              className="mt-6 px-8 py-3 rounded-xl font-semibold text-white bg-[#E96A6A] hover:bg-[#D45A5A]"
             >
               Add To Cart
             </button>

@@ -173,7 +173,7 @@ const Combos = () => {
               {/* Top gradient strip */}
               <div
                 className="h-2 w-full"
-                style={{ background: "linear-gradient(to right, #fb923c, #fbbf24, #f97316)" }}
+                style={{ background: "linear-gradient(to right, #FAD4C0, #E96A6A, #D45A5A)" }}
               />
 
               <div className="px-6 pt-5 pb-6">
@@ -189,7 +189,7 @@ const Combos = () => {
                 <div className="text-4xl mb-3 text-center">💆‍♀️</div>
 
                 {/* Heading */}
-                <h3 className="text-lg font-bold text-center text-orange-700 mb-1">
+                <h3 className="text-lg font-bold text-center text-[#7A2E3A] mb-1">
                   Don't forget your Sheet Mask!
                 </h3>
                 <p className="text-sm text-center text-gray-500 mb-5">
@@ -200,14 +200,14 @@ const Combos = () => {
                 <button
                   onClick={() => setShowMaskPopup(false)}
                   className="w-full py-3 rounded-xl font-semibold text-white mb-3 transition-all hover:scale-[1.02]"
-                  style={{ background: "linear-gradient(to right, #fb923c, #f97316)" }}
+                  style={{ background: "linear-gradient(to right, #FAD4C0, #E96A6A, #D45A5A)" }}
                 >
                   ✨ Yes, let me pick a mask
                 </button>
 
                 <button
                   onClick={() => buildAndAddCombo(false)}
-                  className="w-full py-3 rounded-xl font-semibold text-orange-600 border border-orange-300 bg-orange-50 hover:bg-orange-100 transition-all"
+                  className="w-full py-3 rounded-xl font-semibold text-[#D45A5A] border border-[#FAD4C0] bg-[#FFF4EA] hover:bg-[#FAD4C0] transition-all"
                 >
                   Continue without mask
                 </button>
@@ -227,7 +227,7 @@ const Combos = () => {
 
               <div>
 
-                <h2 className="text-xl font-semibold mb-6 text-orange-700">
+                <h2 className="text-xl font-semibold mb-6 text-[#7A2E3A]">
                   🌸 Step 1 • Choose Any 2 Toners
                 </h2>
 
@@ -244,8 +244,8 @@ const Combos = () => {
                           transition-all duration-300 hover:scale-[1.03]
                           rounded-2xl p-3
                           ${selected
-                            ? "bg-gradient-to-br from-orange-100 via-yellow-50 to-white shadow-lg ring-2 ring-orange-300"
-                            : "bg-white hover:bg-orange-50 border border-orange-200"}
+                            ? "bg-gradient-to-br from-[#FAD4C0] via-[#FFF4EA] to-white shadow-lg ring-2 ring-[#E96A6A]"
+                            : "bg-white hover:bg-[#FFF4EA] border border-[#FAD4C0]"}
                         `}
                       >
                         <ComboProductCard
@@ -265,7 +265,7 @@ const Combos = () => {
               {/* MASKS */}
 
               <div>
-                <h2 className="text-xl font-semibold mb-1 text-orange-700">
+                <h2 className="text-xl font-semibold mb-1 text-[#7A2E3A]">
                   💖 Step 2 • Choose Your Sheet Mask{" "}
                   <span className="text-sm font-normal text-gray-400">(Optional)</span>
                 </h2>
@@ -287,8 +287,8 @@ const Combos = () => {
                           scale-90 origin-top transition-all duration-300 hover:scale-[0.97]
                           rounded-2xl p-[6px]
                           ${selected
-                            ? "bg-gradient-to-br from-orange-100 via-yellow-50 to-white shadow-lg ring-2 ring-orange-300"
-                            : "bg-white hover:bg-orange-50 border border-orange-200"}
+                            ? "bg-gradient-to-br from-[#FAD4C0] via-[#FFF4EA] to-white shadow-lg ring-2 ring-[#E96A6A]"
+                            : "bg-white hover:bg-[#FFF4EA] border border-[#FAD4C0]"}
                         `}
                       >
                         <ComboProductCard
@@ -311,9 +311,9 @@ const Combos = () => {
 
             <div
               className="rounded-2xl p-6 shadow-md h-fit sticky top-24"
-              style={{ background: "linear-gradient(to bottom, #fffaf3, #ffe8cc)" }}
+              style={{ background: "linear-gradient(to bottom, #FFF4EA, #FAD4C0)" }}
             >
-              <h3 className="font-semibold text-xl mb-6 text-orange-700">
+              <h3 className="font-semibold text-xl mb-6 text-[#7A2E3A]">
                 💝 Your Festive Day Combo Kit
               </h3>
 
@@ -322,7 +322,7 @@ const Combos = () => {
               <div className="mb-4">
 
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-orange-500 text-white text-[10px] px-2 py-[2px] rounded-full">
+                  <span className="bg-[#E96A6A] text-white text-[10px] px-2 py-[2px] rounded-full">
                     Step 1
                   </span>
                   <p className="font-medium text-sm">Toners</p>
@@ -347,7 +347,7 @@ const Combos = () => {
                         />
                         <button
                           onClick={() => toggleToner(p)}
-                          className="absolute -top-2 -right-2 bg-[#1C371C] text-white w-5 h-5 rounded-full text-xs hover:bg-[#132813]"
+                          className="absolute -top-2 -right-2 bg-[#E96A6A] hover:bg-[#D45A5A] text-white w-5 h-5 rounded-full text-xs hover:bg-[#132813]"
                         >
                           ×
                         </button>
@@ -365,7 +365,7 @@ const Combos = () => {
               <div className="mb-4">
 
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-orange-500 text-white text-[10px] px-2 py-[2px] rounded-full">
+                  <span className="bg-[#E96A6A] text-white text-[10px] px-2 py-[2px] rounded-full">
                     Step 2
                   </span>
                   <p className="font-medium text-sm">
@@ -418,10 +418,10 @@ const Combos = () => {
                 {selectedToners.length === 1 && (
                   <div>
                     <p className="text-xs text-gray-500 mb-1">1 toner selected</p>
-                    <p className="text-xl font-bold text-orange-700">
+                    <p className="text-xl font-bold text-[#7A2E3A]">
                       ₹{singleTonerPrice}
                     </p>
-                    <p className="text-xs text-orange-500 mt-1">
+                    <p className="text-xs text-[#E96A6A] mt-1">
                       ✨ Add 1 more toner to unlock ₹699 combo offer!
                     </p>
                   </div>
@@ -437,7 +437,7 @@ const Combos = () => {
                         Combo Price
                       </span>
                     </div>
-                    <p className="text-xl font-bold text-orange-700">₹699</p>
+                    <p className="text-xl font-bold text-[#7A2E3A]">₹699</p>
                     {originalTonerMRP > 699 && (
                       <p className="text-xs text-green-600 mt-1">
                         🎉 You save ₹{originalTonerMRP - 699}!
@@ -449,9 +449,9 @@ const Combos = () => {
                 <button
                   disabled={selectedToners.length !== 2}
                   onClick={addComboToCart}
-                  className="w-full mt-5 text-orange-700 py-3 rounded-xl font-semibold tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full mt-5  py-3 rounded-xl font-semibold tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   style={{
-                    background: "linear-gradient(to right, #fb923c, #fbbf24, #f97316)"
+                   background: "linear-gradient(to right, #FAD4C0, #E96A6A, #D45A5A)"
                   }}
                 >
                   Add Combo To Cart

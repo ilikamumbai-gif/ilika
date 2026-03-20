@@ -35,7 +35,7 @@ const GudiPadwaBanner = () => {
                         <div className="flex flex-wrap gap-3 mt-5 justify-center lg:justify-start">
                             <Link
                                 to="/combo"
-                                className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-full font-medium transition shadow-md text-sm sm:text-base"
+                                className="bg-[#E96A6A] hover:bg-orange-600 text-white px-5 py-2.5 rounded-full font-medium transition shadow-md text-sm sm:text-base"
                             >
                                 Shop Festive Offers
                             </Link>
