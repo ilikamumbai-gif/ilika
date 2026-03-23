@@ -87,7 +87,7 @@ const Footer = () => {
             <h4 className="heading-color font-semibold text-lg">Follow Us</h4>
 
             <div className="flex justify-center md:justify-start gap-5">
-              <Mail className="w-5 h-5 hover:scale-110 transition cursor-pointer" />
+              {/* <Mail className="w-5 h-5 hover:scale-110 transition cursor-pointer" /> */}
 
               <a href="https://www.facebook.com/profile.php?id=100083395125995" target="_blank">
                 <Facebook className="w-5 h-5 hover:scale-110 transition" />
