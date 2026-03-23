@@ -89,15 +89,15 @@ const Footer = () => {
             <div className="flex justify-center md:justify-start gap-5">
               <Mail className="w-5 h-5 hover:scale-110 transition cursor-pointer" />
 
-              <a href="https://facebook.com" target="_blank">
+              <a href="https://www.facebook.com/profile.php?id=100083395125995" target="_blank">
                 <Facebook className="w-5 h-5 hover:scale-110 transition" />
               </a>
 
-              <a href="https://whatsApp.com" target="_blank">
+              <a href="https://www.youtube.com/@ilikamumbai" target="_blank">
                 <Youtube className="w-5 h-5 hover:scale-110 transition" />
               </a>
 
-              <a href="https://instagram.com" target="_blank">
+              <a href="https://www.instagram.com/ilikamumbai/" target="_blank">
                 <Instagram className="w-5 h-5 hover:scale-110 transition" />
               </a>
             </div>

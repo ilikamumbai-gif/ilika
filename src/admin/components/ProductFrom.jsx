@@ -54,8 +54,6 @@ const ImageUploadCell = ({ label, value, previewUrl, onFileChange, onUrlChange }
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
-
-      {/* Preview */}
       {previewUrl ? (
         <div className="relative group">
           <img src={previewUrl} alt={label}
@@ -76,12 +74,9 @@ const ImageUploadCell = ({ label, value, previewUrl, onFileChange, onUrlChange }
           <span className="text-xs text-gray-400">Click to upload</span>
         </div>
       )}
-
       <input ref={inputRef} type="file" accept="image/*" hidden
         onChange={e => { if (e.target.files[0]) onFileChange(e.target.files[0]); }}
       />
-
-      {/* URL fallback */}
       <input type="text" placeholder="…or paste image URL"
         value={typeof value === "string" ? value : ""}
         onChange={e => onUrlChange(e.target.value)}
@@ -107,6 +102,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     beforeAfter: [], hasBeforeAfter: false,
     hasVideo: false,
     videos: [],
+    warranty: "",   // ✅ NEW
+    banners: [],
   };
 
   const fromInitial = (d) => ({
@@ -130,6 +127,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     hasBeforeAfter: !!(d.beforeAfter?.length),
     videos: (d.videos || []).map(v => ({ ...v })),
     hasVideo: !!(d.videos?.length),
+    warranty: d.warranty || "",   // ✅ NEW
+    banners: Array.isArray(d.banners) ? d.banners : (d.bannerImage ? [{ url: d.bannerImage, alt: d.bannerAlt || "" }] : []),
   });
 
   const [form, setForm] = useState(fromInitial(initialData));
@@ -300,6 +299,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         isActive: form.isActive, inStock: form.inStock,
         beforeAfter: beforeAfterData,
         videos: videoData,
+        warranty: form.warranty || "",   // ✅ NEW
+        banners: form.banners || [],
       });
 
       await logActivity(initialData?.id
@@ -484,9 +485,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════
-          BEFORE / AFTER IMAGES
-      ══════════════════════════════════════════════════ */}
+      {/* BEFORE / AFTER IMAGES */}
       <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={form.hasBeforeAfter}
@@ -503,7 +502,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
             {(form.beforeAfter || []).map((pair, idx) => (
               <div key={idx} className="border rounded-xl p-4 bg-white space-y-4">
-                {/* pair header */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-gray-700">Pair {idx + 1}</span>
                   <button type="button"
@@ -512,7 +510,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                   >Remove</button>
                 </div>
 
-                {/* before / after image upload */}
                 <div className="grid grid-cols-2 gap-4">
                   <ImageUploadCell
                     label="Before"
@@ -530,7 +527,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                   />
                 </div>
 
-                {/* labels */}
                 <div className="grid grid-cols-2 gap-3">
                   <input type="text" placeholder="Before label" value={pair.beforeLabel || ""}
                     onChange={e => updatePair(idx, { beforeLabel: e.target.value })}
@@ -542,7 +538,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                   />
                 </div>
 
-                {/* meta */}
                 <input type="text" placeholder="Title (e.g. 4 Weeks Result)" value={pair.title || ""}
                   onChange={e => updatePair(idx, { title: e.target.value })}
                   className="w-full border p-2 rounded text-sm"
@@ -556,13 +551,12 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                   className="w-full border p-2 rounded text-sm"
                 />
 
-                {/* stat text */}
                 <div className="grid grid-cols-2 gap-3">
-                  <input type="text" placeholder="Before stat text (shown below slider)" value={pair.beforeDesc || ""}
+                  <input type="text" placeholder="Before stat text" value={pair.beforeDesc || ""}
                     onChange={e => updatePair(idx, { beforeDesc: e.target.value })}
                     className="w-full border p-2 rounded text-sm"
                   />
-                  <input type="text" placeholder="After stat text (shown below slider)" value={pair.afterDesc || ""}
+                  <input type="text" placeholder="After stat text" value={pair.afterDesc || ""}
                     onChange={e => updatePair(idx, { afterDesc: e.target.value })}
                     className="w-full border p-2 rounded text-sm"
                   />
@@ -586,110 +580,188 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         )}
       </div>
 
-
-
-      {/* ══════════════════════════════════════════════════
-    PRODUCT VIDEOS (CLEAN)
-══════════════════════════════════════════════════ */}
+      {/* PRODUCT VIDEOS */}
       <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={form.hasVideo}
-            onChange={e =>
-              setForm(prev => ({ ...prev, hasVideo: e.target.checked }))
-            }
+            onChange={e => setForm(prev => ({ ...prev, hasVideo: e.target.checked }))}
           />
-          <span className="font-semibold text-sm">
-            This product has Videos
-          </span>
+          <span className="font-semibold text-sm">This product has Videos</span>
         </label>
 
         {form.hasVideo && (
           <div className="space-y-5">
             {(form.videos || []).map((video, idx) => (
               <div key={idx} className="border rounded-xl p-4 bg-white space-y-3">
-
-                {/* HEADER */}
                 <div className="flex justify-between">
-                  <span className="text-sm font-semibold">
-                    Video {idx + 1}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setForm(prev => ({
-                        ...prev,
-                        videos: prev.videos.filter((_, i) => i !== idx),
-                      }))
-                    }
+                  <span className="text-sm font-semibold">Video {idx + 1}</span>
+                  <button type="button"
+                    onClick={() => setForm(prev => ({ ...prev, videos: prev.videos.filter((_, i) => i !== idx) }))}
                     className="text-red-500 text-xs"
-                  >
-                    Remove
-                  </button>
+                  >Remove</button>
                 </div>
-
-                {/* VIDEO LINK */}
-                <input
-                  type="text"
-                  placeholder="Paste YouTube or Drive link"
-                  value={video.url || ""}
-                  onChange={e =>
-                    updateVideo(idx, { url: e.target.value })
-                  }
+                <input type="text" placeholder="Paste YouTube or Drive link" value={video.url || ""}
+                  onChange={e => updateVideo(idx, { url: e.target.value })}
                   className="w-full border p-2 rounded text-sm"
                 />
-
-                {/* TITLE */}
-                <input
-                  type="text"
-                  placeholder="Title"
-                  value={video.title || ""}
-                  onChange={e =>
-                    updateVideo(idx, { title: e.target.value })
-                  }
+                <input type="text" placeholder="Title" value={video.title || ""}
+                  onChange={e => updateVideo(idx, { title: e.target.value })}
                   className="w-full border p-2 rounded text-sm"
                 />
-
-                {/* SUBTITLE */}
-                <input
-                  type="text"
-                  placeholder="Subtitle (optional)"
-                  value={video.subtitle || ""}
-                  onChange={e =>
-                    updateVideo(idx, { subtitle: e.target.value })
-                  }
+                <input type="text" placeholder="Subtitle (optional)" value={video.subtitle || ""}
+                  onChange={e => updateVideo(idx, { subtitle: e.target.value })}
                   className="w-full border p-2 rounded text-sm"
                 />
-
-                {/* DESCRIPTION */}
-                <textarea
-                  placeholder="Description"
-                  value={video.description || ""}
-                  onChange={e =>
-                    updateVideo(idx, { description: e.target.value })
-                  }
-                  className="w-full border p-2 rounded text-sm"
-                  rows={3}
+                <textarea placeholder="Description" value={video.description || ""}
+                  onChange={e => updateVideo(idx, { description: e.target.value })}
+                  className="w-full border p-2 rounded text-sm" rows={3}
                 />
               </div>
             ))}
 
-            <button
-              type="button"
-              onClick={() =>
-                setForm(prev => ({
-                  ...prev,
-                  videos: [
-                    ...(prev.videos || []),
-                    { url: "", title: "", subtitle: "", description: "" },
-                  ],
-                }))
-              }
+            <button type="button"
+              onClick={() => setForm(prev => ({ ...prev, videos: [...(prev.videos || []), { url: "", title: "", subtitle: "", description: "" }] }))}
               className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg"
-            >
-              + Add Video
-            </button>
+            >+ Add Video</button>
+          </div>
+        )}
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          BANNERS — MULTIPLE, OPTIONAL
+      ══════════════════════════════════════════════════ */}
+      <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+        <div>
+          <p className="font-semibold text-sm">Product Banners (Optional)</p>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Add one or more full-width banners shown between the description and before/after sections.
+          </p>
+        </div>
+
+        {/* Banner list */}
+        {(form.banners || []).map((banner, idx) => (
+          <div key={idx} className="border rounded-xl p-4 bg-white space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-700">Banner {idx + 1}</span>
+              <button
+                type="button"
+                onClick={() => setForm(prev => ({ ...prev, banners: prev.banners.filter((_, i) => i !== idx) }))}
+                className="text-red-500 text-xs hover:underline"
+              >Remove</button>
+            </div>
+
+            {/* Preview */}
+            {banner.url && (
+              <div className="rounded-lg overflow-hidden border border-gray-200">
+                <img
+                  src={banner.url}
+                  alt={banner.alt || `Banner ${idx + 1}`}
+                  className="w-full h-32 object-cover"
+                  onError={e => { e.target.style.display = "none"; }}
+                />
+              </div>
+            )}
+
+            {/* File upload */}
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Upload Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="block w-full text-sm"
+                onChange={async (e) => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  try {
+                    const r = ref(storage, `products/banners/${crypto.randomUUID()}-${file.name}`);
+                    await uploadBytes(r, file);
+                    const url = await getDownloadURL(r);
+                    setForm(prev => {
+                      const updated = [...prev.banners];
+                      updated[idx] = { ...updated[idx], url };
+                      return { ...prev, banners: updated };
+                    });
+                  } catch (err) { console.error("Banner upload failed:", err); }
+                }}
+              />
+            </div>
+
+            {/* URL fallback */}
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Or Paste URL</label>
+              <input
+                type="text"
+                placeholder="https://..."
+                value={banner.url || ""}
+                onChange={e => setForm(prev => {
+                  const updated = [...prev.banners];
+                  updated[idx] = { ...updated[idx], url: e.target.value };
+                  return { ...prev, banners: updated };
+                })}
+                className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              />
+            </div>
+
+            {/* Alt text */}
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Alt Text (Optional)</label>
+              <input
+                type="text"
+                placeholder="e.g. Product lifestyle banner"
+                value={banner.alt || ""}
+                onChange={e => setForm(prev => {
+                  const updated = [...prev.banners];
+                  updated[idx] = { ...updated[idx], alt: e.target.value };
+                  return { ...prev, banners: updated };
+                })}
+                className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              />
+            </div>
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => setForm(prev => ({ ...prev, banners: [...(prev.banners || []), { url: "", alt: "" }] }))}
+          className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+        >+ Add Banner</button>
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          WARRANTY — OPTIONAL
+      ══════════════════════════════════════════════════ */}
+      <div className="border rounded-xl p-5 space-y-3 bg-gray-50">
+        <p className="font-semibold text-sm">Warranty (Optional)</p>
+        <p className="text-xs text-gray-400">Select if this product comes with a warranty. Leave blank for no warranty badge on the product page.</p>
+        <div className="flex flex-col gap-2.5">
+          {[
+            { value: "", label: "No Warranty" },
+            { value: "manufacturer", label: "Manufacturer Product — 18 Months Warranty" },
+            { value: "import", label: "Import Product — 1 Year Warranty" },
+          ].map(opt => (
+            <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer">
+              <input
+                type="radio"
+                name="warranty"
+                value={opt.value}
+                checked={form.warranty === opt.value}
+                onChange={() => setForm(prev => ({ ...prev, warranty: opt.value }))}
+                className="accent-[#1C371C]"
+              />
+              <span className="text-sm text-gray-700">{opt.label}</span>
+            </label>
+          ))}
+        </div>
+        {form.warranty && (
+          <div className="mt-1 flex items-start gap-2 bg-[#f0faf0] border border-[#1C371C]/20 rounded-lg px-3 py-2.5">
+            <span className="text-[#1C371C] font-bold mt-0.5">✓</span>
+            <p className="text-xs text-[#1C371C] font-medium">
+              {form.warranty === "manufacturer"
+                ? "18 Months Manufacturer Warranty badge will appear on the product page."
+                : "1 Year Import Warranty badge will appear on the product page."}
+            </p>
           </div>
         )}
       </div>
