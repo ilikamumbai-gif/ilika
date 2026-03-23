@@ -230,8 +230,14 @@ const getVideoEmbedUrl = (url) => {
   if (!url) return "";
   if (url.includes("youtube.com") || url.includes("youtu.be")) {
     let videoId = "";
-    if (url.includes("youtu.be")) { videoId = url.split("youtu.be/")[1]?.split("?")[0]; }
-    else { const params = new URL(url).searchParams; videoId = params.get("v"); }
+    if (url.includes("youtu.be")) {
+      videoId = url.split("youtu.be/")[1]?.split("?")[0];
+    } else if (url.includes("/shorts/")) {
+      videoId = url.split("/shorts/")[1]?.split("?")[0];
+    } else {
+      const params = new URL(url).searchParams;
+      videoId = params.get("v");
+    }
     return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
   }
   if (url.includes("drive.google.com")) {
@@ -357,7 +363,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
                 )}
               </div>
               {price >= 1099 && (
-                <span className="text-[10px] text-gray-400 mt-0.5 font-medium">No Cost EMI</span>
+                <span className="text-[10px] text-gray-400 mt-0.5 font-medium">No Cost EMI · Extra 5% off</span>
               )}
             </div>
 
