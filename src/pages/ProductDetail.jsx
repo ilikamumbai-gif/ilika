@@ -486,14 +486,18 @@ const ProductDetail = ({
   const price = activeVariant?.price ?? product?.price ?? 0;
   const mrp = activeVariant?.mrp ?? product?.mrp ?? 0;
 
-  /* auto-scroll thumbnails */
+  /* auto-scroll thumbnails — fixed: use images.join() as dep so stale closures never show old product images */
   useEffect(() => {
-    if (!images || images.length <= 1) return;
     clearInterval(autoScrollRef.current);
-    let idx = Math.max(0, images.indexOf(selectedImage));
+    if (!images || images.length <= 1) return;
+
+    // capture current images array in closure, start from 0 to avoid stale indexOf
+    const currentImages = images;
+    let idx = 0;
+
     autoScrollRef.current = setInterval(() => {
-      idx = (idx + 1) % images.length;
-      setSelectedImage(images[idx]);
+      idx = (idx + 1) % currentImages.length;
+      setSelectedImage(currentImages[idx]);
       if (thumbsRef.current) {
         const thumb = thumbsRef.current.querySelectorAll("button")[idx];
         if (thumb) {
@@ -502,8 +506,10 @@ const ProductDetail = ({
         }
       }
     }, 3500);
+
     return () => clearInterval(autoScrollRef.current);
-  }, [images.length, activeVariant]);
+  // depend on the actual image URLs, not just length — so switching products resets correctly
+  }, [images.join("|"), activeVariant?.id]);
 
   const stopAuto = () => clearInterval(autoScrollRef.current);
 
