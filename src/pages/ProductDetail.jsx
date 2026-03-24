@@ -786,7 +786,7 @@ const ProductDetail = ({
               </div>
 
               {/* ── WARRANTY CARD ── */}
-              {product.warranty && (
+              {/* {product.warranty && (
                 <div className="flex items-start gap-3 border border-[#1C371C]/20 rounded-2xl px-4 py-3.5 bg-[#f0faf0]">
                   <div className="w-9 h-9 rounded-xl bg-[#1C371C] flex items-center justify-center flex-shrink-0">
                     <ShieldCheck className="w-4 h-4 text-white" />
@@ -802,7 +802,7 @@ const ProductDetail = ({
                     </p>
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </section>
