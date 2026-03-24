@@ -395,14 +395,14 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
         </div>
 
         {/* WARRANTY STRIP */}
-        {product?.warranty && (
+        {/* {product?.warranty && (
           <div className="bg-[#fff6f5] border-t border-[#E7A6A1]/20 py-1.5 flex items-center justify-center gap-1.5">
             <ShieldCheck className="w-3 h-3 text-[#801f1f] flex-shrink-0" />
             <span className="text-[10px] font-semibold text-[#801f1f] tracking-wide">
               {product.warranty === "manufacturer" ? "18 Months Manufacturer Warranty" : "1 Year Warranty"}
             </span>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
