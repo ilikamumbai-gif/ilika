@@ -204,21 +204,53 @@ const BeforeAfterSlider = ({
   return (
     <div
       ref={containerRef}
-      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
-      className="relative w-full overflow-hidden rounded-2xl shadow-md"
-      style={{ aspectRatio: "1/1", touchAction: "none", userSelect: "none", WebkitUserSelect: "none", cursor: "col-resize" }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      className="relative w-full overflow-hidden rounded-2xl shadow-md select-none"
+      style={{ aspectRatio: "16/9", touchAction: "none", userSelect: "none", WebkitUserSelect: "none", cursor: "col-resize" }}
     >
-      <img src={afterImage} alt={afterLabel} draggable={false} className="absolute inset-0 w-full h-full object-cover pointer-events-none" />
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ width: `${pos}%` }}>
-        <img src={beforeImage} alt={beforeLabel} draggable={false} className="absolute inset-0 h-full object-cover" style={{ width: containerRef.current ? containerRef.current.offsetWidth + "px" : "100%" }} />
+      {/* AFTER — full background */}
+      <img
+        src={afterImage}
+        alt={afterLabel}
+        draggable={false}
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+      />
+
+      {/* BEFORE — same full size, clipped from the right using clip-path so both images align perfectly */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
+      >
+        <img
+          src={beforeImage}
+          alt={beforeLabel}
+          draggable={false}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       </div>
-      <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.35)] pointer-events-none" style={{ left: `${pos}%` }}>
-        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center border border-gray-100 pointer-events-none">
-          <ChevronLeft className="w-3.5 h-3.5 text-[#801f1f]" /><ChevronRight className="w-3.5 h-3.5 text-[#801f1f]" />
+
+      {/* DIVIDER LINE */}
+      <div
+        className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none"
+        style={{ left: `calc(${pos}% - 1px)` }}
+      >
+        {/* HANDLE CIRCLE */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 bg-white rounded-full shadow-xl flex items-center justify-center border border-gray-100 pointer-events-none">
+          <ChevronLeft className="w-3 h-3 text-[#801f1f]" />
+          <ChevronRight className="w-3 h-3 text-[#801f1f]" />
         </div>
       </div>
-      <span className="absolute bottom-3 left-3 bg-[#801f1f]/80 text-white text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-sm pointer-events-none">{beforeLabel}</span>
-      <span className="absolute bottom-3 right-3 bg-[#1C371C]/80 text-white text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-sm pointer-events-none">{afterLabel}</span>
+
+      {/* LABELS — top corners like image 1 */}
+      <span className="absolute top-4 left-4 bg-black/55 text-white text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm pointer-events-none tracking-wide">
+        {beforeLabel}
+      </span>
+      <span className="absolute top-4 right-4 bg-black/55 text-white text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm pointer-events-none tracking-wide">
+        {afterLabel}
+      </span>
     </div>
   );
 };
@@ -395,14 +427,14 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
         </div>
 
         {/* WARRANTY STRIP */}
-        {/* {product?.warranty && (
+        {product?.warranty && (
           <div className="bg-[#fff6f5] border-t border-[#E7A6A1]/20 py-1.5 flex items-center justify-center gap-1.5">
             <ShieldCheck className="w-3 h-3 text-[#801f1f] flex-shrink-0" />
             <span className="text-[10px] font-semibold text-[#801f1f] tracking-wide">
               {product.warranty === "manufacturer" ? "18 Months Manufacturer Warranty" : "1 Year Warranty"}
             </span>
           </div>
-        )} */}
+        )}
       </div>
     </div>
   );
@@ -792,7 +824,7 @@ const ProductDetail = ({
               </div>
 
               {/* ── WARRANTY CARD ── */}
-              {/* {product.warranty && (
+              {product.warranty && (
                 <div className="flex items-start gap-3 border border-[#1C371C]/20 rounded-2xl px-4 py-3.5 bg-[#f0faf0]">
                   <div className="w-9 h-9 rounded-xl bg-[#1C371C] flex items-center justify-center flex-shrink-0">
                     <ShieldCheck className="w-4 h-4 text-white" />
@@ -808,7 +840,7 @@ const ProductDetail = ({
                     </p>
                   </div>
                 </div>
-              )} */}
+              )}
             </div>
           </div>
         </section>
