@@ -1,7 +1,7 @@
 const MiniDivider = () => {
 
   const saleText =
-"🌙 EID MUBARAK 🌙 FESTIVE BEAUTY OFFERS 🛍️ SHOP NOW ";
+"🛍️ FESTIVE BEAUTY OFFERS 🛍️ SHOP NOW ";
 
   return (
     <div className="w-full bg-gradient-to-r from-[#FAD4C0] via-[#d79b9b] to-[#dd8181] overflow-hidden">

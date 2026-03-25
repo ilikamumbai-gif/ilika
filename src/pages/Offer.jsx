@@ -7,7 +7,7 @@ const offers = [
     title: "Flat 15% OFF on ILIKA Hair Appliances",
     description:
       "Get 15% OFF on Ilika hair styling tools using this coupon.",
-    code: "EID15",
+    code: "ILIKA15",
     link: "/combo"
   },
   {
@@ -27,10 +27,12 @@ const Offers = () => {
         py-5 md:py-20
         px-4
         bg-cover
+        bg-[#f4d6b6]
         bg-center
         bg-no-repeat
+        
       "
-      style={{ backgroundImage: "url('/Images/Offerbg.jpeg')" }}
+      // style={{ backgroundImage: "url('/Images/Offerbg.jpeg')" }}
     >
       {/* overlay */}
       <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />

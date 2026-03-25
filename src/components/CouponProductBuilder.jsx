@@ -4,11 +4,11 @@ import { useCart } from "../context/CartProvider";
 import ComboProductCard from "./ComboProductCard";
 import Banner from "./Banner";
 
-const offBanner = "/Images/OfferBanner.jpeg";
-const offBannerMobile = "/Images/offerBannerMobile.jpeg";
+const offBanner = "/Images/offerBanner.gif";
+const offBannerMobile = "/Images/offerBannerMobile.gif";
 
 const coupons = {
-  EID15: 15,
+  ILIKA15: 15,
 };
 
 const allowedProducts = [
@@ -265,7 +265,7 @@ const CouponProductBuilder = () => {
         {/* Heading */}
         <div className="text-center mb-10">
           <h2 className="text-3xl font-semibold text-[#7A2E3A]">
-            EID Special Offer
+            Our Special Offer
           </h2>
           <p className="text-sm text-gray-500 mt-2">
             Pick your favorite styling tool and unlock exclusive discounts
@@ -330,7 +330,7 @@ const CouponProductBuilder = () => {
           {/* 🔥 COUPON HINT */}
           <div className="mb-3 text-center">
             <p className="text-sm text-[#7A2E3A] font-medium">
-              🎉 Use code <span className="text-[#E96A6A] font-semibold">EID15</span> to get 15% OFF
+              🎉 Use code <span className="text-[#E96A6A] font-semibold">ILIKA15</span> to get 15% OFF
             </p>
           </div>
 
