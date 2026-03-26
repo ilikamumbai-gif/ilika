@@ -540,7 +540,7 @@ const ProductDetail = ({
     }, 3500);
 
     return () => clearInterval(autoScrollRef.current);
-  // depend on the actual image URLs, not just length — so switching products resets correctly
+    // depend on the actual image URLs, not just length — so switching products resets correctly
   }, [images.join("|"), activeVariant?.id]);
 
   const stopAuto = () => clearInterval(autoScrollRef.current);
@@ -882,25 +882,7 @@ const ProductDetail = ({
           </div>
         </section>
 
-        {/* ════ PRODUCT BANNERS ════ */}
-        {((product.banners?.length > 0) || product.bannerImage) && (
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12 space-y-4">
-            {/* Support both new banners[] array and legacy bannerImage string */}
-            {(product.banners?.length > 0
-              ? product.banners
-              : [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
-            ).filter(b => b?.url).map((banner, idx) => (
-              <div key={idx} className="rounded-3xl overflow-hidden shadow-sm">
-                <img
-                  src={banner.url}
-                  alt={banner.alt || `Product Banner ${idx + 1}`}
-                  className="w-full object-cover"
-                  style={{ maxHeight: "420px" }}
-                />
-              </div>
-            ))}
-          </section>
-        )}
+
 
         {/* ════ BEFORE / AFTER ════ */}
         {hasBeforeAfter && (
@@ -937,6 +919,25 @@ const ProductDetail = ({
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {/* ════ PRODUCT BANNERS ════ */}
+        {((product.banners?.length > 0) || product.bannerImage) && (
+          <section className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4">
+            {/* Support both new banners[] array and legacy bannerImage string */}
+            {(product.banners?.length > 0
+              ? product.banners
+              : [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
+            ).filter(b => b?.url).map((banner, idx) => (
+              <div key={idx} className="shadow-sm">
+                <img
+                  src={banner.url}
+                  alt={banner.alt || `Product Banner ${idx + 1}`}
+                  className="w-full object-cover h-auto"
+                />
+              </div>
+            ))}
           </section>
         )}
 
