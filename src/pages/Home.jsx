@@ -19,6 +19,7 @@ import holibg2 from "../assets/Images/holibg3.png";
 import OfferCard from "../components/OfferCard";
 import Offers from "./Offer";
 import GudiPadwaBanner from "../components/GudiPadwaBanner";
+import PromoCardGrid from "../components/PromoCardGrid";
 
 /* public images (use path only) */
 const skinMobile = "/Images/skinMobile.jpeg";
@@ -68,14 +69,12 @@ const Home = () => {
           src={holimainbanner}
           mobileSrc={holiMobile}
         />
+
+
+        {/* <PromoCardGrid/> */}
         
 
-
         <Offers />
-
-
-
-
 
 
         {/* CATEGORY NAV */}

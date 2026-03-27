@@ -458,6 +458,7 @@ const ProductDetail = ({
   const [touchStartX, setTouchStartX] = useState(null);
   const [touchEndX, setTouchEndX] = useState(null);
   const [expandedDesc, setExpandedDesc] = useState(false);
+  const [expandedInfo, setExpandedInfo] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
   // ── NEW: Lightbox state ──
@@ -683,7 +684,7 @@ const ProductDetail = ({
         )}
 
         {/* ════ HERO ════ */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-14">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-4 sm:pt-14">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
 
             {/* IMAGES */}
@@ -856,7 +857,7 @@ const ProductDetail = ({
               {product.description ? (
                 <>
                   <div
-                    className={`prose prose-sm max-w-none text-gray-600 leading-relaxed transition-all duration-300 ${expandedDesc ? "" : "line-clamp-6"}`}
+                    className={`prose prose-sm max-w-none text-gray-600 leading-relaxed transition-all duration-300 ${expandedDesc ? "" : "line-clamp-3"}`}
                     dangerouslySetInnerHTML={{ __html: product.description }}
                   />
                   <button onClick={() => setExpandedDesc(!expandedDesc)} className="text-[#801f1f] text-xs font-semibold mt-3 hover:underline">{expandedDesc ? "Read Less ▲" : "Read More ▼"}</button>
@@ -870,14 +871,31 @@ const ProductDetail = ({
                 <h2 className="text-base font-semibold text-[#2b2a29]">Additional Information</h2>
               </div>
               {additionalInfoArray.length > 0 ? (
-                <ul className="space-y-3">
-                  {additionalInfoArray.map((pt, i) => (
-                    <li key={i} className="flex gap-3 items-start text-sm text-gray-700">
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#1C371C] flex-shrink-0" />{pt}
-                    </li>
-                  ))}
-                </ul>
-              ) : <p className="text-sm text-gray-400">No additional information available.</p>}
+                <>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${expandedInfo ? "" : "line-clamp-3"
+                      }`}
+                  >
+                    <ul className="space-y-3 text-sm text-gray-700">
+                      {additionalInfoArray.map((pt, i) => (
+                        <li key={i} className="flex gap-3 items-start">
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#1C371C] flex-shrink-0" />
+                          {pt}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <button
+                    onClick={() => setExpandedInfo(!expandedInfo)}
+                    className="text-[#1C371C] text-xs font-semibold mt-3 hover:underline"
+                  >
+                    {expandedInfo ? "Read Less ▲" : "Read More ▼"}
+                  </button>
+                </>
+              ) : (
+                <p className="text-sm text-gray-400">No additional information available.</p>
+              )}
             </div>
           </div>
         </section>
