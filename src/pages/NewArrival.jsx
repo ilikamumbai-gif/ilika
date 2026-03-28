@@ -19,8 +19,8 @@ const NewArrival = () => {
         .replace(/\s+/g, "") === "new"
   );
 
-  const holimainbanner = "/Images/offerBanner.webp";
-  const holiMobile = "/Images/offerBannerMobile.webp";
+  const holimainbanner = "/Images/offerBanner.gif";
+  const holiMobile = "/Images/offerBannerMobile.gif";
 
   return (
     <>

@@ -72,7 +72,7 @@ const Home = () => {
 
 
         {/* <PromoCardGrid/> */}
-        
+
 
         <Offers />
 
@@ -83,6 +83,7 @@ const Home = () => {
         <Heading heading="OUR TOP PRODUCTS" />
 
         <ProductList
+          mobileScroll
           productNames={[
             "Ilika Hair Curler Tong Machine | 5 In 1 Multi Function Hair Styler for Women",
             "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
@@ -109,6 +110,7 @@ const Home = () => {
 
         {newCategory ? (
           <ProductList
+            mobileScroll
             productNames={[
               "Red Algae Hydrating Sheet Mask | Hydration & Radiance",
               "Kumkumadi Face Sheet Mask | Hydration & Rejuvenation",
@@ -135,6 +137,7 @@ const Home = () => {
 
         {hairstylingCategory ? (
           <ProductList
+            mobileScroll
             categoryId={hairstylingCategory.id}
             limit={4}
           />
@@ -156,6 +159,7 @@ const Home = () => {
 
         {newCategory ? (
           <ProductList
+            mobileScroll  
             productNames={[
               "Keratin Rich Conditioner | For Normal to Damaged Hair | 200 ML",
               "Black Seed Hair Oil | Prevents Premature Graying | 200ML",

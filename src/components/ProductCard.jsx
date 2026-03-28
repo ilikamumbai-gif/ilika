@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { createSlug } from "../utils/slugify";
 
-const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-white",productNames = [] }) => {
+const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-white", productNames = [] }) => {
   const { addToCart } = useCart();
   const slug = createSlug(product.name);
   const productId = product._id || product.id;
@@ -51,19 +51,15 @@ const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-wh
 
             alt={product.name}
             className={`
-    absolute inset-0
-    w-full h-full
-    object-contain
-    ${isTall ? "scale-[1.18]" : "scale-[1.08]"}
-    p-2
-  `}
+              absolute inset-0
+              w-full h-full
+              object-contain
+              ${isTall ? "scale-[1.18]" : "scale-[1.08]"}
+              p-2
+            `}
           />
 
-          {product.inStock === false && (
-            <div className="absolute top-3 left-3 bg-black text-white text-xs px-2 py-1 rounded">
-              Out of Stock
-            </div>
-          )}
+
 
           {/* DISCOUNT BADGE (THEME) */}
           {calculatedDiscount && (
@@ -77,7 +73,7 @@ const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-wh
         <div className="p-4 flex flex-col gap-2 flex-grow">
 
           {/* NAME */}
-          <h3 className="text-[13px] font-semibold text-[#172917] leading-snug tracking-wide">
+          <h3 className="text-[13px] font-semibold text-[#172917] leading-snug tracking-wide line-clamp-2">
             {product.name}
           </h3>
 
@@ -146,8 +142,8 @@ const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-wh
               addToCart(item);
             }}
             className={`w-full text-[13px] font-clean tracking-widest py-2.5 rounded-lg ${product.inStock
-                ? `${buttonBg} ${buttonText}`
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              ? `${buttonBg} ${buttonText}`
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
           >
             {product.inStock ? "Add To Cart" : "Out of Stock"}

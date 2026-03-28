@@ -7,11 +7,11 @@ const ProductList = ({
   buttonBg,
   buttonText,
   productNames = [],
+  mobileScroll = false,   // ← new prop; pass true only on Home
 }) => {
   const { products } = useProducts();
 
-  let filteredProducts = products
-    .filter((item) => item.isActive !== false);
+  let filteredProducts = products.filter((item) => item.isActive !== false);
 
   if (productNames.length > 0) {
     filteredProducts = filteredProducts.filter((item) =>
@@ -30,7 +30,51 @@ const ProductList = ({
   return (
     <section className="w-full py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+        {/* ── MOBILE: horizontal scroll (Home only) ── */}
+        {mobileScroll && (
+          <div className="flex gap-4 overflow-x-auto pb-2 sm:hidden scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {filteredProducts.length ? (
+              filteredProducts.map((item) => (
+                <div
+                  key={item._id || item.id}
+                  className="snap-start shrink-0 w-[62vw] max-w-[240px]"
+                >
+                  <div className="[&_h3]:line-clamp-3 [&_h3]:overflow-hidden [&_h3]:text-ellipsis">
+                    <ProductCard
+                      product={item}
+                      buttonBg={buttonBg}
+                      buttonText={buttonText}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No products found</p>
+            )}
+          </div>
+        )}
+
+        {/* ── MOBILE: normal 2-col grid (all other pages) ── */}
+        {!mobileScroll && (
+          <div className="grid grid-cols-2 gap-4 sm:hidden">
+            {filteredProducts.length ? (
+              filteredProducts.map((item) => (
+                <ProductCard
+                  key={item._id || item.id}
+                  product={item}
+                  buttonBg={buttonBg}
+                  buttonText={buttonText}
+                />
+              ))
+            ) : (
+              <p className="col-span-full text-sm text-gray-500">No products found</p>
+            )}
+          </div>
+        )}
+
+        {/* ── DESKTOP: grid (always) ── */}
+        <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.length ? (
             filteredProducts.map((item) => (
               <ProductCard
@@ -41,11 +85,10 @@ const ProductList = ({
               />
             ))
           ) : (
-            <p className="col-span-full text-sm text-gray-500">
-              No products found
-            </p>
+            <p className="col-span-full text-sm text-gray-500">No products found</p>
           )}
         </div>
+
       </div>
     </section>
   );

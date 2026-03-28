@@ -26,6 +26,7 @@ import BlogDetail from "../pages/BlogDetail";
 import Contact from "../pages/Contact";
 import Privacy from "../pages/Privacy";
 import ProductDetail from "../pages/ProductDetail";
+import Products from "../pages/Products";
 import Return from "../pages/Return";
 import TermsCondition from "../pages/TermsCondition";
 
@@ -73,6 +74,7 @@ const NavRoutes = () => {
         <Route path="/hair" element={<Hair />} />
         <Route path="/grooming" element={<Grooming />} />
         <Route path="/newarrival" element={<NewArrival />} />
+        <Route path="/products" element={<Products />} />
 
         <Route path="/skin/face" element={<Face />} />
         <Route path="/skin/body" element={<Body />} />
