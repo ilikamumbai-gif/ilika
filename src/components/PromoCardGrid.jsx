@@ -1,14 +1,16 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const promoCards = [
   {
     id: 1,
+    link: "/newarrival",
     size: "large",
     bg: "linear-gradient(135deg, #8B1A1A 0%, #C0392B 60%, #E8736B 100%)",
-    tag: "New Launch",
-    title: "Glow Like Never Before",
-    subtitle: "Bio-Retinol Face Serum",
-    desc: "Plant-powered radiance for your most luminous skin yet",
+    tag: "Our Top Seller",
+    title: "Lip Plumper Vacuum Device",
+    subtitle: "Soft Silicone | Instant Volume Boost",
+    desc: "Get naturally fuller, plumper lips in minutes with this easy-to-use, non-invasive beauty tool.",
     cta: "Shop Now",
     emoji: "✨",
     accent: "#F9C5BD",
@@ -21,7 +23,7 @@ const promoCards = [
         <rect x="72" y="36" width="16" height="10" rx="3" fill="#C0392B" fillOpacity="0.6" />
         {/* Label */}
         <rect x="63" y="72" width="34" height="34" rx="5" fill="rgba(255,255,255,0.25)" />
-        <text x="80" y="92" textAnchor="middle" fontSize="8" fill="#fff" fontFamily="Georgia,serif" fontStyle="italic">Oilikä</text>
+        <text x="80" y="92" textAnchor="middle" fontSize="8" fill="#fff" fontFamily="Georgia,serif" fontStyle="italic">ilikä</text>
         {/* Sparkles */}
         <circle cx="42" cy="44" r="3" fill="#F9C5BD" fillOpacity="0.7" />
         <circle cx="128" cy="60" r="2" fill="#F9C5BD" fillOpacity="0.6" />
@@ -32,13 +34,14 @@ const promoCards = [
   },
   {
     id: 2,
+    link: "/ctm",
     size: "small",
     bg: "linear-gradient(135deg, #F7EDE8 0%, #FAD9D0 100%)",
-    tag: "Best Seller",
-    title: "Rose Petal Glow Kit",
-    subtitle: "Limited Edition",
-    desc: "Our top 3 hydration heroes in one pretty set",
-    cta: "Explore Kit",
+    tag: "CUSTOM SKINCARE",
+    title: "Build Your CTM Routine",
+    subtitle: "Cleanser • Toner • Moisturizer",
+    desc: "Create your perfect skincare combo by choosing 1 cleanser, 1 toner, and 1 moisturizer — tailored just for your skin.",
+    cta: "Explore CTM",
     emoji: "🌹",
     accent: "#8B1A1A",
     dark: false,
@@ -62,12 +65,13 @@ const promoCards = [
   },
   {
     id: 3,
+    link: "/grooming/face",
     size: "small",
     bg: "linear-gradient(135deg, #1B4332 0%, #2D6A4F 70%, #52B788 100%)",
-    tag: "Eco Pick",
-    title: "Forest Botanicals",
-    subtitle: "Vegan & Cruelty-Free",
-    desc: "Nature's finest herbs for skin that speaks for itself",
+    tag: "SMART BEAUTY TECH",
+    title: "Automatic Face Mask Maker",
+    subtitle: "Voice-Controlled • DIY Skincare",
+    desc: "Create fresh, natural face masks at home in just 5 minutes using fruits, veggies, and collagen.",
     cta: "Discover",
     emoji: "🌿",
     accent: "#D8F3DC",
@@ -91,13 +95,14 @@ const promoCards = [
   },
   {
     id: 4,
+    link: "/hair/styling",
     size: "large",
     bg: "linear-gradient(135deg, #FDE8E4 0%, #FADADD 40%, #F5C6CB 100%)",
-    tag: "🎁 Special Offer",
-    title: "Discover the Best Deals",
-    subtitle: "Oilikä Seasonal Fair",
-    desc: "Premium skincare at dreamy prices — for a limited time only",
-    cta: "Claim Offer",
+    tag: "SALON-STYLE AT HOME",
+    title: "High-Speed Leafless Hair Dryer",
+    subtitle: "Fast Drying • Smooth Finish",
+    desc: "Experience powerful Ionic Technology with advanced leafless technology, BLDC Brushless Motor.",
+    cta: "Shop Now",
     emoji: "💝",
     accent: "#8B1A1A",
     dark: false,
@@ -124,10 +129,10 @@ const promoCards = [
 ];
 
 const tagColors = {
-  "New Launch": { bg: "rgba(255,255,255,0.22)", color: "#fff" },
-  "Best Seller": { bg: "rgba(139,26,26,0.12)", color: "#8B1A1A" },
-  "Eco Pick": { bg: "rgba(255,255,255,0.18)", color: "#D8F3DC" },
-  "🎁 Special Offer": { bg: "rgba(139,26,26,0.1)", color: "#8B1A1A" },
+  "Our Top Seller": { bg: "rgba(255,255,255,0.22)", color: "#fff" },
+  "CUSTOM SKINCARE": { bg: "rgba(139,26,26,0.12)", color: "#8B1A1A" },
+  "SMART BEAUTY TECH": { bg: "rgba(255,255,255,0.18)", color: "#D8F3DC" },
+  "SALON-STYLE AT HOME": { bg: "rgba(139,26,26,0.1)", color: "#8B1A1A" },
 };
 
 function PromoCard({ card }) {
@@ -139,133 +144,134 @@ function PromoCard({ card }) {
   const tag = tagColors[card.tag] || { bg: "rgba(255,255,255,0.2)", color: "#fff" };
 
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        position: "relative",
-        background: card.bg,
-        borderRadius: 24,
-        padding: "32px 28px 28px",
-        overflow: "hidden",
-        cursor: "pointer",
-        transition: "transform 0.35s cubic-bezier(.22,1,.36,1), box-shadow 0.35s ease",
-        transform: hovered ? "translateY(-6px) scale(1.015)" : "translateY(0) scale(1)",
-        boxShadow: hovered
-          ? "0 24px 48px rgba(139,26,26,0.22), 0 6px 16px rgba(0,0,0,0.1)"
-          : "0 6px 24px rgba(139,26,26,0.1)",
-        minHeight: card.size === "large" ? 220 : 200,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        userSelect: "none",
-      }}
-    >
-      {/* Decorative blob */}
-      <div style={{
-        position: "absolute",
-        top: -30,
-        right: -30,
-        width: 130,
-        height: 130,
-        borderRadius: "50%",
-        background: "rgba(255,255,255,0.07)",
-        pointerEvents: "none",
-      }} />
-
-      {/* Illustration */}
-      <div style={{ position: "absolute", right: 0, bottom: 0, pointerEvents: "none" }}>
-        {card.illustration}
-      </div>
-
-      {/* Tag */}
-      <div style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        background: tag.bg,
-        color: tag.color,
-        borderRadius: 20,
-        padding: "4px 12px",
-        fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: "0.06em",
-        textTransform: "uppercase",
-        width: "fit-content",
-        backdropFilter: "blur(6px)",
-        border: `1px solid ${isLight ? "rgba(139,26,26,0.12)" : "rgba(255,255,255,0.2)"}`,
-        marginBottom: 10,
-      }}>
-        {card.tag}
-      </div>
-
-      {/* Text content */}
-      <div style={{ zIndex: 1, maxWidth: "58%" }}>
+    <Link to={card.link} style={{ textDecoration: "none" }}>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          position: "relative",
+          background: card.bg,
+          borderRadius: 24,
+          padding: "32px 28px 28px",
+          overflow: "hidden",
+          cursor: "pointer",
+          transition: "transform 0.35s cubic-bezier(.22,1,.36,1), box-shadow 0.35s ease",
+          transform: hovered ? "translateY(-6px) scale(1.015)" : "translateY(0) scale(1)",
+          boxShadow: hovered
+            ? "0 24px 48px rgba(139,26,26,0.22), 0 6px 16px rgba(0,0,0,0.1)"
+            : "0 6px 24px rgba(139,26,26,0.1)",
+          minHeight: card.size === "large" ? 220 : 200,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          userSelect: "none",
+        }}
+      >   {/* Decorative blob */}
         <div style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontWeight: 800,
-          fontSize: card.size === "large" ? 26 : 21,
-          color: textColor,
-          lineHeight: 1.25,
-          marginBottom: 4,
-          letterSpacing: "-0.02em",
-        }}>
-          {card.title}
+          position: "absolute",
+          top: -30,
+          right: -30,
+          width: 130,
+          height: 130,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.07)",
+          pointerEvents: "none",
+        }} />
+
+        {/* Illustration */}
+        <div style={{ position: "absolute", right: 0, bottom: 0, pointerEvents: "none" }}>
+          {card.illustration}
         </div>
+
+        {/* Tag */}
         <div style={{
-          fontFamily: "'Lato', sans-serif",
-          fontWeight: 600,
-          fontSize: 13,
-          color: subColor,
-          marginBottom: 8,
-          letterSpacing: "0.04em",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 5,
+          background: tag.bg,
+          color: tag.color,
+          borderRadius: 20,
+          padding: "4px 12px",
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.06em",
           textTransform: "uppercase",
+          width: "fit-content",
+          backdropFilter: "blur(6px)",
+          border: `1px solid ${isLight ? "rgba(139,26,26,0.12)" : "rgba(255,255,255,0.2)"}`,
+          marginBottom: 10,
         }}>
-          {card.subtitle}
-        </div>
-        <div style={{
-          fontFamily: "'Lato', sans-serif",
-          fontSize: 13,
-          color: descColor,
-          lineHeight: 1.5,
-          marginBottom: 20,
-        }}>
-          {card.desc}
+          {card.tag}
         </div>
 
-        {/* CTA Button */}
-        <button
-          style={{
-            background: isLight ? "#8B1A1A" : "rgba(255,255,255,0.18)",
-            color: isLight ? "#fff" : "#fff",
-            border: isLight ? "none" : "1.5px solid rgba(255,255,255,0.4)",
-            borderRadius: 50,
-            padding: "9px 22px",
-            fontSize: 13,
-            fontWeight: 700,
+        {/* Text content */}
+        <div style={{ zIndex: 1, maxWidth: "58%" }}>
+          <div style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontWeight: 800,
+            fontSize: card.size === "large" ? 26 : 21,
+            color: textColor,
+            lineHeight: 1.25,
+            marginBottom: 4,
+            letterSpacing: "-0.02em",
+          }}>
+            {card.title}
+          </div>
+          <div style={{
             fontFamily: "'Lato', sans-serif",
-            letterSpacing: "0.05em",
-            cursor: "pointer",
-            backdropFilter: "blur(8px)",
-            transition: "all 0.25s ease",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = isLight ? "#6B1111" : "rgba(255,255,255,0.28)";
-            e.currentTarget.style.transform = "scale(1.04)";
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = isLight ? "#8B1A1A" : "rgba(255,255,255,0.18)";
-            e.currentTarget.style.transform = "scale(1)";
-          }}
-        >
-          {card.cta}
-          <span style={{ fontSize: 14 }}>→</span>
-        </button>
+            fontWeight: 600,
+            fontSize: 13,
+            color: subColor,
+            marginBottom: 8,
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+          }}>
+            {card.subtitle}
+          </div>
+          <div style={{
+            fontFamily: "'Lato', sans-serif",
+            fontSize: 13,
+            color: descColor,
+            lineHeight: 1.5,
+            marginBottom: 20,
+          }}>
+            {card.desc}
+          </div>
+
+          {/* CTA Button */}
+          <button
+            style={{
+              background: isLight ? "#8B1A1A" : "rgba(255,255,255,0.18)",
+              color: isLight ? "#fff" : "#fff",
+              border: isLight ? "none" : "1.5px solid rgba(255,255,255,0.4)",
+              borderRadius: 50,
+              padding: "9px 22px",
+              fontSize: 13,
+              fontWeight: 700,
+              fontFamily: "'Lato', sans-serif",
+              letterSpacing: "0.05em",
+              cursor: "pointer",
+              backdropFilter: "blur(8px)",
+              transition: "all 0.25s ease",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = isLight ? "#6B1111" : "rgba(255,255,255,0.28)";
+              e.currentTarget.style.transform = "scale(1.04)";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = isLight ? "#8B1A1A" : "rgba(255,255,255,0.18)";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
+          >
+            {card.cta}
+            <span style={{ fontSize: 14 }}>→</span>
+          </button>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

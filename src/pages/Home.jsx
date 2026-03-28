@@ -64,14 +64,14 @@ const Home = () => {
         <CartDrawer />
 
         {/* HERO */}
-        <Banner
+        {/* <Banner
           className="md:h-[87vh] -mt-3"
           src={holimainbanner}
           mobileSrc={holiMobile}
-        />
+        /> */}
 
 
-        {/* <PromoCardGrid/> */}
+        <PromoCardGrid/>
 
 
         <Offers />
@@ -92,7 +92,7 @@ const Home = () => {
             "Hot & Cold Facial Pore Blackhead Remover For Men & Women",
             "Ilika High-Speed Leafless Hair Dryer For Men & Women",
             "Ilika Automatic Voice Version Face Mask Maker Machine",
-            "Ilika Silicone LED Therapy Face Mask For Men & Women",
+            "Ilika Silicone 3 Color LED Therapy Face Mask For Men & Women",
           ]}
           limit={8}
         />
