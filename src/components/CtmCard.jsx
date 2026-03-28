@@ -1,8 +1,8 @@
 import React from "react";
-import Pro1 from "../assets/Products/Product1.jpg";
-import Pro2 from "../assets/Products/Product2.png";
-import Toner from "../assets/Images/toner.png";
-import Cleanser from "../assets/Images/Cleanser.webp";
+import Pro1 from "../assets/Products/Product1.webp";
+import Pro2 from "../assets/Products/Product2.webp";
+import Toner from "../assets/Images/toner.webp";
+import Cleanser from "../assets/Images/clenser.webp";
 import Moisture from "../assets/Images/Moisturizer.webp";
 
 const Section = ({ image, title, subtitle, benefits, reverse }) => (

@@ -1,5 +1,5 @@
 import React from "react";
-import bannerImg from "../assets/Images/Banner 2.jpg";
+import bannerImg from "../assets/Images/Banner 2.webp";
 
 const Banner = ({
   className = "",

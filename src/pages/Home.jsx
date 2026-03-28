@@ -13,25 +13,25 @@ import Banner from "../components/Banner";
 import { useCategories } from "../admin/context/CategoryContext";
 
 /* assets (correct import) */
-import bannerSkincare from "../assets/Images/FacecareBanner.jpg.jpeg";
-import bannerHair from "../assets/Images/HairBanner.jpg.jpeg";
-import holibg2 from "../assets/Images/holibg3.png";
-import OfferCard from "../components/OfferCard";
+import bannerSkincare from "../assets/Images/FacecareBanner.webp";
+import bannerHair from "../assets/Images/HairBanner.webp";
+// import holibg2 from "../assets/Images/holibg3.webp";
+// import OfferCard from "../components/OfferCard";
 import Offers from "./Offer";
 import GudiPadwaBanner from "../components/GudiPadwaBanner";
 import PromoCardGrid from "../components/PromoCardGrid";
 
 /* public images (use path only) */
-const skinMobile = "/Images/skinMobile.jpeg";
+const skinMobile = "/Images/skinMobile.webp";
 
-const hairMobile = "/Images/hairMobile.jpeg";
-const BannerStyle = "/Images/Banner.jpg";
-const styleMobile = "/Images/styleMobile.jpeg";
+const hairMobile = "/Images/hairMobile.webp";
+const BannerStyle = "/Images/Banner.webp";
+const styleMobile = "/Images/styleMobile.webp";
 
-const holimainbanner = "/Images/women.jpeg";
-const holiMobile = "/Images/womenMobile.jpeg";
+const holimainbanner = "/Images/women.webp";
+const holiMobile = "/Images/womenMobile.webp";
 
-const bannerStyle = "/Images/Banner2.jpeg";
+const bannerStyle = "/Images/Banner2.webp";
 
 
 const Home = () => {

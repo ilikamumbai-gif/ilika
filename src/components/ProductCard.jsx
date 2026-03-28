@@ -24,7 +24,7 @@ const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-wh
     (product.images && product.images[0]) ||
     product.image ||
     product.imageUrl ||
-    "/placeholder.png";
+    "/placeholder.webp";
 
 
   const calculatedDiscount =

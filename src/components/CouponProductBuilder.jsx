@@ -55,7 +55,7 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
         <div className="flex flex-col gap-3 mb-6">
           {variants.map((v, idx) => {
             const isActive = selected?.label === v.label;
-            const thumb = v.images?.[0] || "/placeholder.png";
+            const thumb = v.images?.[0] || "/placeholder.webp";
             return (
               <button
                 key={idx}
@@ -127,7 +127,7 @@ const CouponProductBuilder = () => {
     if (product.images?.length) return product.images[0];
     if (product.image) return product.image;
     if (product.imageUrl) return product.imageUrl;
-    return "/placeholder.png";
+    return "/placeholder.webp";
   };
 
   const getProductId = (p) => p._id || p.id;

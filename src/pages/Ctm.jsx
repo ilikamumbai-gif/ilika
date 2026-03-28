@@ -6,7 +6,7 @@ import Footer from '../components/Footer'
 import Heading from '../components/Heading'
 import CartDrawer from '../components/CartDrawer'
 import CtmCard from '../components/CtmCard'
-import kit from "../assets/Products/Product2.png"
+import kit from "../assets/Products/Product2.webp"
 import { Link } from 'react-router-dom'
 
 const Ctm = () => {

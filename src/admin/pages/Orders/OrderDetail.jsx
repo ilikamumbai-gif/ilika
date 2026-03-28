@@ -27,7 +27,7 @@ const formatDateTime = (timestamp) => {
 };
 
 const getImage = (item) =>
-  item?.image || item?.images?.[0] || item?.imageUrl || "/placeholder.png";
+  item?.image || item?.images?.[0] || item?.imageUrl || "/placeholder.webp";
 
 /* ─────────────────── STATUS / SOURCE CONFIG ─────────────────── */
 
@@ -123,7 +123,7 @@ const OrderDetail = () => {
       `Rs. ${Number(v).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
 
     const logo = new Image();
-    logo.src = "/Images/logo2.png";
+    logo.src = "/Images/logo2.webp";
 
     logo.onload = () => {
       /* ── HEADER (white bg, logo left, title right) ── */
@@ -519,7 +519,7 @@ const OrderDetail = () => {
                         <img
                           src={getImage(item)}
                           alt={item.name}
-                          onError={(e) => { e.target.src = "/placeholder.png"; }}
+                          onError={(e) => { e.target.src = "/placeholder.webp"; }}
                           className="w-14 h-14 object-cover rounded-lg border border-gray-200 shrink-0"
                         />
                         <div className="min-w-0">
@@ -535,7 +535,7 @@ const OrderDetail = () => {
                               {comboList.map((c, j) => (
                                 <div key={j} className="flex items-center gap-1.5">
                                   <img
-                                    src={c.image || c.images?.[0] || "/placeholder.png"}
+                                    src={c.image || c.images?.[0] || "/placeholder.webp"}
                                     className="w-5 h-5 rounded object-cover border border-gray-200"
                                   />
                                   <span className="text-xs text-gray-500">{c.name}</span>

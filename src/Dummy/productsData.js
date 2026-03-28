@@ -1,4 +1,4 @@
-import product1 from "../assets/Products/Product1.jpg";
+import product1 from "../assets/Products/Product1.webp";
 
 const ProductData = [
   {
@@ -17,7 +17,7 @@ const ProductData = [
     "category": "Face Care",
     "description": "Brightens skin tone and reduces dark spots with Vitamin C.",
     "rating": 5,
-    "image": "/assets/products/vitamin-c-serum.png"
+    "image": "/assets/products/vitamin-c-serum.webp"
   },
   {
     "id": 3,
@@ -26,7 +26,7 @@ const ProductData = [
     "category": "Body Care",
     "description": "Soothing aloe vera gel for hydration and skin repair.",
     "rating": 4,
-    "image": "/assets/products/aloe-vera-gel.png"
+    "image": "/assets/products/aloe-vera-gel.webp"
   },
   {
     "id": 4,
@@ -35,7 +35,7 @@ const ProductData = [
     "category": "Hair Care",
     "description": "Nourishing oil to strengthen roots and reduce hair fall.",
     "rating": 4,
-    "image": "/assets/products/hair-growth-oil.png"
+    "image": "/assets/products/hair-growth-oil.webp"
   },
   {
     "id": 5,
@@ -44,7 +44,7 @@ const ProductData = [
     "category": "Face Care",
     "description": "Lightweight moisturizer for all-day hydration.",
     "rating": 5,
-    "image": "/assets/products/face-moisturizer.png"
+    "image": "/assets/products/face-moisturizer.webp"
   },
   {
     "id": 6,
@@ -53,7 +53,7 @@ const ProductData = [
     "category": "Body Care",
     "description": "Deep moisturizing body lotion for soft and smooth skin.",
     "rating": 4,
-    "image": "/assets/products/body-lotion.png"
+    "image": "/assets/products/body-lotion.webp"
   },
   {
     "id": 7,
@@ -62,7 +62,7 @@ const ProductData = [
     "category": "Appliances",
     "description": "Quick-dry professional hair dryer with heat control.",
     "rating": 5,
-    "image": "/assets/products/hair-dryer.png"
+    "image": "/assets/products/hair-dryer.webp"
   },
   {
     "id": 8,
@@ -71,7 +71,7 @@ const ProductData = [
     "category": "Gift",
     "description": "Premium skincare combo perfect for gifting.",
     "rating": 5,
-    "image": "/assets/products/gift-combo.png"
+    "image": "/assets/products/gift-combo.webp"
   }
 ]
 

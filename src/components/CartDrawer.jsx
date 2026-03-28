@@ -61,7 +61,7 @@ const CartDrawer = () => {
                     item?.images?.[0] ||
                     item?.variants?.find(v => v.label === item.variantLabel)?.images?.[0] ||
                     item?.variants?.[0]?.images?.[0] ||
-                    "/placeholder.png"
+                    "/placeholder.webp"
                   }
                   alt={item.name}
                   className="w-16 h-16 object-contain rounded border bg-white"
@@ -88,7 +88,7 @@ const CartDrawer = () => {
                             src={
                               Array.isArray(sub.image)
                                 ? sub.image[0]
-                                : sub.image || "/placeholder.png"
+                                : sub.image || "/placeholder.webp"
                             }
                             alt={sub.name}
                             className="w-10 h-10 rounded object-cover border"

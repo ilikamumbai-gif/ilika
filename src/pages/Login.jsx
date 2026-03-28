@@ -9,7 +9,7 @@ import {
 import { Mail, Lock, Eye, EyeOff, Phone } from "lucide-react";
 import { auth } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
-import authImage from "../assets/Images/Banner 2.jpg";
+import authImage from "../assets/Images/Banner 2.webp";
 
 const Login = () => {
   const navigate = useNavigate();

@@ -32,7 +32,7 @@ const Offers = () => {
         bg-no-repeat
         
       "
-      // style={{ backgroundImage: "url('/Images/Offerbg.jpeg')" }}
+      // style={{ backgroundImage: "url('/Images/Offerbg.webp')" }}
     >
       {/* overlay */}
       <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />

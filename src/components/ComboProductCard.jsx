@@ -12,7 +12,7 @@ const ComboProductCard = ({ product, selected, onSelect }) => {
     product.images?.[0] ||
     product.image ||
     product.imageUrl ||
-    "/placeholder.png";
+    "/placeholder.webp";
 
   return (
 

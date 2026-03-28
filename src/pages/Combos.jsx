@@ -14,8 +14,8 @@ import Banner from "../components/Banner";
 import { useLocation } from "react-router-dom";
 import { useRef } from "react";
 
-const offBanner = "/Images/Tonner.jpeg"
-const offBannerMobile = "/Images/TonnerMobile.jpeg"
+const offBanner = "/Images/Tonner.webp"
+const offBannerMobile = "/Images/TonnerMobile.webp"
 
 const Combos = () => {
 
@@ -111,7 +111,7 @@ const Combos = () => {
         selectedToners[0]?.images?.[0] ||
         selectedToners[0]?.image ||
         selectedToners[0]?.imageUrl ||
-        "/placeholder.png",
+        "/placeholder.webp",
       comboItems: comboProducts.map(p => ({
         id: p.id,
         name: p.name,
@@ -119,7 +119,7 @@ const Combos = () => {
           p.images?.[0] ||
           p.image ||
           p.imageUrl ||
-          "/placeholder.png"
+          "/placeholder.webp"
       }))
     };
 
@@ -336,7 +336,7 @@ const Combos = () => {
                   {selectedToners.map((p) => {
 
                     const img =
-                      p.images?.[0] || p.image || p.imageUrl || "/placeholder.png";
+                      p.images?.[0] || p.image || p.imageUrl || "/placeholder.webp";
 
                     return (
                       <div key={p.id} className="relative text-center">
@@ -382,7 +382,7 @@ const Combos = () => {
                   {selectedMasks.map((p) => {
 
                     const img =
-                      p.images?.[0] || p.image || p.imageUrl || "/placeholder.png";
+                      p.images?.[0] || p.image || p.imageUrl || "/placeholder.webp";
 
                     return (
                       <div key={p.id} className="relative text-center">

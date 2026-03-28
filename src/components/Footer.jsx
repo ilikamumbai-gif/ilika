@@ -8,10 +8,10 @@ import {
   Phone,
   Youtube,
 } from "lucide-react";
-import logo from "../assets/Images/logo2.png";
-import amazon from "../../public/Images/Amazon.png"
-import flipcart from "../../public/Images/Flipcart.png"
-import meesho from "../../public/Images/Meesho.png"
+import logo from "../assets/Images/logo2.webp";
+import amazon from "../../public/Images/Amazon.webp"
+import flipcart from "../../public/Images/Flipcart.webp"
+import meesho from "../../public/Images/Meesho.webp"
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -19,12 +19,9 @@ const Footer = () => {
     <footer className="primary-bg-color mt-20">
 
       {/* TOP MARQUEE */}
-      <div className="MiniDivider-bg-color py-2 overflow-hidden">
+      <div className="MiniDivider-bg-color py-1 overflow-hidden">
         <div className="whitespace-nowrap animate-marquee text-sm font-medium">
-          Best To Use • Best To Use • Best To Use • Best To Use • Best To Use •
-          Best To Use • Best To Use • Best To Use • Best To Use • Best To Use •
-          Best To Use • Best To Use • Best To Use • Best To Use • Best To Use •
-          Best To Use • Best To Use • Best To Use • Best To Use • Best To Use •
+          &nbsp;
         </div>
       </div>
 

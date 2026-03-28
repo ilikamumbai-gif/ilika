@@ -75,7 +75,7 @@ const GudiPadwaBanner = () => {
                     <div className="flex-1 w-full flex justify-center">
                      <div className="rounded-2xl overflow-hidden shadow border border-orange-200 aspect-[5/4] w-[300px] sm:w-[360px] md:w-[400px] lg:w-full lg:max-w-md xl:max-w-lg">
                             <img
-                                src="/Images/gudi.png"
+                                src="/Images/gudi.webp"
                                 alt="Gudi Padwa"
                                 className="w-full h-full object-cover"
                             />

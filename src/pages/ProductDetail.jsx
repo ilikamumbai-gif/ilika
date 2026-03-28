@@ -867,16 +867,16 @@ const ProductDetail = ({
 
             <div className="bg-white rounded-3xl border border-gray-100 p-7 shadow-sm">
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-1 h-6 bg-[#1C371C] rounded-full" />
+               <div className="w-1 h-6 bg-[#E7A6A1] rounded-full" />
                 <h2 className="text-base font-semibold text-[#2b2a29]">Additional Information</h2>
               </div>
               {additionalInfoArray.length > 0 ? (
                 <>
                   <div
-                    className={`overflow-hidden transition-all duration-300 ${expandedInfo ? "" : "line-clamp-3"
+                    className={`overflow-hidden transition-all duration-300 ${expandedInfo ? "" : "max-h-[4.5em]"
                       }`}
                   >
-                    <ul className="space-y-3 text-sm text-gray-700">
+                    <ul className="space-y-1 text-sm text-gray-700">
                       {additionalInfoArray.map((pt, i) => (
                         <li key={i} className="flex gap-3 items-start">
                           <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#1C371C] flex-shrink-0" />
@@ -885,6 +885,7 @@ const ProductDetail = ({
                       ))}
                     </ul>
                   </div>
+
 
                   <button
                     onClick={() => setExpandedInfo(!expandedInfo)}
