@@ -11,26 +11,23 @@ const promoCards = [
     title: "Lip Plumper Vacuum Device",
     subtitle: "Soft Silicone | Instant Volume Boost",
     desc: "Get naturally fuller, plumper lips in minutes with this easy-to-use, non-invasive beauty tool.",
+    image: "/Images/LipPlummerCard.png",
     cta: "Shop Now",
-    emoji: "✨",
     accent: "#F9C5BD",
-    illustration: (
-      <svg viewBox="0 0 160 160" width="160" height="160" style={{ position: "absolute", right: -10, bottom: -10, opacity: 0.92 }}>
-        <circle cx="80" cy="80" r="72" fill="rgba(255,255,255,0.07)" />
-        {/* Bottle shape */}
-        <rect x="58" y="55" width="44" height="70" rx="10" fill="#fff" fillOpacity="0.18" />
-        <rect x="68" y="42" width="24" height="18" rx="5" fill="#fff" fillOpacity="0.22" />
-        <rect x="72" y="36" width="16" height="10" rx="3" fill="#C0392B" fillOpacity="0.6" />
-        {/* Label */}
-        <rect x="63" y="72" width="34" height="34" rx="5" fill="rgba(255,255,255,0.25)" />
-        <text x="80" y="92" textAnchor="middle" fontSize="8" fill="#fff" fontFamily="Georgia,serif" fontStyle="italic">ilikä</text>
-        {/* Sparkles */}
-        <circle cx="42" cy="44" r="3" fill="#F9C5BD" fillOpacity="0.7" />
-        <circle cx="128" cy="60" r="2" fill="#F9C5BD" fillOpacity="0.6" />
-        <circle cx="120" cy="110" r="4" fill="#F9C5BD" fillOpacity="0.5" />
-        <circle cx="35" cy="100" r="2.5" fill="#fff" fillOpacity="0.4" />
-      </svg>
-    ),
+    // deep red / rose gold theme
+    circles: [
+      { r: 68, fill: "rgba(255,255,255,0.08)" },
+      { r: 52, fill: "rgba(249,197,189,0.13)" },
+      { r: 36, fill: "rgba(249,197,189,0.2)" },
+      { r: 21, fill: "rgba(255,255,255,0.13)" },
+    ],
+    dots: [
+      { cx: 18, cy: 22, r: 3, fill: "rgba(249,197,189,0.65)" },
+      { cx: 132, cy: 30, r: 2, fill: "rgba(255,255,255,0.45)" },
+      { cx: 128, cy: 118, r: 4, fill: "rgba(249,197,189,0.5)" },
+      { cx: 22, cy: 120, r: 2.5, fill: "rgba(255,255,255,0.3)" },
+      { cx: 60, cy: 10, r: 1.5, fill: "rgba(249,197,189,0.55)" },
+    ],
   },
   {
     id: 2,
@@ -41,57 +38,51 @@ const promoCards = [
     title: "Build Your CTM Routine",
     subtitle: "Cleanser • Toner • Moisturizer",
     desc: "Create your perfect skincare combo by choosing 1 cleanser, 1 toner, and 1 moisturizer — tailored just for your skin.",
+    image: "/Images/clenser.png",
     cta: "Explore CTM",
-    emoji: "🌹",
     accent: "#8B1A1A",
     dark: false,
-    illustration: (
-      <svg viewBox="0 0 120 120" width="110" height="110" style={{ position: "absolute", right: -8, bottom: -8, opacity: 0.95 }}>
-        {/* Rose illustration */}
-        <circle cx="60" cy="60" r="54" fill="rgba(139,26,26,0.06)" />
-        <ellipse cx="60" cy="68" rx="28" ry="22" fill="#C0392B" fillOpacity="0.18" />
-        <ellipse cx="60" cy="62" rx="20" ry="16" fill="#C0392B" fillOpacity="0.22" />
-        <ellipse cx="60" cy="57" rx="13" ry="10" fill="#C0392B" fillOpacity="0.3" />
-        <ellipse cx="60" cy="54" rx="7" ry="6" fill="#C0392B" fillOpacity="0.45" />
-        {/* Petals */}
-        <ellipse cx="42" cy="60" rx="9" ry="5" fill="#C0392B" fillOpacity="0.25" transform="rotate(-20 42 60)" />
-        <ellipse cx="78" cy="60" rx="9" ry="5" fill="#C0392B" fillOpacity="0.25" transform="rotate(20 78 60)" />
-        <ellipse cx="60" cy="42" rx="5" ry="9" fill="#C0392B" fillOpacity="0.2" />
-        {/* Leaves */}
-        <ellipse cx="34" cy="80" rx="12" ry="5" fill="#2D6A4F" fillOpacity="0.5" transform="rotate(30 34 80)" />
-        <ellipse cx="86" cy="80" rx="12" ry="5" fill="#2D6A4F" fillOpacity="0.5" transform="rotate(-30 86 80)" />
-      </svg>
-    ),
+    // soft blush / dusty rose theme
+    circles: [
+      { r: 58, fill: "rgba(139,26,26,0.07)" },
+      { r: 43, fill: "rgba(192,57,43,0.09)" },
+      { r: 29, fill: "rgba(192,57,43,0.13)" },
+      { r: 16, fill: "rgba(139,26,26,0.11)" },
+    ],
+    dots: [
+      { cx: 14, cy: 18, r: 2.5, fill: "rgba(139,26,26,0.22)" },
+      { cx: 114, cy: 24, r: 2, fill: "rgba(192,57,43,0.28)" },
+      { cx: 110, cy: 108, r: 3.5, fill: "rgba(139,26,26,0.2)" },
+      { cx: 18, cy: 110, r: 2, fill: "rgba(192,57,43,0.22)" },
+      { cx: 62, cy: 8, r: 1.5, fill: "rgba(139,26,26,0.18)" },
+    ],
   },
   {
     id: 3,
-    link: "/grooming/face",
+    link: "/grooming",
     size: "small",
     bg: "linear-gradient(135deg, #1B4332 0%, #2D6A4F 70%, #52B788 100%)",
     tag: "SMART BEAUTY TECH",
     title: "Automatic Face Mask Maker",
     subtitle: "Voice-Controlled • DIY Skincare",
     desc: "Create fresh, natural face masks at home in just 5 minutes using fruits, veggies, and collagen.",
+    image: "/Images/Maskmaker.png",
     cta: "Discover",
-    emoji: "🌿",
     accent: "#D8F3DC",
-    illustration: (
-      <svg viewBox="0 0 120 120" width="110" height="110" style={{ position: "absolute", right: -8, bottom: -8, opacity: 0.9 }}>
-        <circle cx="60" cy="60" r="54" fill="rgba(255,255,255,0.05)" />
-        {/* Tree branches like logo */}
-        <line x1="60" y1="100" x2="60" y2="50" stroke="#D8F3DC" strokeWidth="3" strokeLinecap="round" strokeOpacity="0.6" />
-        <line x1="60" y1="70" x2="38" y2="52" stroke="#D8F3DC" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.5" />
-        <line x1="60" y1="70" x2="82" y2="52" stroke="#D8F3DC" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.5" />
-        <line x1="60" y1="60" x2="42" y2="44" stroke="#D8F3DC" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.4" />
-        <line x1="60" y1="60" x2="78" y2="44" stroke="#D8F3DC" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.4" />
-        {/* Leaves */}
-        {[{ x: 36, y: 50 }, { x: 82, y: 50 }, { x: 40, y: 42 }, { x: 78, y: 42 }, { x: 55, y: 36 }, { x: 65, y: 36 }, { x: 60, y: 30 }].map((p, i) => (
-          <ellipse key={i} cx={p.x} cy={p.y} rx="7" ry="4" fill="#74C69D" fillOpacity="0.7" transform={`rotate(${i % 2 === 0 ? -30 : 30} ${p.x} ${p.y})`} />
-        ))}
-        {/* Circle outline like logo */}
-        <circle cx="60" cy="60" r="48" fill="none" stroke="#D8F3DC" strokeWidth="1.5" strokeOpacity="0.25" strokeDasharray="4 4" />
-      </svg>
-    ),
+    // forest green / mint theme
+    circles: [
+      { r: 58, fill: "rgba(255,255,255,0.06)" },
+      { r: 43, fill: "rgba(216,243,220,0.11)" },
+      { r: 29, fill: "rgba(116,198,157,0.16)" },
+      { r: 16, fill: "rgba(216,243,220,0.18)" },
+    ],
+    dots: [
+      { cx: 12, cy: 16, r: 3, fill: "rgba(216,243,220,0.55)" },
+      { cx: 116, cy: 20, r: 2, fill: "rgba(255,255,255,0.35)" },
+      { cx: 112, cy: 112, r: 4, fill: "rgba(116,198,157,0.55)" },
+      { cx: 16, cy: 114, r: 2.5, fill: "rgba(216,243,220,0.45)" },
+      { cx: 64, cy: 8, r: 1.5, fill: "rgba(255,255,255,0.4)" },
+    ],
   },
   {
     id: 4,
@@ -102,29 +93,24 @@ const promoCards = [
     title: "High-Speed Leafless Hair Dryer",
     subtitle: "Fast Drying • Smooth Finish",
     desc: "Experience powerful Ionic Technology with advanced leafless technology, BLDC Brushless Motor.",
+    image: "/Images/HairdrayerCard.png",
     cta: "Shop Now",
-    emoji: "💝",
     accent: "#8B1A1A",
     dark: false,
-    illustration: (
-      <svg viewBox="0 0 160 160" width="150" height="150" style={{ position: "absolute", right: -12, bottom: -12, opacity: 0.9 }}>
-        {/* Gift box */}
-        <rect x="45" y="80" width="70" height="55" rx="6" fill="#C0392B" fillOpacity="0.2" />
-        <rect x="45" y="68" width="70" height="18" rx="4" fill="#C0392B" fillOpacity="0.28" />
-        {/* Ribbon vertical */}
-        <rect x="76" y="68" width="10" height="67" rx="3" fill="#8B1A1A" fillOpacity="0.3" />
-        {/* Ribbon horizontal */}
-        <rect x="45" y="73" width="70" height="8" rx="3" fill="#8B1A1A" fillOpacity="0.2" />
-        {/* Bow */}
-        <ellipse cx="60" cy="65" rx="16" ry="8" fill="#C0392B" fillOpacity="0.35" transform="rotate(-15 60 65)" />
-        <ellipse cx="100" cy="65" rx="16" ry="8" fill="#C0392B" fillOpacity="0.35" transform="rotate(15 100 65)" />
-        <circle cx="80" cy="66" r="7" fill="#C0392B" fillOpacity="0.5" />
-        {/* Stars */}
-        {[[30, 35], [130, 45], [120, 110], [28, 105]].map(([x, y], i) => (
-          <text key={i} x={x} y={y} fontSize="16" fill="#8B1A1A" fillOpacity="0.3" textAnchor="middle">✦</text>
-        ))}
-      </svg>
-    ),
+    // blush pink / powder rose theme
+    circles: [
+      { r: 68, fill: "rgba(139,26,26,0.06)" },
+      { r: 52, fill: "rgba(192,57,43,0.08)" },
+      { r: 36, fill: "rgba(245,198,203,0.38)" },
+      { r: 21, fill: "rgba(192,57,43,0.11)" },
+    ],
+    dots: [
+      { cx: 18, cy: 20, r: 3, fill: "rgba(139,26,26,0.2)" },
+      { cx: 132, cy: 28, r: 2, fill: "rgba(192,57,43,0.25)" },
+      { cx: 128, cy: 122, r: 4, fill: "rgba(139,26,26,0.17)" },
+      { cx: 20, cy: 124, r: 2.5, fill: "rgba(192,57,43,0.2)" },
+      { cx: 75, cy: 8, r: 1.5, fill: "rgba(139,26,26,0.22)" },
+    ],
   },
 ];
 
@@ -134,6 +120,31 @@ const tagColors = {
   "SMART BEAUTY TECH": { bg: "rgba(255,255,255,0.18)", color: "#D8F3DC" },
   "SALON-STYLE AT HOME": { bg: "rgba(139,26,26,0.1)", color: "#8B1A1A" },
 };
+
+// Concentric circles + sparkle dots rendered as an SVG behind the product image
+function CircleGlow({ card }) {
+  const size = 150;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  return (
+    <svg
+      viewBox={`0 0 ${size} ${size}`}
+      width={size}
+      height={size}
+      style={{ position: "absolute", right: 0, bottom: 0, pointerEvents: "none", zIndex: 1 }}
+    >
+      {/* Concentric rings */}
+      {card.circles.map((c, i) => (
+        <circle key={i} cx={cx} cy={cy} r={c.r} fill={c.fill} />
+      ))}
+      {/* Sparkle dots */}
+      {card.dots.map((d, i) => (
+        <circle key={`dot-${i}`} cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} />
+      ))}
+    </svg>
+  );
+}
 
 function PromoCard({ card }) {
   const [hovered, setHovered] = useState(false);
@@ -166,7 +177,8 @@ function PromoCard({ card }) {
           justifyContent: "space-between",
           userSelect: "none",
         }}
-      >   {/* Decorative blob */}
+      >
+        {/* Decorative blob top-right */}
         <div style={{
           position: "absolute",
           top: -30,
@@ -178,9 +190,30 @@ function PromoCard({ card }) {
           pointerEvents: "none",
         }} />
 
-        {/* Illustration */}
-        <div style={{ position: "absolute", right: 0, bottom: 0, pointerEvents: "none" }}>
-          {card.illustration}
+        {/* Themed SVG circles — sits below the product image */}
+        <CircleGlow card={card} />
+
+        {/* Product Image — on top of circles */}
+        <div style={{
+          position: "absolute",
+          right: 0,
+          bottom: 0,
+          pointerEvents: "none",
+          zIndex: 2,
+          transition: "transform 0.35s cubic-bezier(.22,1,.36,1)",
+          transform: hovered ? "scale(1.06) translateY(-4px)" : "scale(1) translateY(0)",
+        }}>
+          <img
+            src={card.image}
+            alt={card.title}
+            style={{
+              width: 150,
+              height: 150,
+              objectFit: "contain",
+              display: "block",
+              filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.18))",
+            }}
+          />
         </div>
 
         {/* Tag */}
@@ -205,7 +238,7 @@ function PromoCard({ card }) {
         </div>
 
         {/* Text content */}
-        <div style={{ zIndex: 1, maxWidth: "58%" }}>
+        <div style={{ zIndex: 3, maxWidth: "58%" }}>
           <div style={{
             fontFamily: "'Playfair Display', Georgia, serif",
             fontWeight: 800,
@@ -242,7 +275,7 @@ function PromoCard({ card }) {
           <button
             style={{
               background: isLight ? "#8B1A1A" : "rgba(255,255,255,0.18)",
-              color: isLight ? "#fff" : "#fff",
+              color: "#fff",
               border: isLight ? "none" : "1.5px solid rgba(255,255,255,0.4)",
               borderRadius: 50,
               padding: "9px 22px",
@@ -284,9 +317,6 @@ export default function PromoCardGrid() {
         padding: "48px 24px",
         fontFamily: "'Lato', sans-serif",
       }}>
-        {/* Header */}
-
-
         {/* Cards Grid */}
         <div
           className="promo-grid"
@@ -296,7 +326,6 @@ export default function PromoCardGrid() {
             gap: 20,
           }}
         >
-          {/* Large card 1 */}
           <div className="grid-item" style={{ gridColumn: "1 / 8" }}>
             <PromoCard card={promoCards[0]} />
           </div>

@@ -16,6 +16,7 @@ import { ComboProvider } from "./admin/context/ComboContext";
 import BlogProvider from "./admin/context/BlogProvider";
 import { CartEventProvider } from "./admin/context/CartEventContext";
 import { ReviewProvider } from "./admin/context/ReviewContext";
+import EnquiryButton from "./components/EnquiryButton";
 
 // One-time cleanup: remove ALL old pixel localStorage keys from previous code versions
 // This runs immediately (not in useEffect) so it happens before any pixel fires
@@ -87,6 +88,7 @@ const App = () => {
                             />
                           )}
                           <NavRoutes />
+                          <EnquiryButton />
                           <ScrollToTopButton />
                         </UserOrderProvider>
                       </ReviewProvider>

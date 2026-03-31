@@ -112,7 +112,7 @@ const Footer = () => {
             </h4>
 
             <div className="flex justify-center md:justify-start gap-6 items-center">
-              <a href="https://www.amazon.in/s?srs=88324916031&rh=p_89%3Ailika" target="_blank">
+              <a href="https://www.amazon.in/stores/Ilik%C3%A4/page/4BEEF7C7-AFF6-4530-B62B-3A07943B7277?lp_asin=B0G1HMC41K&ref_=ast_bln" target="_blank">
                 <img
                   src={amazon}
                   alt="Amazon"

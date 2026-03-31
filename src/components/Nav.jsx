@@ -10,6 +10,7 @@ import { useCategories } from "../admin/context/CategoryContext";
 // Shared SearchBar — used in both desktop nav
 // and the standalone mobile header search slot
 // ─────────────────────────────────────────────
+
 export const SearchBar = ({ products = [], onClose, className = "" }) => {
   const [query, setQuery] = useState("");
   const searchRef = useRef();
@@ -72,7 +73,7 @@ export const SearchBar = ({ products = [], onClose, className = "" }) => {
 
   return (
     <div className={`relative ${className}`} ref={searchRef}>
-      <div className="flex items-center border rounded-md px-2 w-full bg-white">
+      <div className="flex items-center border rounded-md px-2 w-full">
         <Search className="w-4 h-4 text-gray-400 shrink-0" />
         <input
           type="text"
@@ -433,7 +434,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
         </div>
       ) : (
         /* Desktop: search + cart + profile */
-        <div className="flex items-center gap-4 shrink-0">
+        <div className="flex items-center gap-4 shrink-0 ">
           <SearchBar
             products={products}
             onClose={onClose}
