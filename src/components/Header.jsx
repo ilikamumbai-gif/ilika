@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { Menu, X, Search } from "lucide-react";
 import logo from "../assets/Images/logo2.webp";
 import Nav, { SearchBar } from "./Nav";
@@ -15,9 +15,9 @@ const Header = () => {
     <header className="w-full sticky top-0 z-50 bg-[#e8adad60]/20 backdrop-blur-md">
 
       {/* ── Main header row ── */}
-      <div className="max-w-8xl flex items-center justify-between gap-3 px-4 py-3">
+      <div className="flex items-center justify-between px-4 py-3 w-full">
 
-        {/* Logo */}
+        {/* Logo — always on the left */}
         <div
           className="h-12 md:h-14 flex items-center cursor-pointer shrink-0"
           onClick={() => navigate("/")}
@@ -25,16 +25,22 @@ const Header = () => {
           <img src={logo} alt="Ilika" className="h-full w-auto object-contain" />
         </div>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex flex-1 min-w-0">
+        {/* Desktop Nav — pushed to the right via ml-auto */}
+        <div className="hidden md:flex items-center h-14 ml-auto">
           <Nav />
         </div>
 
-        {/* Mobile controls */}
-        <div className="md:hidden flex items-center gap-2">
+        {/* Mobile controls — only visible on mobile */}
+        <div className="flex md:hidden items-center gap-2">
 
-          {/* Search icon — tapping expands the bar */}
-          <button onClick={() => setSearchOpen((v) => !v)} className="shrink-0">
+          {/* Search toggle */}
+          <button
+            onClick={() => {
+              setSearchOpen((v) => !v);
+              setOpen(false);
+            }}
+            className="shrink-0 p-1"
+          >
             {searchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
           </button>
 
@@ -61,8 +67,14 @@ const Header = () => {
               </div>
             )}
 
-            <button onClick={() => setOpen(!open)} className="relative z-10">
-              {open ? <X /> : <Menu />}
+            <button
+              onClick={() => {
+                setOpen((v) => !v);
+                setSearchOpen(false);
+              }}
+              className="relative z-10 p-1"
+            >
+              {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
 
@@ -74,15 +86,18 @@ const Header = () => {
         <div className="md:hidden px-4 pb-3">
           <SearchBar
             products={products}
-            onClose={() => { setSearchOpen(false); setOpen(false); }}
+            onClose={() => {
+              setSearchOpen(false);
+              setOpen(false);
+            }}
             className="w-full"
           />
         </div>
       )}
 
-      {/* Mobile drawer — links + cart + profile remain inside */}
+      {/* Mobile drawer */}
       {open && (
-        <div className="md:hidden px-4 pb-4">
+        <div className="md:hidden px-4 pb-4 border-t border-gray-100">
           <Nav mobile onClose={() => setOpen(false)} />
         </div>
       )}

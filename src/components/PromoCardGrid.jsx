@@ -279,7 +279,7 @@ export default function PromoCardGrid() {
   return (
     <>
       <div style={{
-        minHeight: "100vh",
+        minHeight: "auto",
         background: "linear-gradient(160deg, #FFF5F3 0%, #FDE8E4 50%, #F5F0EB 100%)",
         padding: "48px 24px",
         fontFamily: "'Lato', sans-serif",
@@ -289,14 +289,12 @@ export default function PromoCardGrid() {
 
         {/* Cards Grid */}
         <div
+          className="promo-grid"
           style={{
             width: "100%",
             margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: "repeat(12, 1fr)",
             gap: 20,
           }}
-          className="promo-grid"
         >
           {/* Large card 1 */}
           <div className="grid-item" style={{ gridColumn: "1 / 8" }}>

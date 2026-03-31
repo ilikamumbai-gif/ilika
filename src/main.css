@@ -336,3 +336,34 @@ text-shadow: 0 1px 3px rgba(0,0,0,0.25);
   }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Promo Card CSS */
+.promo-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+}
+
+/* MOBILE VIEW */
+@media (max-width: 768px) {
+  .promo-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .promo-grid .grid-item {
+    grid-column: 1 / -1 !important;
+  }
+}
