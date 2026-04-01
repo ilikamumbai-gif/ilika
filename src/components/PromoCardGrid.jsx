@@ -66,7 +66,7 @@ const promoCards = [
     title: "Automatic Face Mask Maker",
     subtitle: "Voice-Controlled • DIY Skincare",
     desc: "Create fresh, natural face masks at home in just 5 minutes using fruits, veggies, and collagen.",
-    image: "/Images/MaskMaker.webp",
+    image: "/Images/MaskMakercard.webp",
     cta: "Discover",
     accent: "#D8F3DC",
     // forest green / mint theme
