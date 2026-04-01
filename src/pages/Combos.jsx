@@ -4,18 +4,21 @@ import { useProducts } from "../context/ProductContext";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Heading from "../components/Heading";
 import CartDrawer from "../components/CartDrawer";
 import ComboProductCard from "../components/ComboProductCard";
 import { useCart } from "../context/CartProvider";
 import CouponProductBuilder from "../components/CouponProductBuilder";
+import MaskDuoOffer from "../components/MaskDuoOffer"; // ← NEW
 import Banner from "../components/Banner";
 
 import { useLocation } from "react-router-dom";
 import { useRef } from "react";
 
-const offBanner = "/Images/Tonner.webp"
-const offBannerMobile = "/Images/TonnerMobile.webp"
+const offBanner = "/Images/Tonner.webp";
+const offBannerMobile = "/Images/TonnerMobile.webp";
+
+const maskBanner = "/Images/24.webp";
+const maskBannerMobile = "/Images/24.webp";
 
 const Combos = () => {
 
@@ -77,7 +80,6 @@ const Combos = () => {
 
   /* ================= PRICE ================= */
 
-  // Show individual toner price when 1 selected, then offer price when 2 selected
   const singleTonerPrice =
     selectedToners.length === 1
       ? selectedToners[0]?.price || selectedToners[0]?.mrp || 0
@@ -86,7 +88,6 @@ const Combos = () => {
   const totalPrice =
     selectedToners.length === 2 ? 699 : singleTonerPrice;
 
-  // Original combined MRP for showing savings
   const originalTonerMRP =
     selectedToners.length === 2
       ? (selectedToners[0]?.price || selectedToners[0]?.mrp || 0) +
@@ -135,7 +136,6 @@ const Combos = () => {
       return;
     }
 
-    // If mask not selected, show popup
     if (selectedMasks.length === 0) {
       setShowMaskPopup(true);
       return;
@@ -155,9 +155,23 @@ const Combos = () => {
 
         <Banner
           className="md:h-[50vh] mt-0 mb-10"
+          src={maskBanner}
+          mobileSrc={maskBannerMobile}
+        />
+
+         {/* ================= 24K MASK DUO OFFER ================= */}
+         
+        <MaskDuoOffer />
+
+
+        <Banner
+          className="md:h-[50vh] mt-0 mb-10"
           src={offBanner}
           mobileSrc={offBannerMobile}
         />
+
+
+        
 
         {/* ================= MASK POPUP ================= */}
         {showMaskPopup && (
@@ -170,14 +184,12 @@ const Combos = () => {
               className="relative bg-white rounded-3xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
-              {/* Top gradient strip */}
               <div
                 className="h-2 w-full"
                 style={{ background: "linear-gradient(to right, #FAD4C0, #E96A6A, #D45A5A)" }}
               />
 
               <div className="px-6 pt-5 pb-6">
-                {/* Close button */}
                 <button
                   onClick={() => setShowMaskPopup(false)}
                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl leading-none"
@@ -185,10 +197,8 @@ const Combos = () => {
                   ×
                 </button>
 
-                {/* Icon */}
                 <div className="text-4xl mb-3 text-center">💆‍♀️</div>
 
-                {/* Heading */}
                 <h3 className="text-lg font-bold text-center text-[#7A2E3A] mb-1">
                   Don't forget your Sheet Mask!
                 </h3>
@@ -196,7 +206,6 @@ const Combos = () => {
                   A sheet mask completes your glow routine. Would you like to add one?
                 </p>
 
-                {/* Buttons */}
                 <button
                   onClick={() => setShowMaskPopup(false)}
                   className="w-full py-3 rounded-xl font-semibold text-white mb-3 transition-all hover:scale-[1.02]"
@@ -216,24 +225,21 @@ const Combos = () => {
           </div>
         )}
 
+        {/* ================= TONER + MASK COMBO ================= */}
         <section className="max-w-7xl mx-auto px-4 pb-12 lg:pb-16">
 
           <div className="grid lg:grid-cols-4 gap-12 mt-12">
-            {/* ================= PRODUCTS ================= */}
 
             <div className="lg:col-span-3 space-y-10">
 
               {/* TONERS */}
-
               <div>
-
                 <h2 className="text-xl font-semibold mb-6 text-[#7A2E3A]">
                   🌸 Step 1 • Choose Any 2 Toners
                 </h2>
 
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 lg:gap-8">
                   {tonerProducts.map(product => {
-
                     const id = product._id || product.id;
                     const selected = selectedToners.find(p => p.id === id);
 
@@ -255,15 +261,11 @@ const Combos = () => {
                         />
                       </div>
                     );
-
                   })}
                 </div>
-
               </div>
 
-
               {/* MASKS */}
-
               <div>
                 <h2 className="text-xl font-semibold mb-1 text-[#7A2E3A]">
                   💖 Step 2 • Choose Your Sheet Mask{" "}
@@ -276,7 +278,6 @@ const Combos = () => {
 
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                   {maskProducts.map(product => {
-
                     const id = product._id || product.id;
                     const selected = selectedMasks.find(p => p.id === id);
 
@@ -298,17 +299,13 @@ const Combos = () => {
                         />
                       </div>
                     );
-
                   })}
                 </div>
-
               </div>
 
             </div>
 
-
-            {/* ================= SIDEBAR ================= */}
-
+            {/* ── SIDEBAR ── */}
             <div
               className="rounded-2xl p-6 shadow-md h-fit sticky top-24"
               style={{ background: "linear-gradient(to bottom, #FFF4EA, #FAD4C0)" }}
@@ -318,9 +315,7 @@ const Combos = () => {
               </h3>
 
               {/* TONERS */}
-
               <div className="mb-4">
-
                 <div className="flex items-center gap-2 mb-2">
                   <span className="bg-[#E96A6A] text-white text-[10px] px-2 py-[2px] rounded-full">
                     Step 1
@@ -334,10 +329,7 @@ const Combos = () => {
 
                 <div className="flex flex-wrap gap-3">
                   {selectedToners.map((p) => {
-
-                    const img =
-                      p.images?.[0] || p.image || p.imageUrl || "/placeholder.webp";
-
+                    const img = p.images?.[0] || p.image || p.imageUrl || "/placeholder.webp";
                     return (
                       <div key={p.id} className="relative text-center">
                         <img
@@ -354,16 +346,12 @@ const Combos = () => {
                         <p className="text-[10px] mt-1 line-clamp-2 w-16">{p.name}</p>
                       </div>
                     );
-
                   })}
                 </div>
-
               </div>
 
               {/* MASKS */}
-
               <div className="mb-4">
-
                 <div className="flex items-center gap-2 mb-2">
                   <span className="bg-[#E96A6A] text-white text-[10px] px-2 py-[2px] rounded-full">
                     Step 2
@@ -380,10 +368,7 @@ const Combos = () => {
 
                 <div className="flex flex-wrap gap-3">
                   {selectedMasks.map((p) => {
-
-                    const img =
-                      p.images?.[0] || p.image || p.imageUrl || "/placeholder.webp";
-
+                    const img = p.images?.[0] || p.image || p.imageUrl || "/placeholder.webp";
                     return (
                       <div key={p.id} className="relative text-center">
                         <img
@@ -400,17 +385,12 @@ const Combos = () => {
                         <p className="text-[10px] mt-1 line-clamp-2 w-16">{p.name}</p>
                       </div>
                     );
-
                   })}
                 </div>
-
               </div>
 
               {/* PRICE */}
-
               <div className="border-t pt-4 mt-4">
-
-                {/* Dynamic price display */}
                 {selectedToners.length === 0 && (
                   <p className="text-sm text-gray-400 italic">Select toners to see price</p>
                 )}
@@ -418,9 +398,7 @@ const Combos = () => {
                 {selectedToners.length === 1 && (
                   <div>
                     <p className="text-xs text-gray-500 mb-1">1 toner selected</p>
-                    <p className="text-xl font-bold text-[#7A2E3A]">
-                      ₹{singleTonerPrice}
-                    </p>
+                    <p className="text-xl font-bold text-[#7A2E3A]">₹{singleTonerPrice}</p>
                     <p className="text-xs text-[#E96A6A] mt-1">
                       ✨ Add 1 more toner to unlock ₹699 combo offer!
                     </p>
@@ -449,22 +427,31 @@ const Combos = () => {
                 <button
                   disabled={selectedToners.length !== 2}
                   onClick={addComboToCart}
-                  className="w-full mt-5  py-3 rounded-xl font-semibold tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full mt-5 py-3 rounded-xl font-semibold tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   style={{
-                   background: "linear-gradient(to right, #FAD4C0, #E96A6A, #D45A5A)"
+                    background: "linear-gradient(to right, #FAD4C0, #E96A6A, #D45A5A)"
                   }}
                 >
                   Add Combo To Cart
                 </button>
-
               </div>
-
             </div>
 
           </div>
 
         </section>
 
+
+
+
+        {/* ================= DIVIDER ================= */}
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="border-t border-[#FAD4C0] my-4" />
+        </div>
+
+        
+
+        {/* ================= COUPON SECTION ================= */}
         <div className="pt-18" ref={couponRef}>
           <CouponProductBuilder />
         </div>
