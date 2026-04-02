@@ -29,19 +29,22 @@ const NewArrival = () => {
       <div className='primary-bg-color'>
         <Header />
         <CartDrawer />
-<Banner
+        <Banner
           className="md:h-[55vh] mt-0 mb-10"
-            src={holimainbanner}
-            mobileSrc={holiMobile}
-          />
+          src={holimainbanner}
+          mobileSrc={holiMobile}
+        />
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
 
-          
+
 
           <Heading heading="Our New Arrival" />
 
           {hairCategory ? (
-            <ProductList categoryId={hairCategory.id} />
+            <ProductList
+              categoryId={hairCategory.id}
+              priorityNames={["Lip Plumper Vacuum Suction Device | Soft Silicone Material", "Hot & Cold Facial Pore Blackhead Remover For Men & Women", "Ilika Automatic Voice Version Face Mask Maker Machine", "Ilika High-Speed Leafless Hair Dryer For Men & Women"]}
+            />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>
           )}

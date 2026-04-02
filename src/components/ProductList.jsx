@@ -7,7 +7,8 @@ const ProductList = ({
   buttonBg,
   buttonText,
   productNames = [],
-  mobileScroll = false,   // ← new prop; pass true only on Home
+  priorityNames = [],   // ← NEW: products to show first (by name)
+  mobileScroll = false,
 }) => {
   const { products } = useProducts();
 
@@ -21,6 +22,17 @@ const ProductList = ({
     filteredProducts = filteredProducts.filter((item) =>
       item.categoryIds?.includes(categoryId)
     );
+  }
+
+  // ── Pin priority products first, in the exact order of priorityNames ──
+  if (priorityNames.length > 0) {
+    const priorityItems = priorityNames
+      .map((name) => filteredProducts.find((item) => item.name === name))
+      .filter(Boolean);
+    const restItems = filteredProducts.filter(
+      (item) => !priorityNames.includes(item.name)
+    );
+    filteredProducts = [...priorityItems, ...restItems];
   }
 
   if (limit) {
