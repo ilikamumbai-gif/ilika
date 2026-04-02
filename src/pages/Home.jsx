@@ -85,14 +85,10 @@ const Home = () => {
         <ProductList
           mobileScroll
           productNames={[
-            "Ilika Hair Curler Tong Machine | 5 In 1 Multi Function Hair Styler for Women",
             "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
-            "LED 7 Color Light Therapy Device With Nano Mist For Men & Women",
-            "Ilika Airwrap All in 1 Multi-Styler Tools with Leather Box",
             "Hot & Cold Facial Pore Blackhead Remover For Men & Women",
             "Ilika High-Speed Leafless Hair Dryer For Men & Women",
             "Ilika Automatic Voice Version Face Mask Maker Machine",
-            "Ilika Silicone 3 Color LED Therapy Face Mask For Men & Women",
           ]}
           limit={8}
         />
