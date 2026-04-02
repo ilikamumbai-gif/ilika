@@ -39,7 +39,7 @@ const Contact = () => {
             <div className="flex flex-col items-center gap-2 hover:scale-110 transition">
               <Mail />
               <p className="font-semibold heading-2-color">Email</p>
-              <p className="text-sm">ilika.mumbai@gmail.com</p>
+              <p className="text-sm">ilika.official4vs@gmail.com</p>
             </div>
 
             <div className="flex flex-col items-center gap-2 hover:scale-110 transition">

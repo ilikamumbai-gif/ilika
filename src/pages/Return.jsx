@@ -140,10 +140,10 @@ const Return = () => {
                 <br />
                 📧 Email:{" "}
                 <a
-                  href="mailto:ilika.mumbai@gmail.com"
+                  href="mailto:ilika.official4vs@gmail.com"
                   className="underline font-medium"
                 >
-                  ilika.mumbai@gmail.com
+                  ilika.official4vs@gmail.com
                 </a>
                 <br />
                 📞 Phone: +91 91208 79879 <br />

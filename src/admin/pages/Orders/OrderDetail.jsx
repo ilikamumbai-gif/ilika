@@ -201,7 +201,7 @@ const OrderDetail = () => {
         "Near Virar Railway Station Subway East",
         "Thane, Maharashtra 401303",
         "GSTIN: 27AALCP9913F1Z2",
-        "ilika.mumbai@gmail.com",
+        "ilika.official4vs@gmail.com",
       ].forEach((line) => { doc.text(line, boxMid + 5, bY); bY += 5; });
 
       // Ship To box
@@ -357,7 +357,7 @@ const OrderDetail = () => {
       doc.setFont(undefined, "normal");
       doc.setTextColor(80, 80, 120);
       doc.text(
-        "Thank you for shopping with ILIKA  |  www.ilika.in  |  ilika.mumbai@gmail.com",
+        "Thank you for shopping with ILIKA  |  www.ilika.in  |  ilika.official4vs@gmail.com",
         pageWidth / 2,
         pageHeight - 6,
         { align: "center" }

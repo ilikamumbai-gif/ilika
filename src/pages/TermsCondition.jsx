@@ -170,7 +170,7 @@ const TermsCondition = () => {
               <strong>SECTION 20 – CONTACT INFORMATION</strong><br />
               Questions about the Terms of Service should be sent to:
               <br />
-              <strong>ilika.mumbai@gmail.com</strong>
+              <strong>ilika.official4vs@gmail.com</strong>
             </p>
 
           </div>

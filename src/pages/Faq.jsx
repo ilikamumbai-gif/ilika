@@ -29,7 +29,7 @@ const faqData = [
   {
     question: "What if I receive a damaged product?",
     answer:
-      "Please contact us within 24 hours with images or an unboxing video at support@ilika.in and we will replace the product.",
+      "Please contact us within 24 hours with images or an unboxing video at ilika.official4vs@gmail.com and we will replace the product.",
   },
   {
     question: "Can I return opened products?",
@@ -54,7 +54,7 @@ const faqData = [
   {
     question: "How can I contact customer support?",
     answer:
-      "You can reach us at support@ilika.in or call 9270114738 between 10 AM – 6 PM (Mon–Sat).",
+      "You can reach us at ilika.official4vs@gmail.com or call 9270114738 between 10 AM – 6 PM (Mon–Sat).",
   },
 ];
 

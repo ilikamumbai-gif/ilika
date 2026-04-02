@@ -50,7 +50,7 @@ const ShippingPolicy = () => {
             </ul>
 
             <p className="mt-2">
-              📧 Email: <span className="font-medium">support@ilika.in</span>
+              📧 Email: <span className="font-medium">ilika.official4vs@gmail.com</span>
             </p>
           </section>
 
@@ -67,7 +67,7 @@ const ShippingPolicy = () => {
               <li>If you receive a damaged or incorrect product, contact us immediately with proof.</li>
             </ul>
 
-            <p>📧 Email: <span className="font-medium">support@ilika.in</span></p>
+            <p>📧 Email: <span className="font-medium">ilika.official4vs@gmail.com</span></p>
           </section>
 
           {/* SHIPPING COST */}
@@ -91,7 +91,7 @@ const ShippingPolicy = () => {
 
             <div className="bg-white rounded-xl p-5 shadow-sm border space-y-2">
               <p className="font-medium">Ilika Support Team</p>
-              <p>📧 support@ilika.in</p>
+              <p>📧 ilika.official4vs@gmail.com</p>
               <p>📞 9270114738</p>
               <p>🕒 Monday – Saturday, 10:00 AM – 6:00 PM</p>
             </div>

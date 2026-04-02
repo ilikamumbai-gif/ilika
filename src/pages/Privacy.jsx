@@ -140,8 +140,8 @@ const Privacy = () => {
               </ul>
               <p className="mt-2">
                 Email us at{" "}
-                <a href="mailto:support@ilika.in" className="underline">
-                  ilika.mumbai@gmail.com
+                <a href="mailto:ilika.official4vs@gmail.com" className="underline">
+                  ilika.official4vs@gmail.com
                 </a>
               </p>
             </div>
@@ -161,7 +161,7 @@ const Privacy = () => {
                 📞 Contact Us
               </h3>
               <p>
-                <strong>Email:</strong> ilika.mumbai@gmail.com <br />
+                <strong>Email:</strong> ilika.official4vs@gmail.com <br />
                 <strong>Phone:</strong> +91 91208 79879 <br />
                 <strong>Website:</strong>{" "}
                 <a href="https://www.ilika.in" className="underline">
