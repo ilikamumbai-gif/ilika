@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- ===== Meta In-App Browser Redirect ===== -->
+  <!-- Forces Instagram / Facebook in-app browser to open in Chrome or Safari -->
+  <script>
+    (function () {
+      var ua = navigator.userAgent || '';
+
+      // Detect Meta / Facebook / Instagram in-app browsers
+      var isInstagram = ua.indexOf('Instagram') > -1;
+      var isFacebook  = ua.indexOf('FBAN') > -1 || ua.indexOf('FBAV') > -1 || ua.indexOf('FB_IAB') > -1;
+
+      if (!isInstagram && !isFacebook) return; // Not a Meta in-app browser — do nothing
+
+      var url = window.location.href;
+
+      // ---- Android: intent:// scheme forces Chrome ----
+      var isAndroid = /Android/i.test(ua);
+      if (isAndroid) {
+        // Strip the protocol so we can build the intent URI
+        var stripped = url.replace(/^https?:\/\//, '');
+        var intentUrl =
+          'intent://' + stripped +
+          '#Intent;scheme=https;package=com.android.chrome;end';
+        window.location.replace(intentUrl);
+        return;
+      }
+
+      // ---- iOS: window.open trick to break out of in-app browser ----
+      // On iOS we cannot use intent://, but opening with _blank and then
+      // replacing location works for most cases.  We also add ?openExternalBrowser=1
+      // which triggers a special handler in some apps.
+      var isIOS = /iPhone|iPad|iPod/i.test(ua);
+      if (isIOS) {
+        // Some newer Instagram / TikTok builds respect this query param
+        var sep = url.indexOf('?') === -1 ? '?' : '&';
+        window.location.replace(url + sep + 'openExternalBrowser=1');
+        return;
+      }
+    })();
+  </script>
+  <!-- ===== End Meta In-App Browser Redirect ===== -->
+
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-P8QRKX5D');</script>
+  <!-- End Google Tag Manager -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ilika - Elegant. Bright. You. | Premium Skincare & Beauty Products</title>
+  <meta name="description" content="Ilika offers premium skincare, beauty, and personal care products designed for glowing, healthy, and radiant skin. Shop face wash, creams, masks, hair care, and natural beauty products online in India." />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Ilika" />
+  <link rel="canonical" href="https://ilika.in/" />
+  <meta name="facebook-domain-verification" content="lzba8bf3opczo1v625rkr90borrv2p" />
+  <meta name="google-site-verification" content="gvbdusVAG0a_poII0jsiYxofZGsdj5hIg5mhrQyjEH8" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta property="og:title" content="Ilika - Elegant. Bright. You." />
+  <meta property="og:description" content="Premium skincare and beauty products for glowing, healthy skin. Shop Ilika beauty products online." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://ilika.in" />
+  <meta property="og:image" content="https://ilika.in/Images/logo.webp" />
+  <meta property="og:site_name" content="Ilika" />
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Ilika - Elegant. Bright. You." />
+  <meta name="twitter:description" content="Premium skincare & beauty products for glowing skin. Shop Ilika online." />
+  <meta name="twitter:image" content="https://ilika.in/Images/logo.webp" />
+  <link rel="icon" type="image/png" href="/Images/Favicon.webp" />
+  <link rel="apple-touch-icon" href="/Images/Favicon.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">       
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Organization","name":"Ilika","url":"https://ilika.in","logo":"https://ilika.in/Images/logo.webp","sameAs":["https://www.instagram.com/","https://www.facebook.com/"]}
+  </script>
+
+  <script>
+    var PIXEL_ID = '1188302548683614';
+    var _purchaseAllowed = false;
+
+    window.__allowNextPurchase = function() {
+      _purchaseAllowed = true;
+      setTimeout(function() { _purchaseAllowed = false; }, 5000);
+    };
+
+    // The purchase filter — applied to ANY dispatch function
+    function purchaseFilter(dispatchFn) {
+      return function() {
+        var args = Array.prototype.slice.call(arguments);
+        // args[0] is the event name when called as callMethod(name, ...)
+        // OR args[0]='track', args[1]='Purchase' when called as fbq('track','Purchase')
+        var isTrack = (args[0] === 'track' && args[1] === 'Purchase');
+        var isCallMethod = (args[0] === 'Purchase'); // callMethod(name, data, options)
+        if (isTrack || isCallMethod) {
+          if (!_purchaseAllowed) {
+            console.warn('[Ilika] Purchase blocked');
+            return;
+          }
+          _purchaseAllowed = false;
+        }
+        return dispatchFn.apply(this, args);
+      };
+    }
+
+    // Build the fbq stub
+    var fbqStub = function() {
+      fbqStub.callMethod
+        ? fbqStub.callMethod.apply(fbqStub, arguments)
+        : fbqStub.queue.push(arguments);
+    };
+    fbqStub.push    = fbqStub;
+    fbqStub.loaded  = true;
+    fbqStub.version = '2.0';
+    fbqStub.queue   = [];
+
+    // Use Object.defineProperty to intercept when fbevents.js sets callMethod
+    // fbevents.js does: fbq.callMethod = realDispatcher
+    // Our setter wraps realDispatcher with purchaseFilter before storing it
+    var _realCallMethod = null;
+    Object.defineProperty(fbqStub, 'callMethod', {
+      get: function() { return _realCallMethod; },
+      set: function(fn) {
+        // fbevents.js is setting the real dispatcher — wrap it immediately
+        _realCallMethod = purchaseFilter(fn);
+      },
+      configurable: true
+    });
+
+    window.fbq  = fbqStub;
+    window._fbq = fbqStub;
+
+    // Load fbevents.js
+    var _s = document.createElement('script');
+    _s.async = true;
+    _s.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.getElementsByTagName('script')[0].parentNode.insertBefore(_s, document.getElementsByTagName('script')[0]);
+
+    fbq('init', PIXEL_ID);
+    fbq('track', 'PageView');
+  </script>
+  <!-- <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1188302548683614&ev=PageView&noscript=1"/></noscript> -->
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P8QRKX5D"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
