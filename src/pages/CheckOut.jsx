@@ -784,7 +784,7 @@ const Checkout = () => {
               onClick={handlePlaceOrder}
               className="mt-6 w-full bg-black text-white py-3 rounded-xl hover:bg-gray-900 transition disabled:opacity-60"
             >
-              {loading ? "Processing…" : "Continue to Payment"}
+              {loading ? "Processing Payment…" : "Continue to Payment"}
             </button>
           </div>
 
