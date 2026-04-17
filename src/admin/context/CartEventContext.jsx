@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { db } from "../../../Backend/firebaseConfig";
+import { db } from "../../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 
 const CartEventContext = createContext();
