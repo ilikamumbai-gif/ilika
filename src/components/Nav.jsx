@@ -310,7 +310,9 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
                 />
 
                 {/* PRODUCT NAME */}
-                <span className="font-medium">{item.name}</span>
+              <span className="font-medium truncate max-w-[240px]">
+  {item.name}
+</span>
               </Link>
             ))}
           </div>

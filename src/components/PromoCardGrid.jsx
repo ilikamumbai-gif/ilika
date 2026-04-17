@@ -361,7 +361,7 @@ export default function PromoCardGrid() {
         </div>
 
         {/* Footer tagline */}
-        <div style={{ textAlign: "center", marginTop: 36, color: "#8B1A1A", opacity: 0.45, fontSize: 12, letterSpacing: "0.15em", textTransform: "uppercase" }}>
+        <div style={{ textAlign: "center", marginTop: 36, color: "#8B1A1A", opacity: 0.75, fontSize: 12, letterSpacing: "0.15em", textTransform: "uppercase" }}>
           Skincare crafted with love ✦ Ilikä
         </div>
       </div>

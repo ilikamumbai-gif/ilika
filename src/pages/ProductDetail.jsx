@@ -183,7 +183,7 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
               <div className="flex items-center justify-center gap-1.5 pt-1">
                 <ShieldCheck className="w-3 h-3 text-[#801f1f]" />
                 <span className="text-[10px] text-[#801f1f] font-semibold">
-                  {product.warranty === "manufacturer" ? "18 Months Manufacturer Warranty" : "1 Year Warranty"}
+                  {product.warranty === "manufacturer" ? "18 Months Manufacturer Warranty" : "1 Year Import Warranty"}
                 </span>
               </div>
             )}
@@ -477,12 +477,12 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
 /* ═══════════════════════════════════════════════════
    STICKY FLOATING ATC BAR
 ═══════════════════════════════════════════════════ */
-const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible }) => {
+const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible,footerHeight  }) => {
   return (
     <div
       style={{
         position: "fixed",
-        bottom: 0,  // 👈 KEY FIX
+        bottom: 0,
         left: 0,
         right: 0,
         zIndex: 40,
@@ -575,7 +575,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
           <div className="bg-[#fff6f5] border-t border-[#E7A6A1]/20 py-1.5 flex items-center justify-center gap-1.5">
             <ShieldCheck className="w-3 h-3 text-[#801f1f] flex-shrink-0" />
             <span className="text-[10px] font-semibold text-[#801f1f] tracking-wide">
-              {product.warranty === "manufacturer" ? "18 Months Manufacturer Warranty" : "1 Year Warranty"}
+              {product.warranty === "manufacturer" ? "18 Months Manufacturer Warranty" : "1 Year Import Warranty"}
             </span>
           </div>
         )}
@@ -609,7 +609,7 @@ const ProductDetail = ({
   const [expandedDesc, setExpandedDesc] = useState(false);
   const [expandedInfo, setExpandedInfo] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [footerHeight, setFooterHeight] = useState(0);
+  // const [footerHeight, setFooterHeight] = useState(0);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -620,7 +620,7 @@ const ProductDetail = ({
   const atcButtonsRef = useRef(null);
   const thumbsRef = useRef(null);
   const autoScrollRef = useRef(null);
-  const footerRef = useRef(null);
+  // const footerRef = useRef(null);
 
 
   // displayImages — only populated after images are preloaded so old thumbs never flash
@@ -628,20 +628,20 @@ const ProductDetail = ({
   // ref to cancel in-flight preload when product/variant changes rapidly
   const preloadAbortRef = useRef(false);
 
-  useEffect(() => {
-    if (!footerRef.current) return;
+  // useEffect(() => {
+  //   if (!footerRef.current) return;
 
-    const updateHeight = () => {
-      setFooterHeight(footerRef.current.offsetHeight);
-    };
+  //   const updateHeight = () => {
+  //     setFooterHeight(footerRef.current.offsetHeight);
+  //   };
 
-    updateHeight();
+  //   updateHeight();
 
-    const resizeObserver = new ResizeObserver(updateHeight);
-    resizeObserver.observe(footerRef.current);
+  //   const resizeObserver = new ResizeObserver(updateHeight);
+  //   resizeObserver.observe(footerRef.current);
 
-    return () => resizeObserver.disconnect();
-  }, []);
+  //   return () => resizeObserver.disconnect();
+  // }, []);
 
 
 
@@ -684,25 +684,26 @@ const ProductDetail = ({
 
 
   /* ── Unified sticky bar visibility — single source of truth ── */
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!atcButtonsRef.current) return;
+useEffect(() => {
+  const handleScroll = () => {
+    if (!atcButtonsRef.current) return;
 
-      const atcRect = atcButtonsRef.current.getBoundingClientRect();
-      const atcGone = atcRect.bottom < 0; // ATC buttons scrolled above viewport
+    const atcRect = atcButtonsRef.current.getBoundingClientRect();
+    const atcGone = atcRect.bottom < 0;
 
-      // Check if footer is visible
-      const footerVisible = footerRef.current
-        ? footerRef.current.getBoundingClientRect().top < window.innerHeight
-        : false;
+    const trigger = document.getElementById("footer-trigger");
+    const triggerVisible = trigger
+      ? trigger.getBoundingClientRect().top < window.innerHeight
+      : false;
 
-      setShowStickyBar(atcGone && !footerVisible);
-    };
+    setShowStickyBar(atcGone && !triggerVisible);
+  };
 
-    handleScroll(); // run once on mount
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [product]); // re-register when product loads so ref is valid
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  handleScroll();
+
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);// re-register when product loads so ref is valid
 
 
   /* ── Fetch product by slug ── */
@@ -955,7 +956,7 @@ const ProductDetail = ({
         isAdding={isAdding}
         isBuying={isBuying}
         visible={showStickyBar}
-        footerHeight={footerHeight}
+        // footerHeight={footerHeight}
       />
 
       <div className="primary-bg-color">
@@ -1157,7 +1158,7 @@ const ProductDetail = ({
                   { icon: <Package className="w-4 h-4" />, label: "Free Delivery" },
                   ...(product.warranty ? [{
                     icon: <BadgeCheck className="w-4 h-4" />,
-                    label: product.warranty === "manufacturer" ? "18 Month Warranty" : "1 Year Warranty"
+                    label: product.warranty === "manufacturer" ? "18 Month Manufacturer Warranty" : "1 Year Import Warranty"
                   }] : []),
                 ].map(({ icon, label }) => (
                   <div key={label} className="flex items-center gap-2 border border-gray-100 rounded-xl px-3 py-2.5 bg-white text-xs text-gray-600 font-medium">
@@ -1259,14 +1260,14 @@ const ProductDetail = ({
 
         {/* ════ VIDEO SECTION ════ */}
         {product.videos?.length > 0 && (
-          <section className="w-full bg-[#fbf7f7] my-10">
+          <section className="w-full bg-[#fbf7f7] my-10 max-h-[80vh] overflow-hidden">
             {product.videos.map((vid, idx) => (
               <div
                 key={idx}
                 className="grid grid-cols-1 md:grid-cols-12 w-full items-stretch"
               >
                 <div className="md:col-span-7 lg:col-span-9 bg-black overflow-hidden">
-                  <div className="relative w-full aspect-video">
+                  <div className="relative w-full h-[220px] sm:h-[260px] md:h-[300px] lg:h-[340px]">
                     <iframe
                       src={getVideoEmbedUrl(vid.url)}
                       className="absolute inset-0 w-full h-full"
@@ -1277,7 +1278,7 @@ const ProductDetail = ({
                     />
                   </div>
                 </div>
-                <div className="md:col-span-5 lg:col-span-3 bg-[#1a1a1a] text-white flex flex-col justify-center px-4 sm:px-5 py-5 sm:py-6 lg:py-8 space-y-3">
+                <div className="md:col-span-5 lg:col-span-3 bg-[#1a1a1a] text-white flex flex-col justify-center px-3 sm:px-4 py-4 space-y-2">
                   {vid.subtitle && <p className="text-xs uppercase text-gray-400 font-semibold tracking-widest">{vid.subtitle}</p>}
                   {vid.title && <h3 className="text-lg font-bold leading-snug text-white">{vid.title}</h3>}
                   {vid.description && <p className="text-sm text-gray-300 leading-relaxed">{vid.description}</p>}
@@ -1391,7 +1392,9 @@ const ProductDetail = ({
         <div className="h-24" />
       </div>
       <div>
-        <Footer ref={footerRef} />
+        {/* <Footer ref={footerRef} /> */}
+        <div id="footer-trigger" />
+        <Footer />
       </div>
     </>
   );
