@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
 import CartDrawer from "../components/CartDrawer";
 import { useCart } from "../context/CartProvider";
-import { auth } from "../../Backend/firebaseConfig";
+import { auth } from "../firebase/firebaseConfig";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
 import {

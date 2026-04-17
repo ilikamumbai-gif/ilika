@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useCartEvents } from "../../context/CartEventContext";
-import { db } from "../../../../Backend/firebaseConfig";
+import { db } from "../../../firebase/firebaseConfig";
 import {
   collection,
   getDocs,
