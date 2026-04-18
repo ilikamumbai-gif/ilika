@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect } from "react";
-import { useProducts } from "../context/ProductContext";
+import { useProducts } from "../admin/context/ProductContext";
 import { useCategories } from "../admin/context/CategoryContext";
 
 import Header from "../components/Header";

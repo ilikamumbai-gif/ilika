@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useProducts } from "../context/ProductContext";
+import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
 import ComboProductCard from "../components/ComboProductCard";
 

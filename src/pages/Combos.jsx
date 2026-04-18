@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useProducts } from "../context/ProductContext";
+import { useProducts } from "../admin/context/ProductContext";
 
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";

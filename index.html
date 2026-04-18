@@ -42,12 +42,38 @@
   </script>
   <!-- ===== End Meta In-App Browser Redirect ===== -->
 
-  <!-- Google Tag Manager -->
-  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','GTM-P8QRKX5D');</script>
+  <!-- Google Tag Manager (lazy load to protect first paint) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function loadScriptOnce(src) {
+      var existing = document.querySelector('script[src="' + src + '"]');
+      if (existing) return;
+      var s = document.createElement("script");
+      s.async = true;
+      s.src = src;
+      document.head.appendChild(s);
+    }
+
+    function runAfterFirstPaint(fn) {
+      var run = function () {
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(fn, { timeout: 3000 });
+        } else {
+          setTimeout(fn, 1800);
+        }
+      };
+      if (document.readyState === "complete") {
+        run();
+      } else {
+        window.addEventListener("load", run, { once: true });
+      }
+    }
+
+    runAfterFirstPaint(function () {
+      window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+      loadScriptOnce("https://www.googletagmanager.com/gtm.js?id=GTM-P8QRKX5D");
+    });
+  </script>
   <!-- End Google Tag Manager -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -136,11 +162,10 @@
     window.fbq  = fbqStub;
     window._fbq = fbqStub;
 
-    // Load fbevents.js
-    var _s = document.createElement('script');
-    _s.async = true;
-    _s.src = 'https://connect.facebook.net/en_US/fbevents.js';
-    document.getElementsByTagName('script')[0].parentNode.insertBefore(_s, document.getElementsByTagName('script')[0]);
+    // Load fbevents.js after first paint (stub queues events safely)
+    runAfterFirstPaint(function () {
+      loadScriptOnce('https://connect.facebook.net/en_US/fbevents.js');
+    });
 
     fbq('init', PIXEL_ID);
     fbq('track', 'PageView');

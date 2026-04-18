@@ -162,7 +162,7 @@ function CircleGlow({ card }) {
   );
 }
 
-function PromoCard({ card }) {
+function PromoCard({ card, priority = false }) {
   const [hovered, setHovered] = useState(false);
   const isLight = card.dark === false;
   const textColor = isLight ? "#3D0C0C" : "#fff";
@@ -222,6 +222,9 @@ function PromoCard({ card }) {
           <img
             src={card.image}
             alt={card.title}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
+            decoding="async"
             style={{
               width: 250,
               height: 250,
@@ -345,7 +348,7 @@ export default function PromoCardGrid() {
           }}
         >
           <div className="grid-item" style={{ gridColumn: "1 / 8" }}>
-            <PromoCard card={promoCards[0]} />
+            <PromoCard card={promoCards[0]} priority />
           </div>
 
           <div className="grid-item" style={{ gridColumn: "8 / 13" }}>
