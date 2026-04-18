@@ -159,7 +159,7 @@ const { activeProducts = [] } = useProducts();
                     <div className="flex flex-col items-center text-center w-20">
                       <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 border">
                         {selected[type] ? (
-                          <img
+                          <img loading="lazy"
                             src={selected[type].images?.[0]}
                             className="w-full h-full object-cover"
                           />

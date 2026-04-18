@@ -222,7 +222,7 @@ const ReviewDetail = () => {
             <p className="text-sm text-gray-500 mb-2">
               Review Image
             </p>
-            <img
+            <img loading="lazy"
               src={review.image}
               alt="Review"
               className="w-full max-w-sm rounded-lg border border-gray-200 object-cover"

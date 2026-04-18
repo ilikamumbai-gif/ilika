@@ -169,7 +169,7 @@ const MaskDuoOffer = () => {
                   "/placeholder.webp";
                 return (
                   <div key={p._id || p.id} className="relative text-center">
-                    <img
+                    <img loading="lazy"
                       src={img}
                       alt={p.name}
                       className="w-16 h-16 object-contain border border-gray-200 rounded-lg p-1 bg-white shadow-sm"

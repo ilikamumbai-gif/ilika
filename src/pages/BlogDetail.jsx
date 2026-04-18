@@ -150,7 +150,7 @@ const BlogDetail = () => {
 
           <div className="mt-8 rounded-2xl overflow-hidden">
 
-            <img
+            <img loading="lazy"
               src={blog.image}
               alt={blog.title}
               className="w-full h-56 sm:h-72 md:h-96 object-cover"

@@ -14,7 +14,7 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
       {/* IMAGE AREA (Same as ProductCard) */}
       <div className="relative aspect-square overflow-hidden flex items-center justify-center">
 
-        <img
+        <img loading="lazy"
           src={product.images}
           alt={product.name}
           className="

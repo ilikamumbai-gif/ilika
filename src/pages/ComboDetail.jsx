@@ -122,8 +122,8 @@ const ComboDetail = () => {
               <div className="relative bg-white rounded-2xl overflow-hidden shadow-sm">
 
                 {images[0] && (
-                  <img
-                    src={primaryImage}
+                  <img loading="lazy"
+                    src={primaryImage} 
                     alt={combo.name}
                     className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover"
                     fetchPriority="high"
@@ -145,7 +145,7 @@ const ComboDetail = () => {
                       className="rounded-lg overflow-hidden border"
                       aria-label={`View image ${i + 1} of ${images.length}`}
                     >
-                      <img
+                      <img loading="lazy"
                         src={img}
                         alt={`${combo.name} thumbnail ${i + 1}`}
                         className="w-full h-20 object-cover"
@@ -264,7 +264,7 @@ const ComboDetail = () => {
 
                     <div className="flex gap-3 items-center">
 
-                      <img
+                      <img loading="lazy"
                         src={free.images?.[0]}
                         alt={free.name}
                         className="w-16 h-16 object-contain border rounded"

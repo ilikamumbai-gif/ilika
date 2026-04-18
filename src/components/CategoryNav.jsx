@@ -55,7 +55,7 @@ const CategoryNav = ({ categories = [] }) => {
                     group-hover:shadow-lg
                   "
                 >
-                  <img
+                  <img loading="lazy"
                     src={cat.icon}
                     alt={cat.name}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"

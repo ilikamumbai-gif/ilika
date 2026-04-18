@@ -113,6 +113,7 @@ const CartProductDetail = () => {
         <div className="flex gap-4 mb-6">
 
           <img
+          loading="lazy"
             src={product.image}
             className="w-24 h-24 rounded object-cover"
           />

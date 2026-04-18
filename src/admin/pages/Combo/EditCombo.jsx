@@ -239,7 +239,7 @@ const EditCombo = () => {
                             .filter(img => typeof img === "string")
                             .map((img, index) => (
                                 <div key={index} className="relative group">
-                                    <img
+                                    <img loading="lazy"
                                         src={img}
                                         className="h-24 w-full object-cover rounded border"
                                         alt="combo preview"

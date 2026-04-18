@@ -108,7 +108,7 @@ export const SearchBar = ({ products = [], onClose, className = "" }) => {
                 }}
                 className="flex items-center gap-3 px-3 py-3 hover:bg-gray-50"
               >
-                <img
+                <img loading="lazy"
                   src={product.images?.[0] || product.imageUrl}
                   alt={product.name}
                   className="w-12 h-12 object-cover rounded-md border shrink-0"
@@ -303,7 +303,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
                 className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100"
               >
                 {/* PRODUCT IMAGE */}
-                <img
+                <img loading="lazy"
                   src={item.images?.[0] || item.imageUrl}
                   alt={item.name}
                   className="w-10 h-10 object-cover rounded-md border"

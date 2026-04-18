@@ -46,7 +46,7 @@ const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-wh
         {/* IMAGE AREA */}
         <div className="relative aspect-square overflow-hidden flex items-center justify-center ">
 
-          <img
+          <img loading="lazy"
             src={`${productImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
 
             alt={product.name}

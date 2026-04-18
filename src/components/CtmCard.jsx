@@ -13,7 +13,7 @@ const Section = ({ image, title, subtitle, benefits, reverse }) => (
   >
     {/* IMAGE */}
     <div className="w-full h-72 md:h-[420px] overflow-hidden">
-      <img
+      <img loading="lazy"
         src={image}
         alt={title}
         className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"

@@ -275,6 +275,7 @@ const AddBlog = () => {
 
             {preview && (
               <img
+              loading="lazy"
                 src={preview}
                 className="w-full h-64 object-cover mt-3"
               />

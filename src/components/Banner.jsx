@@ -13,7 +13,7 @@ const Banner = ({
     <section className={`w-full overflow-hidden ${className}`}>
       <picture>
         <source media="(max-width: 639px)" srcSet={mobileImageSrc} />
-        <img
+        <img loading="lazy"
           src={desktopSrc}
           alt="Banner"
           className="w-full h-full object-cover"

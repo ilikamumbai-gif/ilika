@@ -69,7 +69,7 @@ const CartProductList = () => {
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           {p.image ? (
-                            <img src={p.image} alt={p.name}
+                            <img loading="lazy" src={p.image} alt={p.name}
                               className="w-11 h-11 rounded-xl object-cover border border-gray-200 shrink-0" />
                           ) : (
                             <div className="w-11 h-11 rounded-xl bg-gray-100 shrink-0 flex items-center justify-center">
@@ -104,7 +104,7 @@ const CartProductList = () => {
               {filtered.map((p, i) => (
                 <div key={p.productId} className="p-4 flex items-center gap-3">
                   {p.image ? (
-                    <img src={p.image} alt={p.name} className="w-12 h-12 rounded-xl object-cover border shrink-0" />
+                    <img loading="lazy" loading="lazy" src={p.image} alt={p.name} className="w-12 h-12 rounded-xl object-cover border shrink-0" />
                   ) : (
                     <div className="w-12 h-12 rounded-xl bg-gray-100 shrink-0" />
                   )}

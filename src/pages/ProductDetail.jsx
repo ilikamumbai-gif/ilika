@@ -90,7 +90,7 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
             </button>
           )}
 
-          <img
+          <img loading="lazy"
             src={images[current]}
             alt="Product"
             className="w-full h-full object-contain"
@@ -135,7 +135,7 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
                       ? "border-[#801f1f] shadow-md ring-2 ring-[#E7A6A1]/40"
                       : "border-transparent hover:border-gray-200"}`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" draggable={false} />
+                  <img loading="lazy" src={img} alt="" className="w-full h-full object-cover" draggable={false} />
                 </button>
               ))}
             </div>
@@ -270,7 +270,7 @@ const BeforeAfterSlider = ({
       style={{ aspectRatio: "16/12", touchAction: "none", userSelect: "none", WebkitUserSelect: "none", cursor: "col-resize" }}
     >
       {/* AFTER — full background */}
-      <img
+      <img loading="lazy"
         src={afterImage}
         alt={afterLabel}
         draggable={false}
@@ -285,7 +285,7 @@ const BeforeAfterSlider = ({
           transition: "clip-path 0.9s ease"
         }}
       >
-        <img
+        <img loading="lazy"
           src={beforeImage}
           alt={beforeLabel}
           draggable={false}
@@ -455,7 +455,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
             <p className="text-[11px] text-gray-400 mt-1">Max size: 2MB</p>
             {reviewImage && (
               <div className="mt-2 relative w-24 h-24 rounded-xl overflow-hidden border border-gray-200">
-                <img src={reviewImage} alt="Review upload preview" className="w-full h-full object-cover" />
+                <img loading="lazy" src={reviewImage} alt="Review upload preview" className="w-full h-full object-cover" />
                 <button
                   type="button"
                   onClick={() => setReviewImage("")}
@@ -502,7 +502,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
           {/* LEFT — product name + thumbnail */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {(product?.images?.[0] || product?.imageUrl) && (
-              <img
+              <img loading="lazy"
                 src={product.images?.[0] || product.imageUrl}
                 alt={product.name}
                 className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover flex-shrink-0 border border-gray-100 hidden sm:block"
@@ -982,7 +982,7 @@ useEffect(() => {
               >
                 {/* Image or pulse placeholder */}
                 {selectedImage ? (
-                  <img
+                  <img loading="lazy"
                     src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
                     alt={product.name}
                     className="w-full h-[280px] sm:h-[400px] lg:h-[540px] object-cover transition-all duration-700 ease-in-out"
@@ -1021,7 +1021,7 @@ useEffect(() => {
                           ${selectedImage === img ? "border-[#801f1f] shadow-md scale-105" : "border-transparent hover:border-gray-200"}`}
                         style={{ width: "74px", height: "74px" }}
                       >
-                        <img src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`} alt="thumb" className="w-full h-full object-cover" />
+                        <img loading="lazy" src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`} alt="thumb" className="w-full h-full object-cover" />
                       </button>
                     ))
                   ) : (
@@ -1299,7 +1299,7 @@ useEffect(() => {
               : [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
             ).filter(b => b?.url).map((banner, idx) => (
               <div key={idx} className="shadow-sm">
-                <img
+                <img loading="lazy"
                   src={banner.url}
                   alt={banner.alt || `Product Banner ${idx + 1}`}
                   className="w-full object-cover h-auto"
@@ -1350,6 +1350,7 @@ useEffect(() => {
                   <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
                   {rev.image && (
                     <img
+                    loading="lazy"
                       src={rev.image}
                       alt="Review"
                       className="mt-3 w-full h-44 object-cover rounded-xl border border-gray-100"

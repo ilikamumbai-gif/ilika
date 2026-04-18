@@ -45,7 +45,7 @@ const EnquiryButton = () => {
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}
       `}
     >
-      <img
+      <img loading="lazy"
         src={whatsapp}
         alt="WhatsApp"
         className="w-full h-full object-cover rounded-full"

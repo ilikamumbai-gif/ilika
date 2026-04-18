@@ -136,6 +136,7 @@ const ViewBlogDetails = () => {
         {/* BLOG IMAGE */}
 
         <img
+        loading="lazy"
           src={blog.image}
           alt={blog.title}
           className="w-full h-80 object-cover rounded-xl mb-6"

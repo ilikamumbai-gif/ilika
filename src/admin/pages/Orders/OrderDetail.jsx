@@ -516,7 +516,7 @@ const OrderDetail = () => {
 
                     <td className="py-4 pr-4">
                       <div className="flex items-start gap-3">
-                        <img
+                        <img loading="lazy"
                           src={getImage(item)}
                           alt={item.name}
                           onError={(e) => { e.target.src = "/placeholder.webp"; }}
@@ -534,7 +534,7 @@ const OrderDetail = () => {
                               <p className="text-xs text-gray-400 font-medium">Includes:</p>
                               {comboList.map((c, j) => (
                                 <div key={j} className="flex items-center gap-1.5">
-                                  <img
+                                  <img loading="lazy"
                                     src={c.image || c.images?.[0] || "/placeholder.webp"}
                                     className="w-5 h-5 rounded object-cover border border-gray-200"
                                   />

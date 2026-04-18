@@ -247,7 +247,7 @@ const UserDetail = () => {
                           =============================== */
                           if (item.isCombo && item.comboItems?.length) {
                             return item.comboItems.slice(0, 4).map((sub, j) => (
-                              <img
+                              <img loading="lazy"
                                 key={`${i}-${j}`}
                                 src={sub.image || sub.images?.[0]}
                                 alt={sub.name}
@@ -260,7 +260,7 @@ const UserDetail = () => {
                              🟢 NORMAL PRODUCT
                           =============================== */
                           return (
-                            <img
+                            <img loading="lazy"
                               key={i}
                               src={item.image || item.images?.[0]}
                               alt={item.name}

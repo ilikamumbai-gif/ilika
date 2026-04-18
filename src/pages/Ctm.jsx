@@ -41,7 +41,7 @@ const Ctm = () => {
 
               {/* IMAGE */}
               <div className="w-40 sm:w-52">
-                <img
+                <img loading="lazy"
                   src={kit}
                   alt="CTM Kit"
                   className="w-full object-contain"

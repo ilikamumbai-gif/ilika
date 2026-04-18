@@ -32,7 +32,7 @@ const Footer = () => {
 
         {/* BRAND */}
         <div className="space-y-5 text-center md:text-left max-w-sm mx-auto md:mx-0">
-          <img src={logo} alt="Ilika" className="h-11 mx-auto sm:mx-0" />
+          <img loading="lazy" src={logo} alt="Ilika" className="h-11 mx-auto sm:mx-0" />
 
           <h3 className="heading-color text-xl font-semibold">
             Beauty Care For Everyone
@@ -88,15 +88,15 @@ const Footer = () => {
             <div className="flex justify-center md:justify-start gap-5">
               {/* <Mail className="w-5 h-5 hover:scale-110 transition cursor-pointer" /> */}
 
-              <a href="https://www.facebook.com/profile.php?id=100083395125995" target="_blank">
+              <a href="https://www.facebook.com/profile.php?id=100083395125995" target="_blank" alt="Facebook">
                 <Facebook className="w-5 h-5 hover:scale-110 transition" />
               </a>
 
-              <a href="https://www.youtube.com/@ilikamumbai" target="_blank">
+              <a href="https://www.youtube.com/@ilikamumbai" target="_blank" alt="Youtube">
                 <Youtube className="w-5 h-5 hover:scale-110 transition" />
               </a>
 
-              <a href="https://www.instagram.com/ilikamumbai/" target="_blank">
+              <a href="https://www.instagram.com/ilikamumbai/" target="_blank" alt="instagram">
                 <Instagram className="w-5 h-5 hover:scale-110 transition" />
               </a>
             </div>
@@ -115,7 +115,7 @@ const Footer = () => {
 
             <div className="flex justify-center md:justify-start gap-6 items-center">
               <a href="https://www.amazon.in/stores/Ilik%C3%A4/page/4BEEF7C7-AFF6-4530-B62B-3A07943B7277?lp_asin=B0G1HMC41K&ref_=ast_bln" target="_blank">
-                <img
+                <img loading="lazy"
                   src={amazon}
                   alt="Amazon"
                   className="h-7 hover:scale-110 transition"
@@ -123,7 +123,7 @@ const Footer = () => {
               </a>
 
               <a href="https://www.flipkart.com/search?q=ilika%20skin%20care&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=off&as=off" target="_blank">
-                <img
+                <img loading="lazy"
                   src={flipcart}
                   alt="Flipkart"
                   className="h-7 hover:scale-110 transition"
@@ -131,7 +131,7 @@ const Footer = () => {
               </a>
               <a href="https://www.meesho.com/ILIKASKINCARE" target="_blank">
 
-                <img
+                <img loading="lazy"
                   src={meesho}
                   alt="Messho"
                   className="h-7 hover:scale-110 transition"

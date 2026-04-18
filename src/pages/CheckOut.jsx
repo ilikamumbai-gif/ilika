@@ -750,7 +750,7 @@ const Checkout = () => {
 
             {cartItems.map((item) => (
               <div key={item.id} className="flex gap-3 border-b pb-3 mb-3">
-                <img
+                <img loading="lazy"
                   src={item.image || item.images?.[0] || item.imageUrl || "/placeholder.webp"}
                   className="w-16 h-16 rounded-md object-cover"
                   alt={item.name}

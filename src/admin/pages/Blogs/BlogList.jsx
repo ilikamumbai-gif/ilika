@@ -78,7 +78,7 @@ const BlogList = () => {
               {/* Image */}
               <div className="relative h-44 bg-gray-100 overflow-hidden">
                 {blog.image ? (
-                  <img src={blog.image} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <img loading="lazy" src={blog.image} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <BookOpen size={32} className="text-gray-300" />

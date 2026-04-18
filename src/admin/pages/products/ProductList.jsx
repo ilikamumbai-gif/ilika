@@ -103,7 +103,7 @@ const ProductList = () => {
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       {(p.images?.[0] || p.image) && (
-                        <img src={p.images?.[0] || p.image} alt={p.name}
+                        <img loading="lazy" src={p.images?.[0] || p.image} alt={p.name}
                           className="w-10 h-10 rounded-lg object-cover border border-gray-200 shrink-0" />
                       )}
                       <span className="font-semibold text-gray-800">{p.name}</span>
@@ -145,7 +145,7 @@ const ProductList = () => {
             <div key={p.id} className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 {(p.images?.[0] || p.image) && (
-                  <img src={p.images?.[0] || p.image} alt={p.name} className="w-12 h-12 rounded-xl object-cover border shrink-0" />
+                  <img loading="lazy" src={p.images?.[0] || p.image} alt={p.name} className="w-12 h-12 rounded-xl object-cover border shrink-0" />
                 )}
                 <div className="min-w-0">
                   <p className="font-semibold text-gray-800 truncate">{p.name}</p>

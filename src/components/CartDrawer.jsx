@@ -55,7 +55,7 @@ const CartDrawer = () => {
             cartItems.map((item) => (
               <div key={item.id} className="flex gap-4 border-b pb-4">
 
-                <img
+                <img loading="lazy"
                   src={
                     item?.image ||
                     item?.images?.[0] ||
@@ -84,7 +84,7 @@ const CartDrawer = () => {
                       {item.comboItems.map((sub, i) => (
                         <div key={i} className="flex items-center gap-2">
 
-                          <img
+                          <img loading="lazy"
                             src={
                               Array.isArray(sub.image)
                                 ? sub.image[0]

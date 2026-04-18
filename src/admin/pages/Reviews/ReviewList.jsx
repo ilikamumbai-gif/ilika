@@ -218,7 +218,7 @@ const ReviewList = () => {
                       </td>
                       <td className="px-5 py-4">
                         {row.image ? (
-                          <img
+                          <img loading="lazy"
                             src={row.image}
                             alt="Review"
                             className="w-12 h-12 object-cover rounded-lg border border-gray-200"
@@ -285,7 +285,7 @@ const ReviewList = () => {
                     </div>
                   </div>
                   {row.image && (
-                    <img
+                    <img loading="lazy"
                       src={row.image}
                       alt="Review"
                       className="w-full h-32 object-cover rounded-xl border border-gray-100"

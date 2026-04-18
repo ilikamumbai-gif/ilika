@@ -65,7 +65,7 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
                   : "border-gray-200 hover:border-[#FAD4C0] bg-white"
                   }`}
               >
-                <img
+                <img loading="lazy"
                   src={thumb}
                   alt={v.label}
                   className="w-12 h-12 object-cover rounded-lg flex-shrink-0"

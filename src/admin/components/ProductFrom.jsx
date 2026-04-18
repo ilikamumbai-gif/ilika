@@ -56,7 +56,7 @@ const ImageUploadCell = ({ label, value, previewUrl, onFileChange, onUrlChange }
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
       {previewUrl ? (
         <div className="relative group">
-          <img src={previewUrl} alt={label}
+          <img src={previewUrl} alt={label} loading="lazy"
             className="w-full h-28 object-cover rounded-lg border"
             onError={e => { e.target.style.display = "none"; }}
           />
@@ -400,7 +400,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                   onDrop={e => handleVariantReorder(index, e.dataTransfer.getData("variantIndex"), i)}
                   className="relative group cursor-move"
                 >
-                  <img src={typeof img === "string" ? img : URL.createObjectURL(img)} className="h-20 w-full object-cover rounded border" />
+                  <img loading="lazy" src={typeof img === "string" ? img : URL.createObjectURL(img)} className="h-20 w-full object-cover rounded border" />
                   <button type="button" onClick={() => removeVariantImage(index, i)}
                     className="absolute top-1 right-1 bg-black text-white text-xs px-2 rounded opacity-0 group-hover:opacity-100"
                   >X</button>
@@ -476,7 +476,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               onDrop={e => handleImageReorder(Number(e.dataTransfer.getData("dragIndex")), i)}
               className="relative cursor-move"
             >
-              <img src={img} className="h-24 w-full object-cover rounded border" />
+              <img loading="lazy" src={img} className="h-24 w-full object-cover rounded border" />
               <button type="button" onClick={() => removeImage(i)}
                 className="absolute top-1 right-1 bg-black text-white text-xs px-2 rounded"
               >X</button>
@@ -656,6 +656,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             {banner.url && (
               <div className="rounded-lg overflow-hidden border border-gray-200">
                 <img
+                loading="lazy"
                   src={banner.url}
                   alt={banner.alt || `Banner ${idx + 1}`}
                   className="w-full h-32 object-cover"

@@ -349,8 +349,8 @@ const Combos = () => {
                     const img = p.images?.[0] || p.image || p.imageUrl || "/placeholder.webp";
                     return (
                       <div key={p.id} className="relative text-center">
-                        <img
-                          src={img}
+                        <img loading="lazy"
+                          src={img} 
                           alt={p.name}
                           className="w-16 h-16 object-contain border border-gray-200 rounded-lg p-1 bg-white shadow-sm"
                           loading="lazy"
@@ -390,7 +390,7 @@ const Combos = () => {
                     const img = p.images?.[0] || p.image || p.imageUrl || "/placeholder.webp";
                     return (
                       <div key={p.id} className="relative text-center">
-                        <img
+                        <img loading="lazy"
                           src={img}
                           alt={p.name}
                           className="w-16 h-16 object-contain border rounded-lg p-1 bg-white"

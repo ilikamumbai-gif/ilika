@@ -210,7 +210,7 @@ const AddCombo = () => {
                                 return (
                                     <div className="flex items-center gap-3">
                                         {selected.images?.[0] && (
-                                            <img
+                                            <img loading="lazy"
                                                 src={selected.images[0]}
                                                 className="w-16 h-16 object-cover rounded border"
                                             />
@@ -265,7 +265,7 @@ const AddCombo = () => {
                                 }}
                                 className="relative cursor-move group"
                             >
-                                <img
+                                <img loading="lazy"
                                     src={
                                         typeof img === "string"
                                             ? img

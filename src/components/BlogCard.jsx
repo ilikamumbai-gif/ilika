@@ -14,7 +14,7 @@ const BlogCard = ({ blog }) => {
 
         {/* Image */}
         <div className="overflow-hidden secondary-bg-color">
-          <img
+          <img loading="lazy"
             src={blog.image}
             alt={blog.title}
             className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-transform duration-300"

@@ -219,7 +219,7 @@ function PromoCard({ card, priority = false }) {
           transition: "transform 0.35s cubic-bezier(.22,1,.36,1)",
           transform: hovered ? "scale(1.06) translateY(-4px)" : "scale(1) translateY(0)",
         }}>
-          <img
+          <img loading="lazy"
             src={card.image}
             alt={card.title}
             loading={priority ? "eager" : "lazy"}

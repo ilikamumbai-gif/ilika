@@ -22,7 +22,7 @@ const Header = () => {
           className="h-12 md:h-14 flex items-center cursor-pointer shrink-0"
           onClick={() => navigate("/")}
         >
-          <img src={logo} alt="Ilika" className="h-full w-auto object-contain" />
+          <img loading="lazy" src={logo} alt="Ilika" className="h-full w-auto object-contain" />
         </div>
 
         {/* Desktop Nav — pushed to the right via ml-auto */}

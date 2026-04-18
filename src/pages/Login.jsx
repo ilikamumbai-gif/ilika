@@ -152,7 +152,7 @@ const Login = () => {
 
       {/* LEFT IMAGE */}
       <div className="hidden md:block relative">
-        <img src={authImage} alt="auth" className="h-full w-full object-cover" />
+        <img loading="lazy" src={authImage} alt="auth" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
           <h1 className="text-white text-4xl font-semibold">
             Welcome to Ilika
