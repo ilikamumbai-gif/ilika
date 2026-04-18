@@ -1,7 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 
-// Pages
 import Dashboard from "../pages/Dashboard";
 import ProductList from "../pages/products/ProductList";
 import AddProduct from "../pages/products/AddProduct";
@@ -12,25 +11,13 @@ import OrderList from "../pages/Orders/OrderList";
 import OrderDetail from "../pages/Orders/OrderDetail";
 import UserList from "../pages/Users/UserList";
 import UserDetail from "../pages/Users/UserDetail";
-
-// ✅ NEW PAGES
 import BlogList from "../pages/Blogs/BlogList";
 import AddBlog from "../pages/Blogs/AddBlog";
 import ViewBlogDetails from "../pages/Blogs/ViewBlogDetails";
 import Report from "../pages/Report/Report";
-
-// Contexts
-import { ProductProvider } from "../context/ProductContext";
-import { CategoryProvider } from "../context/CategoryContext";
-import { OrderProvider } from "../context/OrderContext";
-import { UserProvider } from "../context/UserContext";
-import { AdminAuthProvider } from "../context/AdminAuthContext";
-import { AdminStatsProvider } from "../context/AdminStatsContext";
-import BlogProvider from "../context/BlogProvider"; // ✅ NEW
 import ComboList from "../pages/Combo/ComboList";
 import AddCombo from "../pages/Combo/AddCombo";
 import EditCombo from "../pages/Combo/EditCombo";
-import { ComboProvider } from "../context/ComboContext";
 import CartProductList from "../pages/cartproducts/CartProductList";
 import CartProductDetail from "../pages/cartproducts/CartProductDetail";
 import ReviewList from "../pages/Reviews/ReviewList";
@@ -39,78 +26,72 @@ import AdminLog from "../pages/AdminLog/AdminLog";
 import BlogComments from "../pages/Blogs/BlogComments";
 import AdminList from "../pages/Admins/AdminList";
 
+import { ProductProvider } from "../context/ProductContext";
+import { CategoryProvider } from "../context/CategoryContext";
+import { OrderProvider } from "../context/OrderContext";
+import { UserProvider } from "../context/UserContext";
+import { AdminStatsProvider } from "../context/AdminStatsContext";
+import BlogProvider from "../context/BlogProvider";
+import { ComboProvider } from "../context/ComboContext";
+import { CartEventProvider } from "../context/CartEventContext";
+import { ReviewProvider } from "../context/ReviewContext";
+
 const AdminRoutes = () => {
   return (
-    <AdminAuthProvider>
-      <CategoryProvider>
-        <ProductProvider>
-          <ComboProvider>   {/* ⭐ ADD THIS */}
-            <OrderProvider>
-              <AdminStatsProvider>
-                <UserProvider>
-                  <BlogProvider>
+    <CategoryProvider>
+      <ProductProvider>
+        <ComboProvider>
+          <OrderProvider>
+            <AdminStatsProvider>
+              <UserProvider>
+                <BlogProvider>
+                  <CartEventProvider>
+                    <ReviewProvider>
+                      <Routes>
+                        <Route index element={<Dashboard />} />
 
-                    <Routes>
-                      <Route index element={<Dashboard />} />
+                        <Route path="admins" element={<AdminList />} />
 
-                      <Route path="admins" element={<AdminList />} />
+                        <Route path="products" element={<ProductList />} />
+                        <Route path="products/add" element={<AddProduct />} />
+                        <Route path="products/edit/:id" element={<EditProduct />} />
 
-                      {/* PRODUCTS */}
-                      <Route path="products" element={<ProductList />} />
-                      <Route path="products/add" element={<AddProduct />} />
-                      <Route path="products/edit/:id" element={<EditProduct />} />
+                        <Route path="combos" element={<ComboList />} />
+                        <Route path="combos/add" element={<AddCombo />} />
+                        <Route path="combos/edit/:id" element={<EditCombo />} />
 
-                      {/* Combos  */}
-                      {/* Combos */}
-                      <Route path="combos" element={<ComboList />} />
-                      <Route path="combos/add" element={<AddCombo />} />
-                      <Route path="combos/edit/:id" element={<EditCombo />} />
+                        <Route path="categories" element={<CategoryList />} />
+                        <Route path="categories/add" element={<AddCategory />} />
 
-                      {/* CATEGORIES */}
-                      <Route path="categories" element={<CategoryList />} />
-                      <Route path="categories/add" element={<AddCategory />} />
+                        <Route path="orders" element={<OrderList />} />
+                        <Route path="orders/:id" element={<OrderDetail />} />
 
-                      {/* ORDERS */}
-                      <Route path="orders" element={<OrderList />} />
-                      <Route path="orders/:id" element={<OrderDetail />} />
+                        <Route path="cart-products" element={<CartProductList />} />
+                        <Route path="cart-products/:productId" element={<CartProductDetail />} />
 
+                        <Route path="users" element={<UserList />} />
+                        <Route path="users/:id" element={<UserDetail />} />
 
-                      {/* CartProduct  */}
-                      <Route path="cart-products" element={<CartProductList />} />
-                      <Route path="/cart-products/:productId" element={<CartProductDetail />} />
+                        <Route path="reviews" element={<ReviewList />} />
+                        <Route path="reviews/:productId/:index" element={<ReviewDetail />} />
 
-                      {/* USERS */}
-                      <Route path="users" element={<UserList />} />
-                      <Route path="users/:id" element={<UserDetail />} />
+                        <Route path="blogs" element={<BlogList />} />
+                        <Route path="blogs/create" element={<AddBlog />} />
+                        <Route path="blogs/:id" element={<ViewBlogDetails />} />
+                        <Route path="blog-comments" element={<BlogComments />} />
 
-                      {/* REVIEWS */}
-                      <Route path="reviews" element={<ReviewList />} />
-                      <Route path="reviews/:productId/:index" element={<ReviewDetail />} />
-
-                      {/* ✅ BLOGS */}
-                      <Route path="blogs" element={<BlogList />} />
-                      <Route path="blogs/create" element={<AddBlog />} />
-                      <Route path="blogs/:id" element={<ViewBlogDetails />} />
-                      <Route path="/blog-comments" element={<BlogComments />}
-
-
-/>
-
-                      {/* ✅ REPORTS */}
-                      <Route path="reports" element={<Report />} />
-
-                      <Route path="log" element={<AdminLog />} />
-
-                    </Routes>
-
-                  </BlogProvider>
-                </UserProvider>
-              </AdminStatsProvider>
-            </OrderProvider>
-          </ComboProvider>   {/* ⭐ ADD THIS */}
-        </ProductProvider>
-      </CategoryProvider>
-    </AdminAuthProvider>
+                        <Route path="reports" element={<Report />} />
+                        <Route path="log" element={<AdminLog />} />
+                      </Routes>
+                    </ReviewProvider>
+                  </CartEventProvider>
+                </BlogProvider>
+              </UserProvider>
+            </AdminStatsProvider>
+          </OrderProvider>
+        </ComboProvider>
+      </ProductProvider>
+    </CategoryProvider>
   );
 };
 

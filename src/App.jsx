@@ -1,49 +1,61 @@
-
-import React, { Suspense, lazy, useEffect, useState } from "react";
-import { useAuth, AuthProvider } from "./context/AuthContext";
+import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
-import CartEventToast from "./components/CartEventToast";
-import CartStatusToast from "./components/CartStatusToast";
-
-import NavRoutes from "./Routes/NavRoutes";
-import { captureTrafficSource } from "./utils/tracking";
-import { initAutoTrack } from "./utils/autoTrack";
-
+import { useAuth, AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartProvider";
-import { UserOrderProvider } from "./context/UserOrderContext";
-import { OrderProvider } from "./admin/context/OrderContext";
-import { UserProvider } from "./admin/context/UserContext";
 import { ProductProvider } from "./admin/context/ProductContext";
 import { CategoryProvider } from "./admin/context/CategoryContext";
 import { ComboProvider } from "./admin/context/ComboContext";
-import { CartEventProvider } from "./admin/context/CartEventContext";
-import { ReviewProvider } from "./admin/context/ReviewContext";
-import BlogProvider from "./admin/context/BlogProvider";
 
+import CartStatusToast from "./components/CartStatusToast";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import EnquiryButton from "./components/EnquiryButton";
 import ScrollToTop from "./components/ScrollToTop";
+import NavRoutes from "./Routes/NavRoutes";
+
+import { captureTrafficSource } from "./utils/tracking";
 
 const LoginPopup = lazy(() => import("./components/LoginPopup"));
 
-
 const AppContent = () => {
   const { currentUser } = useAuth();
+  const { pathname } = useLocation();
   const [showLoginPopup, setShowLoginPopup] = useState(false);
 
-  /* ===============================
-     TRACKING INIT
-  ================================ */
+  const isAdminRoute = useMemo(() => pathname.startsWith("/admin"), [pathname]);
+
   useEffect(() => {
     captureTrafficSource();
-    const cleanup = initAutoTrack();
-    return cleanup;
   }, []);
 
-  /* ===============================
-     LOGIN POPUP LOGIC
-  ================================ */
+  useEffect(() => {
+    if (isAdminRoute) return undefined;
+
+    let cleanup;
+    let cancelled = false;
+    const startTracking = () => {
+      import("./utils/autoTrack").then((mod) => {
+        if (cancelled) return;
+        cleanup = mod.initAutoTrack();
+      });
+    };
+
+    const timer = window.setTimeout(() => {
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(startTracking, { timeout: 2500 });
+      } else {
+        startTracking();
+      }
+    }, 2500);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      if (typeof cleanup === "function") cleanup();
+    };
+  }, [isAdminRoute]);
+
   useEffect(() => {
     if (currentUser) return;
     if (sessionStorage.getItem("loginPopupShown")) return;
@@ -51,84 +63,56 @@ const AppContent = () => {
     const timer = setTimeout(() => {
       setShowLoginPopup(true);
       sessionStorage.setItem("loginPopupShown", "true");
-    }, 10000);
+    }, 20000);
 
     return () => clearTimeout(timer);
   }, [currentUser]);
 
   return (
     <>
-      {/* 🔥 GLOBAL TOAST SYSTEM */}
-     <Toaster
-  position="top-left" // 👈 default LEFT
-  containerStyle={{
-    top: "90px",
-    left: "20px",
-    right: "20px", // 👈 allow both sides
-    zIndex: 99999,
-  }}
-  toastOptions={{
-    duration: 3000,
-    style: {
-      background: "rgba(255,255,255,0.95)",
-      backdropFilter: "blur(12px)",
-      borderRadius: "20px",
-      padding: "0px",
-      boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-      border: "1px solid rgba(0,0,0,0.05)",
-    },
-  }}
-/>
+      <Toaster
+        position="top-left"
+        containerStyle={{
+          top: "90px",
+          left: "20px",
+          right: "20px",
+          zIndex: 99999,
+        }}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "rgba(255,255,255,0.95)",
+            backdropFilter: "blur(12px)",
+            borderRadius: "20px",
+            padding: "0px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(0,0,0,0.05)",
+          },
+        }}
+      />
 
       <div className="min-h-screen flex flex-col">
-        <UserProvider>
-          <OrderProvider>
-            <CartProvider>
+        <CartProvider>
+          <CartStatusToast />
 
-              {/* 🔥 CART STATUS TOAST (session + count) */}
-              <CartStatusToast />
+          <CategoryProvider>
+            <ProductProvider>
+              <ComboProvider>
+                {showLoginPopup && (
+                  <Suspense fallback={null}>
+                    <LoginPopup onClose={() => setShowLoginPopup(false)} />
+                  </Suspense>
+                )}
 
-              <CategoryProvider>
-                <ProductProvider>
-                  <ComboProvider>
-                    <CartEventProvider>
+                <NavRoutes />
 
-                      {/* 🔥 CART EVENT TOAST (add/remove/update) */}
-                      <CartEventToast />
-
-                      <BlogProvider>
-                        <ReviewProvider>
-                          <UserOrderProvider>
-
-                            {/* LOGIN POPUP */}
-                            {showLoginPopup && (
-                              <Suspense fallback={null}>
-                                <LoginPopup
-                                  onClose={() => setShowLoginPopup(false)}
-                                />
-                              </Suspense>
-                            )}
-
-                            {/* MAIN ROUTES */}
-                            <NavRoutes />
-
-                            {/* FLOATING UI */}
-                            <EnquiryButton />
-                            <ScrollToTopButton />
-                            <ScrollToTop />
-
-                          </UserOrderProvider>
-                        </ReviewProvider>
-                      </BlogProvider>
-
-                    </CartEventProvider>
-                  </ComboProvider>
-                </ProductProvider>
-              </CategoryProvider>
-
-            </CartProvider>
-          </OrderProvider>
-        </UserProvider>
+                <EnquiryButton />
+                <ScrollToTopButton />
+                <ScrollToTop />
+              </ComboProvider>
+            </ProductProvider>
+          </CategoryProvider>
+        </CartProvider>
       </div>
     </>
   );

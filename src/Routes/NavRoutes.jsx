@@ -62,7 +62,7 @@ const renderLazy = (Page) => (
 
 const NavRoutes = () => {
   return (
-    <AdminAuthProvider>
+    <>
       <PixelPageTracker />
       <Routes>
         <Route path="/" element={renderLazy(Home)} />
@@ -114,18 +114,23 @@ const NavRoutes = () => {
         <Route path="/login" element={renderLazy(Login)} />
         <Route path="/signup" element={renderLazy(Signup)} />
 
-        <Route path="/admin/login" element={renderLazy(AdminLogin)} />
+        <Route
+          path="/admin/login"
+          element={<AdminAuthProvider>{renderLazy(AdminLogin)}</AdminAuthProvider>}
+        />
 
         <Route
           path="/admin/*"
           element={
-            <AdminProtectedRoute>
-              {renderLazy(AdminRoutes)}
-            </AdminProtectedRoute>
+            <AdminAuthProvider>
+              <AdminProtectedRoute>
+                {renderLazy(AdminRoutes)}
+              </AdminProtectedRoute>
+            </AdminAuthProvider>
           }
         />
       </Routes>
-    </AdminAuthProvider>
+    </>
   );
 };
 

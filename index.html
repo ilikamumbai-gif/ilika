@@ -54,22 +54,29 @@
       document.head.appendChild(s);
     }
 
-    function runAfterFirstPaint(fn) {
+    function runAfterEngagement(fn) {
+      var done = false;
       var run = function () {
+        if (done) return;
+        done = true;
+        window.removeEventListener("pointerdown", run);
+        window.removeEventListener("keydown", run);
+        window.removeEventListener("scroll", run);
         if ("requestIdleCallback" in window) {
-          window.requestIdleCallback(fn, { timeout: 3000 });
+          window.requestIdleCallback(fn, { timeout: 5000 });
         } else {
-          setTimeout(fn, 1800);
+          setTimeout(fn, 2500);
         }
       };
-      if (document.readyState === "complete") {
-        run();
-      } else {
-        window.addEventListener("load", run, { once: true });
-      }
+
+      window.addEventListener("pointerdown", run, { once: true, passive: true });
+      window.addEventListener("keydown", run, { once: true });
+      window.addEventListener("scroll", run, { once: true, passive: true });
+
+      window.setTimeout(run, 12000);
     }
 
-    runAfterFirstPaint(function () {
+    runAfterEngagement(function () {
       window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
       loadScriptOnce("https://www.googletagmanager.com/gtm.js?id=GTM-P8QRKX5D");
     });
@@ -163,7 +170,7 @@
     window._fbq = fbqStub;
 
     // Load fbevents.js after first paint (stub queues events safely)
-    runAfterFirstPaint(function () {
+    runAfterEngagement(function () {
       loadScriptOnce('https://connect.facebook.net/en_US/fbevents.js');
     });
 
