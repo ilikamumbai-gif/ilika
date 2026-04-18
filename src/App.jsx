@@ -1,12 +1,11 @@
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { useAuth, AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 
 import CartEventToast from "./components/CartEventToast";
 import CartStatusToast from "./components/CartStatusToast";
 
-import LoginPopup from "./components/LoginPopup";
 import NavRoutes from "./Routes/NavRoutes";
 import { captureTrafficSource } from "./utils/tracking";
 import { initAutoTrack } from "./utils/autoTrack";
@@ -25,6 +24,8 @@ import BlogProvider from "./admin/context/BlogProvider";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import EnquiryButton from "./components/EnquiryButton";
 import ScrollToTop from "./components/ScrollToTop";
+
+const LoginPopup = lazy(() => import("./components/LoginPopup"));
 
 
 const AppContent = () => {
@@ -101,9 +102,11 @@ const AppContent = () => {
 
                             {/* LOGIN POPUP */}
                             {showLoginPopup && (
-                              <LoginPopup
-                                onClose={() => setShowLoginPopup(false)}
-                              />
+                              <Suspense fallback={null}>
+                                <LoginPopup
+                                  onClose={() => setShowLoginPopup(false)}
+                                />
+                              </Suspense>
                             )}
 
                             {/* MAIN ROUTES */}

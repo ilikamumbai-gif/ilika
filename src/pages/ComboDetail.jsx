@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useCombos } from "../admin/context/ComboContext";
 import { useProducts } from "../admin/context/ProductContext";
@@ -8,11 +8,12 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
 import CartDrawer from "../components/CartDrawer";
-import ComboTab from "../components/ComboTab";
 
 import { createSlug } from "../utils/slugify";
 import { Truck, ShieldCheck, BadgeCheck } from "lucide-react";
 import { useSeo } from "../hooks/useSeo";
+
+const ComboTab = lazy(() => import("../components/ComboTab"));
 
 const ComboDetail = () => {
   const { id } = useParams();
@@ -106,6 +107,7 @@ const ComboDetail = () => {
       <div className="primary-bg-color">
         <Header />
         <CartDrawer />
+        <main>
 
         {/* ================= MAIN ================= */}
 
@@ -125,7 +127,9 @@ const ComboDetail = () => {
                     alt={combo.name}
                     className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover"
                     fetchPriority="high"
+                    loading="eager"
                     decoding="async"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 520px"
                   />
                 )}
 
@@ -332,14 +336,16 @@ const ComboDetail = () => {
 
 
         {/* TAB */}
-
-        <ComboTab combo={combo} products={products} />
+        <Suspense fallback={<div className="max-w-7xl mx-auto px-4 sm:px-6 py-8" />}>
+          <ComboTab combo={combo} products={products} />
+        </Suspense>
 
         <Footer />
+        </main>
 
       </div>
     </>
   );
+  
 };
-
 export default ComboDetail;

@@ -1,12 +1,10 @@
-import React from "react";
+import React, { Suspense, lazy, useMemo } from "react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CategoryNav from "../components/CategoryNav";
 import Heading from "../components/Heading";
 import ProductList from "../components/ProductList";
 import { categoriesData } from "../Dummy/categoriesData";
-import Menifesto from "../components/Menifesto";
-import TestimonialList from "../components/TestimonialList";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Banner from "../components/Banner";
@@ -17,8 +15,10 @@ import bannerSkincare from "../assets/Images/FacecareBanner.webp";
 import bannerHair from "../assets/Images/HairBanner.webp";
 // import holibg2 from "../assets/Images/holibg3.webp";
 // import OfferCard from "../components/OfferCard";
-import Offers from "./Offer";
 import PromoCardGrid from "../components/PromoCardGrid";
+const Offers = lazy(() => import("./Offer"));
+const Menifesto = lazy(() => import("../components/Menifesto"));
+const TestimonialList = lazy(() => import("../components/TestimonialList"));
 
 /* public images (use path only) */
 const skinMobile = "/Images/skinMobile.webp";
@@ -31,13 +31,16 @@ const Home = () => {
 
   const { categories } = useCategories();
 
-  const hairstylingCategory = categories.find(
-    c => c.name.toLowerCase().replace(/\s+/g, "") === "hairstyling"
-  );
-
-  const newCategory = categories.find(
-    c => c.name.toLowerCase().replace(/\s+/g, "") === "new"
-  );
+  const { hairstylingCategory, newCategory } = useMemo(() => {
+    return {
+      hairstylingCategory: categories.find(
+        (c) => c.name.toLowerCase().replace(/\s+/g, "") === "hairstyling"
+      ),
+      newCategory: categories.find(
+        (c) => c.name.toLowerCase().replace(/\s+/g, "") === "new"
+      ),
+    };
+  }, [categories]);
 
   return (
     <>
@@ -47,11 +50,14 @@ const Home = () => {
 
         <Header />
         <CartDrawer />
+        <main>
 
         <PromoCardGrid/>
 
 
-        <Offers />
+        <Suspense fallback={<div className="h-36" />}>
+          <Offers />
+        </Suspense>
 
 
         {/* CATEGORY NAV */}
@@ -149,15 +155,20 @@ const Home = () => {
 
 
         {/* MANIFESTO */}
-        <Menifesto />
+        <Suspense fallback={<div className="h-24" />}>
+          <Menifesto />
+        </Suspense>
 
 
         {/* TESTIMONIAL */}
         <Heading heading="COSTUMER'S STORIES" />
-        <TestimonialList />
+        <Suspense fallback={<div className="h-24" />}>
+          <TestimonialList />
+        </Suspense>
 
 
         <Footer />
+        </main>
 
       </div>
     </>
