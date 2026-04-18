@@ -1,3 +1,4 @@
+import React from "react";
 import { useProducts } from "../context/ProductContext";
 import ProductCard from "./ProductCard";
 

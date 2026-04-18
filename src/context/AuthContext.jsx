@@ -1,3 +1,4 @@
+import React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   onAuthStateChanged,
@@ -54,10 +55,15 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
+      // If we reach here, the browser has already logged the 404 error.
+      // We just update the state and provide a meaningful debug message.
       setUserData(null);
-      console.error("fetchUserData unexpected status:", res.status);
+      
+      if (res.status === 404) {
+        console.warn(`User ${uid} not yet available in DB.`);
+      }
     } catch (err) {
-      console.error("Failed to fetch userData:", err);
+      console.error("Network or parsing error:", err);
     }
   };
 

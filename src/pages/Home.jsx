@@ -18,7 +18,6 @@ import bannerHair from "../assets/Images/HairBanner.webp";
 // import holibg2 from "../assets/Images/holibg3.webp";
 // import OfferCard from "../components/OfferCard";
 import Offers from "./Offer";
-import GudiPadwaBanner from "../components/GudiPadwaBanner";
 import PromoCardGrid from "../components/PromoCardGrid";
 
 /* public images (use path only) */
@@ -26,21 +25,11 @@ const skinMobile = "/Images/skinMobile.webp";
 
 const hairMobile = "/Images/hairMobile.webp";
 const BannerStyle = "/Images/Banner.webp";
-const styleMobile = "/Images/styleMobile.webp";
-
-const holimainbanner = "/Images/women.webp";
-const holiMobile = "/Images/womenMobile.webp";
-
-const bannerStyle = "/Images/Banner2.webp";
 
 
 const Home = () => {
 
   const { categories } = useCategories();
-
-  const skincareCategory = categories.find(
-    c => c.name.toLowerCase().replace(/\s+/g, "") === "skincare"
-  );
 
   const hairstylingCategory = categories.find(
     c => c.name.toLowerCase().replace(/\s+/g, "") === "hairstyling"
@@ -48,10 +37,6 @@ const Home = () => {
 
   const newCategory = categories.find(
     c => c.name.toLowerCase().replace(/\s+/g, "") === "new"
-  );
-
-  const haircareCategory = categories.find(
-    c => c.name.toLowerCase().replace(/\s+/g, "") === "haircare"
   );
 
   return (
@@ -62,14 +47,6 @@ const Home = () => {
 
         <Header />
         <CartDrawer />
-
-        {/* HERO */}
-        {/* <Banner
-          className="md:h-[87vh] -mt-3"
-          src={holimainbanner}
-          mobileSrc={holiMobile}
-        /> */}
-
 
         <PromoCardGrid/>
 

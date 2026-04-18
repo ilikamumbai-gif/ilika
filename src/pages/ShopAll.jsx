@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect } from "react";
 import { useProducts } from "../context/ProductContext";
 import { useCategories } from "../admin/context/CategoryContext";

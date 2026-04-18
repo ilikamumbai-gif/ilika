@@ -1,3 +1,4 @@
+import React from "react";
 import Heading from "../components/Heading";
 import OfferCard from "../components/OfferCard";
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useProducts } from "../context/ProductContext";
 
 import MiniDivider from "../components/MiniDivider";
@@ -13,6 +13,7 @@ import Banner from "../components/Banner";
 
 import { useLocation } from "react-router-dom";
 import { useRef } from "react";
+import { useSeo } from "../hooks/useSeo";
 
 const offBanner = "/Images/Tonner.webp";
 const offBannerMobile = "/Images/TonnerMobile.webp";
@@ -31,6 +32,22 @@ const Combos = () => {
   const location = useLocation();
   const couponRef = useRef(null);
 
+  const tonerProducts = useMemo(() => {
+    return products.filter(
+      (p) =>
+        p.isActive !== false &&
+        p.name.toLowerCase().includes("toner")
+    );
+  }, [products]);
+
+  const maskProducts = useMemo(() => {
+    return products.filter(
+      (p) =>
+        p.isActive !== false &&
+        p.name.toLowerCase().includes("sheet mask")
+    );
+  }, [products]);
+
   useEffect(() => {
     if (location.state?.scrollToCoupon && couponRef.current) {
       couponRef.current.scrollIntoView({
@@ -40,19 +57,22 @@ const Combos = () => {
     }
   }, [location]);
 
-  /* ================= FILTER PRODUCTS ================= */
-
-  const tonerProducts = products.filter(
-    p =>
-      p.isActive !== false &&
-      p.name.toLowerCase().includes("toner")
-  );
-
-  const maskProducts = products.filter(
-    p =>
-      p.isActive !== false &&
-      p.name.toLowerCase().includes("sheet mask")
-  );
+  useSeo({
+    title: "Combos | Ilika",
+    description:
+      "Build your Ilika combo packs with toner and sheet mask deals. Save more with curated skincare combos.",
+    path: "/combo",
+    image: offBanner,
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Ilika Combos",
+      url: "https://ilika.in/combo",
+      description:
+        "Create skincare combos from toners and sheet masks with combo pricing.",
+      numberOfItems: tonerProducts.length + maskProducts.length,
+    },
+  });
 
   /* ================= TONER SELECT ================= */
 
@@ -84,9 +104,6 @@ const Combos = () => {
     selectedToners.length === 1
       ? selectedToners[0]?.price || selectedToners[0]?.mrp || 0
       : 0;
-
-  const totalPrice =
-    selectedToners.length === 2 ? 699 : singleTonerPrice;
 
   const originalTonerMRP =
     selectedToners.length === 2
@@ -336,6 +353,8 @@ const Combos = () => {
                           src={img}
                           alt={p.name}
                           className="w-16 h-16 object-contain border border-gray-200 rounded-lg p-1 bg-white shadow-sm"
+                          loading="lazy"
+                          decoding="async"
                         />
                         <button
                           onClick={() => toggleToner(p)}
@@ -375,6 +394,8 @@ const Combos = () => {
                           src={img}
                           alt={p.name}
                           className="w-16 h-16 object-contain border rounded-lg p-1 bg-white"
+                          loading="lazy"
+                          decoding="async"
                         />
                         <button
                           onClick={() => toggleMask(p)}

@@ -48,6 +48,8 @@ const ComboProductCard = ({ product, selected, onSelect }) => {
           src={productImage}
           alt={product.name}
           className="object-contain h-full w-full transition-transform duration-300"
+          loading="lazy"
+          decoding="async"
         />
 
       </div>

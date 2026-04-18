@@ -1,3 +1,4 @@
+import React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useCart } from "./CartProvider";
 import { useAuth } from "./AuthContext";

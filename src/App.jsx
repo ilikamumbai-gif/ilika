@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import { useAuth, AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 
@@ -24,6 +25,7 @@ import BlogProvider from "./admin/context/BlogProvider";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import EnquiryButton from "./components/EnquiryButton";
 import ScrollToTop from "./components/ScrollToTop";
+
 
 const AppContent = () => {
   const { currentUser } = useAuth();

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useCombos } from "../admin/context/ComboContext";
 import { useProducts } from "../admin/context/ProductContext";
@@ -12,6 +12,7 @@ import ComboTab from "../components/ComboTab";
 
 import { createSlug } from "../utils/slugify";
 import { Truck, ShieldCheck, BadgeCheck } from "lucide-react";
+import { useSeo } from "../hooks/useSeo";
 
 const ComboDetail = () => {
   const { id } = useParams();
@@ -24,11 +25,66 @@ const ComboDetail = () => {
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
-    fetchCombos();
-    fetchProducts();
-  }, []);
+    if (!combos.length) fetchCombos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [combos.length]);
+
+  useEffect(() => {
+    if (!products.length) fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products.length]);
 
   const combo = combos.find((c) => c.id === id);
+
+  const productsById = useMemo(() => {
+    return new Map(products.map((p) => [String(p.id), p]));
+  }, [products]);
+
+  const getProductById = (pid) => productsById.get(String(pid));
+
+  const images = useMemo(() => combo?.images || [], [combo?.images]);
+  const primaryImage = selectedImage || images[0] || "/Images/logo2.webp";
+  const comboPath = `/combo/${id}`;
+  const comboDescription = combo
+    ? `${combo.name} combo at Rs ${combo.price}. Includes curated skincare products with fast shipping and secure checkout.`
+    : "Explore Ilika skincare combos with curated products and special savings.";
+
+  const productSchema = combo
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: combo.name,
+        image: images.length ? images : [primaryImage],
+        description: comboDescription,
+        brand: {
+          "@type": "Brand",
+          name: "Ilika",
+        },
+        category: "Beauty Combo",
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "INR",
+          price: Number(combo.price) || 0,
+          availability: "https://schema.org/InStock",
+          url: `https://ilika.in${comboPath}`,
+        },
+      }
+    : null;
+
+  useSeo({
+    title: combo ? `${combo.name} | Ilika Combo` : "Combo Details | Ilika",
+    description: comboDescription,
+    path: comboPath,
+    image: primaryImage,
+    type: combo ? "product" : "website",
+    jsonLd: productSchema,
+  });
+
+  useEffect(() => {
+    if (!selectedImage && images.length) {
+      setSelectedImage(images[0]);
+    }
+  }, [images, selectedImage]);
 
   if (!combo) {
     return (
@@ -38,15 +94,10 @@ const ComboDetail = () => {
     );
   }
 
-  const images = combo.images || [];
-
   const discount =
     combo.mrp && combo.mrp > combo.price
       ? Math.round(((combo.mrp - combo.price) / combo.mrp) * 100)
       : 0;
-
-  const getProductById = (pid) =>
-    products.find((p) => p.id === pid);
 
   return (
     <>
@@ -70,8 +121,11 @@ const ComboDetail = () => {
 
                 {images[0] && (
                   <img
-                    src={images[0]}
+                    src={primaryImage}
+                    alt={combo.name}
                     className="w-full h-[320px] sm:h-[420px] lg:h-[520px] object-cover"
+                    fetchPriority="high"
+                    decoding="async"
                   />
                 )}
 
@@ -85,10 +139,14 @@ const ComboDetail = () => {
                       key={i}
                       onClick={() => setSelectedImage(img)}
                       className="rounded-lg overflow-hidden border"
+                      aria-label={`View image ${i + 1} of ${images.length}`}
                     >
                       <img
                         src={img}
+                        alt={`${combo.name} thumbnail ${i + 1}`}
                         className="w-full h-20 object-cover"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </button>
                   ))}
@@ -204,7 +262,10 @@ const ComboDetail = () => {
 
                       <img
                         src={free.images?.[0]}
+                        alt={free.name}
                         className="w-16 h-16 object-contain border rounded"
+                        loading="lazy"
+                        decoding="async"
                       />
 
                       <div>

@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { createSlug } from "../utils/slugify";
 
 const ComboTab = ({ combo, products }) => {
   const [activeTab, setActiveTab] = useState("description");
+
+  const productsById = useMemo(() => {
+    return new Map(products.map((p) => [String(p.id), p]));
+  }, [products]);
 
   const tabClass = (tab) =>
     `pb-3 cursor-pointer text-sm sm:text-base font-medium ${
@@ -12,8 +16,7 @@ const ComboTab = ({ combo, products }) => {
         : "text-gray-500 hover:text-black"
     }`;
 
-  const getProductById = (id) =>
-    products.find((p) => p.id === id);
+  const getProductById = (id) => productsById.get(String(id));
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 mt-10">
@@ -88,7 +91,10 @@ const ComboTab = ({ combo, products }) => {
 
                       <img
                         src={product.images[0]}
+                        alt={product.name}
                         className="w-full sm:w-40 h-40 object-contain border rounded-lg p-2 bg-white"
+                        loading="lazy"
+                        decoding="async"
                       />
 
                     )}
@@ -165,7 +171,10 @@ const ComboTab = ({ combo, products }) => {
 
                     <img
                       src={product.images[0]}
+                      alt={product.name}
                       className="w-full h-40 object-contain"
+                      loading="lazy"
+                      decoding="async"
                     />
 
                   )}
@@ -210,7 +219,10 @@ const ComboTab = ({ combo, products }) => {
 
                 <img
                   src={free.images?.[0]}
+                  alt={free.name}
                   className="w-24 h-24 object-contain"
+                  loading="lazy"
+                  decoding="async"
                 />
 
                 <div>

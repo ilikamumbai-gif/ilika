@@ -1,26 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
-/* @tailwind base;
-@tailwind components; 
-@tailwind utilities; */
-
-/* BRAND TYPOGRAPHY */
-
-.font-poppins {
-  font-family: "Poppins", sans-serif;
-  font-weight: 600;
-}
-
 
 /* Global Sans Serif Font */
 html,
 body,
 #root {
   font-family: "Inter", sans-serif;
-}
-
-.font-brand {
-  font-family: "Playfair Display", serif;
 }
 
 .font-luxury {
@@ -32,24 +16,15 @@ body,
 }
 
 .primary-bg-color {
-  /* background-color: #FFF4EF; */
   background-color: #ffffff;
 }
 
 .secondary-bg-color {
-  background-color: #F4E5E5;
-}
-
-.button-bg-color {
-  background-color: #E8ADAD;
-}
-
-.category-bg-color {
-  background-color: #a21d1d33;
+  background-color: #f4e5e5;
 }
 
 .divider-bg-color {
-  background: #C6F3D2;
+  background: #c6f3d2;
 }
 
 .MiniDivider-bg-color {
@@ -61,16 +36,14 @@ body,
 }
 
 .heading-2-color {
-  color: #1C371C;
+  color: #1c371c;
   text-decoration: solid;
-  font-size: 18px
+  font-size: 18px;
 }
 
 .content-text {
-  color: #1C371C;
+  color: #1c371c;
 }
-
-
 
 /* Hide scrollbar */
 .scrollbar-hide::-webkit-scrollbar {
@@ -127,7 +100,7 @@ body,
 }
 
 .prose blockquote {
-  border-left: 4px solid #E7A6A1;
+  border-left: 4px solid #e7a6a1;
   padding-left: 12px;
   margin: 10px 0;
   color: #555;
@@ -138,22 +111,7 @@ body,
   border-top: 1px solid #ddd;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ================= FESTIVAL BUTTON ANIMATION ================= */
-
 .festival-btn-animated {
   padding: 12px 28px;
   border: none;
@@ -162,7 +120,6 @@ body,
   font-size: 16px;
   color: #fff;
   cursor: pointer;
-
   background: linear-gradient(
     90deg,
     #fb923c 0%,
@@ -171,7 +128,6 @@ body,
     #fbbf24 75%,
     #fb923c 100%
   );
-
   background-size: 200% 100%;
   animation: festivalFlow 6s linear infinite;
   transition: 0.3s ease;
@@ -185,26 +141,19 @@ body,
   0% {
     background-position: 0% 0%;
   }
+
   100% {
     background-position: 100% 0%;
   }
 }
 
 /* ================= MARQUEE CONTAINER ================= */
-
 .marquee-wrapper {
   overflow: hidden;
   width: 100%;
 }
 
-
-
-
-
-
-
 /* ================= SCROLLING TRACK ================= */
-
 .marquee-track {
   display: flex;
   width: max-content;
@@ -212,19 +161,16 @@ body,
 }
 
 /* ================= FESTIVE TEXT STYLE ================= */
-
 .marquee-track span {
   white-space: nowrap;
   padding-right: 4rem;
   font-weight: 600;
   font-size: 0.95rem;
-
   color: white;
-text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 /* ================= MARQUEE ANIMATION ================= */
-
 @keyframes marquee {
   0% {
     transform: translateX(0);
@@ -234,121 +180,6 @@ text-shadow: 0 1px 3px rgba(0,0,0,0.25);
     transform: translateX(-50%);
   }
 }
-
-/* ================= FLOATING PETALS ================= */
-
-.petal {
-  position: absolute;
-  top: -10%;
-  opacity: 0.8;
-  width: 20px;
-  height: 20px;
-  color: #fb923c; /* marigold */
-  animation: fall linear infinite;
-}
-
-@keyframes fall {
-
-  0% {
-    transform: translateY(-50px) translateX(0) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(300px) translateX(40px) rotate(180deg);
-  }
-
-  100% {
-    transform: translateY(700px) translateX(-40px) rotate(360deg);
-  }
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* 🌸 Floating petals using Lucide icons */
-/* 🌸 Floating petals */
-
-.petal {
-  position: absolute;
-  top: -10%;
-  opacity: 0.8;
-  width: 20px;
-  height: 20px;
-  color: #f97316; /* marigold color */
-  animation: fall linear infinite;
-}
-
-@keyframes fall {
-
-  0% {
-    transform: translateY(-50px) translateX(0) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(300px) translateX(40px) rotate(180deg);
-  }
-
-  100% {
-    transform: translateY(700px) translateX(-40px) rotate(360deg);
-  }
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* Promo Card CSS */
 .promo-grid {
