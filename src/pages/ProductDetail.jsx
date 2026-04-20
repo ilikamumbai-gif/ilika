@@ -57,7 +57,7 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
     if (images.length <= 1) return;
     const timer = setInterval(() => {
       setCurrent(c => (c + 1) % images.length);
-    }, 3000);
+    }, 30000);
     return () => clearInterval(timer);
   }, [images.length]);
 
