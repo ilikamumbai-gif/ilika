@@ -137,9 +137,9 @@ const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-wh
         <div className="p-4 flex flex-col gap-2 flex-grow">
 
           {/* NAME */}
-          <h3 className="text-[13px] font-semibold text-[#172917] leading-snug tracking-wide line-clamp-2">
-            {product.name}
-          </h3>
+          <h4 className="text-[13px] font-semibold text-[#172917] leading-snug tracking-wide line-clamp-2 ">           
+             {product.name}
+          </h4>
 
           {/* TAGLINE */}
           {product.tagline && (
