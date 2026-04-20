@@ -1,0 +1,1101 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import Razorpay from "razorpay";
+import crypto from "crypto";
+import { admin, db } from "./firebaseAdmin.js";
+
+dotenv.config();
+const app = express();
+
+/* ============================== RAZORPAY ============================== */
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+/* ============================== CORS ============================== */
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://ilika.vercel.app",
+  "https://ilika.in",
+  "https://www.ilika.in",
+  process.env.FRONTEND_URL,
+];
+
+const detectSource = (source) => {
+  if (!source) return "WEBSITE";
+  const s = source.toLowerCase();
+  if (s.includes("meta") || s.includes("facebook") || s.includes("instagram")) return "META ADS";
+  if (s.includes("google") || s.includes("gclid")) return "GOOGLE ADS";
+  return s.toUpperCase();
+};
+
+const getReviewUserType = (review = {}) => {
+  const hasIdentity = Boolean(
+    review?.userId ||
+    review?.userEmail ||
+    review?.verifiedPurchase === true ||
+    review?.isGenuine === true
+  );
+  return hasIdentity ? "genuine" : "fake";
+};
+
+const normalizeIndianPhone = (phone = "") => {
+  const digits = String(phone).replace(/\D/g, "");
+  return digits.length >= 10 ? digits.slice(-10) : digits;
+};
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      const isAllowed = allowedOrigins.some(o => o && origin.startsWith(o));
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.log("❌ CORS blocked:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+/* ============================== HEALTH ============================== */
+app.get("/", (req, res) => res.send("Backend Running 🚀"));
+
+/* ============================== USERS ============================== */
+
+// Create / login user
+app.post("/api/users/login", async (req, res) => {
+  try {
+    const { uid, email, name, phone } = req.body || {};
+    if (!uid) return res.status(400).json({ error: "Missing user id" });
+
+    const userRef = db.collection("users").doc(uid);
+    const docSnap = await userRef.get();
+    const existingData = docSnap.exists ? docSnap.data() : {};
+    const nextEmail = email ?? existingData.email ?? "";
+    const nextName = name ?? existingData.name ?? "";
+    const nextPhone = normalizeIndianPhone(phone ?? existingData.phone ?? "");
+    const verifiedPhoneNumbers = Array.from(
+      new Set(
+        [
+          ...(Array.isArray(existingData.verifiedPhoneNumbers) ? existingData.verifiedPhoneNumbers : []),
+          normalizeIndianPhone(existingData.phoneNumber || ""),
+        ].filter(Boolean)
+      )
+    );
+    const phoneAlreadyVerified =
+      existingData.phoneVerified === true ||
+      verifiedPhoneNumbers.includes(nextPhone);
+
+    if (!docSnap.exists) {
+      await userRef.set({
+        uid,
+        email: nextEmail,
+        name: nextName,
+        phone: nextPhone,
+        role: "user",
+        phoneVerified: phoneAlreadyVerified,
+        verifiedPhoneNumbers,
+        createdAt: new Date(),
+      });
+    } else {
+      await userRef.set(
+        {
+          uid,
+          email: nextEmail,
+          name: nextName,
+          phone: nextPhone,
+          role: existingData.role || "user",
+          phoneVerified: phoneAlreadyVerified,
+          verifiedPhoneNumbers,
+          updatedAt: new Date(),
+        },
+        { merge: true }
+      );
+    }
+
+    res.json({ message: "User saved successfully" });
+  } catch (error) {
+    console.error("SAVE USER ERROR:", error);
+    res.status(500).json({ error: "Failed to save user" });
+  }
+});
+
+// Get ALL users (admin)
+app.get("/api/users", async (req, res) => {
+  try {
+    const snapshot = await db.collection("users").get();
+    res.json(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() })));
+  } catch {
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+// ✅ GET SINGLE USER — required by AuthContext to read phoneVerified
+app.get("/api/users/:uid", async (req, res) => {
+  try {
+    const doc = await db.collection("users").doc(req.params.uid).get();
+    if (!doc.exists) return res.status(404).json({ error: "User not found" });
+    res.json({ uid: doc.id, ...doc.data() });
+  } catch (err) {
+    console.error("GET USER ERROR:", err);
+    res.status(500).json({ error: "Failed to fetch user" });
+  }
+});
+
+// Update user profile
+app.put("/api/users/:uid", async (req, res) => {
+  try {
+    await db.collection("users").doc(req.params.uid).update(req.body);
+    res.json({ message: "Profile updated" });
+  } catch {
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
+// Delete user + addresses
+app.delete("/api/users/:uid", async (req, res) => {
+  try {
+    const uid = req.params.uid;
+    await db.collection("users").doc(uid).delete();
+
+    const addrSnap = await db.collection("users").doc(uid).collection("addresses").get();
+    const batch = db.batch();
+    addrSnap.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+
+    res.json({ message: "User deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+});
+
+/* ============================== PHONE VERIFICATION ============================== */
+// backend: verify-phone route
+app.put("/api/users/:uid/verify-phone", async (req, res) => {
+  try {
+    // Verify the Firebase ID token from the Authorization header
+    const idToken = req.headers.authorization?.split("Bearer ")[1];
+    if (!idToken) return res.status(401).json({ error: "Unauthorized" });
+
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    if (decoded.uid !== req.params.uid)
+      return res.status(403).json({ error: "Forbidden" });
+
+    const phone = normalizeIndianPhone(req.body?.phone || decoded.phone_number || "");
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      return res.status(400).json({ error: "Valid phone number required" });
+    }
+
+    const userRef = db.collection("users").doc(req.params.uid);
+    const userDoc = await userRef.get();
+    const existingData = userDoc.exists ? userDoc.data() : {};
+    const verifiedPhoneNumbers = Array.from(
+      new Set([
+        ...(Array.isArray(existingData.verifiedPhoneNumbers) ? existingData.verifiedPhoneNumbers : []),
+        phone,
+      ])
+    );
+
+    await userRef.set(
+      {
+        uid: req.params.uid,
+        phone,
+        phoneVerified: true,
+        verifiedPhoneNumbers,
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+    res.json({ message: "Phone verified", verifiedPhoneNumbers });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to verify phone" });
+  }
+});
+
+/* ============================== ADDRESSES ============================== */
+app.post("/api/users/:uid/address", async (req, res) => {
+  try {
+    const docRef = await db
+      .collection("users")
+      .doc(req.params.uid)
+      .collection("addresses")
+      .add({ ...req.body, createdAt: new Date() });
+    res.json({ id: docRef.id });
+  } catch {
+    res.status(500).json({ error: "Failed to save address" });
+  }
+});
+
+app.get("/api/users/:uid/address", async (req, res) => {
+  try {
+    const snapshot = await db
+      .collection("users")
+      .doc(req.params.uid)
+      .collection("addresses")
+      .orderBy("createdAt", "desc")
+      .get();
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch {
+    res.status(500).json({ error: "Failed to fetch addresses" });
+  }
+});
+
+app.put("/api/users/:uid/address/:addressId", async (req, res) => {
+  try {
+    await db
+      .collection("users")
+      .doc(req.params.uid)
+      .collection("addresses")
+      .doc(req.params.addressId)
+      .update(req.body);
+    res.json({ message: "Address updated" });
+  } catch {
+    res.status(500).json({ error: "Failed to update address" });
+  }
+});
+
+/* ============================== PRODUCTS ============================== */
+app.post("/api/products", async (req, res) => {
+  try {
+    const now = Date.now();
+    const productData = {
+      ...req.body,
+      isActive: req.body.isActive ?? true,
+      inStock: req.body.inStock ?? true,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const docRef = await db.collection("products").add(productData);
+    res.json({ id: docRef.id, ...productData });
+  } catch (error) {
+    console.error("ADD PRODUCT ERROR:", error);
+    res.status(500).json({ error: "Failed to add product" });
+  }
+});
+
+app.get("/api/products/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("products").doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: "Product not found" });
+    res.json({ id: doc.id, ...doc.data() });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch product" });
+  }
+});
+
+app.get("/api/products", async (req, res) => {
+  try {
+    const snapshot = await db.collection("products").orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch {
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
+});
+
+app.put("/api/products/:id", async (req, res) => {
+  try {
+    const productRef = db.collection("products").doc(req.params.id);
+    const existingDoc = await productRef.get();
+    if (!existingDoc.exists) return res.status(404).json({ error: "Product not found" });
+
+    const existingData = existingDoc.data();
+    const updateData = {
+      ...req.body,
+      reviews: (req.body.reviews || []).map(r => ({
+        name: r.name || "",
+        rating: r.rating || 0,
+        comment: r.comment || "",
+        image: r.image || null,
+        userId: r.userId || null,
+        userEmail: r.userEmail || null,
+        verifiedPurchase: Boolean(r.verifiedPurchase),
+        isGenuine: getReviewUserType(r) === "genuine",
+        createdAt: r.createdAt || new Date(),
+      })),
+      isActive: typeof req.body.isActive === "boolean" ? req.body.isActive : existingData.isActive ?? true,
+      inStock: typeof req.body.inStock === "boolean" ? req.body.inStock : existingData.inStock ?? true,
+      updatedAt: Date.now(),
+    };
+
+    await productRef.update(updateData);
+    const updatedDoc = await productRef.get();
+    res.json({ message: "Product updated successfully", product: { id: updatedDoc.id, ...updatedDoc.data() } });
+  } catch (error) {
+    console.error("UPDATE PRODUCT ERROR:", error);
+    res.status(500).json({ error: "Failed to update product" });
+  }
+});
+
+app.delete("/api/products/:id", async (req, res) => {
+  try {
+    await db.collection("products").doc(req.params.id).delete();
+    res.json({ message: "Product deleted successfully" });
+  } catch {
+    res.status(500).json({ error: "Failed to delete product" });
+  }
+});
+
+/* ============================== BLOGS ============================== */
+app.post("/api/blogs", async (req, res) => {
+  try {
+    const { title, image, author, shortDesc, content } = req.body;
+    if (!title) return res.status(400).json({ error: "Title required" });
+
+    const now = Date.now();
+    const blogData = {
+      title: title || "",
+      image: image || "",
+      author: author || "",
+      excerpt: shortDesc || "",
+      content: content || "",
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const docRef = await db.collection("blogs").add(blogData);
+    res.json({ id: docRef.id, ...blogData });
+  } catch (error) {
+    console.error("ADD BLOG ERROR:", error);
+    res.status(500).json({ error: "Failed to add blog" });
+  }
+});
+
+app.get("/api/blogs", async (req, res) => {
+  try {
+    const snapshot = await db.collection("blogs").orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch {
+    res.status(500).json({ error: "Failed to fetch blogs" });
+  }
+});
+
+app.get("/api/blogs/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("blogs").doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: "Blog not found" });
+    res.json({ id: doc.id, ...doc.data() });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch blog" });
+  }
+});
+
+app.put("/api/blogs/:id", async (req, res) => {
+  try {
+    const blogRef = db.collection("blogs").doc(req.params.id);
+    const doc = await blogRef.get();
+    if (!doc.exists) return res.status(404).json({ error: "Blog not found" });
+
+    await blogRef.update({ ...req.body, updatedAt: Date.now() });
+    res.json({ message: "Blog updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update blog" });
+  }
+});
+
+app.delete("/api/blogs/:id", async (req, res) => {
+  try {
+    await db.collection("blogs").doc(req.params.id).delete();
+    res.json({ message: "Blog deleted" });
+  } catch {
+    res.status(500).json({ error: "Failed to delete blog" });
+  }
+});
+
+/* ============================== BLOG COMMENTS ============================== */
+app.post("/api/blogs/:id/comments", async (req, res) => {
+  try {
+    const { name, message } = req.body;
+    if (!name || !message) return res.status(400).json({ error: "Name and message required" });
+
+    const commentData = { name, message, createdAt: new Date() };
+    const docRef = await db.collection("blogs").doc(req.params.id).collection("comments").add(commentData);
+    res.json({ id: docRef.id, ...commentData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to add comment" });
+  }
+});
+
+app.get("/api/blogs/:id/comments", async (req, res) => {
+  try {
+    const snapshot = await db
+      .collection("blogs").doc(req.params.id).collection("comments")
+      .orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch comments" });
+  }
+});
+
+app.get("/api/blogs/:id/comment-count", async (req, res) => {
+  try {
+    const snapshot = await db.collection("blogs").doc(req.params.id).collection("comments").get();
+    res.json({ count: snapshot.size });
+  } catch {
+    res.status(500).json({ error: "Failed to count comments" });
+  }
+});
+
+app.get("/api/admin/blogs/:id/comments", async (req, res) => {
+  try {
+    const snapshot = await db
+      .collection("blogs").doc(req.params.id).collection("comments")
+      .orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch comments" });
+  }
+});
+
+app.delete("/api/admin/blogs/:blogId/comments/:commentId", async (req, res) => {
+  try {
+    const { blogId, commentId } = req.params;
+    const ref = db.collection("blogs").doc(blogId).collection("comments").doc(commentId);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ error: "Comment not found" });
+    await ref.delete();
+    res.json({ message: "Comment deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete comment" });
+  }
+});
+
+app.get("/api/admin/all-comments", async (req, res) => {
+  try {
+    const blogsSnapshot = await db.collection("blogs").get();
+    let comments = [];
+
+    for (const blogDoc of blogsSnapshot.docs) {
+      const blogData = blogDoc.data();
+      const commentSnap = await db.collection("blogs").doc(blogDoc.id).collection("comments").get();
+      commentSnap.forEach(doc => {
+        comments.push({ id: doc.id, blogId: blogDoc.id, blogTitle: blogData.title, ...doc.data() });
+      });
+    }
+
+    res.json(comments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch comments" });
+  }
+});
+
+app.delete("/api/admin/comments/:blogId/:commentId", async (req, res) => {
+  try {
+    const { blogId, commentId } = req.params;
+    await db.collection("blogs").doc(blogId).collection("comments").doc(commentId).delete();
+    res.json({ message: "Comment deleted" });
+  } catch {
+    res.status(500).json({ error: "Delete failed" });
+  }
+});
+
+/* ============================== COMBOS ============================== */
+app.post("/api/combos", async (req, res) => {
+  try {
+    const now = Date.now();
+    const comboData = { ...req.body, isActive: req.body.isActive ?? true, createdAt: now, updatedAt: now };
+    const docRef = await db.collection("combos").add(comboData);
+    res.json({ id: docRef.id, ...comboData });
+  } catch (error) {
+    console.error("ADD COMBO ERROR:", error);
+    res.status(500).json({ error: "Failed to add combo" });
+  }
+});
+
+app.get("/api/combos", async (req, res) => {
+  try {
+    const snapshot = await db.collection("combos").orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch {
+    res.status(500).json({ error: "Failed to fetch combos" });
+  }
+});
+
+app.put("/api/combos/:id", async (req, res) => {
+  try {
+    await db.collection("combos").doc(req.params.id).update({ ...req.body, updatedAt: Date.now() });
+    res.json({ message: "Combo updated successfully" });
+  } catch {
+    res.status(500).json({ error: "Failed to update combo" });
+  }
+});
+
+app.delete("/api/combos/:id", async (req, res) => {
+  try {
+    await db.collection("combos").doc(req.params.id).delete();
+    res.json({ message: "Combo deleted successfully" });
+  } catch {
+    res.status(500).json({ error: "Failed to delete combo" });
+  }
+});
+
+/* ============================== PAYMENTS ============================== */
+app.post("/api/payments/create-order", async (req, res) => {
+  try {
+    const { amount } = req.body;
+    if (!amount) return res.status(400).json({ error: "Amount is required" });
+
+    const order = await razorpay.orders.create({
+      amount: amount * 100,
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    });
+
+    res.json({ id: order.id, currency: order.currency, amount: order.amount });
+  } catch (error) {
+    console.error("Razorpay error:", error);
+    res.status(500).json({ error: "Failed to create Razorpay order" });
+  }
+});
+
+app.post("/api/payments/verify", async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderData } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature)
+      return res.status(400).json({ error: "Invalid payment data" });
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature)
+      return res.status(400).json({ error: "Invalid signature" });
+
+    const addressDoc = await db
+      .collection("users").doc(orderData.userId)
+      .collection("addresses").doc(orderData.shippingAddressId)
+      .get();
+
+    // ✅ Guard: address must belong to this user
+    if (!addressDoc.exists)
+      return res.status(400).json({ error: "Invalid address" });
+
+    let totalAmount = 0;
+    const validatedItems = [];
+
+    for (const item of orderData.items) {
+      const quantity = item.quantity || 1;
+
+      if (item.isCombo || item.items || item.comboItems) {
+        const comboProducts = item.items || item.comboItems || [];
+        totalAmount += Number(item.price) * quantity;
+        validatedItems.push({
+          productId: item.id,
+          name: item.name || "Custom Combo",
+          price: Number(item.price),
+          quantity,
+          image: item.image || item.images?.[0] || item.imageUrl || "",
+          isCombo: true,
+          comboItems: comboProducts.map(p => ({
+            name: p.name,
+            image: p.image || p.images?.[0] || p.imageUrl || "",
+          })),
+        });
+        continue;
+      }
+
+      const productDoc = await db.collection("products").doc(item.id).get();
+      if (!productDoc.exists) continue;
+
+      const productData = productDoc.data();
+      if (!productData.isActive) continue;
+      if (!productData.inStock)
+        return res.status(400).json({ error: `${productData.name} is out of stock` });
+
+      const finalPrice = Number(item.price) || Number(productData.price) || 0;
+      totalAmount += finalPrice * quantity;
+
+      validatedItems.push({
+        productId: item.id,
+        name: item.name || productData.name,
+        price: finalPrice,
+        quantity,
+        image: item.image || item.images?.[0] || item.imageUrl || "",
+        variantLabel: item.variantLabel || null,
+        originalPrice: item.originalPrice || null,
+        discountApplied: item.discountApplied || null,
+        isCombo: false,
+      });
+    }
+
+    const docRef = await db.collection("orders").add({
+      userId: orderData.userId,
+      userEmail: orderData.userEmail,
+      items: validatedItems,
+      totalAmount,
+      shippingAddress: addressDoc.data(),
+      status: "Placed",
+      paymentStatus: "Paid",
+      source: orderData.source || "WEBSITE",
+      razorpay_payment_id,
+      paidAt: new Date(),
+      createdAt: new Date(),
+    });
+
+    res.json({ success: true, orderId: docRef.id });
+  } catch (error) {
+    console.error("VERIFY PAYMENT ERROR:", error);
+    res.status(500).json({ error: "Payment verification failed" });
+  }
+});
+
+/* ============================== ORDERS ============================== */
+app.post("/api/orders", async (req, res) => {
+  try {
+    const { userId, userEmail, items, shippingAddressId, source } = req.body;
+    if (!userId || !items?.length) return res.status(400).json({ error: "Invalid order data" });
+
+    // ✅ Validate address belongs to THIS user
+    const addressDoc = await db
+      .collection("users").doc(userId)
+      .collection("addresses").doc(shippingAddressId)
+      .get();
+
+    if (!addressDoc.exists) {
+      console.error(`Address ${shippingAddressId} not found under user ${userId}`);
+      return res.status(400).json({ error: "Invalid address" });
+    }
+
+    let totalAmount = 0;
+    const validatedItems = [];
+
+    for (const item of items) {
+      const quantity = item.quantity || 1;
+
+      if (item.isCombo || item.items || item.comboItems) {
+        const comboProducts = item.items || item.comboItems || [];
+        totalAmount += Number(item.price) * quantity;
+        validatedItems.push({
+          productId: item.id,
+          name: item.name || "Custom Combo",
+          price: Number(item.price),
+          quantity,
+          image: item.image || item.images?.[0] || item.imageUrl || "",
+          isCombo: true,
+          comboItems: comboProducts.map(p => ({
+            name: p.name,
+            image: p.image || p.images?.[0] || p.imageUrl || "",
+          })),
+        });
+        continue;
+      }
+
+      const productDoc = await db.collection("products").doc(item.id).get();
+      if (!productDoc.exists) continue;
+
+      const productData = productDoc.data();
+      if (!productData.isActive) continue;
+      if (!productData.inStock)
+        return res.status(400).json({ error: `${productData.name} is out of stock` });
+
+      const finalPrice = Number(item.price) || Number(productData.price);
+      totalAmount += finalPrice * quantity;
+
+      validatedItems.push({
+        productId: item.id,
+        name: item.name || productData.name,
+        price: finalPrice,
+        quantity,
+        image: item.image || item.images?.[0] || item.imageUrl || "",
+        variantLabel: item.variantLabel || null,
+        originalPrice: item.originalPrice || null,
+        discountApplied: item.discountApplied || null,
+        isCombo: false,
+      });
+    }
+
+    const docRef = await db.collection("orders").add({
+      userId,
+      userEmail,
+      items: validatedItems,
+      totalAmount,
+      shippingAddress: addressDoc.data(),
+      status: "Placed",
+      paymentStatus: "Unpaid",
+      source: detectSource(source),
+      createdAt: new Date(),
+    });
+
+    res.json({ orderId: docRef.id });
+  } catch (err) {
+    console.error("CREATE ORDER ERROR:", err);
+    res.status(500).json({ error: "Failed to place order" });
+  }
+});
+
+app.get("/api/orders", async (req, res) => {
+  const snapshot = await db.collection("orders").orderBy("createdAt", "desc").get();
+  res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+});
+
+app.get("/api/users/:uid/orders", async (req, res) => {
+  try {
+    const snapshot = await db.collection("orders").where("userId", "==", req.params.uid).get();
+    let orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    orders.sort((a, b) => {
+      const aTime = a.createdAt?._seconds || new Date(a.createdAt).getTime() || 0;
+      const bTime = b.createdAt?._seconds || new Date(b.createdAt).getTime() || 0;
+      return bTime - aTime;
+    });
+    res.json(orders);
+  } catch (error) {
+    console.error("USER ORDER FETCH ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch user orders" });
+  }
+});
+
+app.put("/api/orders/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ error: "Status is required" });
+
+    await db.collection("orders").doc(req.params.id).update({ status, updatedAt: new Date() });
+    res.json({ message: "Order status updated successfully" });
+  } catch (error) {
+    console.error("STATUS UPDATE ERROR:", error);
+    res.status(500).json({ error: "Failed to update order status" });
+  }
+});
+
+app.delete("/api/orders", async (req, res) => {
+  try {
+    const snapshot = await db.collection("orders").get();
+    const batch = db.batch();
+    snapshot.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    res.json({ message: "All orders deleted" });
+  } catch (error) {
+    console.error("DELETE ALL ORDERS ERROR:", error);
+    res.status(500).json({ error: "Failed to delete orders" });
+  }
+});
+
+app.delete("/api/orders/:id", async (req, res) => {
+  try {
+    await db.collection("orders").doc(req.params.id).delete();
+    res.json({ message: "Order deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete order" });
+  }
+});
+
+/* ============================== REVIEWS ============================== */
+app.get("/api/reviews", async (req, res) => {
+  try {
+    const snapshot = await db.collection("products").get();
+    let reviews = [];
+    snapshot.forEach(doc => {
+      const product = doc.data();
+      if (product.reviews?.length) {
+        product.reviews.forEach((r, index) => {
+          reviews.push({
+            id: doc.id + "_" + index,
+            productId: doc.id,
+            reviewIndex: index,
+            productName: product.name,
+            name: r.name || "",
+            rating: r.rating || 0,
+            comment: r.comment || "",
+            image: r.image || null,
+            userId: r.userId || null,
+            userEmail: r.userEmail || null,
+            userType: getReviewUserType(r),
+            createdAt: r.createdAt || null,
+          });
+        });
+      }
+    });
+    res.json(reviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch reviews" });
+  }
+});
+
+app.post("/api/reviews/:productId", async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { name = "", rating = 0, comment = "", image = null, userId = null, userEmail = null, verifiedPurchase = false } = req.body || {};
+
+    if (!name?.trim()) return res.status(400).json({ error: "Reviewer name is required" });
+    if (!comment?.trim()) return res.status(400).json({ error: "Review comment is required" });
+
+    const parsedRating = Number(rating);
+    if (!Number.isFinite(parsedRating) || parsedRating < 1 || parsedRating > 5)
+      return res.status(400).json({ error: "Rating must be between 1 and 5" });
+
+    const ref = db.collection("products").doc(productId);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ error: "Product not found" });
+
+    const data = doc.data();
+    const reviews = Array.isArray(data.reviews) ? [...data.reviews] : [];
+
+    reviews.push({
+      name: String(name).trim(),
+      rating: parsedRating,
+      comment: String(comment).trim(),
+      image: image || null,
+      userId: userId || null,
+      userEmail: userEmail || null,
+      verifiedPurchase: Boolean(verifiedPurchase),
+      isGenuine: getReviewUserType({ userId, userEmail, verifiedPurchase }) === "genuine",
+      createdAt: new Date(),
+    });
+
+    await ref.update({ reviews, updatedAt: Date.now() });
+    res.json({ message: "Review added successfully" });
+  } catch (err) {
+    console.error("ADD REVIEW ERROR:", err);
+    res.status(500).json({ error: "Failed to add review" });
+  }
+});
+
+app.get("/api/reviews/:productId/:index", async (req, res) => {
+  try {
+    const { productId, index } = req.params;
+    const doc = await db.collection("products").doc(productId).get();
+    if (!doc.exists) return res.status(404).json({ error: "Product not found" });
+
+    const data = doc.data();
+    const review = data.reviews?.[index];
+    if (!review) return res.status(404).json({ error: "Review not found" });
+
+    res.json({
+      productId,
+      productName: data.name,
+      name: review.name || "",
+      rating: review.rating || 0,
+      comment: review.comment || "",
+      image: review.image || null,
+      userId: review.userId || null,
+      userEmail: review.userEmail || null,
+      userType: getReviewUserType(review),
+      createdAt: review.createdAt || null,
+    });
+  } catch {
+    res.status(500).json({ error: "Failed" });
+  }
+});
+
+app.delete("/api/reviews/:productId/:index", async (req, res) => {
+  try {
+    const { productId, index } = req.params;
+    const ref = db.collection("products").doc(productId);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ error: "Product not found" });
+
+    const data = doc.data();
+    const reviews = data.reviews || [];
+    if (index < 0 || index >= reviews.length) return res.status(400).json({ error: "Invalid index" });
+
+    reviews.splice(index, 1);
+    await ref.update({ reviews });
+    res.json({ message: "Review deleted" });
+  } catch {
+    res.status(500).json({ error: "Delete failed" });
+  }
+});
+
+/* ============================== CART EVENTS ============================== */
+app.post("/api/cart-events", async (req, res) => {
+  try {
+    const { productId, name, price, image, userId, userEmail } = req.body;
+    const eventData = { productId, name, price, image, userId: userId || null, userEmail: userEmail || null, createdAt: new Date() };
+    const docRef = await db.collection("cartEvents").add(eventData);
+    res.json({ id: docRef.id, ...eventData });
+  } catch (error) {
+    console.error("CART EVENT ERROR:", error);
+    res.status(500).json({ error: "Failed to save cart event" });
+  }
+});
+
+app.get("/api/cart-events", async (req, res) => {
+  try {
+    const snapshot = await db.collection("cartEvents").orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch {
+    res.status(500).json({ error: "Failed to fetch cart events" });
+  }
+});
+
+/* ============================== CATEGORIES ============================== */
+app.post("/api/categories", async (req, res) => {
+  const docRef = await db.collection("categories").add({ ...req.body, createdAt: new Date() });
+  res.json({ id: docRef.id, ...req.body });
+});
+
+app.get("/api/categories", async (req, res) => {
+  const snapshot = await db.collection("categories").get();
+  res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+});
+
+app.put("/api/categories/:id", async (req, res) => {
+  await db.collection("categories").doc(req.params.id).update(req.body);
+  res.json({ message: "Category updated successfully" });
+});
+
+app.delete("/api/categories/:id", async (req, res) => {
+  await db.collection("categories").doc(req.params.id).delete();
+  res.json({ message: "Category deleted successfully" });
+});
+
+/* ============================== ADMIN ============================== */
+app.post("/api/admin-log", async (req, res) => {
+  try {
+    const { action = "", message = "", admin = "admin" } = req.body;
+    const log = { action, message, admin, createdAt: new Date() };
+    const doc = await db.collection("adminLogs").add(log);
+    res.json({ id: doc.id, ...log });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Log failed" });
+  }
+});
+
+app.get("/api/admin-log", async (req, res) => {
+  try {
+    const snapshot = await db.collection("adminLogs").orderBy("createdAt", "desc").limit(50).get();
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch {
+    res.status(500).json({ error: "Failed" });
+  }
+});
+
+app.post("/api/admin-login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const snapshot = await db.collection("admins").where("username", "==", username).limit(1).get();
+    if (snapshot.empty) return res.status(401).json({ error: "Invalid credentials" });
+
+    const admin = snapshot.docs[0].data();
+    if (admin.password !== password) return res.status(401).json({ error: "Invalid credentials" });
+
+    res.json({ id: snapshot.docs[0].id, username: admin.username, role: admin.role });
+  } catch {
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
+app.get("/api/admins", async (req, res) => {
+  try {
+    const snapshot = await db.collection("admins").orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch {
+    res.status(500).json({ error: "Failed to fetch admins" });
+  }
+});
+
+app.post("/api/admins", async (req, res) => {
+  try {
+    const { username, password, role } = req.body;
+    if (!username || !password) return res.status(400).json({ error: "Missing fields" });
+
+    const docRef = await db.collection("admins").add({
+      username, password, role: role || "admin", createdAt: new Date(),
+    });
+    res.json({ id: docRef.id, username, role });
+  } catch {
+    res.status(500).json({ error: "Failed to create admin" });
+  }
+});
+
+app.delete("/api/admins/:id", async (req, res) => {
+  try {
+    await db.collection("admins").doc(req.params.id).delete();
+    res.json({ message: "Admin deleted" });
+  } catch {
+    res.status(500).json({ error: "Delete failed" });
+  }
+});
+
+app.put("/api/admins/:id/password", async (req, res) => {
+  try {
+    const { password } = req.body;
+    await db.collection("admins").doc(req.params.id).update({ password });
+    res.json({ message: "Password updated" });
+  } catch {
+    res.status(500).json({ error: "Update failed" });
+  }
+});
+
+
+// =============================== NOtifictain  ================================
+/* ================== NOTIFY WHEN BACK ================== */
+app.post("/api/notify", async (req, res) => {
+  try {
+    const { productId, productName, userId, email } = req.body;
+
+    if (!productId) {
+      return res.status(400).json({ error: "Product ID required" });
+    }
+
+    const docRef = await db.collection("notifications").add({
+      productId,
+      productName: productName || "",
+      userId: userId || null,
+      email: email || null,
+      status: "pending",
+      createdAt: new Date(),
+    });
+
+    res.json({ success: true, id: docRef.id });
+  } catch (error) {
+    console.error("NOTIFY ERROR:", error);
+    res.status(500).json({ error: "Failed to save notification" });
+  }
+});
+
+// GET ALL
+app.get("/api/notify", async (req, res) => {
+  const snapshot = await db.collection("notifications").get();
+  res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+});
+
+// GET SINGLE
+app.get("/api/notify/:id", async (req, res) => {
+  const doc = await db.collection("notifications").doc(req.params.id).get();
+  if (!doc.exists) return res.status(404).json({ error: "Not found" });
+  res.json({ id: doc.id, ...doc.data() });
+});
+
+/* ============================== DEFAULT ADMIN ============================== */
+const createDefaultAdmin = async () => {
+  try {
+    const snapshot = await db.collection("admins").limit(1).get();
+    if (snapshot.empty) {
+      await db.collection("admins").add({
+        username: "admin",
+        password: "ilika@admin123",
+        role: "superadmin",
+        createdAt: new Date(),
+      });
+      console.log("✅ Default Admin Created — username: admin / password: ilika@admin123");
+    }
+  } catch (error) {
+    console.error("Default admin creation failed:", error);
+  }
+};
+
+createDefaultAdmin();
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
