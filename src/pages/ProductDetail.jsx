@@ -17,6 +17,8 @@ import {
 import ProductCard from "../components/ProductCard";
 
 
+
+
 /* ═══════════════════════════════════════════════════
    IMAGE LIGHTBOX — full-screen overlay
 ═══════════════════════════════════════════════════ */
@@ -158,13 +160,13 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
 
             {/* ATC button */}
             <button
-              onClick={() => { onAddToCart(); onClose(); }}
-              disabled={isOutOfStock}
+              onClick={isOutOfStock ? onNotifyMe : onAddToCart}
               className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition
-                ${isOutOfStock ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-[#2b2a29] text-white hover:bg-[#1a1918] shadow-sm"}`}
+    ${isOutOfStock
+                  ? "bg-[#801f1f] text-white hover:bg-[#5e1414]"
+                  : "bg-[#2b2a29] text-white hover:bg-[#1a1918]"}`}
             >
-              <ShoppingCart className="w-4 h-4" />
-              {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+              {isOutOfStock ? "Notify Me" : "Add to Cart"}
             </button>
 
             {/* Buy Now */}
@@ -477,7 +479,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
 /* ═══════════════════════════════════════════════════
    STICKY FLOATING ATC BAR
 ═══════════════════════════════════════════════════ */
-const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible,footerHeight  }) => {
+const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight }) => {
   return (
     <div
       style={{
@@ -628,20 +630,35 @@ const ProductDetail = ({
   // ref to cancel in-flight preload when product/variant changes rapidly
   const preloadAbortRef = useRef(false);
 
-  // useEffect(() => {
-  //   if (!footerRef.current) return;
+  // =====================================================
+  // Notification - OUT OF STOCK
+  // =====================================================
+  const handleNotifyMe = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/notify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            productId: product._id || product.id,
+            productName: product.name,
+            userId: auth.currentUser?.uid || null,
+            email: auth.currentUser?.email || null,
+          }),
+        }
+      );
 
-  //   const updateHeight = () => {
-  //     setFooterHeight(footerRef.current.offsetHeight);
-  //   };
+      if (!res.ok) throw new Error();
 
-  //   updateHeight();
-
-  //   const resizeObserver = new ResizeObserver(updateHeight);
-  //   resizeObserver.observe(footerRef.current);
-
-  //   return () => resizeObserver.disconnect();
-  // }, []);
+      alert("You will be notified when product is back in stock!");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong!");
+    }
+  };
 
 
 
@@ -684,26 +701,26 @@ const ProductDetail = ({
 
 
   /* ── Unified sticky bar visibility — single source of truth ── */
-useEffect(() => {
-  const handleScroll = () => {
-    if (!atcButtonsRef.current) return;
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!atcButtonsRef.current) return;
 
-    const atcRect = atcButtonsRef.current.getBoundingClientRect();
-    const atcGone = atcRect.bottom < 0;
+      const atcRect = atcButtonsRef.current.getBoundingClientRect();
+      const atcGone = atcRect.bottom < 0;
 
-    const trigger = document.getElementById("footer-trigger");
-    const triggerVisible = trigger
-      ? trigger.getBoundingClientRect().top < window.innerHeight
-      : false;
+      const trigger = document.getElementById("footer-trigger");
+      const triggerVisible = trigger
+        ? trigger.getBoundingClientRect().top < window.innerHeight
+        : false;
 
-    setShowStickyBar(atcGone && !triggerVisible);
-  };
+      setShowStickyBar(atcGone && !triggerVisible);
+    };
 
-  window.addEventListener("scroll", handleScroll, { passive: true });
-  handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
 
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);// re-register when product loads so ref is valid
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);// re-register when product loads so ref is valid
 
 
   /* ── Fetch product by slug ── */
@@ -940,6 +957,7 @@ useEffect(() => {
           onBuyNow={handleBuyNow}
           isAdding={isAdding}
           isBuying={isBuying}
+          onNotifyMe={handleNotifyMe}
         />
       )}
 
@@ -956,7 +974,7 @@ useEffect(() => {
         isAdding={isAdding}
         isBuying={isBuying}
         visible={showStickyBar}
-        // footerHeight={footerHeight}
+      // footerHeight={footerHeight}
       />
 
       <div className="primary-bg-color">
@@ -1096,17 +1114,24 @@ useEffect(() => {
               {/* ATC + Buy Now — observed by IntersectionObserver for sticky bar */}
               <div ref={atcButtonsRef} className="flex flex-col sm:flex-row gap-3">
 
-                {/* Add To Cart */}
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isOutOfStock || isAdding}
-                  className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition
-    ${isOutOfStock || isAdding
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : `${buttonBg} ${buttonText} hover:opacity-90 shadow-sm`}`}
-                >
-                  {isAdding ? "Adding..." : product.inStock ? "Add To Cart" : "Out of Stock"}
-                </button>
+               <button
+  onClick={product.inStock ? handleAddToCart : handleNotifyMe}
+  disabled={isAdding}
+  className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition
+    ${
+      isAdding
+        ? "bg-gray-300 text-gray-500"
+        : product.inStock
+        ? `${buttonBg} ${buttonText}`
+        : "bg-[#801f1f] text-white"
+    }`}
+>
+  {isAdding
+    ? "Adding..."
+    : product.inStock
+    ? "Add To Cart"
+    : "Notify Me"}
+</button>
 
                 {/* Buy Now (same style) */}
                 <button
@@ -1350,7 +1375,7 @@ useEffect(() => {
                   <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
                   {rev.image && (
                     <img
-                    loading="lazy"
+                      loading="lazy"
                       src={rev.image}
                       alt="Review"
                       className="mt-3 w-full h-44 object-cover rounded-xl border border-gray-100"

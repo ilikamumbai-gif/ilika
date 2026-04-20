@@ -29,6 +29,7 @@ const Combos = () => {
   const [selectedToners, setSelectedToners] = useState([]);
   const [selectedMasks, setSelectedMasks] = useState([]);
   const [showMaskPopup, setShowMaskPopup] = useState(false);
+  const [loadingCombo, setLoadingCombo] = useState(false);
   const location = useLocation();
   const couponRef = useRef(null);
 
@@ -108,7 +109,7 @@ const Combos = () => {
   const originalTonerMRP =
     selectedToners.length === 2
       ? (selectedToners[0]?.price || selectedToners[0]?.mrp || 0) +
-        (selectedToners[1]?.price || selectedToners[1]?.mrp || 0)
+      (selectedToners[1]?.price || selectedToners[1]?.mrp || 0)
       : 0;
 
   /* ================= BUILD & ADD COMBO ================= */
@@ -153,12 +154,19 @@ const Combos = () => {
       return;
     }
 
-    if (selectedMasks.length === 0) {
-      setShowMaskPopup(true);
-      return;
-    }
+    setLoadingCombo(true); // ✅ start loading
 
-    buildAndAddCombo(true);
+    setTimeout(() => {
+      if (selectedMasks.length === 0) {
+        setShowMaskPopup(true);
+        setLoadingCombo(false); // stop if popup
+        return;
+      }
+
+      buildAndAddCombo(true);
+
+      setLoadingCombo(false); // ✅ stop loading
+    }, 500); // small delay for UX
   };
 
   return (
@@ -176,8 +184,8 @@ const Combos = () => {
           mobileSrc={maskBannerMobile}
         />
 
-         {/* ================= 24K MASK DUO OFFER ================= */}
-         
+        {/* ================= 24K MASK DUO OFFER ================= */}
+
         <MaskDuoOffer />
 
 
@@ -188,7 +196,7 @@ const Combos = () => {
         />
 
 
-        
+
 
         {/* ================= MASK POPUP ================= */}
         {showMaskPopup && (
@@ -350,7 +358,7 @@ const Combos = () => {
                     return (
                       <div key={p.id} className="relative text-center">
                         <img loading="lazy"
-                          src={img} 
+                          src={img}
                           alt={p.name}
                           className="w-16 h-16 object-contain border border-gray-200 rounded-lg p-1 bg-white shadow-sm"
                           loading="lazy"
@@ -446,15 +454,23 @@ const Combos = () => {
                 )}
 
                 <button
-                  disabled={selectedToners.length !== 2}
+                  disabled={selectedToners.length !== 2 || loadingCombo}
                   onClick={addComboToCart}
-                  className="w-full mt-5 py-3 rounded-xl font-semibold tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-white"
+                  className="w-full mt-5 py-3 rounded-xl font-semibold tracking-wide transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     background: "linear-gradient(to right, #E96A6A, #D45A5A)"
                   }}
                 >
-                  Add Combo To Cart
+                  {loadingCombo ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      Adding...
+                    </>
+                  ) : (
+                    "Add Combo To Cart"
+                  )}
                 </button>
+
               </div>
             </div>
 
@@ -470,7 +486,7 @@ const Combos = () => {
           <div className="border-t border-[#FAD4C0] my-4" />
         </div>
 
-        
+
 
         {/* ================= COUPON SECTION ================= */}
         <div className="pt-18" ref={couponRef}>

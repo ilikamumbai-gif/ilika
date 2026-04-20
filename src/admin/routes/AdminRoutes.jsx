@@ -35,6 +35,8 @@ import BlogProvider from "../context/BlogProvider";
 import { ComboProvider } from "../context/ComboContext";
 import { CartEventProvider } from "../context/CartEventContext";
 import { ReviewProvider } from "../context/ReviewContext";
+import NotificationList from "../pages/Notification/NotificationList";
+import NotificationDetail from "../pages/Notification/NotificationDetail";
 
 const AdminRoutes = () => {
   return (
@@ -82,6 +84,9 @@ const AdminRoutes = () => {
 
                         <Route path="reports" element={<Report />} />
                         <Route path="log" element={<AdminLog />} />
+
+                        <Route path="notifications" element={<NotificationList />} />
+                        <Route path="notifications/:id" element={<NotificationDetail />} />
                       </Routes>
                     </ReviewProvider>
                   </CartEventProvider>

@@ -4,7 +4,8 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Package, Layers, ShoppingCart, Users,
   X, Gift, Star, ClipboardList, Logs, MessageSquare,
-  ShieldIcon, FileText, BookOpen, ChevronRight
+  ShieldIcon, FileText, BookOpen, ChevronRight,
+  Bell
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -27,6 +28,7 @@ const NAV_GROUPS = [
     items: [
       { to: "/admin/orders",      icon: ClipboardList,   label: "Orders"         },
       { to: "/admin/cart-products",icon: ShoppingCart,   label: "Cart Interest"  },
+      { to: "/admin/notifications", icon: Bell, label: "Notifications" }
     ]
   },
   {

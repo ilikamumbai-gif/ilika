@@ -167,7 +167,7 @@ function PromoCard({ card, priority = false }) {
   const isLight = card.dark === false;
   const textColor = isLight ? "#3D0C0C" : "#fff";
   const subColor = isLight ? "#7A2828" : "rgba(255,255,255,0.82)";
-  const descColor = isLight ? "#5A2020" : "rgba(255,255,255,0.7)";
+  const descColor = isLight ? "#fff" : "#fff";
   const tag = tagColors[card.tag] || { bg: "rgba(255,255,255,0.2)", color: "#fff" };
 
   return (

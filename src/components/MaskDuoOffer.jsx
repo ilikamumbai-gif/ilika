@@ -6,12 +6,25 @@ import ComboProductCard from "../components/ComboProductCard";
 const MaskDuoOffer = () => {
   const { products } = useProducts();
   const { addToCart } = useCart();
+  const [loading, setLoading] = useState(false);
 
   const COMBO_PRICE = 699;
 
   const ALLOWED_PRODUCTS = [
     "24k gold collagen face mask is anti-aging",
     "ilika 4 in 1 collagen face mask glow firm & hydrate",
+  ];
+
+  const FREE_MASK_NAMES = [
+    "collagen sheet mask | firming & anti-aging",
+    "red algae hydrating sheet mask | hydration & radiance",
+    "tea tree face sheet mask | hydration & acne-control",
+    "cucumber sheet mask | acne control",
+    "kakadu plum sheet mask | glowing & youthful skin",
+    "kumkumadi face sheet mask | hydration & rejuvenation",
+    "ginseng anti-aging sheet mask | anti-aging & revitalizing",
+    "alpha arbutin sheet mask | bright & spotless skin",
+    "acai berry face sheet mask | antiwrinkle",
   ];
 
   const maskProducts = products.filter(
@@ -41,10 +54,11 @@ const MaskDuoOffer = () => {
   const originalMRP =
     selectedMasks.length === 2
       ? (selectedMasks[0]?.price || selectedMasks[0]?.mrp || 0) +
-        (selectedMasks[1]?.price || selectedMasks[1]?.mrp || 0)
+      (selectedMasks[1]?.price || selectedMasks[1]?.mrp || 0)
       : 0;
 
   const savings = originalMRP > COMBO_PRICE ? originalMRP - COMBO_PRICE : 0;
+
 
   /* ── add to cart ── */
   const addComboToCart = () => {
@@ -53,29 +67,60 @@ const MaskDuoOffer = () => {
       return;
     }
 
-    const getImage = (p) =>
-      p?.variants?.[0]?.images?.[0] ||
-      p?.images?.[0] ||
-      p?.image ||
-      p?.imageUrl ||
-      "/placeholder.webp";
+    setLoading(true); // ✅ start loading
 
-    const comboItem = {
-      id: "mask-duo-custom",
-      name: "Custom Mask Duo",
-      price: COMBO_PRICE,
-      quantity: 1,
-      isCombo: true,
-      image: getImage(selectedMasks[0]),
-      comboItems: selectedMasks.map((p) => ({
-        id: p._id || p.id,
-        name: p.name,
-        image: getImage(p),
-      })),
-    };
+    setTimeout(() => {
+      const FREE_MASK_PRICE = 119;
 
-    addToCart(comboItem);
-    setSelectedMasks([]);
+      const freeMaskProducts = products.filter(
+        (p) =>
+          p.isActive !== false &&
+          FREE_MASK_NAMES.includes(p.name?.toLowerCase().trim())
+      );
+
+      const freeMask =
+        freeMaskProducts[Math.floor(Math.random() * freeMaskProducts.length)];
+
+      if (!freeMask) {
+        console.error("Free mask not found");
+        setLoading(false);
+        return;
+      }
+
+      const getImage = (p) =>
+        p?.variants?.[0]?.images?.[0] ||
+        p?.images?.[0] ||
+        p?.image ||
+        p?.imageUrl ||
+        "/placeholder.webp";
+
+      const comboItem = {
+        id: "mask-duo-custom",
+        name: "Custom Mask Duo + Free Mask",
+        price: COMBO_PRICE,
+        quantity: 1,
+        isCombo: true,
+        image: getImage(selectedMasks[0]),
+        comboItems: [
+          ...selectedMasks.map((p) => ({
+            id: p._id || p.id,
+            name: p.name,
+            image: getImage(p),
+          })),
+          {
+            id: "free-mask",
+            name: freeMask.name + " (FREE)",
+            image: getImage(freeMask),
+            isFree: true,
+            price: 0,
+          },
+        ],
+      };
+
+      addToCart(comboItem);
+      setSelectedMasks([]);
+      setLoading(false); // ✅ stop loading
+    }, 500); // small delay for UX (optional)
   };
 
   if (!maskProducts.length) return null;
@@ -91,7 +136,7 @@ const MaskDuoOffer = () => {
           New Offer
         </span>
         <h2 className="text-3xl font-semibold text-[#7A2E3A]">
-          ✨ Pick 2 Masks
+          ✨ Pick 2 Masks + Get 1 FREE
         </h2>
         <p className="text-sm text-gray-500 mt-2">
           Choose 2 masks for just{" "}
@@ -134,6 +179,23 @@ const MaskDuoOffer = () => {
                 </div>
               );
             })}
+            <div
+              className="
+    rounded-2xl p-3 border border-dashed border-[#E96A6A]
+    flex items-center justify-center text-center
+    bg-[#FFF4EA]
+  "
+            >
+              <div>
+                <div className="text-3xl mb-2">🎁</div>
+                <p className="text-sm font-semibold text-[#7A2E3A]">
+                  Surprise Mask
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Worth ₹119
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -201,6 +263,9 @@ const MaskDuoOffer = () => {
                 <p className="text-xs text-[#E96A6A] mt-1">
                   ✨ Add 1 more mask to unlock ₹{COMBO_PRICE} duo offer!
                 </p>
+                <p className="text-xs text-green-600 mt-1">
+                  🎁 + Free mask on combo!
+                </p>
               </div>
             )}
 
@@ -214,25 +279,41 @@ const MaskDuoOffer = () => {
                     Duo Price
                   </span>
                 </div>
+
                 <p className="text-xl font-bold text-[#7A2E3A]">₹{COMBO_PRICE}</p>
+
                 {savings > 0 && (
                   <p className="text-xs text-green-600 mt-1">
                     🎉 You save ₹{savings}!
                   </p>
                 )}
+
+
+
+                <p className="text-xs text-green-600">
+                  🎁 + Free mask worth ₹119 included!
+                </p>
               </div>
             )}
 
             <button
-              disabled={selectedMasks.length !== 2}
+              disabled={selectedMasks.length !== 2 || loading}
               onClick={addComboToCart}
-              className="w-full mt-5 py-3 rounded-xl font-semibold tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-white"
+              className="w-full mt-5 py-3 rounded-xl font-semibold tracking-wide transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: "linear-gradient(to right, #E96A6A, #D45A5A)",
               }}
             >
-              Add Duo To Cart
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Adding...
+                </>
+              ) : (
+                "Add Duo To Cart"
+              )}
             </button>
+            
           </div>
         </div>
 
