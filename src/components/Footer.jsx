@@ -37,9 +37,7 @@ const Footer = () => {
             src={logo}
             alt="Ilika"
             loading="lazy"
-            width="44"
-            height="44"
-            className="h-11 w-11 mx-auto sm:mx-0"
+            className="h-11 w-auto mx-auto sm:mx-0"
           />
 
           <h3 className="heading-color text-xl font-semibold">
