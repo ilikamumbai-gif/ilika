@@ -222,7 +222,7 @@ function PromoCard({ card, priority = false }) {
           <img loading="lazy"
             src={card.image}
             alt={card.title}
-            loading={priority ? "eager" : "lazy"}
+            
             fetchPriority={priority ? "high" : "auto"}
             decoding="async"
             style={{
