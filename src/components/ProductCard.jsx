@@ -1,4 +1,7 @@
 import React from "react";
+import { auth } from "../firebase/firebaseConfig";
+import { toast } from "react-hot-toast";
+import { FiBell } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { createSlug } from "../utils/slugify";
@@ -38,6 +41,67 @@ const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-wh
   const reviews = product.reviews || 80;
   const isTall = productImage?.includes("bottle") || productImage?.includes("tube");
 
+
+  const showNotifyToast = (message, type = "success") => {
+    const styles = {
+      success: {
+        bg: "from-[#77fcc1] to-[#c1f7e2]",
+        border: "border-[#cce3d9]",
+        iconBg: "bg-[#2f6f57]/15",
+        iconColor: "text-[#2f6f57]",
+      },
+      error: {
+        bg: "from-[#fc7c7c] to-[#ffbaba]",
+        border: "border-[#f5caca]",
+        iconBg: "bg-[#b84a4a]/15",
+        iconColor: "text-[#b84a4a]",
+      },
+    };
+
+    const s = styles[type];
+
+    toast.dismiss();
+
+    toast.custom(() => (
+      <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl w-[300px]
+      bg-gradient-to-r ${s.bg}
+      shadow-xl border ${s.border}`}>
+
+        <div className={`w-10 h-10 flex items-center justify-center rounded-full
+        ${s.iconBg} ${s.iconColor}`}>
+          <FiBell size={18} />
+        </div>
+
+        <p className="text-sm font-semibold text-gray-800">{message}</p>
+      </div>
+    ));
+  };
+  const handleNotifyMe = async (product) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/notify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            productId: product._id || product.id,
+            productName: product.name,
+            userId: auth.currentUser?.uid || null,
+            email: auth.currentUser?.email || null,
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error();
+
+      showNotifyToast("You’ll be notified when it's back in stock!", "success");
+    } catch (err) {
+      console.error(err);
+      showNotifyToast("Failed to subscribe. Try again!", "error");
+    }
+  };
   return (
     <div className="primary-bg-color rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 w-full flex flex-col">
 
@@ -118,10 +182,14 @@ const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-wh
         {/* BUTTON */}
         <div className="px-4 pb-4">
           <button
-            disabled={product.inStock === false}
             onClick={(e) => {
               e.preventDefault();
-              if (!product.inStock) return;
+              e.stopPropagation(); // 🚨 VERY IMPORTANT (because of Link wrapper)
+
+              if (!product.inStock) {
+                handleNotifyMe(product);
+                return;
+              }
 
               const item = defaultVariant
                 ? {
@@ -141,12 +209,13 @@ const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-wh
 
               addToCart(item);
             }}
-            className={`w-full text-[13px] font-clean tracking-widest py-2.5 rounded-lg ${product.inStock
-              ? `${buttonBg} ${buttonText}`
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            className={`w-full text-[13px] font-clean tracking-widest py-2.5 rounded-lg transition
+    ${product.inStock
+                ? `${buttonBg} ${buttonText}`
+                : "bg-[#801f1f] text-white hover:bg-[#5e1414]"
               }`}
           >
-            {product.inStock ? "Add To Cart" : "Out of Stock"}
+            {product.inStock ? "Add To Cart" : "Notify Me"}
           </button>
         </div>
 
