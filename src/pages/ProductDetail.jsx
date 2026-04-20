@@ -15,6 +15,8 @@ import {
   ZoomIn, ShoppingCart, Lock
 } from "lucide-react";
 import ProductCard from "../components/ProductCard";
+import { toast } from "react-hot-toast";
+import { FiBell } from "react-icons/fi";
 
 
 
@@ -630,6 +632,53 @@ const ProductDetail = ({
   // ref to cancel in-flight preload when product/variant changes rapidly
   const preloadAbortRef = useRef(false);
 
+
+  // =======================================================
+  // Toast For Notification 
+  // =======================================================
+
+  const showNotifyToast = (message, type = "success") => {
+    const styles = {
+      success: {
+        bg: "from-[#77fcc1] to-[#c1f7e2]",
+        border: "border-[#cce3d9]",
+        iconBg: "bg-[#2f6f57]/15",
+        iconColor: "text-[#2f6f57]",
+      },
+      error: {
+        bg: "from-[#fc7c7c] to-[#ffbaba]",
+        border: "border-[#f5caca]",
+        iconBg: "bg-[#b84a4a]/15",
+        iconColor: "text-[#b84a4a]",
+      },
+    };
+
+    const s = styles[type];
+
+    toast.dismiss();
+
+    toast.custom(() => (
+      <div
+        className={`flex items-center gap-3 px-4 py-3 rounded-2xl w-[300px]
+      bg-gradient-to-r ${s.bg}
+      shadow-xl border ${s.border}`}
+      >
+        <div
+          className={`w-10 h-10 flex items-center justify-center rounded-full
+        ${s.iconBg} ${s.iconColor}`}
+        >
+          <FiBell size={18} />
+        </div>
+
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-gray-800">
+            {message}
+          </p>
+        </div>
+      </div>
+    ));
+  };
+
   // =====================================================
   // Notification - OUT OF STOCK
   // =====================================================
@@ -653,10 +702,11 @@ const ProductDetail = ({
 
       if (!res.ok) throw new Error();
 
-      alert("You will be notified when product is back in stock!");
+      showNotifyToast("You’ll be notified when it's back in stock!", "success");
+
     } catch (err) {
       console.error(err);
-      alert("Something went wrong!");
+      showNotifyToast("Failed to subscribe. Try again!", "error");
     }
   };
 
@@ -1114,24 +1164,23 @@ const ProductDetail = ({
               {/* ATC + Buy Now — observed by IntersectionObserver for sticky bar */}
               <div ref={atcButtonsRef} className="flex flex-col sm:flex-row gap-3">
 
-               <button
-  onClick={product.inStock ? handleAddToCart : handleNotifyMe}
-  disabled={isAdding}
-  className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition
-    ${
-      isAdding
-        ? "bg-gray-300 text-gray-500"
-        : product.inStock
-        ? `${buttonBg} ${buttonText}`
-        : "bg-[#801f1f] text-white"
-    }`}
->
-  {isAdding
-    ? "Adding..."
-    : product.inStock
-    ? "Add To Cart"
-    : "Notify Me"}
-</button>
+                <button
+                  onClick={product.inStock ? handleAddToCart : handleNotifyMe}
+                  disabled={isAdding}
+                  className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition
+    ${isAdding
+                      ? "bg-gray-300 text-gray-500"
+                      : product.inStock
+                        ? `${buttonBg} ${buttonText}`
+                        : "bg-[#801f1f] text-white"
+                    }`}
+                >
+                  {isAdding
+                    ? "Adding..."
+                    : product.inStock
+                      ? "Add To Cart"
+                      : "Notify Me"}
+                </button>
 
                 {/* Buy Now (same style) */}
                 <button

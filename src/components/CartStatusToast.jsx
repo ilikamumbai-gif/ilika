@@ -5,6 +5,7 @@ import { useCart } from "../context/CartProvider";
 import { useAuth } from "../context/AuthContext";
 import { FiShoppingBag, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 
+
 const CartStatusToast = () => {
   const { currentUser } = useAuth();
   const { cartItems, isCartLoaded } = useCart();
