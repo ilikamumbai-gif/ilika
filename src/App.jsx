@@ -26,7 +26,11 @@ const AppContent = () => {
   const isAdminRoute = useMemo(() => pathname.startsWith("/admin"), [pathname]);
 
   useEffect(() => {
-    captureTrafficSource();
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => captureTrafficSource());
+    } else {
+      setTimeout(captureTrafficSource, 2000);
+    }
   }, []);
 
   useEffect(() => {

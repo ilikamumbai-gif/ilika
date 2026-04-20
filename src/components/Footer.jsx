@@ -8,7 +8,7 @@ import {
   Phone,
   Youtube,
 } from "lucide-react";
-import logo from "../assets/Images/logo2.webp";
+import logo from "../../public/Images/logo2.webp";
 import amazon from "../../public/Images/Amazon.webp"
 import flipcart from "../../public/Images/Flipcart.webp"
 import meesho from "../../public/Images/Meesho.webp"

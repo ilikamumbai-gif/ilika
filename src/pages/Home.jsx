@@ -1,4 +1,11 @@
-import React, { Suspense, lazy, useMemo } from "react";
+import React, {
+  Suspense,
+  lazy,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
+
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CategoryNav from "../components/CategoryNav";
@@ -6,36 +13,43 @@ import Heading from "../components/Heading";
 import { categoriesData } from "../Dummy/categoriesData";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
-
 import { useCategories } from "../admin/context/CategoryContext";
 
+/* LAZY LOAD HEAVY COMPONENTS */
 const ProductList = lazy(() => import("../components/ProductList"));
 const Banner = lazy(() => import("../components/Banner"));
 const PromoCardGrid = lazy(() => import("../components/PromoCardGrid"));
-
-/* assets (correct import) */
-import bannerSkincare from "../assets/Images/FacecareBanner.webp";
-import bannerHair from "../assets/Images/HairBanner.webp";
-
 const Offers = lazy(() => import("./Offer"));
 const Menifesto = lazy(() => import("../components/Menifesto"));
 const TestimonialList = lazy(() => import("../components/TestimonialList"));
 
-/* public images (use path only) */
-const skinMobile = "/Images/skinMobile.webp";
+/* IMAGES */
+import bannerSkincare from "../assets/Images/FacecareBanner.webp";
+import bannerHair from "../assets/Images/HairBanner.webp";
 
+const skinMobile = "/Images/skinMobile.webp";
 const hairMobile = "/Images/hairMobile.webp";
 const BannerStyle = "/Images/Banner.webp";
 
-
 const Home = () => {
-
   const { categories } = useCategories();
+
+  /* 🚀 CONTROL BELOW FOLD RENDERING */
+  const [showBelowFold, setShowBelowFold] = useState(false);
+
+  useEffect(() => {
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => setShowBelowFold(true));
+    } else {
+      setTimeout(() => setShowBelowFold(true), 2000);
+    }
+  }, []);
 
   const { hairstylingCategory, newCategory } = useMemo(() => {
     return {
       hairstylingCategory: categories.find(
-        (c) => c.name.toLowerCase().replace(/\s+/g, "") === "hairstyling"
+        (c) =>
+          c.name.toLowerCase().replace(/\s+/g, "") === "hairstyling"
       ),
       newCategory: categories.find(
         (c) => c.name.toLowerCase().replace(/\s+/g, "") === "new"
@@ -48,31 +62,24 @@ const Home = () => {
       <MiniDivider />
 
       <div className="relative primary-bg-color">
-
         <Header />
         <CartDrawer />
-        <main>
-          <Suspense fallback={<div className="h-40" />}>
 
+        <main>
+          {/* ✅ ABOVE THE FOLD ONLY */}
+          <Suspense fallback={<div className="h-40" />}>
             <PromoCardGrid />
           </Suspense>
-
 
           <Suspense fallback={<div className="h-36" />}>
             <Offers />
           </Suspense>
 
+          <CategoryNav categories={categoriesData} />
 
-
-          <Suspense fallback={<div className="h-40" />}>
-
-            {/* CATEGORY NAV */}
-            <CategoryNav categories={categoriesData} />
-          </Suspense>
+          <Heading heading="OUR TOP PRODUCTS" />
 
           <Suspense fallback={<div className="h-40" />}>
-            <Heading heading="OUR TOP PRODUCTS" />
-
             <ProductList
               mobileScroll
               productNames={[
@@ -81,115 +88,95 @@ const Home = () => {
                 "Ilika High-Speed Leafless Hair Dryer For Men & Women",
                 "Ilika Automatic Voice Version Face Mask Maker Machine",
               ]}
-              limit={8}
+              limit={4} // 👈 reduce initial load
             />
           </Suspense>
 
+          {/* 🚀 BELOW THE FOLD (DEFERRED) */}
+          {showBelowFold && (
+            <>
+              {/* SKIN CARE */}
+              <Suspense fallback={<div className="h-40" />}>
+                <Banner
+                  className="md:h-[60vh] mt-0 mb-10"
+                  src={bannerSkincare}
+                  mobileSrc={skinMobile}
+                />
 
-          <Suspense fallback={<div className="h-40" />}>
+                <Heading heading="OUR SKIN CARE" />
 
-            {/* SKIN CARE */}
-            <Banner
-              className="md:h-[60vh] mt-0 mb-10"
-              src={bannerSkincare}
-              mobileSrc={skinMobile}
-            />
+                {newCategory && (
+                  <ProductList
+                    mobileScroll
+                    productNames={[
+                      "Red Algae Hydrating Sheet Mask | Hydration & Radiance",
+                      "Kumkumadi Face Sheet Mask | Hydration & Rejuvenation",
+                      "Collagen Sheet Mask | Firming & Anti-aging",
+                      "Kakadu Plum Sheet Mask | Glowing & Youthful Skin",
+                    ]}
+                    limit={4}
+                  />
+                )}
+              </Suspense>
 
-            <Heading heading="OUR SKIN CARE" />
+              {/* APPLIANCES */}
+              <Suspense fallback={<div className="h-40" />}>
+                <Banner
+                  className="md:h-[auto] mt-0 mb-10"
+                  src={BannerStyle}
+                  mobileSrc={BannerStyle}
+                />
 
-            {newCategory ? (
-              <ProductList
-                mobileScroll
-                productNames={[
-                  "Red Algae Hydrating Sheet Mask | Hydration & Radiance",
-                  "Kumkumadi Face Sheet Mask | Hydration & Rejuvenation",
-                  "Collagen Sheet Mask | Firming & Anti-aging",
-                  "Kakadu Plum Sheet Mask | Glowing & Youthful Skin"
-                ]}
-                limit={4}
-              />
-            ) : (
-              <p className="text-center text-white">
-                Loading products...
-              </p>
-            )}
-          </Suspense>
+                <Heading heading="TOP APPLIANCES" />
 
+                {hairstylingCategory && (
+                  <ProductList
+                    mobileScroll
+                    categoryId={hairstylingCategory.id}
+                    limit={4}
+                  />
+                )}
+              </Suspense>
 
+              {/* HAIR CARE */}
+              <Suspense fallback={<div className="h-40" />}>
+                <Banner
+                  className="md:h-[60vh] mt-0 mb-10"
+                  src={bannerHair}
+                  mobileSrc={hairMobile}
+                />
 
-          <Suspense fallback={<div className="h-40" />}>
+                <Heading heading="OUR TOP HAIR CARE" />
 
-            {/* APPLIANCES */}
-            <Banner
-              className="md:h-[auto] mt-0 mb-10"
-              src={BannerStyle}
-              mobileSrc={BannerStyle}
-            />
+                {newCategory && (
+                  <ProductList
+                    mobileScroll
+                    productNames={[
+                      "Keratin Rich Conditioner | For Normal to Damaged Hair | 200 ML",
+                      "Black Seed Hair Oil | Prevents Premature Graying | 200ML",
+                      "Frizz Control Hair Serum | Control Frizz & Detangle Hair | 50 ML",
+                      "Keratin Rich Shampoo | Natural Shine & Softness | 200 ML",
+                    ]}
+                    limit={4}
+                  />
+                )}
+              </Suspense>
 
-            <Heading heading="TOP APPLIANCES" />
+              {/* EXTRA CONTENT */}
+              <Suspense fallback={<div className="h-24" />}>
+                <Menifesto />
+              </Suspense>
 
-            {hairstylingCategory ? (
-              <ProductList
-                mobileScroll
-                categoryId={hairstylingCategory.id}
-                limit={4}
-              />
-            ) : (
-              <p className="text-sm text-gray-500">
-                Loading products...
-              </p>
-            )}
-          </Suspense>
+              <Heading heading="CUSTOMER'S STORIES" />
 
-
-
-          <Suspense fallback={<div className="h-40" />}>
-
-
-            {/* HAIR CARE */}
-            <Banner
-              className="md:h-[60vh] mt-0 mb-10"
-              src={bannerHair}
-              mobileSrc={hairMobile}
-            />
-
-            <Heading heading="OUR TOP HAIR CARE" />
-
-            {newCategory ? (
-              <ProductList
-                mobileScroll
-                productNames={[
-                  "Keratin Rich Conditioner | For Normal to Damaged Hair | 200 ML",
-                  "Black Seed Hair Oil | Prevents Premature Graying | 200ML",
-                  "Frizz Control Hair Serum | Control Frizz & Detangle Hair | 50 ML",
-                  "Keratin Rich Shampoo | Natural Shine & Softness | 200 ML"
-                ]}
-                limit={4}
-              />
-            ) : (
-              <p className="text-center text-white">
-                Loading products...
-              </p>
-            )}
-          </Suspense>
-
-
-          {/* MANIFESTO */}
-          <Suspense fallback={<div className="h-24" />}>
-            <Menifesto />
-          </Suspense>
-
-
-          {/* TESTIMONIAL */}
-          <Heading heading="COSTUMER'S STORIES" />
-          <Suspense fallback={<div className="h-24" />}>
-            <TestimonialList />
-          </Suspense>
-
+              <Suspense fallback={<div className="h-24" />}>
+                <TestimonialList />
+              </Suspense>
+            </>
+          )}
 
           <Footer />
         </main>
-
       </div>
     </>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Menu, X, Search } from "lucide-react";
-import logo from "../assets/Images/logo2.webp";
+import logo from "/Images/logo2.webp";
 import Nav, { SearchBar } from "./Nav";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "../admin/context/ProductContext";
