@@ -1,4 +1,9 @@
+# ----------------------------
+
 # Logs
+
+# ----------------------------
+
 logs
 *.log
 npm-debug.log*
@@ -7,12 +12,41 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# ----------------------------
 
-# Editor directories and files
+# Dependencies
+
+# ----------------------------
+
+node_modules/
+Backend/node_modules/
+
+# ----------------------------
+
+# Build outputs
+
+# ----------------------------
+
+dist/
+dist-ssr/
+build/
+
+# ----------------------------
+
+# Environment files (IMPORTANT)
+
+# ----------------------------
+
+.env
+.env.*
+!.env.example
+
+# ----------------------------
+
+# OS / Editor files
+
+# ----------------------------
+
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -22,9 +56,29 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-Backend/ServiceAccountkey.json
-.env
-node_modules
+
+# ----------------------------
+
+# Vercel
+
+# ----------------------------
 
 .vercel
-.env*.local
+
+# ----------------------------
+
+# Backend secrets (VERY IMPORTANT)
+
+# ----------------------------
+
+Backend/ServiceAccountkey.json
+
+# ----------------------------
+
+# Optional (if you add later)
+
+# ----------------------------
+
+coverage/
+.cache/
+.tmp/
