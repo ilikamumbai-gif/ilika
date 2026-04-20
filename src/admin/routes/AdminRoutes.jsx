@@ -86,7 +86,7 @@ const AdminRoutes = () => {
                         <Route path="log" element={<AdminLog />} />
 
                         <Route path="notifications" element={<NotificationList />} />
-                        <Route path="notifications/:id" element={<NotificationDetail />} />
+                        <Route path="notifications/:productId" element={<NotificationDetail />} />
                       </Routes>
                     </ReviewProvider>
                   </CartEventProvider>

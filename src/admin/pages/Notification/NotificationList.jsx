@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Eye, Trash2, Bell } from "lucide-react";
+import { Eye, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 
@@ -12,9 +12,12 @@ const NotificationList = () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notify`);
       const data = await res.json();
-      setNotifications(data);
+
+      // fallback safety
+      setNotifications(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
+      setNotifications([]);
     }
     setLoading(false);
   };
@@ -27,7 +30,9 @@ const NotificationList = () => {
     <AdminLayout>
       <div className="mb-6">
         <h1 className="text-xl font-bold">Notifications</h1>
-        <p className="text-sm text-gray-400">{notifications.length} requests</p>
+        <p className="text-sm text-gray-400">
+          {notifications.length} products
+        </p>
       </div>
 
       <div className="bg-white rounded-2xl overflow-hidden border">
@@ -43,32 +48,33 @@ const NotificationList = () => {
             <thead>
               <tr className="bg-gray-50 border-b">
                 <th className="px-5 py-3 text-left">Product</th>
-                <th className="px-5 py-3 text-left">User</th>
-                <th className="px-5 py-3 text-left">Email</th>
-                <th className="px-5 py-3 text-left">Date</th>
-                <th className="px-5 py-3 text-left">Status</th>
+                <th className="px-5 py-3 text-left">Requests</th>
                 <th className="px-5 py-3 text-left">Actions</th>
               </tr>
             </thead>
 
             <tbody>
               {notifications.map((n) => (
-                <tr key={n.id} className="border-b hover:bg-gray-50">
-                  <td className="px-5 py-4 font-medium">{n.productName}</td>
-                  <td className="px-5 py-4">{n.userId || "Guest"}</td>
-                  <td className="px-5 py-4">{n.email || "-"}</td>
-                  <td className="px-5 py-4">
-                    {new Date(n.createdAt).toLocaleDateString()}
+                <tr
+                  key={n.productId}
+                  className="border-b hover:bg-gray-50"
+                >
+                  <td className="px-5 py-4 font-semibold">
+                    {n.productName || "Unknown Product"}
                   </td>
+
                   <td className="px-5 py-4">
-                    <span className="text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-700">
-                      {n.status}
+                    <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
+                      {n.count || 0} users
                     </span>
                   </td>
-                  <td className="px-5 py-4 flex gap-2">
+
+                  <td className="px-5 py-4">
                     <button
-                      onClick={() => navigate(`/admin/notifications/${n.id}`)}
-                      className="p-2 bg-blue-50 text-blue-600 rounded"
+                      onClick={() =>
+                        navigate(`/admin/notifications/${n.productId}`)
+                      }
+                      className="p-2 bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
                     >
                       <Eye size={14} />
                     </button>

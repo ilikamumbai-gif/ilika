@@ -1064,10 +1064,64 @@ app.post("/api/notify", async (req, res) => {
   }
 });
 
-// GET ALL
+
+/* ================== NOTIFICATIONS ================== */
+
+// GET ALL (GROUPED BY PRODUCT)
 app.get("/api/notify", async (req, res) => {
-  const snapshot = await db.collection("notifications").get();
-  res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  try {
+    const snapshot = await db.collection("notifications").get();
+
+    const grouped = {};
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+
+      if (!grouped[data.productId]) {
+        grouped[data.productId] = {
+          productId: data.productId,
+          productName: data.productName,
+          count: 0,
+        };
+      }
+
+      grouped[data.productId].count += 1;
+    });
+
+    res.json(Object.values(grouped));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed" });
+  }
+});
+
+// GET SINGLE PRODUCT NOTIFICATIONS
+app.get("/api/notify/:productId", async (req, res) => {
+  try {
+    const snapshot = await db
+      .collection("notifications")
+      .where("productId", "==", req.params.productId)
+      .get();
+
+    const users = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    if (!users.length) {
+      return res.status(404).json({ error: "No data" });
+    }
+
+    res.json({
+      productId: req.params.productId,
+      productName: users[0].productName,
+      count: users.length,
+      users,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed" });
+  }
 });
 
 // GET SINGLE
