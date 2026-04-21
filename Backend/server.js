@@ -919,7 +919,17 @@ app.delete("/api/reviews/:productId/:index", async (req, res) => {
 app.post("/api/cart-events", async (req, res) => {
   try {
     const { productId, name, price, image, userId, userEmail } = req.body;
-    const eventData = { productId, name, price, image, userId: userId || null, userEmail: userEmail || null, createdAt: new Date() };
+
+    const eventData = {
+      productId: productId || null,
+      name: name || "",
+      price: Number(price) || 0,
+      image: typeof image === "string" ? image : null, // ✅ FIX
+      userId: userId || null,
+      userEmail: userEmail || null,
+      createdAt: new Date(),
+    };
+    
     const docRef = await db.collection("cartEvents").add(eventData);
     res.json({ id: docRef.id, ...eventData });
   } catch (error) {

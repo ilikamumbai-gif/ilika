@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
 import ComboProductCard from "../components/ComboProductCard";
@@ -7,6 +7,8 @@ const MaskDuoOffer = () => {
   const { products } = useProducts();
   const { addToCart } = useCart();
   const [loading, setLoading] = useState(false);
+  const [currentFreeMask, setCurrentFreeMask] = useState(null);
+  const [isFading, setIsFading] = useState(false);
 
   const COMBO_PRICE = 699;
 
@@ -59,6 +61,48 @@ const MaskDuoOffer = () => {
 
   const savings = originalMRP > COMBO_PRICE ? originalMRP - COMBO_PRICE : 0;
 
+  useEffect(() => {
+    const freeMaskProducts = products.filter(
+      (p) =>
+        p.isActive !== false &&
+        FREE_MASK_NAMES.includes(p.name?.toLowerCase().trim())
+    );
+
+    if (!freeMaskProducts.length) return;
+
+    let index = 0;
+
+    const preloadAndSet = (mask) => {
+      const imgSrc =
+        mask?.variants?.[0]?.images?.[0] ||
+        mask?.images?.[0] ||
+        mask?.image ||
+        mask?.imageUrl ||
+        "/placeholder.webp";
+
+      const img = new Image();
+      img.src = imgSrc;
+
+      img.onload = () => {
+        setIsFading(true); // 🔥 start fade out
+
+        setTimeout(() => {
+          setCurrentFreeMask(mask); // change content
+
+          setIsFading(false); // 🔥 fade back in
+        }, 250); // timing of fade
+      };
+    };
+
+    preloadAndSet(freeMaskProducts[0]);
+
+    const interval = setInterval(() => {
+      index = (index + 1) % freeMaskProducts.length;
+      preloadAndSet(freeMaskProducts[index]);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [products]);
 
   /* ── add to cart ── */
   const addComboToCart = () => {
@@ -125,6 +169,8 @@ const MaskDuoOffer = () => {
 
   if (!maskProducts.length) return null;
 
+
+
   return (
     <section
       className="max-w-7xl mx-auto px-4 pb-16 pt-4"
@@ -180,21 +226,34 @@ const MaskDuoOffer = () => {
               );
             })}
             <div
-              className="
-    rounded-2xl p-3 border border-dashed border-[#E96A6A]
-    flex items-center justify-center text-center
-    bg-[#FFF4EA]
-  "
+              className={`
+              transition-all duration-200 hover:scale-[1.03]
+              rounded-2xl p-3
+              bg-white border border-[#FAD4C0]
+              relative
+              transition-opacity duration-300
+              ${isFading ? "opacity-0 scale-95" : "opacity-100 scale-100"}
+            `}
             >
-              <div>
-                <div className="text-3xl mb-2">🎁</div>
-                <p className="text-sm font-semibold text-[#7A2E3A]">
-                  Surprise Mask
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Worth ₹199
-                </p>
-              </div>
+              {currentFreeMask ? (
+                <>
+                  {/* FREE badge */}
+                  <span className="absolute top-2 left-2 z-10 bg-green-500 text-white text-[10px] px-4 py-[2px] rounded-full font-bold">
+                    FREE
+                  </span>
+
+                  {/* EXACT SAME CARD */}
+                  <div className="pointer-events-none">
+                    <ComboProductCard
+                      product={currentFreeMask}
+                      selected={false}
+                      onSelect={() => { }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs text-gray-400 text-center">Loading...</p>
+              )}
             </div>
           </div>
         </div>
@@ -313,7 +372,7 @@ const MaskDuoOffer = () => {
                 "Add Duo To Cart"
               )}
             </button>
-            
+
           </div>
         </div>
 

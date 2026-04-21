@@ -1,6 +1,6 @@
 import React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
-import { auth,db } from "../firebase/firebaseConfig";
+import { auth, db } from "../firebase/firebaseConfig";
 import { addDoc } from "firebase/firestore";
 import {
   doc,
@@ -61,7 +61,12 @@ export const CartProvider = ({ children }) => {
           productId: product.id,
           name: product.name,
           price: product.price,
-          image: product.images,
+          image:
+            product?.image ||
+            product?.images?.[0] ||
+            product?.imageUrl ||
+            product?.variants?.[0]?.images?.[0] ||
+            null,
           userId: auth.currentUser?.uid || null,
           userEmail: auth.currentUser?.email || null,
         }),
