@@ -179,7 +179,7 @@ const Combos = () => {
         <CartDrawer />
 
         <Banner
-          className="md:h-[50vh] mt-0 mb-10"
+          className="mt-0 mb-10"
           src={maskBanner}
           mobileSrc={maskBannerMobile}
         />
