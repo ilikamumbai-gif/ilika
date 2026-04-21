@@ -2,6 +2,7 @@ import React from "react";
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
 
 const ProductContext = createContext(null);
+const PRODUCT_CACHE_KEY = "ilika.products.v1";
 
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
@@ -21,6 +22,7 @@ const fetchProducts = async () => {
     const list = Array.isArray(data) ? data : [];
 
     setProducts(list);
+    sessionStorage.setItem(PRODUCT_CACHE_KEY, JSON.stringify(list));
 
     return list; // ✅ VERY IMPORTANT
 
@@ -33,7 +35,32 @@ const fetchProducts = async () => {
   }
 };
   useEffect(() => {
-    fetchProducts();
+    try {
+      const cached = sessionStorage.getItem(PRODUCT_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          setProducts(parsed);
+        }
+      }
+    } catch (error) {
+      console.error("Product cache parse error:", error);
+    }
+
+    let idleId;
+    let timerId;
+    const queueFetch = () => fetchProducts();
+
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(queueFetch, { timeout: 2000 });
+    } else {
+      timerId = window.setTimeout(queueFetch, 900);
+    }
+
+    return () => {
+      if (idleId) window.cancelIdleCallback?.(idleId);
+      if (timerId) window.clearTimeout(timerId);
+    };
   }, []);
 
   /* ================= DERIVED DATA ================= */

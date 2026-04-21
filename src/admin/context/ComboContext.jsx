@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 const ComboContext = createContext(null);
+const COMBO_CACHE_KEY = "ilika.combos.v1";
 
 export const ComboProvider = ({ children }) => {
   const [combos, setCombos] = useState([]);
@@ -11,6 +12,7 @@ export const ComboProvider = ({ children }) => {
     const res = await fetch(`${API}/api/combos`);
     const data = await res.json();
     setCombos(data || []);
+    sessionStorage.setItem(COMBO_CACHE_KEY, JSON.stringify(data || []));
   };
 
   const addCombo = async (data) => {
@@ -39,7 +41,32 @@ export const ComboProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchCombos();
+    try {
+      const cached = sessionStorage.getItem(COMBO_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          setCombos(parsed);
+        }
+      }
+    } catch (error) {
+      console.error("Combo cache parse error:", error);
+    }
+
+    let idleId;
+    let timerId;
+    const queueFetch = () => fetchCombos();
+
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(queueFetch, { timeout: 2200 });
+    } else {
+      timerId = window.setTimeout(queueFetch, 1000);
+    }
+
+    return () => {
+      if (idleId) window.cancelIdleCallback?.(idleId);
+      if (timerId) window.clearTimeout(timerId);
+    };
   }, []);
 
   return (

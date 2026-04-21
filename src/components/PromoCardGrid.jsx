@@ -219,12 +219,14 @@ function PromoCard({ card, priority = false }) {
           transition: "transform 0.35s cubic-bezier(.22,1,.36,1)",
           transform: hovered ? "scale(1.06) translateY(-4px)" : "scale(1) translateY(0)",
         }}>
-          <img loading="lazy"
+          <img
             src={card.image}
             alt={card.title}
-            
-            loading="lazy"
-            decoding="async"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
+            decoding={priority ? "sync" : "async"}
+            width="250"
+            height="250"
             style={{
               width: 250,
               height: 250,

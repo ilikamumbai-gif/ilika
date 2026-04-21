@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 const CategoryContext = createContext(null);
+const CATEGORY_CACHE_KEY = "ilika.categories.v1";
 
 export const CategoryProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
@@ -27,6 +28,7 @@ export const CategoryProvider = ({ children }) => {
 
       // Always replace state (important for re-render)
       setCategories([...data]);
+      sessionStorage.setItem(CATEGORY_CACHE_KEY, JSON.stringify(data));
 
     } catch (error) {
       console.error("❌ Fetch categories error:", error.message);
@@ -34,7 +36,32 @@ export const CategoryProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchCategories();
+    try {
+      const cached = sessionStorage.getItem(CATEGORY_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          setCategories(parsed);
+        }
+      }
+    } catch (error) {
+      console.error("Category cache parse error:", error);
+    }
+
+    let idleId;
+    let timerId;
+    const queueFetch = () => fetchCategories();
+
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(queueFetch, { timeout: 2000 });
+    } else {
+      timerId = window.setTimeout(queueFetch, 900);
+    }
+
+    return () => {
+      if (idleId) window.cancelIdleCallback?.(idleId);
+      if (timerId) window.clearTimeout(timerId);
+    };
   }, []);
 
   /* ===============================

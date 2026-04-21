@@ -1,16 +1,6 @@
 import React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
-import { auth, db } from "../firebase/firebaseConfig";
-import { addDoc } from "firebase/firestore";
-import {
-  doc,
-  setDoc,
-  getDocs,
-  collection,
-  deleteDoc,
-} from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext(null);
 
@@ -18,34 +8,60 @@ export const CartProvider = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [isCartLoaded, setIsCartLoaded] = useState(false);
-  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+
+  const loadFirestoreDeps = async () => {
+    const [{ db }, firestore] = await Promise.all([
+      import("../firebase/firebaseConfig"),
+      import("firebase/firestore"),
+    ]);
+
+    return { db, ...firestore };
+  };
 
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
   /* LOAD USER CART WHEN LOGIN */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+    let mounted = true;
+
+    const loadCart = async () => {
+      if (!currentUser) {
+        if (!mounted) return;
         setCartItems([]);
         setIsCartLoaded(true);
         return;
       }
 
-      const cartRef = collection(db, "users", user.uid, "cart");
-      const snapshot = await getDocs(cartRef);
+      try {
+        const { db, collection, getDocs } = await loadFirestoreDeps();
+        if (!mounted) return;
 
-      const items = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+        const cartRef = collection(db, "users", currentUser.uid, "cart");
+        const snapshot = await getDocs(cartRef);
 
-      setCartItems(items);
-      setIsCartLoaded(true);
-    });
+        if (!mounted) return;
 
-    return () => unsubscribe();
-  }, []);
+        const items = snapshot.docs.map((itemDoc) => ({
+          id: itemDoc.id,
+          ...itemDoc.data(),
+        }));
+
+        setCartItems(items);
+      } catch (error) {
+        console.error("Load cart error:", error);
+        if (mounted) setCartItems([]);
+      } finally {
+        if (mounted) setIsCartLoaded(true);
+      }
+    };
+
+    loadCart();
+    return () => {
+      mounted = false;
+    };
+  }, [currentUser]);
 
   /* ADD TO CART (guest allowed) */
   const addToCart = async (product) => {
@@ -67,18 +83,16 @@ export const CartProvider = ({ children }) => {
             product?.imageUrl ||
             product?.variants?.[0]?.images?.[0] ||
             null,
-          userId: auth.currentUser?.uid || null,
-          userEmail: auth.currentUser?.email || null,
+          userId: currentUser?.uid || null,
+          userEmail: currentUser?.email || null,
         }),
       });
     } catch (err) {
       console.log("cart event error", err);
     }
 
-    const user = auth.currentUser;
-
     // ---------- GUEST ----------
-    if (!user) {
+    if (!currentUser) {
       setCartItems((prev) => {
         const existing = prev.find((item) => item.id === product.id);
 
@@ -100,8 +114,9 @@ export const CartProvider = ({ children }) => {
     // ---------- LOGGED ----------
     const existing = cartItems.find((item) => item.id === product.id);
     const newQuantity = existing ? existing.quantity + 1 : 1;
+    const { db, doc, setDoc } = await loadFirestoreDeps();
 
-    await setDoc(doc(db, "users", user.uid, "cart", product.id), {
+    await setDoc(doc(db, "users", currentUser.uid, "cart", product.id), {
       ...product,
       quantity: newQuantity,
     });
@@ -120,14 +135,14 @@ export const CartProvider = ({ children }) => {
 
   /* INCREMENT */
   const incrementQty = async (id) => {
-    const user = auth.currentUser;
     const item = cartItems.find((item) => item.id === id);
     if (!item) return;
 
     const newQuantity = item.quantity + 1;
 
-    if (user) {
-      await setDoc(doc(db, "users", user.uid, "cart", id), {
+    if (currentUser) {
+      const { db, doc, setDoc, addDoc, collection } = await loadFirestoreDeps();
+      await setDoc(doc(db, "users", currentUser.uid, "cart", id), {
         ...item,
         quantity: newQuantity,
       });
@@ -137,7 +152,7 @@ export const CartProvider = ({ children }) => {
         productId: item.id,
         name: item.name,
         price: item.price,
-        userId: user.uid,
+        userId: currentUser.uid,
         createdAt: Date.now(),
       });
     }
@@ -149,21 +164,24 @@ export const CartProvider = ({ children }) => {
 
   /* DECREMENT */
   const decrementQty = async (id) => {
-    const user = auth.currentUser;
     const item = cartItems.find((item) => item.id === id);
     if (!item) return;
 
     const newQuantity = item.quantity - 1;
 
     if (newQuantity <= 0) {
-      if (user) await deleteDoc(doc(db, "users", user.uid, "cart", id));
+      if (currentUser) {
+        const { db, doc, deleteDoc } = await loadFirestoreDeps();
+        await deleteDoc(doc(db, "users", currentUser.uid, "cart", id));
+      }
 
       setCartItems((prev) => prev.filter((item) => item.id !== id));
       return;
     }
 
-    if (user) {
-      await setDoc(doc(db, "users", user.uid, "cart", id), {
+    if (currentUser) {
+      const { db, doc, setDoc } = await loadFirestoreDeps();
+      await setDoc(doc(db, "users", currentUser.uid, "cart", id), {
         ...item,
         quantity: newQuantity,
       });
@@ -176,13 +194,12 @@ export const CartProvider = ({ children }) => {
 
   /* CLEAR CART */
   const clearCart = async () => {
-    const user = auth.currentUser;
-
-    if (user) {
-      const cartRef = collection(db, "users", user.uid, "cart");
+    if (currentUser) {
+      const { db, collection, getDocs, doc, deleteDoc } = await loadFirestoreDeps();
+      const cartRef = collection(db, "users", currentUser.uid, "cart");
       const snapshot = await getDocs(cartRef);
       for (const item of snapshot.docs) {
-        await deleteDoc(doc(db, "users", user.uid, "cart", item.id));
+        await deleteDoc(doc(db, "users", currentUser.uid, "cart", item.id));
       }
     }
 
