@@ -70,7 +70,7 @@ const MaskDuoOffer = () => {
     setLoading(true); // ✅ start loading
 
     setTimeout(() => {
-      const FREE_MASK_PRICE = 119;
+      const FREE_MASK_PRICE = 199;
 
       const freeMaskProducts = products.filter(
         (p) =>
@@ -192,7 +192,7 @@ const MaskDuoOffer = () => {
                   Surprise Mask
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  Worth ₹119
+                  Worth ₹199
                 </p>
               </div>
             </div>
@@ -291,7 +291,7 @@ const MaskDuoOffer = () => {
 
 
                 <p className="text-xs text-green-600">
-                  🎁 + Free mask worth ₹119 included!
+                  🎁 + Free mask worth ₹199 included!
                 </p>
               </div>
             )}
