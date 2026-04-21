@@ -85,6 +85,7 @@ const NavRoutes = () => {
 
         <Route path="/ctm" element={renderLazy(Ctm)} />
         <Route path="/ctmkit" element={renderLazy(CreateCtm)} />
+
         <Route path="/blog" element={renderLazy(Blog)} />
         <Route path="/shopall" element={renderLazy(ShopAll)} />
 

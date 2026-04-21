@@ -48,11 +48,13 @@ p-3 sm:p-6
         <div>
 
           {/* TITLE */}
-          <h3 className="text-sm sm:text-lg font-semibold text-[#7A2E3A] mb-1 sm:mb-2">            {title}
+          <h3 className="text-sm sm:text-lg font-semibold text-[#7A2E3A] mb-1 sm:mb-2">            
+            {title}
           </h3>
 
           {/* DESCRIPTION */}
-          <p className="text-[11px] sm:text-sm text-gray-600 mb-2 sm:mb-4 leading-snug sm:leading-relaxed">            {description}
+          <p className="text-[11px] sm:text-sm text-gray-600 mb-2 sm:mb-4 leading-snug sm:leading-relaxed">           
+             {description}
           </p>
 
           {/* COUPON */}
@@ -99,7 +101,7 @@ text-[#7A2E3A]
           <div className="flex items-center gap-2 text-sm sm:text-base">
 <Gift size={18} className="text-[#E96A6A] shrink-0" />
             <span>
-              {type === "coupon" ? "Special Festive Deal" : "Special Combo Deal"}
+              {type === "coupon" ? "Special Deal" : "Special Deal"}
             </span>
           </div>
 
@@ -113,7 +115,7 @@ text-[#7A2E3A]
           >
             <span className="relative">
 
-              {type === "coupon" ? "View Deal" : "Build Your Combo"}
+              {type === "coupon" ? "View Deal" : "Grab Your Masks"}
 
               <span
                 className="

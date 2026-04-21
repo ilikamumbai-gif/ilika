@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useCart } from "../context/CartProvider";
 import { useCategories } from "../admin/context/CategoryContext";
 import { useProducts } from "../admin/context/ProductContext";
@@ -8,214 +8,318 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
-import Heading from "../components/Heading";
+
+const getProductId = (product) =>
+  String(product?._id ?? product?.id ?? "");
+
+const toSlug = (str = "") => str.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+const TYPES = ["cleanser", "toner", "moisturizer"];
+const LABELS = { cleanser: "Cleanser", toner: "Toner", moisturizer: "Moisturizer" };
+const KIT_PRICE = 699;
+
+const INIT_SELECTED = { cleanser: null, toner: null, moisturizer: null };
+
+const KitSummaryContent = ({ selected, selectedCount, allSelected, addKitToCart }) => (
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+    <div className="flex items-center gap-4 overflow-x-auto pb-1">
+      {TYPES.map((type, i) => (
+        <React.Fragment key={type}>
+          <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+            <div
+              className={[
+                "w-16 h-16 rounded-xl overflow-hidden flex items-center justify-center transition-all duration-300",
+                selected[type]
+                  ? "border-2 border-[#1C371C] bg-white"
+                  : "border-2 border-dashed border-stone-300 bg-stone-50",
+              ].join(" ")}
+            >
+              {selected[type] ? (
+                <img
+                  loading="lazy"
+                  src={selected[type].images?.[0] ?? selected[type].image}
+                  className="w-full h-full object-contain p-1"
+                  alt={selected[type].name}
+                />
+              ) : (
+                <span className="font-sans text-[9px] text-stone-400 uppercase font-semibold tracking-wide text-center leading-tight px-1">
+                  {LABELS[type]}
+                </span>
+              )}
+            </div>
+            <p
+              className={[
+                "font-sans text-[9px] text-center max-w-[68px] leading-tight line-clamp-2",
+                selected[type] ? "text-[#1C371C] font-semibold" : "text-stone-400",
+              ].join(" ")}
+            >
+              {selected[type]?.name ?? "—"}
+            </p>
+          </div>
+          {i < 2 && (
+            <span className="text-lg text-stone-300 font-light flex-shrink-0">+</span>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+
+    <div className="flex items-center gap-5 flex-shrink-0">
+      <div className="text-right">
+        <p className="font-sans text-xs text-gray-400 line-through leading-none mb-0.5">₹999</p>
+        <p className="font-serif text-3xl text-[#1C371C] leading-none">₹{KIT_PRICE}</p>
+        <p className={["font-sans text-[10px] font-semibold mt-1", allSelected ? "text-green-600" : "text-gray-400"].join(" ")}>
+          {selectedCount}/3 selected
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={addKitToCart}
+        disabled={!allSelected}
+        className={[
+          "px-8 py-3.5 rounded-full font-sans text-sm font-semibold tracking-wide",
+          "transition-all duration-300 whitespace-nowrap",
+          allSelected
+            ? "bg-[#1C371C] text-white hover:bg-[#2d5a2d] cursor-pointer"
+            : "bg-stone-200 text-stone-400 cursor-not-allowed",
+        ].join(" ")}
+      >
+        {allSelected ? "Add Kit to Bag →" : "Complete Your Kit"}
+      </button>
+    </div>
+  </div>
+);
 
 const CreateCtm = () => {
   const { addToCart } = useCart();
   const { categories } = useCategories();
-const { activeProducts = [] } = useProducts();
-  /* ---------- FIND CATEGORY (Same logic as Skin page) ---------- */
+  const { activeProducts = [] } = useProducts();
+
   const findCategory = (slug) =>
-    categories.find(
-      (c) =>
-        c.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, "") === slug
-    );
+    categories.find((c) => toSlug(c.name) === slug);
 
-  const cleanserCategory = findCategory("cleanser");
-  const tonerCategory = findCategory("toner");
-  const moisturizerCategory = findCategory("moisture");
+  const cleanserCat = findCategory("cleanser");
+  const tonerCat = findCategory("toner");
+  const moisturizerCat = categories.find(
+    (c) => toSlug(c.name).startsWith("moistur")
+  );
 
-  /* ---------- FILTER PRODUCTS BY CATEGORY ---------- */
-  const cleansers = cleanserCategory
-    ? activeProducts.filter((p) =>
-      p.categoryIds?.includes(cleanserCategory.id)
-    )
-    : [];
+  const filterByCategory = (cat) =>
+    cat
+      ? activeProducts.filter((p) =>
+          p.categoryIds?.includes(cat._id ?? cat.id)
+        )
+      : [];
 
-  const toners = tonerCategory
-    ? activeProducts.filter((p) =>
-      p.categoryIds?.includes(tonerCategory.id)
-    )
-    : [];
+  const cleansers = filterByCategory(cleanserCat);
+  const toners = filterByCategory(tonerCat);
+  const moisturizers = filterByCategory(moisturizerCat);
 
-  const moisturizers = moisturizerCategory
-    ? activeProducts.filter((p) =>
-      p.categoryIds?.includes(moisturizerCategory.id)
-    )
-    : [];
+  const [selected, setSelected] = useState(INIT_SELECTED);
+  const [showStickyKit, setShowStickyKit] = useState(false);
 
-  /* ---------- SELECTED STATE ---------- */
-  const [selected, setSelected] = useState({
-    cleanser: null,
-    toner: null,
-    moisturizer: null,
-  });
+  const selectProduct = useCallback((type, product) => {
+    setSelected((prev) => {
+      const prevId = getProductId(prev[type]);
+      const newId = getProductId(product);
+      if (prevId && prevId === newId) return { ...prev, [type]: null };
+      return { ...prev, [type]: product };
+    });
+  }, []);
 
-  const selectProduct = (type, product) => {
-    setSelected((prev) => ({ ...prev, [type]: product }));
+  const isSelected = (type, product) => {
+    const selId = getProductId(selected[type]);
+    const pId = getProductId(product);
+    return !!(selId && pId && selId === pId);
   };
 
-  /* ---------- KIT PRICE ---------- */
-  const KIT_PRICE = 699;
+  const selectedCount = TYPES.filter((t) => selected[t]).length;
+  const allSelected = selectedCount === 3;
 
-  /* ---------- ADD TO CART ---------- */
+  useEffect(() => {
+    const handleScroll = () => {
+      const kitSummary = document.getElementById("ctm-kit-summary");
+      if (!kitSummary) return;
+      const rect = kitSummary.getBoundingClientRect();
+      setShowStickyKit(rect.bottom < 0);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const addKitToCart = () => {
-    if (!selected.cleanser || !selected.toner || !selected.moisturizer)
-      return;
-
+    if (!allSelected) return;
+    const { cleanser, toner, moisturizer } = selected;
     const comboProduct = {
-      _id: `ctm-${selected.cleanser._id}-${selected.toner._id}-${selected.moisturizer._id}`, // ✅ use _id
-      id: `ctm-${selected.cleanser._id}-${selected.toner._id}-${selected.moisturizer._id}`,  // keep for cart
+      _id: `ctm-${getProductId(cleanser)}-${getProductId(toner)}-${getProductId(moisturizer)}`,
+      id: `ctm-${getProductId(cleanser)}-${getProductId(toner)}-${getProductId(moisturizer)}`,
       name: "CTM Skincare Kit",
-      image: selected.cleanser.images?.[0],
+      image: cleanser.images?.[0] ?? cleanser.image,
       price: KIT_PRICE,
       quantity: 1,
       isCombo: true,
       comboType: "ctm",
-
-      categoryIds: [], // optional but safe
-
+      categoryIds: [],
       comboItems: [
-        {
-          ...selected.cleanser,
-          image: selected.cleanser.images?.[0],
-        },
-        {
-          ...selected.toner,
-          image: selected.toner.images?.[0],
-        },
-        {
-          ...selected.moisturizer,
-          image: selected.moisturizer.images?.[0],
-        },
+        { ...cleanser, image: cleanser.images?.[0] ?? cleanser.image },
+        { ...toner, image: toner.images?.[0] ?? toner.image },
+        { ...moisturizer, image: moisturizer.images?.[0] ?? moisturizer.image },
       ],
     };
-
     addToCart(comboProduct);
   };
 
-  /* ---------- SECTION COMPONENT ---------- */
-  const Section = ({ title, items, type }) => (
-    <div className="mb-12">
-      <h2 className="text-2xl font-semibold text-[#1C371C] mb-6">
-        {title}
-      </h2>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {items.map((product) => (
-          <CtmProductCard
-            key={product.id}
-            product={{
-              ...product,
-              image: product.images?.[0], // IMPORTANT
-            }}
-            selected={selected[type]?.id === product.id}
-            onSelect={(p) => selectProduct(type, p)}
-          />
-        ))}
+  const Section = ({ title, items, type, stepNum }) => {
+    const done = !!selected[type];
+    return (
+      <div className="mb-14">
+        <div className="flex items-center gap-4 mb-7 pb-5 border-b border-stone-200">
+          <div
+            className={[
+              "w-11 h-11 rounded-xl flex items-center justify-center",
+              "text-base font-bold font-sans flex-shrink-0 transition-all duration-300",
+              done ? "bg-[#1C371C] text-white" : "bg-stone-100 text-[#1C371C]",
+            ].join(" ")}
+          >
+            {done ? "✓" : stepNum}
+          </div>
+          <div className="flex-1">
+            <p className="font-sans text-[10px] tracking-[2px] text-gray-400 font-bold uppercase mb-0.5">
+              Step {stepNum}
+            </p>
+            <h2 className="font-serif text-2xl md:text-3xl text-[#1C371C]">
+              {title}
+            </h2>
+          </div>
+          {done && (
+            <span className="ml-auto bg-green-50 text-[#1C371C] border border-green-200 font-sans text-[11px] font-bold px-3 py-1 rounded-full flex-shrink-0">
+              Selected ✓
+            </span>
+          )}
+        </div>
+        {items.length === 0 ? (
+          <p className="font-sans text-sm text-gray-400 py-6">
+            No products available.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {items.map((product) => (
+              <CtmProductCard
+                key={getProductId(product)}
+                product={product}
+                selected={isSelected(type, product)}
+                onSelect={(p) => selectProduct(type, p)}
+              />
+            ))}
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
       <MiniDivider />
 
-      <div className="primary-bg-color">
+      <div className="min-h-screen">
         <Header />
         <CartDrawer />
 
-        <div className="max-w-7xl mx-auto px-4 pb-6">
-          <Heading heading="Build Your Own CTM Kit" />
-
-          <Section
-            title="Step 1 — Choose a Cleanser"
-            items={cleansers}
-            type="cleanser"
-          />
-
-          <Section
-            title="Step 2 — Choose a Toner"
-            items={toners}
-            type="toner"
-          />
-
-          <Section
-            title="Step 3 — Choose a Moisturizer"
-            items={moisturizers}
-            type="moisturizer"
-          />
-
-          {/* ---------- KIT SUMMARY ---------- */}
-          <div className="sticky bottom-6 secondary-bg-color shadow-sm rounded-2xl p-4 mt-10">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-
-              <div className="flex items-center gap-3 overflow-x-auto">
-
-                {["cleanser", "toner", "moisturizer"].map((type, i) => (
-                  <React.Fragment key={type}>
-                    <div className="flex flex-col items-center text-center w-20">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 border">
-                        {selected[type] ? (
-                          <img loading="lazy"
-                            src={selected[type].images?.[0]}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">
-                            {type}
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-[11px] mt-1 line-clamp-2">
-                        {selected[type]?.name || "Select"}
-                      </p>
+        {/* ── PAGE HEADER ──────────────────────────────────────── */}
+        <div className="bg-[#1C371C] relative overflow-hidden text-center px-6 py-14">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-[600px] h-[600px] rounded-full bg-red-300 opacity-[0.1]" />
+          </div>
+          <p className="font-sans text-[10px] tracking-[4px] text-green-300 font-bold uppercase mb-3">
+            Custom Kit Builder
+          </p>
+          <h1 className="font-serif text-white leading-tight mb-4 text-4xl md:text-5xl">
+            Build Your{" "}
+            <span className="italic text-[#e76e6e]">Perfect</span>
+            <br />
+            CTM Routine
+          </h1>
+          <p className="font-sans text-white/60 text-sm font-light mb-8 max-w-md mx-auto">
+            Choose one from each step — get your personalised trio at ₹699
+          </p>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            {TYPES.map((type, i) => {
+              const done = !!selected[type];
+              return (
+                <React.Fragment key={type}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={[
+                        "w-7 h-7 rounded-full flex items-center justify-center",
+                        "font-sans text-xs font-bold transition-all duration-300",
+                        done ? "bg-[#ef6969] text-[#1C371C]" : "bg-white/20 text-white/50",
+                      ].join(" ")}
+                    >
+                      {done ? "✓" : i + 1}
                     </div>
+                    <span
+                      className={[
+                        "font-sans text-xs transition-all duration-300",
+                        done ? "text-white font-semibold" : "text-white/40 font-light",
+                      ].join(" ")}
+                    >
+                      {LABELS[type]}
+                    </span>
+                  </div>
+                  {i < 2 && <div className="w-8 h-px bg-white/20 mx-1" />}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
 
-                    {i < 2 && (
-                      <span className="text-lg font-semibold text-gray-400">
-                        +
-                      </span>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
+        {/* ── PRODUCT SECTIONS ─────────────────────────────────── */}
+        <div className="max-w-6xl mx-auto px-4 pt-12 pb-10">
+          <Section title="Choose Your Cleanser" items={cleansers} type="cleanser" stepNum="1" />
+          <Section title="Choose Your Toner" items={toners} type="toner" stepNum="2" />
+          <Section title="Choose Your Moisturizer" items={moisturizers} type="moisturizer" stepNum="3" />
+        </div>
 
-              <div className="flex items-center justify-between md:justify-end gap-5 w-full md:w-auto">
+        {/* ── KIT SUMMARY (in-flow) ────────────────────────────── */}
+        <div className="max-w-6xl mx-auto px-4 pb-14">
+          <div id="ctm-kit-summary" className="bg-white border border-stone-200 rounded-2xl px-6 py-5 shadow-sm">
+            <p className="font-sans text-[10px] tracking-[2px] text-gray-400 font-bold uppercase mb-4">
+              Your Kit Summary
+            </p>
+            <KitSummaryContent
+              selected={selected}
+              selectedCount={selectedCount}
+              allSelected={allSelected}
+              addKitToCart={addKitToCart}
+            />
+          </div>
+        </div>
 
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-[#1C371C]">
-                    ₹{KIT_PRICE}
-                  </p>
-                  <p className="text-xs text-green-600">
-                    Custom Routine Kit
-                  </p>
-                </div>
-
-                <button
-                  onClick={addKitToCart}
-                  disabled={
-                    !selected.cleanser ||
-                    !selected.toner ||
-                    !selected.moisturizer
-                  }
-                  className={`px-6 py-3 rounded-lg text-white font-medium whitespace-nowrap
-                    ${selected.cleanser &&
-                      selected.toner &&
-                      selected.moisturizer
-                      ? "bg-black hover:bg-gray-900"
-                      : "bg-gray-400 cursor-not-allowed"
-                    }`}
-                >
-                  Add Kit To Bag
-                </button>
-
-              </div>
+        {/* ── STICKY KIT BAR (floats over footer too) ──────────── */}
+        <div
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 40,
+            transform: showStickyKit ? "translateY(0)" : "translateY(100%)",
+            opacity: showStickyKit ? 1 : 0,
+            pointerEvents: showStickyKit ? "auto" : "none",
+            transition: "all 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
+          }}
+        >
+          <div style={{ height: "2px", background: "linear-gradient(90deg, transparent, #1C371C 30%, #1C371C 70%, transparent)" }} />
+          <div className="bg-white border-t border-stone-200" style={{ boxShadow: "0 -6px 30px rgba(0,0,0,0.10)" }}>
+            <div className="max-w-6xl mx-auto px-4 py-3">
+              <KitSummaryContent
+                selected={selected}
+                selectedCount={selectedCount}
+                allSelected={allSelected}
+                addKitToCart={addKitToCart}
+              />
             </div>
           </div>
-
         </div>
 
         <Footer />

@@ -10,13 +10,13 @@ const offers = [
     code: "ILIKA15",
     link: "/combo"
   },
-  {
-    type: "deal",
-    title: "Buy 2 Toners & Get 1 Sheet Mask FREE",
-    description:
-      "Build your own skincare combo by choosing any 2 Ilika toners and pick a sheet mask of your wish — absolutely free.",
-    link: "/combo"
-  }
+{
+  type: "deal",
+  title: "Buy 2 Masks + Get 1 FREE",
+  description:
+    "Worth ₹997 in total, now yours for just ₹699! Includes 2 premium masks plus a FREE sheet mask worth ₹199.",
+  link: "/combo"
+}
 ];
 
 const Offers = () => {
