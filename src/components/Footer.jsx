@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="primary-bg-color mt-20">
+    <footer className="primary-bg-color mt-10">
 
       {/* TOP MARQUEE */}
       <div className="MiniDivider-bg-color py-1 overflow-hidden">
@@ -53,7 +53,7 @@ const Footer = () => {
         {/* LINKS + ADDRESS */}
         <div className="space-y-8 text-center md:text-left max-w-xs mx-auto md:mx-0">
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <h4 className="heading-color font-semibold text-lg">Quick Links</h4>
 
             <Link to="/about" className="flex items-center justify-center sm:justify-start gap-3">
@@ -72,8 +72,11 @@ const Footer = () => {
 
             <p className="text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">
               Office no. 201-202, Hirubai Residency <br />
-              Virar (West) - 401303 <br />
+              Virar (West) - 401303.
               Maharashtra, India.
+            </p>
+            <p className="text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">
+              +91 91208 79879
             </p>
           </div>
         </div>
@@ -149,7 +152,7 @@ const Footer = () => {
       {/* BOTTOM */}
       <div className="MiniDivider-bg-color text-xs sm:text-sm py-4">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-3 text-center md:text-left">
-          <p>© 2026 Ilika</p>
+          <p>© 2026 Ilika | Powered By PTCGRAM PVT. LTD.</p>
 
           <div className="flex flex-wrap gap-5 justify-center">
             <Link to="/termsandcondition">Terms</Link>
