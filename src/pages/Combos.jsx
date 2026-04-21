@@ -19,7 +19,7 @@ const offBanner = "/Images/Tonner.webp";
 const offBannerMobile = "/Images/TonnerMobile.webp";
 
 const maskBanner = "/Images/24.webp";
-const maskBannerMobile = "/Images/24Mobile.webp";
+const maskBannerMobile = "/Images/24.webp";
 
 const Combos = () => {
 
