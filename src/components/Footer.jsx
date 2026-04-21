@@ -36,7 +36,7 @@ const Footer = () => {
           <img
             src={logo}
             alt="Ilika"
-            loading="lazy"
+            fetchpriority="high"
             className="h-11 w-auto mx-auto sm:mx-0"
           />
 

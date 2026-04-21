@@ -83,6 +83,7 @@ const Login = () => {
           <img
             src={logo}
             alt="brand"
+            fetchpriority="high"
            className="w-48 mb-6 object-contain drop-shadow-[0_4px_20px_rgba(255,255,255,0.35)] contrast-125 brightness-110"
           />
 
@@ -107,6 +108,7 @@ const Login = () => {
             <img
               src={logo}
               alt="brand"
+              fetchpriority="high"
               className="w-32 mx-auto object-contain"
             />
           </div>
