@@ -1,14 +1,14 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
 } from "firebase/auth";
-import { Mail, Lock, Eye, EyeOff, Phone } from "lucide-react";
 import { auth } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
 import authImage from "../assets/Images/Banner 2.webp";
+import logo from "/Images/logo2.webp";
+import { Eye, EyeOff } from "lucide-react"; // ✅ ICONS
 
 const Login = () => {
   const navigate = useNavigate();
@@ -30,71 +30,6 @@ const Login = () => {
     else navigate("/user");
   };
 
-  const setupRecaptcha = async () => {
-
-    if (!window.recaptchaVerifier) {
-
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "invisible",
-        }
-      );
-
-      await window.recaptchaVerifier.render();
-    }
-
-  };
-
-  const sendOtp = async () => {
-    if (!/^[6-9]\d{9}$/.test(phone)) {
-      alert("Enter valid Indian phone number");
-      return;
-    }
-
-    try {
-      await setupRecaptcha();
-
-      const appVerifier = window.recaptchaVerifier;
-
-      const confirmation = await signInWithPhoneNumber(
-        auth,
-        `+91${phone}`,
-        appVerifier
-      );
-
-      setConfirmationResult(confirmation);
-      alert("OTP Sent Successfully");
-
-    } catch (err) {
-      console.error(err);
-
-      // Reset expired token
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
-
-      alert(err.message);
-    }
-  };
-
-  const verifyOtp = async () => {
-    if (!otp) return alert("Enter OTP");
-
-    try {
-      await confirmationResult.confirm(otp);
-      setOtpVerified(true);
-      alert("Phone Verified Successfully");
-
-      // Important: sign out temporary phone auth
-      await auth.signOut();
-    } catch (err) {
-      alert("Invalid OTP");
-    }
-  };
-
   const saveUserToBackend = async (user) => {
     await fetch(`${import.meta.env.VITE_API_URL}/api/users/login`, {
       method: "POST",
@@ -103,37 +38,25 @@ const Login = () => {
         uid: user.uid,
         email: user.email,
         name: name || "",
-        phone:  null
-      })
+        phone: null,
+      }),
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
     try {
       let userCredential;
-
       if (isRegister) {
-        userCredential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
       } else {
-        userCredential = await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
       }
-
       await saveUserToBackend(userCredential.user);
       redirectAfterLogin();
-
     } catch (err) {
-      setError(err.message.replace("Firebase:", ""));
+      setError(err.message.replace("Firebase:", "").trim());
     }
   };
 
@@ -143,99 +66,141 @@ const Login = () => {
       await saveUserToBackend(result.user);
       redirectAfterLogin();
     } catch (err) {
-      setError(err.message.replace("Firebase:", ""));
+      setError(err.message.replace("Firebase:", "").trim());
     }
   };
 
   return (
-    <div className="min-h-screen grid md:grid-cols-2">
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 font-sans bg-[#fdfaf7]">
 
       {/* LEFT IMAGE */}
       <div className="hidden md:block relative">
-        <img loading="lazy" src={authImage} alt="auth" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-          <h1 className="text-white text-4xl font-semibold">
-            Welcome to Ilika
-          </h1>
+        <img src={authImage} alt="auth" className="w-full h-full object-cover" />
+
+        <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/20 to-white/50 flex flex-col justify-end p-18 text-white">
+
+          {/* ✅ FIXED LOGO (bigger + cleaner, no duplication feel) */}
+          <img
+            src={logo}
+            alt="brand"
+           className="w-48 mb-6 object-contain drop-shadow-[0_4px_20px_rgba(255,255,255,0.35)] contrast-125 brightness-110"
+          />
+
+          <div className="w-12 h-px bg-white/40 mb-6" />
+
+          <h2 className="text-3xl font-serif mb-2 text-black">
+            Beauty that speaks for itself
+          </h2>
+
+          <p className="text-sm text-black/80 max-w-sm leading-relaxed">
+            Skincare and beauty tools crafted with care, for every skin type.
+          </p>
         </div>
       </div>
 
-      {/* FORM */}
-      <div className="flex items-center justify-center bg-[#f7f7f7] px-6 py-10">
-        <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8">
+      {/* RIGHT FORM */}
+      <div className="flex items-center justify-center px-6 py-10">
+        <div className="w-full max-w-sm bg-white/70 backdrop-blur-md p-8 rounded-2xl shadow-lg">
 
-          <h2 className="text-2xl font-semibold text-center mb-6">
-            {isRegister ? "Create Account" : "Welcome Back"}
-          </h2>
+          {/* ✅ MOBILE LOGO (slightly bigger) */}
+          <div className="md:hidden text-center mb-8">
+            <img
+              src={logo}
+              alt="brand"
+              className="w-32 mx-auto object-contain"
+            />
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* HEADER */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-serif font-medium tracking-wide text-gray-800">
+              {isRegister ? "Create an account" : "Welcome back"}
+            </h2>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              {isRegister
+                ? "Join Ilika and start your beauty journey"
+                : "Sign in to continue"}
+            </p>
+          </div>
+
+          {/* FORM */}
+          <form onSubmit={handleSubmit}>
+
             {isRegister && (
               <input
-                type="text"
+                className="w-full mb-5 px-4 py-3 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e8cfcf] transition"
                 placeholder="Full Name"
-                className="w-full border rounded-lg px-4 py-3"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
             )}
 
-            {/* EMAIL */}
             <input
-              type="email"
-              placeholder="Email address"
-              className="w-full border rounded-lg px-4 py-3"
+              className="w-full mb-5 px-4 py-3 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e8cfcf] transition"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
 
-            {/* PASSWORD */}
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              className="w-full border rounded-lg px-4 py-3"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
-           
+            {/* ✅ PASSWORD WITH ICON */}
+            <div className="relative mb-5">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e8cfcf]"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
 
             {error && (
-              <p className="text-red-500 text-sm">{error}</p>
+              <p className="text-red-500 text-sm mb-4">{error}</p>
             )}
 
-            <button
-              type="submit"
-              className="w-full bg-black text-white py-3 rounded-lg"
-            >
-              {isRegister ? "Register" : "Login"}
+            <button className="w-full bg-[#b76e79] text-white py-3 rounded-xl shadow-sm hover:shadow-md hover:bg-[#a85d67] transition mb-4">
+              {isRegister ? "Create Account" : "Sign In"}
             </button>
           </form>
 
-
-          <div className="flex items-center my-5">
-            <div className="flex-1 h-px bg-gray-300"></div>
-            <span className="px-3 text-sm text-gray-500">OR</span>
-            <div className="flex-1 h-px bg-gray-300"></div>
+          {/* DIVIDER */}
+          <div className="flex items-center gap-3 mb-6 opacity-60">
+            <div className="flex-1 h-px bg-gray-300" />
+            <span className="text-xs text-gray-400 uppercase">or</span>
+            <div className="flex-1 h-px bg-gray-300" />
           </div>
 
+          {/* ✅ GOOGLE BUTTON WITH ICON */}
           <button
             onClick={handleGoogleAuth}
-            className="w-full border py-3 rounded-lg"
+            className="w-full border border-gray-200 py-3 rounded-xl flex justify-center items-center gap-3 hover:bg-gray-50 transition mb-6"
           >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="google"
+              className="w-5 h-5"
+            />
             Continue with Google
           </button>
 
-          <p className="text-sm mt-6 text-center">
-            {isRegister ? "Already have an account?" : "New here?"}
-            <button
-              onClick={() => setIsRegister(!isRegister)}
-              className="ml-2 underline"
+          {/* FOOTER */}
+          <p className="text-center text-sm text-gray-400">
+            {isRegister ? "Already have an account?" : "New to Ilika?"}
+            <span
+              onClick={() => { setIsRegister(!isRegister); setError(""); }}
+              className="text-[#b76e79] ml-2 cursor-pointer hover:underline"
             >
-              {isRegister ? "Login" : "Create account"}
-            </button>
+              {isRegister ? "Sign In" : "Create Account"}
+            </span>
           </p>
 
         </div>

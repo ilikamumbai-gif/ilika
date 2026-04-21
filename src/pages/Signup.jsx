@@ -1,64 +1,77 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+} from "firebase/auth";
 import { useAuth } from "../context/AuthContext";
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { app } from "../firebase/firebaseConfig";
 import { trackCompleteRegistration } from "../utils/pixel";
+
+const STEPS = ["Details", "Phone", "Verify"];
 
 const Signup = () => {
   const auth = getAuth(app);
   const navigate = useNavigate();
   const { signInWithGoogle } = useAuth();
 
+  const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const setupRecaptcha = () => {
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      "recaptcha-container",
-      { size: "invisible" },
-      auth
-    );
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        "recaptcha-container",
+        { size: "invisible" },
+        auth
+      );
+    }
   };
 
   const sendOtp = async () => {
-    if (!phone) {
-      alert("Phone number is required");
+    if (!phone || !/^[6-9]\d{9}$/.test(phone)) {
+      setError("Enter a valid 10-digit Indian mobile number");
       return;
     }
+    setSending(true);
+    setError("");
     setupRecaptcha();
-    const appVerifier = window.recaptchaVerifier;
+
     try {
-      const result = await signInWithPhoneNumber(auth, `+91${phone}`, appVerifier);
+      const result = await signInWithPhoneNumber(
+        auth,
+        `+91${phone}`,
+        window.recaptchaVerifier
+      );
       setConfirmationResult(result);
-      alert("OTP Sent Successfully");
-    } catch (error) {
-      console.error(error);
-      alert("Failed to send OTP");
+      setStep(2);
+    } catch {
+      setError("Failed to send OTP");
+    } finally {
+      setSending(false);
     }
   };
 
   const verifyOtp = async () => {
-    if (!otp) {
-      alert("Enter OTP");
-      return;
-    }
+    if (!otp) return setError("Enter OTP");
     try {
       await confirmationResult.confirm(otp);
       setOtpVerified(true);
-      alert("Phone Verified Successfully");
-    } catch (error) {
-      alert("Invalid OTP");
+      setError("");
+    } catch {
+      setError("Invalid OTP");
     }
   };
 
@@ -74,30 +87,17 @@ const Signup = () => {
     });
   };
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    if (!otpVerified) {
-      alert("Please verify phone number first");
-      return;
-    }
-    setError("");
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await saveUserToBackend(userCredential.user);
-      // ✅ META PIXEL: CompleteRegistration — email signup
-      trackCompleteRegistration('email');
-      navigate("/user");
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+  const handleSignup = async () => {
+    if (!otpVerified) return setError("Verify phone first");
 
-  const handleGoogleSignup = async () => {
     try {
-      const result = await signInWithGoogle();
-      await saveUserToBackend(result.user);
-      // ✅ META PIXEL: CompleteRegistration — Google signup
-      trackCompleteRegistration('google');
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      await saveUserToBackend(userCredential.user);
+      trackCompleteRegistration("email");
       navigate("/user");
     } catch (err) {
       setError(err.message);
@@ -105,94 +105,184 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-md w-96">
-        <h2 className="text-xl font-semibold mb-6 text-center">
-          Create Account
+    <div className="min-h-screen bg-[#fdfaf7] flex items-center justify-center px-6 py-10 font-sans">
+      <div className="w-full max-w-md bg-white/70 backdrop-blur-md p-10 rounded-2xl shadow-lg">
+
+        {/* BRAND */}
+        <div className="text-center border-b border-gray-200 pb-6 mb-6">
+          <h1 className="text-3xl italic font-serif">ilika</h1>
+          <p className="text-xs tracking-widest text-gray-400 mt-2">
+            Elegant · Bright · You
+          </p>
+        </div>
+
+        <h2 className="text-xl font-serif font-medium text-gray-800 mb-1">
+          Create account
         </h2>
+        <p className="text-sm text-gray-400 mb-6">
+          Join Ilika and start your journey
+        </p>
 
-        <form onSubmit={handleSignup} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Full Name"
-            className="w-full border p-2 rounded"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+        {/* STEPPER */}
+        <div className="flex items-center mb-8">
+          {STEPS.map((label, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && (
+                <div
+                  className={`flex-1 h-px ${
+                    i <= step ? "bg-[#b76e79]" : "bg-gray-200"
+                  }`}
+                />
+              )}
+              <div className="flex flex-col items-center text-xs">
+                <div
+                  className={`w-7 h-7 flex items-center justify-center rounded-full transition
+                  ${
+                    i < step
+                      ? "bg-[#b76e79] text-white"
+                      : i === step
+                      ? "border border-[#b76e79] text-[#b76e79]"
+                      : "border border-gray-300 text-gray-400"
+                  }`}
+                >
+                  {i < step ? "✓" : i + 1}
+                </div>
+                <span
+                  className={`mt-1 ${
+                    i <= step ? "text-[#b76e79]" : "text-gray-400"
+                  }`}
+                >
+                  {label}
+                </span>
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
 
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full border p-2 rounded"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+        {/* STEP 0 */}
+        {step === 0 && (
+          <form onSubmit={(e) => { e.preventDefault(); setStep(1); }}>
 
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full border p-2 rounded"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+            <input
+              className="w-full mb-5 px-4 py-3 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e8cfcf] transition"
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
 
-          <input
-            type="text"
-            placeholder="Phone Number"
-            className="w-full border p-2 rounded"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-          />
+            <input
+              className="w-full mb-5 px-4 py-3 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e8cfcf] transition"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-          <button type="button" onClick={sendOtp}
-            className="w-full border py-2 rounded text-sm hover:bg-gray-50 transition">
-            Send OTP
-          </button>
+            <div className="relative mb-5">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e8cfcf] transition"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+              >
+                👁
+              </button>
+            </div>
 
-          <input
-            type="text"
-            placeholder="Enter OTP"
-            className="w-full border p-2 rounded"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-          />
+            {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
-          <button type="button" onClick={verifyOtp}
-            className="w-full border py-2 rounded text-sm hover:bg-gray-50 transition">
-            Verify OTP
-          </button>
+            <button className="w-full bg-[#b76e79] text-white py-3 rounded-xl shadow-sm hover:shadow-md hover:bg-[#a85d67] transition mb-4">
+              Continue
+            </button>
 
-          <div id="recaptcha-container"></div>
+            <button
+              type="button"
+              onClick={async () => {
+                const result = await signInWithGoogle();
+                await saveUserToBackend(result.user);
+                navigate("/user");
+              }}
+              className="w-full border border-gray-200 py-3 rounded-xl hover:bg-gray-50 transition"
+            >
+              Sign up with Google
+            </button>
+          </form>
+        )}
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+        {/* STEP 1 */}
+        {step === 1 && (
+          <>
+            <input
+              className="w-full mb-5 px-4 py-3 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e8cfcf]"
+              placeholder="Phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
 
-          <button
-            type="submit"
-            className="w-full bg-black text-white py-2 rounded"
-          >
-            Sign Up
-          </button>
-        </form>
+            <div id="recaptcha-container" />
 
-        <button
-          onClick={handleGoogleSignup}
-          className="w-full mt-4 border py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition"
-        >
-          Sign up with Google
-        </button>
+            {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
-        <p className="text-sm mt-4 text-center">
-          Already have an account?
-          <button
+            <button
+              onClick={sendOtp}
+              className="w-full bg-[#b76e79] text-white py-3 rounded-xl shadow-sm hover:shadow-md hover:bg-[#a85d67] transition mb-3"
+            >
+              {sending ? "Sending..." : "Send OTP"}
+            </button>
+
+            <button
+              onClick={() => setStep(0)}
+              className="w-full border border-gray-200 py-3 rounded-xl hover:bg-gray-50 transition"
+            >
+              Back
+            </button>
+          </>
+        )}
+
+        {/* STEP 2 */}
+        {step === 2 && (
+          <>
+            <input
+              className="w-full mb-5 px-4 py-3 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e8cfcf]"
+              placeholder="OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+            />
+
+            {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+
+            {!otpVerified ? (
+              <button
+                onClick={verifyOtp}
+                className="w-full bg-[#b76e79] text-white py-3 rounded-xl shadow-sm hover:shadow-md hover:bg-[#a85d67] transition mb-3"
+              >
+                Verify OTP
+              </button>
+            ) : (
+              <button
+                onClick={handleSignup}
+                className="w-full bg-green-600 text-white py-3 rounded-xl shadow-sm hover:shadow-md transition mb-3"
+              >
+                Complete Signup
+              </button>
+            )}
+          </>
+        )}
+
+        {/* FOOTER */}
+        <p className="text-center text-sm mt-6 text-gray-400">
+          Already have an account?{" "}
+          <span
+            className="text-[#b76e79] cursor-pointer hover:underline"
             onClick={() => navigate("/login")}
-            className="ml-2 underline"
           >
-            Login
-          </button>
+            Sign in
+          </span>
         </p>
       </div>
     </div>
