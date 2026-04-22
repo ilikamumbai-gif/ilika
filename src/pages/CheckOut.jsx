@@ -29,9 +29,13 @@ const OtpWidget = ({
   onResend,
   resendCount,
   maxResendCount,
+  phoneChangedSinceOtp,
 }) => (
   <div className="border p-4 rounded-xl mt-3 bg-gray-50">
-    <p className="text-sm mb-2 text-gray-700">Verify your phone number</p>
+    <p className="text-sm mb-2 text-gray-700">
+      Verify your phone number
+      <span className="ml-1 text-xs text-gray-500">(you can edit)</span>
+    </p>
     <input
       type="text"
       value={phone}
@@ -67,7 +71,7 @@ const OtpWidget = ({
         <div className="flex gap-2 mt-2">
           <button
             onClick={verifyOtp}
-            disabled={verifying || otp.length < 4}
+            disabled={verifying || otp.length < 4 || phoneChangedSinceOtp}
             className="bg-black text-white p-2 rounded flex-1 disabled:opacity-50 text-sm font-medium"
           >
             {verifying ? "Verifying…" : "Verify OTP"}
@@ -88,6 +92,11 @@ const OtpWidget = ({
         {resendCount >= maxResendCount && (
           <p className="text-xs text-rose-600 mt-2">
             You reached the maximum 3 OTP resends for this session.
+          </p>
+        )}
+        {phoneChangedSinceOtp && (
+          <p className="text-xs text-rose-600 mt-2">
+            Phone changed. Please send OTP again for this number.
           </p>
         )}
       </>
@@ -127,6 +136,7 @@ const Checkout = () => {
   const [otpSending, setOtpSending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [otpPhone, setOtpPhone] = useState("");
+  const [otpRequestedPhone, setOtpRequestedPhone] = useState("");
   const [otpResendCount, setOtpResendCount] = useState(0);
   const MAX_OTP_RESENDS = 3;
 
@@ -215,6 +225,7 @@ const Checkout = () => {
       setOtpVerified(true);
       setOtpSent(false);
       setConfirmationResult(null);
+      setOtpRequestedPhone("");
       destroyRecaptcha();
       return true;
     }
@@ -235,6 +246,7 @@ const Checkout = () => {
       );
       setConfirmationResult(confirmation);
       setOtpSent(true);
+      setOtpRequestedPhone(sanitizedPhone);
       setResendCooldown(30);
       return true;
     } catch (err) {
@@ -272,6 +284,10 @@ const Checkout = () => {
   const verifyOtp = async () => {
     if (!otp || otp.length < 4) return alert("Enter the OTP");
     if (!confirmationResult) return alert("Please send OTP first");
+    if (normalizeIndianPhone(otpPhone) !== otpRequestedPhone) {
+      alert("Phone number changed. Please send OTP again.");
+      return;
+    }
 
     setVerifying(true);
     try {
@@ -300,6 +316,7 @@ const Checkout = () => {
       setOtp("");
       setConfirmationResult(null);
       setResendCooldown(0);
+      setOtpRequestedPhone("");
       setOtpResendCount(0);
       resetRecaptcha();
       await signOut(phoneVerificationAuth);
@@ -343,10 +360,22 @@ const Checkout = () => {
     setOtp("");
     setConfirmationResult(null);
     setResendCooldown(0);
+    setOtpRequestedPhone("");
     setOtpResendCount(0);
     setOtpPhone(normalizeIndianPhone(selectedAddress?.phone || ""));
     destroyRecaptcha();
   }, [selectedAddressId]);
+
+  // If phone is edited after OTP is sent, require a fresh OTP for the new phone.
+  useEffect(() => {
+    if (!otpSent) return;
+    const editedPhone = normalizeIndianPhone(otpPhone);
+    if (!otpRequestedPhone || editedPhone === otpRequestedPhone) return;
+    setOtpSent(false);
+    setOtp("");
+    setConfirmationResult(null);
+    setResendCooldown(0);
+  }, [otpPhone, otpRequestedPhone, otpSent]);
 
   useEffect(() => {
     return () => destroyRecaptcha();
@@ -485,6 +514,9 @@ const Checkout = () => {
 
   // Show OTP widget only when an address is selected and phone not yet verified
   const showOtpWidget = selectedAddress && !isPhoneVerified;
+  const phoneChangedSinceOtp =
+    Boolean(otpSent && otpRequestedPhone) &&
+    normalizeIndianPhone(otpPhone) !== otpRequestedPhone;
 
   // ─── PLACE ORDER ──────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
@@ -692,6 +724,7 @@ const Checkout = () => {
                 onResend={handleResendOtp}
                 resendCount={otpResendCount}
                 maxResendCount={MAX_OTP_RESENDS}
+                phoneChangedSinceOtp={phoneChangedSinceOtp}
               />
             )}
 
@@ -703,7 +736,7 @@ const Checkout = () => {
               onClick={() => setShowForm(!showForm)}
               className="text-black underline"
             >
-              {showForm ? "— Cancel" : "+ Add New Address"}
+              {showForm ? "Cancel" : "+ Add New Address"}
             </button>
 
             {showForm && (
