@@ -6,9 +6,10 @@ import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
 import CartDrawer from "../components/CartDrawer";
 import { useCart } from "../context/CartProvider";
-import { auth } from "../firebase/firebaseConfig";
+import { auth, storage } from "../firebase/firebaseConfig";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
+import { getDownloadURL, ref as storageRef, uploadString } from "firebase/storage";
 import {
   Truck, ShieldCheck, BadgeCheck, Package,
   X, ChevronLeft, ChevronRight, Star, Sparkles, Leaf,
@@ -438,41 +439,83 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
     setLoading(true);
 
     try {
-      // ✅ FIXED PAYLOAD
+      const productId = product?._id || product?.id;
+      if (!productId) throw new Error("Missing product ID");
+
+      const uploadedImageUrls = await Promise.all(
+        reviewImages.map(async (dataUrl, i) => {
+          if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) return null;
+          const safeUserId = auth.currentUser?.uid || "guest";
+          const fileRef = storageRef(
+            storage,
+            `reviews/${productId}/${safeUserId}_${Date.now()}_${i}.jpg`
+          );
+          await uploadString(fileRef, dataUrl, "data_url");
+          return getDownloadURL(fileRef);
+        })
+      );
+
       const reviewPayload = {
         name: name.trim(),
         rating,
         comment: comment.trim(),
-        images: reviewImages, // ✅ array instead of single image
+        images: uploadedImageUrls.filter(Boolean),
         userId: auth.currentUser?.uid || null,
         userEmail: auth.currentUser?.email || null,
-        verifiedPurchase: Boolean(
-          auth.currentUser?.uid || auth.currentUser?.email
-        ),
       };
 
-      const reviews = [...(product.reviews || []), reviewPayload];
-
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/products/${product._id || product.id}`,
+        `${import.meta.env.VITE_API_URL}/api/reviews/${productId}`,
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ reviews }),
+          body: JSON.stringify(reviewPayload),
         }
       );
 
       if (!res.ok) {
-        throw new Error("Review submit failed");
+        let msg = "Review submit failed";
+        try {
+          const errData = await res.json();
+          msg = errData?.error || msg;
+        } catch {
+          // ignore json parse error
+        }
+        throw new Error(msg);
+      }
+
+      const result = await res.json();
+      const savedReview = result?.review || {
+        ...reviewPayload,
+        verifiedPurchase: false,
+        isGenuine: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      if (!savedReview.images?.length && savedReview.image) {
+        savedReview.images = [savedReview.image];
+      }
+
+      if (!savedReview.image && savedReview.images?.[0]) {
+        savedReview.image = savedReview.images[0];
+      }
+
+      if (typeof savedReview.verifiedPurchase !== "boolean") {
+        savedReview.verifiedPurchase = false;
+      }
+
+      if (typeof savedReview.isGenuine !== "boolean") {
+        savedReview.isGenuine = savedReview.verifiedPurchase === true;
+      }
+
+      if (!savedReview.userType) {
+        savedReview.userType = savedReview.verifiedPurchase ? "genuine" : "fake";
       }
 
       // ✅ Update UI instantly
-      onReviewAdded?.({
-        ...reviewPayload,
-        createdAt: new Date().toISOString(),
-      });
+      onReviewAdded?.(savedReview);
 
       // ✅ Reset form (important UX)
       setName("");
@@ -484,7 +527,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
 
     } catch (err) {
       console.error(err);
-      setError("Failed to submit. Please try again.");
+      setError(err?.message || "Failed to submit. Please try again.");
     }
 
     setLoading(false);
@@ -1473,6 +1516,16 @@ const ProductDetail = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {product.reviews.map((rev, i) => (
                 <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                  {(() => {
+                    const isGenuine = rev?.verifiedPurchase === true || rev?.userType === "genuine" || rev?.isGenuine === true;
+                    const reviewImages = Array.isArray(rev?.images) && rev.images.length
+                      ? rev.images
+                      : rev?.image
+                        ? [rev.image]
+                        : [];
+
+                    return (
+                      <>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-[#fff6f5] flex items-center justify-center text-sm font-bold text-[#801f1f]">{rev.name?.[0]?.toUpperCase()}</div>
@@ -1485,12 +1538,12 @@ const ProductDetail = ({
                         </div>
                       </div>
                     </div>
-                    <span className="text-[10px] bg-[#f0faf0] text-[#1C371C] font-semibold px-2 py-0.5 rounded-full">Verified</span>
+                  
                   </div>
                   <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
-                  {rev.images?.length > 0 && (
+                  {reviewImages.length > 0 && (
                     <div className="flex gap-2 mt-3">
-                      {rev.images.map((img, i) => (
+                      {reviewImages.map((img, i) => (
                         <img
                           key={i}
                           src={img}
@@ -1499,6 +1552,9 @@ const ProductDetail = ({
                       ))}
                     </div>
                   )}
+                      </>
+                    );
+                  })()}
                 </div>
               ))}
             </div>

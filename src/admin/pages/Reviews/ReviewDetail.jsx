@@ -3,6 +3,36 @@ import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { logActivity } from "../../Utils/logActivity";
 
+const getReviewImages = (review = {}) => {
+  if (Array.isArray(review.images) && review.images.length) return review.images;
+  if (typeof review.image === "string" && review.image.trim()) return [review.image];
+  return [];
+};
+
+const parseDateValue = (value) => {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (typeof value?.toDate === "function") return value.toDate();
+  if (typeof value?._seconds === "number") return new Date(value._seconds * 1000);
+  if (typeof value?.seconds === "number") return new Date(value.seconds * 1000);
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const formatReviewDate = (value) => {
+  const parsed = parseDateValue(value);
+  if (!parsed) return "-";
+
+  return parsed.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const ReviewDetail = () => {
 
   const { productId, index } = useParams();
@@ -93,6 +123,8 @@ const ReviewDetail = () => {
     );
   }
 
+  const userType = review.userType === "genuine" || review.verifiedPurchase === true ? "genuine" : "fake";
+  const reviewImages = getReviewImages(review);
 
   return (
     <AdminLayout>
@@ -143,8 +175,8 @@ const ReviewDetail = () => {
           <p className="text-sm text-gray-500">
             User Type
           </p>
-          <p className={`font-medium ${review.userType === "genuine" ? "text-emerald-600" : "text-rose-600"}`}>
-            {review.userType === "genuine" ? "Genuine User" : "Fake User"}
+          <p className={`font-medium ${userType === "genuine" ? "text-emerald-600" : "text-rose-600"}`}>
+            {userType === "genuine" ? "Genuine User" : "Fake User"}
           </p>
         </div>
 
@@ -217,32 +249,33 @@ const ReviewDetail = () => {
 
         </div>
 
-        {review.image && (
+        {reviewImages.length > 0 ? (
           <div>
             <p className="text-sm text-gray-500 mb-2">
-              Review Image
+              Review Images ({reviewImages.length})
             </p>
-            <img loading="lazy"
-              src={review.image}
-              alt="Review"
-              className="w-full max-w-sm rounded-lg border border-gray-200 object-cover"
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl">
+              {reviewImages.map((img, i) => (
+                <img
+                  loading="lazy"
+                  key={`${img}-${i}`}
+                  src={img}
+                  alt={`Review ${i + 1}`}
+                  className="w-full h-44 rounded-lg border border-gray-200 object-cover"
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p className="text-sm text-gray-500">
+              Review Images
+            </p>
+            <p className="text-gray-400 text-sm">
+              No image uploaded
+            </p>
           </div>
         )}
-
-        {review.images?.map((img, i) => (
-          <div>
-            <p className="text-sm text-gray-500 mb-2">
-              Review Image
-            </p>
-            <img loading="lazy"
-            key={i}
-              src={img}
-              alt="Review"
-              className="w-full max-w-sm rounded-lg border border-gray-200 object-cover"
-            />
-          </div>
-        ))}
 
 
 
@@ -256,9 +289,7 @@ const ReviewDetail = () => {
             </p>
 
             <p>
-              {new Date(
-                review.createdAt
-              ).toLocaleString()}
+              {formatReviewDate(review.createdAt)}
             </p>
 
           </div>

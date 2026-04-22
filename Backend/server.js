@@ -33,13 +33,96 @@ const detectSource = (source) => {
 };
 
 const getReviewUserType = (review = {}) => {
-  const hasIdentity = Boolean(
-    review?.userId ||
-    review?.userEmail ||
-    review?.verifiedPurchase === true ||
-    review?.isGenuine === true
-  );
-  return hasIdentity ? "genuine" : "fake";
+  return review?.verifiedPurchase === true ? "genuine" : "fake";
+};
+
+const normalizeReviewImages = (review = {}) => {
+  const rawImages = Array.isArray(review?.images)
+    ? review.images
+    : review?.image
+      ? [review.image]
+      : [];
+
+  return rawImages
+    .filter((img) => typeof img === "string" && img.trim())
+    .slice(0, 2);
+};
+
+const hasPurchasedProductFromOrder = (order = {}, productId = "") => {
+  const targetProductId = String(productId || "");
+  if (!targetProductId) return false;
+  if (!Array.isArray(order.items)) return false;
+
+  return order.items.some((item) => String(item?.productId || "") === targetProductId);
+};
+
+const didUserPurchaseProduct = async ({ productId, userId, userEmail }) => {
+  const targetProductId = String(productId || "");
+  if (!targetProductId) return false;
+
+  if (userId) {
+    const userOrders = await db.collection("orders").where("userId", "==", userId).get();
+    const hasPurchaseByUserId = userOrders.docs.some((doc) =>
+      hasPurchasedProductFromOrder(doc.data(), targetProductId)
+    );
+    if (hasPurchaseByUserId) return true;
+  }
+
+  if (userEmail) {
+    const userOrders = await db.collection("orders").where("userEmail", "==", userEmail).get();
+    const hasPurchaseByEmail = userOrders.docs.some((doc) =>
+      hasPurchasedProductFromOrder(doc.data(), targetProductId)
+    );
+    if (hasPurchaseByEmail) return true;
+  }
+
+  return false;
+};
+
+const buildPurchasedProductIndex = async () => {
+  const byUserId = new Map();
+  const byEmail = new Map();
+
+  const ordersSnapshot = await db.collection("orders").get();
+
+  ordersSnapshot.forEach((doc) => {
+    const order = doc.data() || {};
+    const productIds = new Set(
+      (Array.isArray(order.items) ? order.items : [])
+        .map((item) => String(item?.productId || ""))
+        .filter(Boolean)
+    );
+
+    if (!productIds.size) return;
+
+    if (order.userId) {
+      if (!byUserId.has(order.userId)) byUserId.set(order.userId, new Set());
+      const bucket = byUserId.get(order.userId);
+      productIds.forEach((id) => bucket.add(id));
+    }
+
+    if (order.userEmail) {
+      const emailKey = String(order.userEmail).trim().toLowerCase();
+      if (!emailKey) return;
+      if (!byEmail.has(emailKey)) byEmail.set(emailKey, new Set());
+      const bucket = byEmail.get(emailKey);
+      productIds.forEach((id) => bucket.add(id));
+    }
+  });
+
+  return { byUserId, byEmail };
+};
+
+const hasPurchasedProductFromIndex = ({ index, productId, userId, userEmail }) => {
+  const targetProductId = String(productId || "");
+  if (!targetProductId || !index) return false;
+
+  if (userId && index.byUserId.get(userId)?.has(targetProductId)) return true;
+
+  const emailKey = String(userEmail || "").trim().toLowerCase();
+  if (emailKey && index.byEmail.get(emailKey)?.has(targetProductId)) return true;
+
+  return false;
 };
 
 const normalizeIndianPhone = (phone = "") => {
@@ -311,17 +394,22 @@ app.put("/api/products/:id", async (req, res) => {
     const existingData = existingDoc.data();
     const updateData = {
       ...req.body,
-      reviews: (req.body.reviews || []).map(r => ({
-        name: r.name || "",
-        rating: r.rating || 0,
-        comment: r.comment || "",
-        images: r.images || [],
-        userId: r.userId || null,
-        userEmail: r.userEmail || null,
-        verifiedPurchase: Boolean(r.verifiedPurchase),
-        isGenuine: getReviewUserType(r) === "genuine",
-        createdAt: r.createdAt || new Date(),
-      })),
+      reviews: (req.body.reviews || []).map(r => {
+        const images = normalizeReviewImages(r);
+        const verifiedPurchase = Boolean(r.verifiedPurchase);
+        return {
+          name: r.name || "",
+          rating: r.rating || 0,
+          comment: r.comment || "",
+          image: images[0] || null,
+          images,
+          userId: r.userId || null,
+          userEmail: r.userEmail || null,
+          verifiedPurchase,
+          isGenuine: getReviewUserType({ verifiedPurchase }) === "genuine",
+          createdAt: r.createdAt || new Date(),
+        };
+      }),
       isActive: typeof req.body.isActive === "boolean" ? req.body.isActive : existingData.isActive ?? true,
       inStock: typeof req.body.inStock === "boolean" ? req.body.inStock : existingData.inStock ?? true,
       updatedAt: Date.now(),
@@ -800,12 +888,21 @@ app.delete("/api/orders/:id", async (req, res) => {
 /* ============================== REVIEWS ============================== */
 app.get("/api/reviews", async (req, res) => {
   try {
+    const purchaseIndex = await buildPurchasedProductIndex();
     const snapshot = await db.collection("products").get();
     let reviews = [];
     snapshot.forEach(doc => {
       const product = doc.data();
       if (product.reviews?.length) {
         product.reviews.forEach((r, index) => {
+          const images = normalizeReviewImages(r);
+          const verifiedPurchase = hasPurchasedProductFromIndex({
+            index: purchaseIndex,
+            productId: doc.id,
+            userId: r.userId,
+            userEmail: r.userEmail,
+          });
+
           reviews.push({
             id: doc.id + "_" + index,
             productId: doc.id,
@@ -814,10 +911,13 @@ app.get("/api/reviews", async (req, res) => {
             name: r.name || "",
             rating: r.rating || 0,
             comment: r.comment || "",
-            image: r.image || null,
+            image: images[0] || null,
+            images,
             userId: r.userId || null,
             userEmail: r.userEmail || null,
-            userType: getReviewUserType(r),
+            verifiedPurchase,
+            isGenuine: verifiedPurchase,
+            userType: getReviewUserType({ verifiedPurchase }),
             createdAt: r.createdAt || null,
           });
         });
@@ -833,7 +933,13 @@ app.get("/api/reviews", async (req, res) => {
 app.post("/api/reviews/:productId", async (req, res) => {
   try {
     const { productId } = req.params;
-    const { name = "", rating = 0, comment = "", image = null, userId = null, userEmail = null, verifiedPurchase = false } = req.body || {};
+    const {
+      name = "",
+      rating = 0,
+      comment = "",
+      userId = null,
+      userEmail = null,
+    } = req.body || {};
 
     if (!name?.trim()) return res.status(400).json({ error: "Reviewer name is required" });
     if (!comment?.trim()) return res.status(400).json({ error: "Review comment is required" });
@@ -848,21 +954,30 @@ app.post("/api/reviews/:productId", async (req, res) => {
 
     const data = doc.data();
     const reviews = Array.isArray(data.reviews) ? [...data.reviews] : [];
+    const images = normalizeReviewImages(req.body);
+    const verifiedPurchase = await didUserPurchaseProduct({
+      productId,
+      userId,
+      userEmail,
+    });
 
-    reviews.push({
+    const review = {
       name: String(name).trim(),
       rating: parsedRating,
       comment: String(comment).trim(),
-      image: image || null,
+      image: images[0] || null,
+      images,
       userId: userId || null,
       userEmail: userEmail || null,
-      verifiedPurchase: Boolean(verifiedPurchase),
-      isGenuine: getReviewUserType({ userId, userEmail, verifiedPurchase }) === "genuine",
+      verifiedPurchase,
+      isGenuine: verifiedPurchase,
       createdAt: new Date(),
-    });
+    };
+
+    reviews.push(review);
 
     await ref.update({ reviews, updatedAt: Date.now() });
-    res.json({ message: "Review added successfully" });
+    res.json({ message: "Review added successfully", review });
   } catch (err) {
     console.error("ADD REVIEW ERROR:", err);
     res.status(500).json({ error: "Failed to add review" });
@@ -879,16 +994,26 @@ app.get("/api/reviews/:productId/:index", async (req, res) => {
     const review = data.reviews?.[index];
     if (!review) return res.status(404).json({ error: "Review not found" });
 
+    const images = normalizeReviewImages(review);
+    const verifiedPurchase = await didUserPurchaseProduct({
+      productId,
+      userId: review.userId || null,
+      userEmail: review.userEmail || null,
+    });
+
     res.json({
       productId,
       productName: data.name,
       name: review.name || "",
       rating: review.rating || 0,
       comment: review.comment || "",
-      image: review.image || null,
+      image: images[0] || null,
+      images,
       userId: review.userId || null,
       userEmail: review.userEmail || null,
-      userType: getReviewUserType(review),
+      verifiedPurchase,
+      isGenuine: verifiedPurchase,
+      userType: getReviewUserType({ verifiedPurchase }),
       createdAt: review.createdAt || null,
     });
   } catch {

@@ -23,9 +23,7 @@ const StarRating = ({ rating }) => (
 
 const getUserType = (review) => {
   if (review?.userType === "genuine") return "genuine";
-  if (review?.isGenuine === true) return "genuine";
   if (review?.verifiedPurchase === true) return "genuine";
-  if (review?.userId || review?.userEmail) return "genuine";
   return "fake";
 };
 
@@ -217,9 +215,9 @@ const ReviewList = () => {
                         </p>
                       </td>
                       <td className="px-5 py-4">
-                        {row.image ? (
+                        {(row.images?.[0] || row.image) ? (
                           <img loading="lazy"
-                            src={row.image}
+                            src={row.images?.[0] || row.image}
                             alt="Review"
                             className="w-12 h-12 object-cover rounded-lg border border-gray-200"
                           />
@@ -284,9 +282,9 @@ const ReviewList = () => {
                       </button>
                     </div>
                   </div>
-                  {row.image && (
+                  {(row.images?.[0] || row.image) && (
                     <img loading="lazy"
-                      src={row.image}
+                      src={row.images?.[0] || row.image}
                       alt="Review"
                       className="w-full h-32 object-cover rounded-xl border border-gray-100"
                     />
