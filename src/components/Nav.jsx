@@ -265,26 +265,38 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
 
         {/* NEW ARRIVALS */}
         <div className="relative w-full group">
-          <div className="flex items-center justify-between">
+          {mobile ? (
             <Link
               to="/newarrival"
-              onClick={() => setOpenMenu("newarrival")}
-              className="whitespace-nowrap"
+              onClick={onClose}
+              className="w-full flex items-center justify-between text-left"
             >
-              New Arrivals
-            </Link>
-            <button
-              type="button"
-              onClick={() => toggleMenu("newarrival")}
-              className="cursor-pointer"
-              aria-label="Toggle New Arrivals menu"
-            >
+              <span className="whitespace-nowrap">New Arrivals</span>
               <ChevronDown
-                className={`w-4 h-4 transition-transform ${openMenu === "newarrival" ? "rotate-180" : ""
-                  }`}
+                className="w-4 h-4"
               />
-            </button>
-          </div>
+            </Link>
+          ) : (
+            <div className="flex items-center justify-between">
+              <Link
+                to="/newarrival"
+                onClick={() => setOpenMenu("newarrival")}
+                className="whitespace-nowrap"
+              >
+                New Arrivals
+              </Link>
+              <button
+                type="button"
+                onClick={() => toggleMenu("newarrival")}
+                className="cursor-pointer"
+                aria-label="Toggle New Arrivals menu"
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${openMenu === "newarrival" ? "rotate-180" : ""}`}
+                />
+              </button>
+            </div>
+          )}
           <div
             className={`${mobile
               ? openMenu === "newarrival"
@@ -320,22 +332,34 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
 
         {/* SKIN */}
         <div className="relative w-full group">
-          <div className="flex items-center justify-between">
-            <Link to="/skin" onClick={() => setOpenMenu("skin")} className="whitespace-nowrap">
-              Skin Care
-            </Link>
-            <button
-              type="button"
-              onClick={() => toggleMenu("skin")}
-              className="cursor-pointer"
-              aria-label="Toggle Skin Care menu"
+          {mobile ? (
+            <Link
+              to="/skin"
+              onClick={onClose}
+              className="w-full flex items-center justify-between text-left"
             >
+              <span className="whitespace-nowrap">Skin Care</span>
               <ChevronDown
-                className={`w-4 h-4 transition-transform ${openMenu === "skin" ? "rotate-180" : ""
-                  }`}
+                className="w-4 h-4"
               />
-            </button>
-          </div>
+            </Link>
+          ) : (
+            <div className="flex items-center justify-between">
+              <Link to="/skin" onClick={() => setOpenMenu("skin")} className="whitespace-nowrap">
+                Skin Care
+              </Link>
+              <button
+                type="button"
+                onClick={() => toggleMenu("skin")}
+                className="cursor-pointer"
+                aria-label="Toggle Skin Care menu"
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${openMenu === "skin" ? "rotate-180" : ""}`}
+                />
+              </button>
+            </div>
+          )}
           <div
             className={`${mobile
               ? openMenu === "skin"
@@ -367,21 +391,34 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
 
         {/* HAIR */}
         <div className="relative w-full group">
-          <div
-            className="flex items-center justify-between cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault();
-              toggleMenu("hair");
-            }}
-          >
-            <Link to="/hair" onClick={onClose} className="whitespace-nowrap">
-              Hair Care
+          {mobile ? (
+            <Link
+              to="/hair"
+              onClick={onClose}
+              className="w-full flex items-center justify-between text-left"
+            >
+              <span className="whitespace-nowrap">Hair Care</span>
+              <ChevronDown
+                className="w-4 h-4"
+              />
             </Link>
-            <ChevronDown
-              className={`w-4 h-4 transition-transform ${openMenu === "hair" ? "rotate-180" : ""
-                }`}
-            />
-          </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <Link to="/hair" onClick={onClose} className="whitespace-nowrap">
+                Hair Care
+              </Link>
+              <button
+                type="button"
+                onClick={() => toggleMenu("hair")}
+                className="cursor-pointer"
+                aria-label="Toggle Hair Care menu"
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${openMenu === "hair" ? "rotate-180" : ""}`}
+                />
+              </button>
+            </div>
+          )}
           <div
             className={`${mobile
               ? openMenu === "hair"
@@ -413,25 +450,38 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
 
         {/* GROOMING */}
         <div className="relative w-full group">
-          <div
-            className="flex items-center justify-between cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault();
-              toggleMenu("grooming");
-            }}
-          >
+          {mobile ? (
             <Link
               to="/grooming"
               onClick={onClose}
-              className="whitespace-nowrap"
+              className="w-full flex items-center justify-between text-left"
             >
-              Grooming Tools
+              <span className="whitespace-nowrap">Grooming Tools</span>
+              <ChevronDown
+                className="w-4 h-4"
+              />
             </Link>
-            <ChevronDown
-              className={`w-4 h-4 transition-transform ${openMenu === "grooming" ? "rotate-180" : ""
-                }`}
-            />
-          </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <Link
+                to="/grooming"
+                onClick={onClose}
+                className="whitespace-nowrap"
+              >
+                Grooming Tools
+              </Link>
+              <button
+                type="button"
+                onClick={() => toggleMenu("grooming")}
+                className="cursor-pointer"
+                aria-label="Toggle Grooming Tools menu"
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${openMenu === "grooming" ? "rotate-180" : ""}`}
+                />
+              </button>
+            </div>
+          )}
           <div
             className={`${mobile
               ? openMenu === "grooming"
