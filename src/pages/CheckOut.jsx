@@ -485,6 +485,8 @@ const Checkout = () => {
     try {
       const itemsPayload = cartItems.map((item) => ({
         id: item.id,
+        baseProductId: item.baseProductId || null,
+        variantId: item.variantId || null,
         name: item.name,
         price: Number(item.price),
         quantity: Number(item.quantity) || 1,

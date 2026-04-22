@@ -439,7 +439,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
     setLoading(true);
 
     try {
-      const productId = product?._id || product?.id;
+      const productId = product?.id || product?._id;
       if (!productId) throw new Error("Missing product ID");
 
       const uploadedImageUrls = await Promise.all(
@@ -801,7 +801,7 @@ const ProductDetail = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            productId: product._id || product.id,
+            productId: product.id || product._id,
             productName: product.name,
             userId: auth.currentUser?.uid || null,
             email: auth.currentUser?.email || null,
@@ -893,7 +893,7 @@ const ProductDetail = ({
           found = await res.json();
         }
         setProduct(found);
-        trackViewContent(found._id || found.id, found.name, found.variants?.[0]?.price ?? found.price ?? 0);
+        trackViewContent(found.id || found._id, found.name, found.variants?.[0]?.price ?? found.price ?? 0);
       } catch { console.error("product not found"); }
       setLoading(false);
     };
@@ -935,7 +935,7 @@ const ProductDetail = ({
     run();
   }, [product, preloadImages]);
 
-  const productId = product?._id || product?.id || null;
+  const productId = product?.id || product?._id || null;
   // `images` = source of truth for lightbox, swipe, auto-scroll logic
   const images = activeVariant?.images?.length ? activeVariant.images : product?.images || [];
   // `displayImages` = what thumbnails actually render — only set after async preload
@@ -1057,7 +1057,12 @@ const ProductDetail = ({
     const base = (product.categoryIds || []).filter(id => id !== EXCLUDED);
     if (!base.length) return [];
     return products
-      .filter(p => p && p._id !== productId && p.categoryIds?.filter(id => id !== EXCLUDED).some(id => base.includes(id)))
+      .filter(
+        (p) =>
+          p &&
+          String(p.id || p._id || "") !== String(productId || "") &&
+          p.categoryIds?.filter(id => id !== EXCLUDED).some(id => base.includes(id))
+      )
       .slice(0, 6);
   }, [products, product, productId]);
 

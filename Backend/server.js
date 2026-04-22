@@ -53,7 +53,38 @@ const hasPurchasedProductFromOrder = (order = {}, productId = "") => {
   if (!targetProductId) return false;
   if (!Array.isArray(order.items)) return false;
 
-  return order.items.some((item) => String(item?.productId || "") === targetProductId);
+  const extractItemProductIds = (item = {}) => {
+    const ids = new Set();
+    const productIdValue = String(item?.productId || "").trim();
+    const baseProductIdValue = String(item?.baseProductId || "").trim();
+    const itemIdValue = String(item?.id || "").trim();
+    const cartItemIdValue = String(item?.cartItemId || "").trim();
+
+    if (productIdValue) ids.add(productIdValue);
+    if (baseProductIdValue) ids.add(baseProductIdValue);
+    if (itemIdValue) ids.add(itemIdValue);
+    if (cartItemIdValue) ids.add(cartItemIdValue);
+
+    // Variant cart ids can be stored as "<baseProductId>_<variantId>".
+    const maybeVariantIdSource =
+      item?.variantId ||
+      item?.variantLabel ||
+      productIdValue ||
+      itemIdValue ||
+      cartItemIdValue;
+
+    if (maybeVariantIdSource) {
+      [productIdValue, itemIdValue, cartItemIdValue].forEach((value) => {
+        if (!value || !value.includes("_")) return;
+        const baseCandidate = value.split("_")[0]?.trim();
+        if (baseCandidate) ids.add(baseCandidate);
+      });
+    }
+
+    return ids;
+  };
+
+  return order.items.some((item) => extractItemProductIds(item).has(targetProductId));
 };
 
 const didUserPurchaseProduct = async ({ productId, userId, userEmail }) => {
@@ -69,11 +100,18 @@ const didUserPurchaseProduct = async ({ productId, userId, userEmail }) => {
   }
 
   if (userEmail) {
-    const userOrders = await db.collection("orders").where("userEmail", "==", userEmail).get();
-    const hasPurchaseByEmail = userOrders.docs.some((doc) =>
-      hasPurchasedProductFromOrder(doc.data(), targetProductId)
+    const normalizedEmail = String(userEmail).trim();
+    const emailCandidates = Array.from(
+      new Set([normalizedEmail, normalizedEmail.toLowerCase()].filter(Boolean))
     );
-    if (hasPurchaseByEmail) return true;
+
+    for (const emailCandidate of emailCandidates) {
+      const userOrders = await db.collection("orders").where("userEmail", "==", emailCandidate).get();
+      const hasPurchaseByEmail = userOrders.docs.some((doc) =>
+        hasPurchasedProductFromOrder(doc.data(), targetProductId)
+      );
+      if (hasPurchaseByEmail) return true;
+    }
   }
 
   return false;
@@ -88,8 +126,28 @@ const buildPurchasedProductIndex = async () => {
   ordersSnapshot.forEach((doc) => {
     const order = doc.data() || {};
     const productIds = new Set(
-      (Array.isArray(order.items) ? order.items : [])
-        .map((item) => String(item?.productId || ""))
+      (Array.isArray(order.items) ? order.items : []).flatMap((item) => {
+        const ids = [];
+        const productIdValue = String(item?.productId || "").trim();
+        const baseProductIdValue = String(item?.baseProductId || "").trim();
+        const itemIdValue = String(item?.id || "").trim();
+        const cartItemIdValue = String(item?.cartItemId || "").trim();
+
+        if (productIdValue) ids.push(productIdValue);
+        if (baseProductIdValue) ids.push(baseProductIdValue);
+        if (itemIdValue) ids.push(itemIdValue);
+        if (cartItemIdValue) ids.push(cartItemIdValue);
+
+        if (item?.variantId || item?.variantLabel) {
+          [productIdValue, itemIdValue, cartItemIdValue].forEach((value) => {
+            if (!value || !value.includes("_")) return;
+            const baseCandidate = value.split("_")[0]?.trim();
+            if (baseCandidate) ids.push(baseCandidate);
+          });
+        }
+
+        return ids;
+      })
         .filter(Boolean)
     );
 
@@ -116,13 +174,38 @@ const buildPurchasedProductIndex = async () => {
 const hasPurchasedProductFromIndex = ({ index, productId, userId, userEmail }) => {
   const targetProductId = String(productId || "");
   if (!targetProductId || !index) return false;
+  const targetCandidates = new Set([targetProductId]);
+  if (targetProductId.includes("_")) {
+    const baseCandidate = targetProductId.split("_")[0]?.trim();
+    if (baseCandidate) targetCandidates.add(baseCandidate);
+  }
 
-  if (userId && index.byUserId.get(userId)?.has(targetProductId)) return true;
+  if (userId) {
+    const userProducts = index.byUserId.get(userId);
+    if (userProducts && Array.from(targetCandidates).some((id) => userProducts.has(id))) return true;
+  }
 
   const emailKey = String(userEmail || "").trim().toLowerCase();
-  if (emailKey && index.byEmail.get(emailKey)?.has(targetProductId)) return true;
+  if (emailKey) {
+    const emailProducts = index.byEmail.get(emailKey);
+    if (emailProducts && Array.from(targetCandidates).some((id) => emailProducts.has(id))) return true;
+  }
 
   return false;
+};
+
+const resolveCheckoutProductId = (item = {}) => {
+  const baseProductId = String(item?.baseProductId || "").trim();
+  if (baseProductId) return baseProductId;
+
+  const rawItemId = String(item?.id || "").trim();
+  if (!rawItemId) return "";
+
+  if ((item?.variantId || item?.variantLabel) && rawItemId.includes("_")) {
+    return rawItemId.split("_")[0].trim();
+  }
+
+  return rawItemId;
 };
 
 const normalizeIndianPhone = (phone = "") => {
@@ -680,12 +763,16 @@ app.post("/api/payments/verify", async (req, res) => {
 
     for (const item of orderData.items) {
       const quantity = item.quantity || 1;
+      const resolvedProductId = resolveCheckoutProductId(item);
+      const rawCartItemId = String(item?.id || "").trim() || null;
 
       if (item.isCombo || item.items || item.comboItems) {
         const comboProducts = item.items || item.comboItems || [];
         totalAmount += Number(item.price) * quantity;
         validatedItems.push({
-          productId: item.id,
+          productId: resolvedProductId || rawCartItemId,
+          baseProductId: resolvedProductId || null,
+          cartItemId: rawCartItemId,
           name: item.name || "Custom Combo",
           price: Number(item.price),
           quantity,
@@ -699,7 +786,8 @@ app.post("/api/payments/verify", async (req, res) => {
         continue;
       }
 
-      const productDoc = await db.collection("products").doc(item.id).get();
+      if (!resolvedProductId) continue;
+      const productDoc = await db.collection("products").doc(resolvedProductId).get();
       if (!productDoc.exists) continue;
 
       const productData = productDoc.data();
@@ -711,11 +799,14 @@ app.post("/api/payments/verify", async (req, res) => {
       totalAmount += finalPrice * quantity;
 
       validatedItems.push({
-        productId: item.id,
+        productId: resolvedProductId,
+        baseProductId: resolvedProductId,
+        cartItemId: rawCartItemId,
         name: item.name || productData.name,
         price: finalPrice,
         quantity,
         image: item.image || item.images?.[0] || item.imageUrl || "",
+        variantId: item.variantId || null,
         variantLabel: item.variantLabel || null,
         originalPrice: item.originalPrice || null,
         discountApplied: item.discountApplied || null,
@@ -766,12 +857,16 @@ app.post("/api/orders", async (req, res) => {
 
     for (const item of items) {
       const quantity = item.quantity || 1;
+      const resolvedProductId = resolveCheckoutProductId(item);
+      const rawCartItemId = String(item?.id || "").trim() || null;
 
       if (item.isCombo || item.items || item.comboItems) {
         const comboProducts = item.items || item.comboItems || [];
         totalAmount += Number(item.price) * quantity;
         validatedItems.push({
-          productId: item.id,
+          productId: resolvedProductId || rawCartItemId,
+          baseProductId: resolvedProductId || null,
+          cartItemId: rawCartItemId,
           name: item.name || "Custom Combo",
           price: Number(item.price),
           quantity,
@@ -785,7 +880,8 @@ app.post("/api/orders", async (req, res) => {
         continue;
       }
 
-      const productDoc = await db.collection("products").doc(item.id).get();
+      if (!resolvedProductId) continue;
+      const productDoc = await db.collection("products").doc(resolvedProductId).get();
       if (!productDoc.exists) continue;
 
       const productData = productDoc.data();
@@ -797,11 +893,14 @@ app.post("/api/orders", async (req, res) => {
       totalAmount += finalPrice * quantity;
 
       validatedItems.push({
-        productId: item.id,
+        productId: resolvedProductId,
+        baseProductId: resolvedProductId,
+        cartItemId: rawCartItemId,
         name: item.name || productData.name,
         price: finalPrice,
         quantity,
         image: item.image || item.images?.[0] || item.imageUrl || "",
+        variantId: item.variantId || null,
         variantLabel: item.variantLabel || null,
         originalPrice: item.originalPrice || null,
         discountApplied: item.discountApplied || null,
