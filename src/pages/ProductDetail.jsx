@@ -25,7 +25,7 @@ import { FiBell } from "react-icons/fi";
 /* ═══════════════════════════════════════════════════
    IMAGE LIGHTBOX — full-screen overlay
 ═══════════════════════════════════════════════════ */
-const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock }) => {
+const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe }) => {
   const [current, setCurrent] = useState(initialIndex);
   const thumbsRef = useRef(null);
   // Track whether user manually navigated (pauses auto-scroll briefly)
@@ -98,6 +98,8 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
           <img loading="lazy"
             src={images[current]}
             alt="Product"
+            width="1080"
+            height="1080"
             className="w-full h-full object-contain"
             style={{ maxHeight: "90vh", userSelect: "none" }}
             draggable={false}
@@ -140,7 +142,7 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
                       ? "border-[#801f1f] shadow-md ring-2 ring-[#E7A6A1]/40"
                       : "border-transparent hover:border-gray-200"}`}
                 >
-                  <img loading="lazy" src={img} decoding="async" alt="" className="w-full h-full object-cover" draggable={false} />
+                  <img loading="lazy" src={img} decoding="async" alt="" width="200" height="200" className="w-full h-full object-cover" draggable={false} />
                 </button>
               ))}
             </div>
@@ -278,6 +280,8 @@ const BeforeAfterSlider = ({
       <img loading="lazy"
         src={afterImage}
         alt={afterLabel}
+        width="1200"
+        height="900"
         draggable={false}
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />
@@ -293,6 +297,8 @@ const BeforeAfterSlider = ({
         <img loading="lazy"
           src={beforeImage}
           alt={beforeLabel}
+          width="1200"
+          height="900"
           draggable={false}
           className="absolute inset-0 w-full h-full object-cover"
         />
@@ -367,6 +373,36 @@ const StarRating = ({ value, onChange }) => {
 /* ═══════════════════════════════════════════════════
    REVIEW MODAL
 ═══════════════════════════════════════════════════ */
+const DeferredSection = ({ children, minHeight = 240, rootMargin = "320px 0px" }) => {
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isVisible) return;
+    const node = sectionRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin, threshold: 0.01 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isVisible, rootMargin]);
+
+  return (
+    <div ref={sectionRef} style={{ contentVisibility: "auto", containIntrinsicSize: `${minHeight}px` }}>
+      {isVisible ? children : <div style={{ minHeight }} aria-hidden="true" />}
+    </div>
+  );
+};
+
 const ReviewModal = ({ product, onClose, onReviewAdded }) => {
   const [name, setName] = useState("");
   const [rating, setRating] = useState(0);
@@ -562,7 +598,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
               <div className="flex gap-2 mt-2">
                 {reviewImages.map((img, i) => (
                   <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border">
-                    <img src={img} loading="lazy" className="w-full h-full object-cover" />
+                    <img src={img} loading="lazy" width="160" height="160" className="w-full h-full object-cover" />
                     <button
                       type="button"
                       onClick={() =>
@@ -618,6 +654,8 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
                 loading="lazy"
                 decoding="async"
                 alt={product.name}
+                width="80"
+                height="80"
                 className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover flex-shrink-0 border border-gray-100 hidden sm:block"
               />
             )}
@@ -837,12 +875,19 @@ const ProductDetail = ({
     // Clear thumbnails immediately while new ones load
     setDisplayImages([]);
 
-    // Preload first image immediately (shows main image fast)
     if (!urls || urls.length === 0) return;
 
-    // Preload all images in parallel with async/await
+    // Keep first image free for LCP and warm only secondary gallery images.
+    const secondaryUrls = urls.slice(1);
+    if (secondaryUrls.length === 0) {
+      setDisplayImages(urls.slice(0, 1));
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
     const loaded = await Promise.allSettled(
-      urls.map(url => new Promise((resolve) => {
+      secondaryUrls.map(url => new Promise((resolve) => {
         const img = new window.Image();
         img.onload = () => resolve(url);
         img.onerror = () => resolve(url); // still show even if error
@@ -854,7 +899,7 @@ const ProductDetail = ({
     if (preloadAbortRef._token !== token) return;
 
     const readyUrls = loaded.map(r => r.value).filter(Boolean);
-    setDisplayImages(readyUrls);
+    setDisplayImages([urls[0], ...readyUrls].filter(Boolean));
   }, []);
 
 
@@ -1164,10 +1209,15 @@ const ProductDetail = ({
               >
                 {/* Image or pulse placeholder */}
                 {selectedImage ? (
-                  <img loading="lazy"
+                  <img
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="sync"
                     src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
                     alt={product.name}
-                    className="w-full h-[280px] sm:h-[400px] lg:h-[540px] object-cover transition-all duration-700 ease-in-out"
+                    width="1080"
+                    height="1080"
+                    className="w-full h-[280px] sm:h-[400px] lg:h-[540px] object-cover transition-opacity duration-300 ease-out"
                   />
                 ) : (
                   <div className="w-full h-[280px] sm:h-[400px] lg:h-[540px] bg-gray-100 animate-pulse rounded-3xl" />
@@ -1203,7 +1253,7 @@ const ProductDetail = ({
                           ${selectedImage === img ? "border-[#801f1f] shadow-md scale-105" : "border-transparent hover:border-gray-200"}`}
                         style={{ width: "74px", height: "74px" }}
                       >
-                        <img loading="lazy" src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`} alt="thumb" className="w-full h-full object-cover" />
+                        <img loading="lazy" src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`} alt="thumb" width="148" height="148" className="w-full h-full object-cover" />
                       </button>
                     ))
                   ) : (
@@ -1361,7 +1411,8 @@ const ProductDetail = ({
 
         {/* ════ BEFORE / AFTER ════ */}
         {hasBeforeAfter && (
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
+          <DeferredSection minHeight={420}>
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
             <div className="flex items-center gap-3 mb-8">
               <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#E7A6A1]/40" />
               <div className="flex items-center gap-2 px-5 py-2.5 bg-[#fff6f5] border border-[#E7A6A1]/40 rounded-full">
@@ -1394,12 +1445,14 @@ const ProductDetail = ({
                 </div>
               ))}
             </div>
-          </section>
+            </section>
+          </DeferredSection>
         )}
 
         {/* ════ DESCRIPTION + ADDITIONAL INFO ════ */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DeferredSection minHeight={360}>
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-3xl border border-gray-100 p-7 shadow-sm">
               <div className="flex items-center gap-2 mb-5">
                 <div className="w-1 h-6 bg-[#E7A6A1] rounded-full" />
@@ -1443,12 +1496,14 @@ const ProductDetail = ({
                 <p className="text-sm text-gray-400">No additional information available.</p>
               )}
             </div>
-          </div>
-        </section>
+            </div>
+          </section>
+        </DeferredSection>
 
         {/* ════ VIDEO SECTION ════ */}
         {product.videos?.length > 0 && (
-          <section className="w-full bg-[#fbf7f7] my-10 max-h-[80vh] overflow-hidden">
+          <DeferredSection minHeight={360}>
+            <section className="w-full bg-[#fbf7f7] my-10 max-h-[80vh] overflow-hidden">
             {product.videos.map((vid, idx) => (
               <div
                 key={idx}
@@ -1457,6 +1512,7 @@ const ProductDetail = ({
                 <div className="md:col-span-7 lg:col-span-9 bg-black overflow-hidden">
                   <div className="relative w-full h-[220px] sm:h-[260px] md:h-[300px] lg:h-[340px]">
                     <iframe
+                      loading="lazy"
                       src={getVideoEmbedUrl(vid.url)}
                       className="absolute inset-0 w-full h-full"
                       style={{ display: "block", border: "none" }}
@@ -1476,12 +1532,14 @@ const ProductDetail = ({
                 </div>
               </div>
             ))}
-          </section>
+            </section>
+          </DeferredSection>
         )}
 
         {/* ════ PRODUCT BANNERS ════ */}
         {((product.banners?.length > 0) || product.bannerImage) && (
-          <section className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4">
+          <DeferredSection minHeight={320}>
+            <section className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4">
             {(product.banners?.length > 0
               ? product.banners
               : [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
@@ -1490,15 +1548,19 @@ const ProductDetail = ({
                 <img loading="lazy"
                   src={banner.url}
                   alt={banner.alt || `Product Banner ${idx + 1}`}
+                  width="1600"
+                  height="900"
                   className="w-full object-cover h-auto"
                 />
               </div>
             ))}
-          </section>
+            </section>
+          </DeferredSection>
         )}
 
         {/* ════ REVIEWS ════ */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">
+        <DeferredSection minHeight={420}>
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div>
               <h2 className="text-xl font-semibold text-[#2b2a29]">
@@ -1552,6 +1614,9 @@ const ProductDetail = ({
                         <img
                           key={i}
                           src={img}
+                          loading="lazy"
+                          width="160"
+                          height="160"
                           className="w-20 h-20 object-cover rounded-lg border"
                         />
                       ))}
@@ -1573,11 +1638,13 @@ const ProductDetail = ({
               <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold text-[#801f1f] hover:underline">Write a Review →</button>
             </div>
           )}
-        </section>
+          </section>
+        </DeferredSection>
 
         {/* ════ RELATED PRODUCTS ════ */}
         {relatedProducts.length > 0 && (
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-14">
+          <DeferredSection minHeight={360}>
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-14">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-6 bg-[#E7A6A1] rounded-full" />
               <h2 className="text-xl font-semibold text-[#2b2a29]">You may also like</h2>
@@ -1590,7 +1657,8 @@ const ProductDetail = ({
                 />
               ))}
             </div>
-          </section>
+            </section>
+          </DeferredSection>
         )}
 
         {/* Bottom padding so sticky bar doesn't cover content */}
