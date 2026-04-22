@@ -1,6 +1,7 @@
 import React from "react";
 import { useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
+import { useLocation } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { useAuth } from "../context/AuthContext";
 import { FiShoppingBag, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
@@ -9,9 +10,18 @@ import { FiShoppingBag, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 const CartStatusToast = () => {
   const { currentUser } = useAuth();
   const { cartItems, isCartLoaded } = useCart();
+  const { pathname } = useLocation();
 
   const shownOnce = useRef(false);
   const prevCount = useRef(null);
+  const isBlockedRoute =
+    pathname.startsWith("/admin") || pathname.startsWith("/order-success");
+
+  useEffect(() => {
+    if (isBlockedRoute) {
+      toast.dismiss();
+    }
+  }, [isBlockedRoute]);
 
   const showToast = (message, type = "default", isEmpty = false) => {
     toast.dismiss();
@@ -74,6 +84,7 @@ const CartStatusToast = () => {
   };
 
   useEffect(() => {
+    if (isBlockedRoute) return;
     if (!currentUser || !isCartLoaded) return;
 
     const count = cartItems.length;
@@ -103,7 +114,7 @@ const CartStatusToast = () => {
 
       prevCount.current = count;
     }
-  }, [cartItems, currentUser, isCartLoaded]);
+  }, [cartItems, currentUser, isCartLoaded, isBlockedRoute]);
 
   return null;
 };

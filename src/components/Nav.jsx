@@ -475,7 +475,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
                 onClick={() => toggleMenu("grooming")}
                 className="cursor-pointer"
                 aria-label="Toggle Grooming Tools menu"
-              >
+              >   
                 <ChevronDown
                   className={`w-4 h-4 transition-transform ${openMenu === "grooming" ? "rotate-180" : ""}`}
                 />
