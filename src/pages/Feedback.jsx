@@ -14,6 +14,17 @@ const ISSUE_TYPES = [
   { value: "other", label: "Other" },
 ];
 
+const parseApiResponse = async (res) => {
+  const text = await res.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
+  return { data, text };
+};
+
 const Feedback = () => {
   const [searchParams] = useSearchParams();
   const prefilledOrderId = searchParams.get("orderId") || "";
@@ -68,8 +79,14 @@ const Feedback = () => {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to submit feedback");
+      const { data, text } = await parseApiResponse(res);
+      if (!res.ok) {
+        const isHtmlError = typeof text === "string" && text.trim().startsWith("<!DOCTYPE");
+        const msg = isHtmlError
+          ? "Feedback service is not available yet. Please contact admin to deploy latest backend."
+          : data?.error || "Failed to submit feedback";
+        throw new Error(msg);
+      }
 
       setSuccess("Thank you. Your feedback has been submitted.");
       setForm((prev) => ({
@@ -126,7 +143,13 @@ const Feedback = () => {
                   placeholder="Phone Number"
                   className="w-full p-3 rounded-xl border border-gray-200 text-sm"
                 />
-            
+                <input
+                  type="text"
+                  value={form.orderId}
+                  onChange={(e) => updateField("orderId", e.target.value)}
+                  placeholder="Order ID (optional)"
+                  className="w-full p-3 rounded-xl border border-gray-200 text-sm"
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

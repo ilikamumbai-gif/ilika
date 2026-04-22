@@ -56,9 +56,28 @@ const OrderSuccess = () => {
                 Continue Shopping
               </button>
               <button
-                onClick={() => navigate(`/feedback?orderId=${encodeURIComponent(orderId || "")}`)}
-                className="flex-1 border border-black text-black py-3 rounded-xl hover:bg-gray-100 transition"
+                onClick={() =>
+                  navigate(`/feedback?orderId=${encodeURIComponent(orderId || "")}`)
+                }
+                className="
+                  relative flex-1 flex items-center justify-center gap-2
+                  px-6 py-3
+                  text-sm font-semibold
+                  rounded-xl
+                  text-balck
+                  bg-gradient-to-r from-[#c97b7b] to-[#e6a4a4]
+                  shadow-md
+                  overflow-hidden
+                  hover:scale-[1.03] hover:shadow-xl
+                  transition-all duration-300
+                "
               >
+                {/* ✨ Glow Effect */}
+                <span className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition duration-300 rounded-xl"></span>
+
+                {/* 💬 Icon */}
+                <CheckCircle className="w-4 h-4" />
+
                 Give Feedback
               </button>
             </div>

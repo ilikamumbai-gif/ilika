@@ -18,6 +18,17 @@ const statusClass = (status = "open") => {
   return "bg-rose-100 text-rose-700";
 };
 
+const parseApiResponse = async (res) => {
+  const text = await res.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
+  return { data, text };
+};
+
 const FeedbackList = () => {
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
@@ -30,7 +41,11 @@ const FeedbackList = () => {
     try {
       setLoading(true);
       const res = await fetch(`${API}/api/feedback`);
-      const data = await res.json();
+      const { data, text } = await parseApiResponse(res);
+      if (!res.ok) {
+        const isHtmlError = typeof text === "string" && text.trim().startsWith("<!DOCTYPE");
+        throw new Error(isHtmlError ? "Feedback API route not found (backend not updated)." : "Fetch feedback failed");
+      }
       setFeedbacks(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Fetch feedback list failed:", err);

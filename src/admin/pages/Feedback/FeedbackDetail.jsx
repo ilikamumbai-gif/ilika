@@ -9,6 +9,17 @@ const parseDate = (value) => {
   return Number.isNaN(parsed.getTime()) ? "-" : parsed.toLocaleString("en-IN");
 };
 
+const parseApiResponse = async (res) => {
+  const text = await res.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
+  return { data, text };
+};
+
 const FeedbackDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -21,8 +32,11 @@ const FeedbackDetail = () => {
     try {
       setLoading(true);
       const res = await fetch(`${API}/api/feedback/${id}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Feedback not found");
+      const { data, text } = await parseApiResponse(res);
+      if (!res.ok) {
+        const isHtmlError = typeof text === "string" && text.trim().startsWith("<!DOCTYPE");
+        throw new Error(isHtmlError ? "Feedback API route not found (backend not updated)." : data?.error || "Feedback not found");
+      }
       setFeedback(data);
     } catch (err) {
       console.error("Feedback detail fetch error:", err);
@@ -45,8 +59,11 @@ const FeedbackDetail = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: nextStatus }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to update status");
+      const { data, text } = await parseApiResponse(res);
+      if (!res.ok) {
+        const isHtmlError = typeof text === "string" && text.trim().startsWith("<!DOCTYPE");
+        throw new Error(isHtmlError ? "Feedback API route not found (backend not updated)." : data?.error || "Failed to update status");
+      }
       setFeedback((prev) => ({ ...prev, status: nextStatus }));
     } catch (err) {
       console.error("Feedback status update failed:", err);
@@ -60,8 +77,11 @@ const FeedbackDetail = () => {
     if (!window.confirm("Delete this feedback?")) return;
     try {
       const res = await fetch(`${API}/api/feedback/${id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Delete failed");
+      const { data, text } = await parseApiResponse(res);
+      if (!res.ok) {
+        const isHtmlError = typeof text === "string" && text.trim().startsWith("<!DOCTYPE");
+        throw new Error(isHtmlError ? "Feedback API route not found (backend not updated)." : data?.error || "Delete failed");
+      }
       navigate("/admin/feedback");
     } catch (err) {
       console.error("Feedback delete failed:", err);
