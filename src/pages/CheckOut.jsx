@@ -17,6 +17,7 @@ import Heading from "../components/Heading";
 // type on every render and unmounts/remounts it, destroying all input state.
 const OtpWidget = ({
   phone,
+  setPhone,
   otpSent,
   otp,
   setOtp,
@@ -26,10 +27,22 @@ const OtpWidget = ({
   sendOtp,
   verifyOtp,
   onResend,
+  resendCount,
+  maxResendCount,
 }) => (
   <div className="border p-4 rounded-xl mt-3 bg-gray-50">
-    <p className="text-sm mb-3 text-gray-700">
-      Verify your phone number: <strong>{phone}</strong>
+    <p className="text-sm mb-2 text-gray-700">Verify your phone number</p>
+    <input
+      type="text"
+      value={phone}
+      onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+      placeholder="Enter 10-digit phone number"
+      className="border p-3 rounded-lg w-full text-sm"
+      maxLength={10}
+      inputMode="numeric"
+    />
+    <p className="text-xs text-gray-500 mt-2">
+      OTP resends used: {resendCount}/{maxResendCount}
     </p>
 
     {!otpSent ? (
@@ -61,7 +74,7 @@ const OtpWidget = ({
           </button>
           <button
             onClick={onResend}
-            disabled={otpSending || resendCooldown > 0}
+            disabled={otpSending || resendCooldown > 0 || resendCount >= maxResendCount}
             className="bg-gray-200 p-2 rounded text-sm px-4 disabled:opacity-50"
           >
             Resend
@@ -70,6 +83,11 @@ const OtpWidget = ({
         {resendCooldown > 0 && (
           <p className="text-xs text-gray-500 mt-2">
             Please wait {resendCooldown}s before requesting another OTP.
+          </p>
+        )}
+        {resendCount >= maxResendCount && (
+          <p className="text-xs text-rose-600 mt-2">
+            You reached the maximum 3 OTP resends for this session.
           </p>
         )}
       </>
@@ -108,6 +126,9 @@ const Checkout = () => {
   const [verifying, setVerifying] = useState(false);
   const [otpSending, setOtpSending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [otpPhone, setOtpPhone] = useState("");
+  const [otpResendCount, setOtpResendCount] = useState(0);
+  const MAX_OTP_RESENDS = 3;
 
   // Single reCAPTCHA container ref — we use ONE div in the DOM, always
   const recaptchaContainerRef = useRef(null);
@@ -174,11 +195,11 @@ const Checkout = () => {
   const sendOtp = async (phone) => {
     if (!currentUser) {
       alert("Please log in before verifying your phone number");
-      return;
+      return false;
     }
 
     if (otpSending || resendCooldown > 0) {
-      return;
+      return false;
     }
 
     const sanitizedPhone = normalizeIndianPhone(phone);
@@ -195,12 +216,12 @@ const Checkout = () => {
       setOtpSent(false);
       setConfirmationResult(null);
       destroyRecaptcha();
-      return;
+      return true;
     }
 
     if (!/^[6-9]\d{9}$/.test(sanitizedPhone)) {
       alert("Enter a valid 10-digit Indian mobile number");
-      return;
+      return false;
     }
 
     setOtpSending(true);
@@ -215,6 +236,7 @@ const Checkout = () => {
       setConfirmationResult(confirmation);
       setOtpSent(true);
       setResendCooldown(30);
+      return true;
     } catch (err) {
       resetRecaptcha();
 
@@ -223,7 +245,7 @@ const Checkout = () => {
       if (err?.code === "auth/too-many-requests") {
         setResendCooldown(60);
         alert("Too many OTP attempts. Please wait 60 seconds before trying again.");
-        return;
+        return false;
       }
 
       if (err?.code === "auth/invalid-app-credential") {
@@ -231,15 +253,16 @@ const Checkout = () => {
           "Real OTP verification is blocked by Firebase app verification settings. " +
           "Check Firebase Phone Auth, authorized domains, and the API key/project config."
         );
-        return;
+        return false;
       }
 
       if (err?.code === "auth/unauthorized-domain") {
         alert("This domain is not authorized for Firebase phone authentication.");
-        return;
+        return false;
       }
 
       alert("Failed to send OTP: " + (err?.message || "Please try again."));
+      return false;
     } finally {
       setOtpSending(false);
     }
@@ -264,7 +287,7 @@ const Checkout = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone: normalizeIndianPhone(selectedAddress?.phone || ""),
+          phone: normalizeIndianPhone(otpPhone || selectedAddress?.phone || ""),
         }),
       });
       if (!res.ok) throw new Error("Failed to save verification");
@@ -277,6 +300,7 @@ const Checkout = () => {
       setOtp("");
       setConfirmationResult(null);
       setResendCooldown(0);
+      setOtpResendCount(0);
       resetRecaptcha();
       await signOut(phoneVerificationAuth);
 
@@ -290,12 +314,17 @@ const Checkout = () => {
   };
 
   // ─── OTP RESEND handler ───────────────────────────────────────────────────
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     if (otpSending || resendCooldown > 0) return;
-    setOtpSent(false);
+    if (otpResendCount >= MAX_OTP_RESENDS) {
+      alert("You can resend OTP only 3 times in one session.");
+      return;
+    }
     setOtp("");
-    setConfirmationResult(null);
-    resetRecaptcha();
+    const ok = await sendOtp(otpPhone || selectedAddress?.phone || "");
+    if (ok) {
+      setOtpResendCount((prev) => prev + 1);
+    }
   };
 
   // ─── ADDRESS STATE ────────────────────────────────────────────────────────
@@ -314,6 +343,8 @@ const Checkout = () => {
     setOtp("");
     setConfirmationResult(null);
     setResendCooldown(0);
+    setOtpResendCount(0);
+    setOtpPhone(normalizeIndianPhone(selectedAddress?.phone || ""));
     destroyRecaptcha();
   }, [selectedAddressId]);
 
@@ -648,7 +679,8 @@ const Checkout = () => {
             {/* OTP widget — only shown when address selected and phone unverified */}
             {showOtpWidget && selectedAddress && (
               <OtpWidget
-                phone={selectedAddress.phone}
+                phone={otpPhone}
+                setPhone={setOtpPhone}
                 otpSent={otpSent}
                 otp={otp}
                 setOtp={setOtp}
@@ -658,6 +690,8 @@ const Checkout = () => {
                 sendOtp={sendOtp}
                 verifyOtp={verifyOtp}
                 onResend={handleResendOtp}
+                resendCount={otpResendCount}
+                maxResendCount={MAX_OTP_RESENDS}
               />
             )}
 
