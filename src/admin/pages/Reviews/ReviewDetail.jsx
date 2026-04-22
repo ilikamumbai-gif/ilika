@@ -230,6 +230,21 @@ const ReviewDetail = () => {
           </div>
         )}
 
+        {review.images?.map((img, i) => (
+          <div>
+            <p className="text-sm text-gray-500 mb-2">
+              Review Image
+            </p>
+            <img loading="lazy"
+            key={i}
+              src={img}
+              alt="Review"
+              className="w-full max-w-sm rounded-lg border border-gray-200 object-cover"
+            />
+          </div>
+        ))}
+
+
 
         {/* DATE */}
 

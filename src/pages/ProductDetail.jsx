@@ -139,7 +139,7 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
                       ? "border-[#801f1f] shadow-md ring-2 ring-[#E7A6A1]/40"
                       : "border-transparent hover:border-gray-200"}`}
                 >
-                  <img loading="lazy" src={img} alt="" className="w-full h-full object-cover" draggable={false} />
+                  <img loading="lazy" src={img} decoding="async" alt="" className="w-full h-full object-cover" draggable={false} />
                 </button>
               ))}
             </div>
@@ -370,67 +370,123 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
   const [name, setName] = useState("");
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [reviewImage, setReviewImage] = useState("");
+  const [reviewImages, setReviewImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
 
-    if (!file.type.startsWith("image/")) {
-      setError("Please upload a valid image file.");
+    if (!files.length) return;
+
+    if (files.length + reviewImages.length > 2) {
+      setError("You can upload maximum 2 images.");
       return;
     }
 
-    const maxSize = 2 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setError("Image size should be under 2MB.");
-      return;
+    const validFiles = [];
+
+    for (let file of files) {
+      if (!file.type.startsWith("image/")) {
+        setError("Only image files are allowed.");
+        return;
+      }
+
+      if (file.size > 2 * 1024 * 1024) {
+        setError("Each image must be under 2MB.");
+        return;
+      }
+
+      validFiles.push(file);
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setReviewImage(String(reader.result || ""));
+    const readers = validFiles.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(readers).then(images => {
+      setReviewImages(prev => [...prev, ...images]);
       setError("");
-    };
-    reader.readAsDataURL(file);
+    });
   };
 
   const submit = async (e) => {
     e?.preventDefault();
-    if (!name.trim()) { setError("Please enter your name."); return; }
-    if (!rating) { setError("Please select a rating."); return; }
-    if (!comment.trim()) { setError("Please write your review."); return; }
-    setError(""); setLoading(true);
+
+    // ✅ VALIDATIONS
+    if (!name.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
+
+    if (!rating) {
+      setError("Please select a rating.");
+      return;
+    }
+
+    if (!comment.trim()) {
+      setError("Please write your review.");
+      return;
+    }
+
+
+    setError("");
+    setLoading(true);
+
     try {
+      // ✅ FIXED PAYLOAD
       const reviewPayload = {
         name: name.trim(),
         rating,
         comment: comment.trim(),
-        image: reviewImage || null,
+        images: reviewImages, // ✅ array instead of single image
         userId: auth.currentUser?.uid || null,
         userEmail: auth.currentUser?.email || null,
-        verifiedPurchase: Boolean(auth.currentUser?.uid || auth.currentUser?.email),
+        verifiedPurchase: Boolean(
+          auth.currentUser?.uid || auth.currentUser?.email
+        ),
       };
 
       const reviews = [...(product.reviews || []), reviewPayload];
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${product._id || product.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reviews }),
-      });
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/products/${product._id || product.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ reviews }),
+        }
+      );
 
       if (!res.ok) {
         throw new Error("Review submit failed");
       }
 
+      // ✅ Update UI instantly
       onReviewAdded?.({
         ...reviewPayload,
         createdAt: new Date().toISOString(),
       });
+
+      // ✅ Reset form (important UX)
+      setName("");
+      setRating(0);
+      setComment("");
+      setReviewImages([]);
+
       onClose();
-    } catch { setError("Failed to submit. Please try again."); }
+
+    } catch (err) {
+      console.error(err);
+      setError("Failed to submit. Please try again.");
+    }
+
     setLoading(false);
   };
 
@@ -453,20 +509,28 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
             <input
               type="file"
               accept="image/*"
+              multiple
               onChange={handleImageChange}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E7A6A1]/50 focus:border-[#E7A6A1]"
             />
-            <p className="text-[11px] text-gray-400 mt-1">Max size: 2MB</p>
-            {reviewImage && (
-              <div className="mt-2 relative w-24 h-24 rounded-xl overflow-hidden border border-gray-200">
-                <img loading="lazy" src={reviewImage} alt="Review upload preview" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => setReviewImage("")}
-                  className="absolute top-1 right-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded"
-                >
-                  Remove
-                </button>
+            <p className="text-[11px] text-gray-400 mt-1">
+              Upload 1–2 images (Max 2MB each)
+            </p>
+            {reviewImages.length > 0 && (
+              <div className="flex gap-2 mt-2">
+                {reviewImages.map((img, i) => (
+                  <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border">
+                    <img src={img} loading="lazy" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReviewImages(prev => prev.filter((_, index) => index !== i))
+                      }
+                      className="absolute top-1 right-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -506,8 +570,10 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
           {/* LEFT — product name + thumbnail */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {(product?.images?.[0] || product?.imageUrl) && (
-              <img loading="lazy"
+              <img 
                 src={product.images?.[0] || product.imageUrl}
+                loading="lazy"
+                decoding="async"
                 alt={product.name}
                 className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover flex-shrink-0 border border-gray-100 hidden sm:block"
               />
@@ -1422,13 +1488,16 @@ const ProductDetail = ({
                     <span className="text-[10px] bg-[#f0faf0] text-[#1C371C] font-semibold px-2 py-0.5 rounded-full">Verified</span>
                   </div>
                   <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
-                  {rev.image && (
-                    <img
-                      loading="lazy"
-                      src={rev.image}
-                      alt="Review"
-                      className="mt-3 w-full h-44 object-cover rounded-xl border border-gray-100"
-                    />
+                  {rev.images?.length > 0 && (
+                    <div className="flex gap-2 mt-3">
+                      {rev.images.map((img, i) => (
+                        <img
+                          key={i}
+                          src={img}
+                          className="w-20 h-20 object-cover rounded-lg border"
+                        />
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}

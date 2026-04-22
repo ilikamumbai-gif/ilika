@@ -315,7 +315,7 @@ app.put("/api/products/:id", async (req, res) => {
         name: r.name || "",
         rating: r.rating || 0,
         comment: r.comment || "",
-        image: r.image || null,
+        images: r.images || [],
         userId: r.userId || null,
         userEmail: r.userEmail || null,
         verifiedPurchase: Boolean(r.verifiedPurchase),
