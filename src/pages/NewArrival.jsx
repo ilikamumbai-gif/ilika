@@ -30,7 +30,7 @@ const NewArrival = () => {
         <Header />
         <CartDrawer />
         <Banner
-          className="md:h-[55vh] mt-0 mb-10"
+          className="mt-0 mb-10"
           src={holimainbanner}
           mobileSrc={holiMobile}
         />
