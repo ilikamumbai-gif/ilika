@@ -11,6 +11,48 @@ import { useAdminAuth } from "../context/AdminAuthContext";
 import { logActivity } from "../Utils/logActivity";
 
 const storage = getStorage(app);
+const DEFAULT_DETAIL_BG = "#FFFFFF";
+
+const normalizeHexColor = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const prefixed = raw.startsWith("#") ? raw : `#${raw}`;
+  const shortHex = /^#([a-fA-F0-9]{3})$/;
+  const longHex = /^#([a-fA-F0-9]{6})$/;
+  if (shortHex.test(prefixed)) {
+    const [, part] = prefixed.match(shortHex);
+    return `#${part[0]}${part[0]}${part[1]}${part[1]}${part[2]}${part[2]}`.toUpperCase();
+  }
+  if (longHex.test(prefixed)) return prefixed.toUpperCase();
+  return "";
+};
+
+const sanitizePalette = (palette = []) => {
+  if (!Array.isArray(palette)) return [];
+  const unique = new Set();
+  const cleaned = [];
+  palette.forEach((item) => {
+    const value = normalizeHexColor(item?.value || item?.color || "");
+    if (!value || unique.has(value)) return;
+    unique.add(value);
+    cleaned.push({
+      name: String(item?.name || item?.label || value).trim() || value,
+      value,
+    });
+  });
+  return cleaned;
+};
+
+const buildDetailBgConfig = (palette = [], defaultColor = "") => {
+  const cleaned = sanitizePalette(palette);
+
+  const normalizedDefault = normalizeHexColor(defaultColor) || DEFAULT_DETAIL_BG;
+
+  return {
+    palette: cleaned,
+    defaultColor: normalizedDefault,
+  };
+};
 
 /* ── Rich Text Editor ── */
 const RichTextEditor = ({ value, onChange }) => {
@@ -104,9 +146,13 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     videos: [],
     warranty: "",   // ✅ NEW
     banners: [],
+    detailPageBgPalette: [],
+    detailPageDefaultBg: DEFAULT_DETAIL_BG,
   };
 
-  const fromInitial = (d) => ({
+  const fromInitial = (d) => {
+    const detailBg = buildDetailBgConfig(d.detailPageBgPalette, d.detailPageDefaultBg);
+    return {
     name: d.name || "",
     shortInfo: d.shortInfo || "",
     price: d.price || "",
@@ -129,11 +175,16 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     hasVideo: !!(d.videos?.length),
     warranty: d.warranty || "",   // ✅ NEW
     banners: Array.isArray(d.banners) ? d.banners : (d.bannerImage ? [{ url: d.bannerImage, alt: d.bannerAlt || "" }] : []),
-  });
+    detailPageBgPalette: detailBg.palette,
+    detailPageDefaultBg: detailBg.defaultColor,
+  };
+};
 
   const [form, setForm] = useState(fromInitial(initialData));
   const [previewImages, setPreviewImages] = useState(initialData.images || []);
   const [loading, setLoading] = useState(false);
+  const [newBgName, setNewBgName] = useState("");
+  const [newBgValue, setNewBgValue] = useState("#FFEFEA");
 
   useEffect(() => {
     if (!initialData || Object.keys(initialData).length === 0) return;
@@ -193,6 +244,58 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       imgs.splice(to, 0, mi); prvs.splice(to, 0, mp);
       vs[vi] = { ...vs[vi], images: imgs, preview: prvs };
       return { ...prev, variants: vs };
+    });
+  };
+
+  const addDetailBgColor = () => {
+    const normalized = normalizeHexColor(newBgValue);
+    if (!normalized) return;
+    setForm((prev) => {
+      if (prev.detailPageBgPalette.some((item) => item.value === normalized)) return prev;
+      const nextPalette = [
+        ...prev.detailPageBgPalette,
+        { name: newBgName.trim() || normalized, value: normalized },
+      ];
+      return { ...prev, detailPageBgPalette: nextPalette };
+    });
+    setNewBgName("");
+    setNewBgValue("#FFEFEA");
+  };
+
+  const updateDetailBgColor = (index, patch) => {
+    setForm((prev) => {
+      const list = [...prev.detailPageBgPalette];
+      if (!list[index]) return prev;
+      const oldValue = list[index].value;
+
+      const updated = {
+        ...list[index],
+        ...patch,
+      };
+
+      if (Object.prototype.hasOwnProperty.call(patch, "value")) {
+        const normalized = normalizeHexColor(patch.value);
+        if (!normalized) return prev;
+        const duplicate = list.some((item, i) => i !== index && item.value === normalized);
+        if (duplicate) return prev;
+        updated.value = normalized;
+      }
+
+      list[index] = updated;
+      const activeDefault = prev.detailPageDefaultBg === oldValue ? updated.value : prev.detailPageDefaultBg;
+      return { ...prev, detailPageBgPalette: list, detailPageDefaultBg: activeDefault };
+    });
+  };
+
+  const removeDetailBgColor = (index) => {
+    setForm((prev) => {
+      const list = prev.detailPageBgPalette.filter((_, i) => i !== index);
+      const hasDefault = list.some((item) => item.value === prev.detailPageDefaultBg);
+      return {
+        ...prev,
+        detailPageBgPalette: list,
+        detailPageDefaultBg: hasDefault ? prev.detailPageDefaultBg : DEFAULT_DETAIL_BG,
+      };
     });
   };
 
@@ -301,6 +404,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         videos: videoData,
         warranty: form.warranty || "",   // ✅ NEW
         banners: form.banners || [],
+        detailPageBgPalette: sanitizePalette(form.detailPageBgPalette),
+        detailPageDefaultBg: normalizeHexColor(form.detailPageDefaultBg) || DEFAULT_DETAIL_BG,
       });
 
       await logActivity(initialData?.id
@@ -318,19 +423,30 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
   /* ══════════════ JSX ══════════════ */
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 max-w-xl">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-6xl">
 
-      <input name="name" placeholder="Product Name" value={form.name}
-        onChange={e => setForm({ ...form, name: e.target.value })}
-        className="w-full border p-2 rounded" required
-      />
-      <textarea placeholder="Short Info" value={form.shortInfo}
-        onChange={e => setForm({ ...form, shortInfo: e.target.value })}
-        className="w-full border p-2 rounded" rows={2}
-      />
+      <div className="border rounded-2xl bg-white p-5 space-y-4">
+        <h2 className="text-base font-semibold text-gray-900">Basic Details</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="lg:col-span-2">
+            <label className="text-xs font-semibold text-gray-600 block mb-1">Product Name</label>
+            <input name="name" placeholder="Product Name" value={form.name}
+              onChange={e => setForm({ ...form, name: e.target.value })}
+              className="w-full border border-gray-200 p-2.5 rounded-lg" required
+            />
+          </div>
+          <div className="lg:col-span-2">
+            <label className="text-xs font-semibold text-gray-600 block mb-1">Short Info</label>
+            <textarea placeholder="Short Info" value={form.shortInfo}
+              onChange={e => setForm({ ...form, shortInfo: e.target.value })}
+              className="w-full border border-gray-200 p-2.5 rounded-lg" rows={2}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* STATUS */}
-      <div className="grid grid-cols-2 gap-6 border p-4 rounded bg-gray-50">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 border p-4 rounded-xl bg-gray-50">
         <div>
           <label className="block font-medium mb-2">Product Status</label>
           <div className="flex gap-4">
@@ -357,14 +473,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
       {/* PRICE */}
       {!form.hasVariants && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input type="number" placeholder="Price" value={form.price}
             onChange={e => setForm({ ...form, price: e.target.value })}
-            className="w-full border p-2 rounded" required
+            className="w-full border border-gray-200 p-2.5 rounded-lg" required
           />
           <input type="number" placeholder="MRP" value={form.mrp}
             onChange={e => setForm({ ...form, mrp: e.target.value })}
-            className="w-full border p-2 rounded" required
+            className="w-full border border-gray-200 p-2.5 rounded-lg" required
           />
         </div>
       )}
@@ -433,18 +549,20 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         </div>
       )}
 
-      <input placeholder="Tagline (comma separated)" value={form.tagline}
-        onChange={e => setForm({ ...form, tagline: e.target.value })}
-        className="w-full border p-2 rounded"
-      />
-      <input placeholder="Additional Information (comma separated)" value={form.additionalInfo}
-        onChange={e => setForm({ ...form, additionalInfo: e.target.value })}
-        className="w-full border p-2 rounded"
-      />
-      <input placeholder="Benefits (comma separated)" value={form.points}
-        onChange={e => setForm({ ...form, points: e.target.value })}
-        className="w-full border p-2 rounded"
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <input placeholder="Tagline (comma separated)" value={form.tagline}
+          onChange={e => setForm({ ...form, tagline: e.target.value })}
+          className="w-full border border-gray-200 p-2.5 rounded-lg"
+        />
+        <input placeholder="Additional Information (comma separated)" value={form.additionalInfo}
+          onChange={e => setForm({ ...form, additionalInfo: e.target.value })}
+          className="w-full border border-gray-200 p-2.5 rounded-lg"
+        />
+        <input placeholder="Benefits (comma separated)" value={form.points}
+          onChange={e => setForm({ ...form, points: e.target.value })}
+          className="w-full border border-gray-200 p-2.5 rounded-lg"
+        />
+      </div>
 
       <RichTextEditor value={form.description} onChange={html => setForm({ ...form, description: html })} />
 
@@ -456,6 +574,96 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             {cat.name}
           </label>
         ))}
+      </div>
+
+      {/* PRODUCT DETAIL BACKGROUND COLORS */}
+      <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+        <div>
+          <p className="font-semibold text-sm">Product Detail Background Colors</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Add palette options for this product detail page. White is the default fallback.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          {(form.detailPageBgPalette || []).map((item, idx) => (
+            <div key={`${item.value}-${idx}`} className="grid grid-cols-1 md:grid-cols-[1fr_140px_auto_auto] gap-2 items-center bg-white border border-gray-200 rounded-lg p-2.5">
+              <input
+                type="text"
+                placeholder="Color label"
+                value={item.name || ""}
+                onChange={(e) => updateDetailBgColor(idx, { name: e.target.value })}
+                className="w-full border border-gray-200 rounded-md p-2 text-sm"
+              />
+              <input
+                type="text"
+                placeholder="#FFFFFF"
+                value={item.value || ""}
+                onChange={(e) => updateDetailBgColor(idx, { value: e.target.value })}
+                className="w-full border border-gray-200 rounded-md p-2 text-sm uppercase"
+              />
+              <input
+                type="color"
+                value={normalizeHexColor(item.value) || DEFAULT_DETAIL_BG}
+                onChange={(e) => updateDetailBgColor(idx, { value: e.target.value })}
+                className="h-10 w-full md:w-12 border border-gray-200 rounded-md p-1 cursor-pointer"
+              />
+              <button
+                type="button"
+                onClick={() => removeDetailBgColor(idx)}
+                className="text-xs px-3 py-2 rounded-md border border-red-200 text-red-500"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_140px_auto] gap-2 items-center">
+          <input
+            type="text"
+            placeholder="New color name (e.g. Soft Blush)"
+            value={newBgName}
+            onChange={(e) => setNewBgName(e.target.value)}
+            className="w-full border border-gray-200 rounded-lg p-2.5 text-sm"
+          />
+          <input
+            type="color"
+            value={newBgValue}
+            onChange={(e) => setNewBgValue(e.target.value)}
+            className="h-10 w-full border border-gray-200 rounded-lg p-1 cursor-pointer"
+          />
+          <button
+            type="button"
+            onClick={addDetailBgColor}
+            className="bg-gray-800 text-white text-sm px-4 py-2.5 rounded-lg hover:bg-gray-700 transition"
+          >
+            Add Color
+          </button>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-3">
+          <p className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Default Product Detail Background</p>
+          <div className="flex flex-wrap gap-2">
+            {[{ name: "White", value: DEFAULT_DETAIL_BG }, ...(form.detailPageBgPalette || [])]
+              .filter((item, index, arr) => arr.findIndex((x) => x.value === item.value) === index)
+              .map((item) => (
+              <button
+                key={`default-${item.value}`}
+                type="button"
+                onClick={() => setForm((prev) => ({ ...prev, detailPageDefaultBg: item.value }))}
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs border transition ${
+                  form.detailPageDefaultBg === item.value
+                    ? "border-[#1C371C] text-[#1C371C] bg-[#f0faf0]"
+                    : "border-gray-200 text-gray-600 bg-white"
+                }`}
+              >
+                <span className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: item.value }} />
+                {item.name || item.value}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* PRODUCT IMAGES */}
@@ -767,7 +975,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         )}
       </div>
 
-      <button type="submit" className="bg-black text-white px-4 py-2 rounded">
+      <button type="submit" className="bg-black text-white px-5 py-2.5 rounded-lg">
         {loading ? "Saving..." : "Save Product"}
       </button>
     </form>

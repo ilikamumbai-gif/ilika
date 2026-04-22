@@ -19,8 +19,21 @@ import ProductCard from "../components/ProductCard";
 import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 
+const DEFAULT_DETAIL_BG = "#FFFFFF";
 
-
+const normalizeHexColor = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const prefixed = raw.startsWith("#") ? raw : `#${raw}`;
+  const shortHex = /^#([a-fA-F0-9]{3})$/;
+  const longHex = /^#([a-fA-F0-9]{6})$/;
+  if (shortHex.test(prefixed)) {
+    const [, part] = prefixed.match(shortHex);
+    return `#${part[0]}${part[0]}${part[1]}${part[1]}${part[2]}${part[2]}`.toUpperCase();
+  }
+  if (longHex.test(prefixed)) return prefixed.toUpperCase();
+  return "";
+};
 
 /* ═══════════════════════════════════════════════════
    IMAGE LIGHTBOX — full-screen overlay
@@ -1111,6 +1124,10 @@ const ProductDetail = ({
       .slice(0, 6);
   }, [products, product, productId]);
 
+  const detailPageBgColor = useMemo(() => {
+    return normalizeHexColor(product?.detailPageDefaultBg) || DEFAULT_DETAIL_BG;
+  }, [product?.detailPageDefaultBg]);
+
   /* ── Loading / not found states ── */
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -1186,7 +1203,7 @@ const ProductDetail = ({
       // footerHeight={footerHeight}
       />
 
-      <div className="primary-bg-color">
+      <div className="primary-bg-color" style={{ backgroundColor: detailPageBgColor }}>
         <Header />
         <CartDrawer />
 
