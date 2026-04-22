@@ -53,7 +53,7 @@ const OtpWidget = ({
       <button
         onClick={() => sendOtp(phone)}
         disabled={otpSending || resendCooldown > 0}
-        className="bg-gray-200 p-2 rounded w-full disabled:opacity-50 text-sm font-medium"
+        className="bg-[#E7A6A1] p-2 rounded w-full disabled:opacity-30 text-sm font-medium"
       >
         {otpSending ? "Sending OTP…" : "Send OTP"}
       </button>
