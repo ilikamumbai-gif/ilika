@@ -138,13 +138,11 @@ const buildPurchasedProductIndex = async () => {
         if (itemIdValue) ids.push(itemIdValue);
         if (cartItemIdValue) ids.push(cartItemIdValue);
 
-        if (item?.variantId || item?.variantLabel) {
-          [productIdValue, itemIdValue, cartItemIdValue].forEach((value) => {
-            if (!value || !value.includes("_")) return;
-            const baseCandidate = value.split("_")[0]?.trim();
-            if (baseCandidate) ids.push(baseCandidate);
-          });
-        }
+        [productIdValue, itemIdValue, cartItemIdValue].forEach((value) => {
+          if (!value || !value.includes("_")) return;
+          const baseCandidate = value.split("_")[0]?.trim();
+          if (baseCandidate) ids.push(baseCandidate);
+        });
 
         return ids;
       })

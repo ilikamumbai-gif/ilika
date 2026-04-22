@@ -23,7 +23,7 @@ export const ReviewProvider = ({ children }) => {
 
   return (
     <ReviewContext.Provider
-      value={{ reviews }}
+      value={{ reviews, fetchReviews }}
     >
       {children}
     </ReviewContext.Provider>

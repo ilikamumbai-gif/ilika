@@ -28,7 +28,7 @@ export const CartEventProvider = ({ children }) => {
   }, []);
 
   return (
-    <CartEventContext.Provider value={{ events }}>
+    <CartEventContext.Provider value={{ events, fetchEvents }}>
       {children}
     </CartEventContext.Provider>
   );
