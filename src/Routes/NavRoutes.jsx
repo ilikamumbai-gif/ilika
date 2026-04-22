@@ -41,6 +41,7 @@ const ShopAll = lazy(() => import("../pages/ShopAll"));
 const About = lazy(() => import("../pages/About"));
 const Combos = lazy(() => import("../pages/Combos"));
 const ComboDetail = lazy(() => import("../pages/ComboDetail"));
+const Feedback = lazy(() => import("../pages/Feedback"));
 
 const PixelPageTracker = () => {
   const { pathname } = useLocation();
@@ -106,6 +107,7 @@ const NavRoutes = () => {
         <Route path="/return" element={renderLazy(Return)} />
         <Route path="/about" element={renderLazy(About)} />
         <Route path="/contact" element={renderLazy(Contact)} />
+        <Route path="/feedback" element={renderLazy(Feedback)} />
         <Route path="/shippingpolicy" element={renderLazy(ShippingPolicy)} />
         <Route path="/faq" element={renderLazy(Faq)} />
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />

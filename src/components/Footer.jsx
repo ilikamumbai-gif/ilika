@@ -6,6 +6,7 @@ import {
   Info,
   Phone,
   Youtube,
+  MessageCircle
 } from "lucide-react";
 import logo from "../../public/Images/logo2.webp";
 import amazon from "../../public/Images/Amazon.webp";
@@ -15,29 +16,26 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="primary-bg-color mt-10">
+    <footer className="primary-bg-color mt-12">
 
-      {/* TOP MARQUEE */}
-      <div className="MiniDivider-bg-color py-1 overflow-hidden">
-        <div className="whitespace-nowrap animate-marquee text-sm font-medium">
-          &nbsp;
-        </div>
-      </div>
+      {/* TOP STRIP */}
+      <div className="MiniDivider-bg-color py-1" />
 
       {/* MAIN FOOTER */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 
-        grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3
-        gap-y-12 gap-x-16 items-start">
+      <div className="
+        max-w-7xl mx-auto 
+        px-4 sm:px-6 lg:px-8 
+        py-10
+        grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
+        gap-10 lg:gap-16
+      ">
 
         {/* BRAND */}
-        <div className="space-y-5 text-center md:text-left max-w-sm mx-auto md:mx-0">
-
-          {/* ✅ FIXED LOGO */}
+        <div className="space-y-5 text-center sm:text-left">
           <img
             src={logo}
             alt="Ilika"
-            fetchPriority="high"
-            className="h-11 w-auto mx-auto sm:mx-0"
+            className="h-11 mx-auto sm:mx-0"
           />
 
           <h3 className="heading-color text-xl font-semibold">
@@ -51,110 +49,105 @@ const Footer = () => {
         </div>
 
         {/* LINKS + ADDRESS */}
-        <div className="space-y-8 text-center md:text-left max-w-xs mx-auto md:mx-0">
+        <div className="space-y-8 text-center sm:text-left">
 
-          <div className="space-y-2">
-            <h4 className="heading-color font-semibold text-lg">Quick Links</h4>
+          {/* LINKS */}
+          <div className="space-y-3">
+            <h4 className="heading-color font-semibold text-lg">
+              Quick Links
+            </h4>
 
-            <Link to="/about" className="flex items-center justify-center sm:justify-start gap-3">
-              <Info size={18} /> About Us
+            <Link to="/about" className="flex items-center justify-center sm:justify-start gap-2 hover:opacity-80">
+              <Info size={16} /> About Us
             </Link>
 
-            <Link to="/contact" className="flex items-center justify-center sm:justify-start gap-3">
-              <Phone size={18} /> Contact Us
+            <Link to="/contact" className="flex items-center justify-center sm:justify-start gap-2 hover:opacity-80">
+              <Phone size={16} /> Contact Us
             </Link>
           </div>
 
-          <div className="space-y-2">
+          {/* ADDRESS */}
+          <div className="space-y-3">
             <h4 className="heading-color font-semibold text-lg flex items-center justify-center sm:justify-start gap-2">
-              <MapPin size={18} /> Address
+              <MapPin size={16} /> Address
             </h4>
 
-            <p className="text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">
+            <p className="text-sm leading-relaxed">
               Office no. 201-202, Hirubai Residency <br />
-              Virar (West) - 401303.
-              Maharashtra, India.
+              Virar (West) - 401303. Maharashtra, India.
             </p>
-            <p className="text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">
-              +91 91208 79879
-            </p>
+
+            <p className="text-sm">+91 91208 79879</p>
           </div>
         </div>
 
-        {/* SOCIAL + MARKETPLACES */}
-        <div className="space-y-6 md:space-y-8 text-center md:text-left max-w-xs mx-auto md:mx-0">
+        {/* SOCIAL + MARKETPLACE + CTA */}
+        <div className="space-y-6 text-center sm:text-left">
 
           {/* SOCIAL */}
-          <div className="space-y-4">
-            <h4 className="heading-color font-semibold text-lg">Follow Us</h4>
+          <div className="space-y-3">
+            <h4 className="heading-color font-semibold text-lg">
+              Follow Us
+            </h4>
 
-            <div className="flex justify-center md:justify-start gap-5">
-              <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">
-                <Facebook className="w-5 h-5 hover:scale-110 transition" />
-              </a>
-
-              <a href="https://www.youtube.com/" target="_blank" rel="noreferrer">
-                <Youtube className="w-5 h-5 hover:scale-110 transition" />
-              </a>
-
-              <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">
-                <Instagram className="w-5 h-5 hover:scale-110 transition" />
-              </a>
+            <div className="flex justify-center sm:justify-start gap-4">
+              <a href="#"><Facebook className="w-5 h-5 hover:scale-110 transition" /></a>
+              <a href="#"><Youtube className="w-5 h-5 hover:scale-110 transition" /></a>
+              <a href="#"><Instagram className="w-5 h-5 hover:scale-110 transition" /></a>
             </div>
           </div>
 
           {/* DIVIDER */}
-          <div className="h-px bg-gray-300/40 w-2/3 md:w-3/5 mx-auto md:mx-0"></div>
+          <div className="h-px bg-gray-300/40 w-full" />
 
-          {/* MARKETPLACES */}
-          <div className="space-y-4">
+          {/* MARKETPLACE */}
+          <div className="space-y-3">
             <h4 className="heading-color font-semibold text-lg">
               Also Available On
             </h4>
 
-            <div className="flex justify-center md:justify-start gap-6 items-center">
-
-              {/* ✅ AMAZON */}
-              <img
-                src={amazon}
-                alt="Amazon"
-                loading="lazy"
-                width="28"
-                height="28"
-                className="h-7 w-7 hover:scale-110 transition"
-              />
-
-              {/* ✅ FLIPKART */}
-              <img
-                src={flipcart}
-                alt="Flipkart"
-                loading="lazy"
-                width="28"
-                height="28"
-                className="h-7 w-7 hover:scale-110 transition"
-              />
-
-              {/* ✅ MEESHO */}
-              <img
-                src={meesho}
-                alt="Meesho"
-                loading="lazy"
-                width="28"
-                height="28"
-                className="h-7 w-7 hover:scale-110 transition"
-              />
-
+            <div className="flex justify-center sm:justify-start gap-5 items-center">
+              <img src={amazon} alt="Amazon" className="h-7 w-7 hover:scale-110 transition" />
+              <img src={flipcart} alt="Flipkart" className="h-7 w-7 hover:scale-110 transition" />
+              <img src={meesho} alt="Meesho" className="h-7 w-7 hover:scale-110 transition" />
             </div>
           </div>
+
+          {/* ✨ PREMIUM FEEDBACK BUTTON */}
+          <div className="pt-2 flex justify-center sm:justify-start">
+            <Link
+              to="/feedback"
+              className="
+                flex items-center gap-2
+                px-6 py-3
+                text-sm font-semibold
+                rounded-full
+                bg-gradient-to-r from-[#c97b7b] to-[#e6a4a4]
+                text-white
+                shadow-md
+                hover:scale-105 hover:shadow-lg
+                transition-all duration-300
+              "
+            >
+              <MessageCircle size={16} />
+              Give Feedback
+            </Link>
+          </div>
+
         </div>
       </div>
 
       {/* BOTTOM */}
       <div className="MiniDivider-bg-color text-xs sm:text-sm py-4">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-3 text-center md:text-left">
-          <p>© 2026 Ilika | Powered by PTCGRAM Private Limited. </p>
+        <div className="
+          max-w-7xl mx-auto px-4
+          flex flex-col md:flex-row
+          justify-between items-center
+          gap-3 text-center md:text-left
+        ">
+          <p>© 2026 Ilika | Powered by PTCGRAM Private Limited.</p>
 
-          <div className="flex flex-wrap gap-5 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center">
             <Link to="/termsandcondition">Terms</Link>
             <Link to="/privacy">Privacy</Link>
             <Link to="/return">Returns</Link>

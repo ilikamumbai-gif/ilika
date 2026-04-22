@@ -1363,6 +1363,107 @@ app.get("/api/notify/:id", async (req, res) => {
   res.json({ id: doc.id, ...doc.data() });
 });
 
+/* ============================== FEEDBACK ============================== */
+app.post("/api/feedback", async (req, res) => {
+  try {
+    const {
+      name = "",
+      email = "",
+      phone = "",
+      issueType = "other",
+      message = "",
+      orderId = "",
+      rating = null,
+      userId = null,
+      userEmail = null,
+    } = req.body || {};
+
+    if (!String(name).trim()) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+
+    if (!String(message).trim()) {
+      return res.status(400).json({ error: "Feedback message is required" });
+    }
+
+    const parsedRating = Number(rating);
+    const feedback = {
+      name: String(name).trim(),
+      email: String(email).trim() || null,
+      phone: String(phone).trim() || null,
+      issueType: String(issueType || "other").trim().toLowerCase(),
+      message: String(message).trim(),
+      orderId: String(orderId).trim() || null,
+      rating: Number.isFinite(parsedRating) && parsedRating >= 1 && parsedRating <= 5
+        ? parsedRating
+        : null,
+      userId: userId || null,
+      userEmail: userEmail || null,
+      status: "open",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const docRef = await db.collection("feedbacks").add(feedback);
+    res.json({ id: docRef.id, ...feedback });
+  } catch (error) {
+    console.error("ADD FEEDBACK ERROR:", error);
+    res.status(500).json({ error: "Failed to save feedback" });
+  }
+});
+
+app.get("/api/feedback", async (req, res) => {
+  try {
+    const snapshot = await db.collection("feedbacks").orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    console.error("FETCH FEEDBACK ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch feedback" });
+  }
+});
+
+app.get("/api/feedback/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("feedbacks").doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: "Feedback not found" });
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error("FETCH FEEDBACK DETAIL ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch feedback detail" });
+  }
+});
+
+app.put("/api/feedback/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body || {};
+    const allowed = new Set(["open", "in_progress", "resolved", "closed"]);
+    const nextStatus = String(status || "").trim().toLowerCase();
+    if (!allowed.has(nextStatus)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const ref = db.collection("feedbacks").doc(req.params.id);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ error: "Feedback not found" });
+
+    await ref.update({ status: nextStatus, updatedAt: new Date() });
+    res.json({ message: "Feedback status updated" });
+  } catch (error) {
+    console.error("UPDATE FEEDBACK STATUS ERROR:", error);
+    res.status(500).json({ error: "Failed to update feedback status" });
+  }
+});
+
+app.delete("/api/feedback/:id", async (req, res) => {
+  try {
+    await db.collection("feedbacks").doc(req.params.id).delete();
+    res.json({ message: "Feedback deleted" });
+  } catch (error) {
+    console.error("DELETE FEEDBACK ERROR:", error);
+    res.status(500).json({ error: "Failed to delete feedback" });
+  }
+});
+
 /* ============================== DEFAULT ADMIN ============================== */
 const createDefaultAdmin = async () => {
   try {

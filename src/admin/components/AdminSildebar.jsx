@@ -36,6 +36,7 @@ const NAV_GROUPS = [
     items: [
       { to: "/admin/users",       icon: Users,           label: "Users"          },
       { to: "/admin/reviews",     icon: Star,            label: "Reviews"        },
+      { to: "/admin/feedback",    icon: MessageSquare,   label: "Feedback"       },
       { to: "/admin/blogs",       icon: BookOpen,        label: "Blogs"          },
       { to: "/admin/blog-comments",icon: MessageSquare,  label: "Blog Comments"  },
     ]

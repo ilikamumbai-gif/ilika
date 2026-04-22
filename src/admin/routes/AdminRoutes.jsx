@@ -37,6 +37,8 @@ import { CartEventProvider } from "../context/CartEventContext";
 import { ReviewProvider } from "../context/ReviewContext";
 import NotificationList from "../pages/Notification/NotificationList";
 import NotificationDetail from "../pages/Notification/NotificationDetail";
+import FeedbackList from "../pages/Feedback/FeedbackList";
+import FeedbackDetail from "../pages/Feedback/FeedbackDetail";
 
 const AdminRoutes = () => {
   return (
@@ -87,6 +89,8 @@ const AdminRoutes = () => {
 
                         <Route path="notifications" element={<NotificationList />} />
                         <Route path="notifications/:productId" element={<NotificationDetail />} />
+                        <Route path="feedback" element={<FeedbackList />} />
+                        <Route path="feedback/:id" element={<FeedbackDetail />} />
                       </Routes>
                     </ReviewProvider>
                   </CartEventProvider>
