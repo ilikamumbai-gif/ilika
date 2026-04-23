@@ -16,7 +16,7 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="primary-bg-color mt-12">
+    <footer className="primary-bg-color">
 
       {/* TOP STRIP */}
       <div className="MiniDivider-bg-color py-1" />

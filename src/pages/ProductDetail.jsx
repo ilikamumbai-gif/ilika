@@ -138,12 +138,13 @@ const getContrastText = (hex) => {
 
 const buildDetailTheme = (rawBgColor) => {
   const bg = normalizeHexColor(rawBgColor) || DEFAULT_DETAIL_BG;
+  const tonedBg = mixHex(bg, "#000000", 0.06);
   const isDefaultWhite = bg === DEFAULT_DETAIL_BG;
 
   if (isDefaultWhite) {
     return {
       isDefaultWhite,
-      pageBg: bg,
+      pageBg: DEFAULT_DETAIL_BG,
       heading: "#2B2A29",
       primary: "#2B2A29",
       primaryHover: "#1A1918",
@@ -167,22 +168,27 @@ const buildDetailTheme = (rawBgColor) => {
     };
   }
 
-  const primary = shadeFromBase(bg, { sat: 20, light: -42, minSat: 30 });
-  const primaryHover = shadeFromBase(bg, { sat: 24, light: -50, minSat: 34 });
-  const accent = shadeFromBase(bg, { sat: 16, light: -28, minSat: 28 });
-  const accentHover = shadeFromBase(bg, { sat: 20, light: -36, minSat: 32 });
-  const accentSoft = shadeFromBase(bg, { sat: 12, light: -14, minSat: 24 });
-  const accentSoftAlt = shadeFromBase(bg, { sat: -6, light: 24, minSat: 14 });
-  const accentMuted = shadeFromBase(bg, { sat: -10, light: 34, minSat: 10 });
-  const price = shadeFromBase(bg, { sat: 18, light: -35, minSat: 32 });
-  const priceMuted = shadeFromBase(bg, { sat: -8, light: 26, minSat: 12 });
-  const ratingBg = shadeFromBase(bg, { sat: 24, light: -38, minSat: 34 });
-  const gradientStart = shadeFromBase(bg, { sat: 14, light: -22, minSat: 24 });
-  const gradientEnd = shadeFromBase(bg, { sat: 26, light: -44, minSat: 34 });
+const primary = shadeFromBase(tonedBg, { sat: 24, light: -50, minSat: 34 });
+const primaryHover = shadeFromBase(tonedBg, { sat: 28, light: -60, minSat: 38 });
+
+const accent = shadeFromBase(tonedBg, { sat: 20, light: -36, minSat: 32 });
+const accentHover = shadeFromBase(tonedBg, { sat: 24, light: -44, minSat: 34 });
+
+const accentSoft = shadeFromBase(tonedBg, { sat: 14, light: -20, minSat: 26 });
+const accentSoftAlt = shadeFromBase(tonedBg, { sat: -6, light: 18, minSat: 14 });
+const accentMuted = shadeFromBase(tonedBg, { sat: -10, light: 28, minSat: 10 });
+
+const price = shadeFromBase(tonedBg, { sat: 22, light: -45, minSat: 36 });
+const priceMuted = shadeFromBase(tonedBg, { sat: -8, light: 20, minSat: 12 });
+
+const ratingBg = shadeFromBase(tonedBg, { sat: 26, light: -48, minSat: 36 });
+
+const gradientStart = shadeFromBase(tonedBg, { sat: 18, light: -28, minSat: 28 });
+const gradientEnd = shadeFromBase(tonedBg, { sat: 30, light: -60, minSat: 38 });
 
   return {
     isDefaultWhite,
-    pageBg: bg,
+    pageBg: tonedBg,
     heading: "#2B2A29",
     primary,
     primaryHover,
@@ -941,6 +947,9 @@ const ProductDetail = () => {
   const [activeVariant, setActiveVariant] = useState(null);
   const [touchStartX, setTouchStartX] = useState(null);
   const [touchEndX, setTouchEndX] = useState(null);
+  const [ingredientIndex, setIngredientIndex] = useState(0);
+  const [ingredientDragOffset, setIngredientDragOffset] = useState(0);
+  const [isIngredientDragging, setIsIngredientDragging] = useState(false);
   const [expandedDesc, setExpandedDesc] = useState(false);
   const [expandedInfo, setExpandedInfo] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -962,6 +971,12 @@ const ProductDetail = () => {
   const [displayImages, setDisplayImages] = useState([]);
   // ref to cancel in-flight preload when product/variant changes rapidly
   const preloadAbortRef = useRef(false);
+  const ingredientPreloadedRef = useRef(new Set());
+  const ingredientDragStateRef = useRef({
+    isDragging: false,
+    startX: 0,
+    deltaX: 0,
+  });
 
 
   // =======================================================
@@ -1170,6 +1185,16 @@ const ProductDetail = () => {
   // `displayImages` = what thumbnails actually render — only set after async preload
   const price = activeVariant?.price ?? product?.price ?? 0;
   const mrp = activeVariant?.mrp ?? product?.mrp ?? 0;
+  const ingredients = useMemo(() => {
+    const raw = Array.isArray(product?.ingredients) ? product.ingredients : [];
+    return raw
+      .map((item) => {
+        if (typeof item === "string") return item.trim();
+        return String(item?.image || item?.url || "").trim();
+      })
+      .filter(Boolean);
+  }, [product?.ingredients]);
+  const ingredientCardsPerView = 4;
 
   /* ── Auto-scroll thumbnails on product page ── */
   useEffect(() => {
@@ -1200,6 +1225,10 @@ const ProductDetail = () => {
   const cartId = activeVariant ? `${productId}_${activeVariant.id}` : productId;
   const isInCart = cartItems.some(i => i.id === cartId);
   const isOutOfStock = product?.inStock === false;
+
+  useEffect(() => {
+    setIngredientIndex(0);
+  }, [productId, ingredients.length]);
 
   const handleAddToCart = useCallback(async () => {
     if (isOutOfStock || isAdding) return;
@@ -1278,6 +1307,43 @@ const ProductDetail = () => {
     if (d < -50) setSelectedImage(images[(ci - 1 + images.length) % images.length]);
   };
 
+  const handleIngredientPointerDown = (e) => {
+    if (ingredients.length <= ingredientCardsPerView) return;
+    if (e.target?.closest?.("button")) return;
+    ingredientDragStateRef.current.isDragging = true;
+    ingredientDragStateRef.current.startX = e.clientX;
+    ingredientDragStateRef.current.deltaX = 0;
+    setIsIngredientDragging(true);
+    setIngredientDragOffset(0);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const handleIngredientPointerMove = (e) => {
+    if (!ingredientDragStateRef.current.isDragging) return;
+    const deltaX = e.clientX - ingredientDragStateRef.current.startX;
+    ingredientDragStateRef.current.deltaX = deltaX;
+    setIngredientDragOffset(Math.max(-180, Math.min(180, deltaX)));
+  };
+
+  const handleIngredientPointerEnd = () => {
+    if (!ingredientDragStateRef.current.isDragging) return;
+
+    const dragDelta = ingredientDragStateRef.current.deltaX;
+    ingredientDragStateRef.current.isDragging = false;
+    setIsIngredientDragging(false);
+    ingredientDragStateRef.current.startX = 0;
+    ingredientDragStateRef.current.deltaX = 0;
+    setIngredientDragOffset(0);
+
+    if (Math.abs(dragDelta) < 40) return;
+
+    if (dragDelta < 0) {
+      setIngredientIndex((prev) => (prev + 1) % ingredients.length);
+    } else {
+      setIngredientIndex((prev) => (prev - 1 + ingredients.length) % ingredients.length);
+    }
+  };
+
   const openLightbox = (index) => { stopAuto(); setLightboxIndex(index); setLightboxOpen(true); };
 
   const EXCLUDED = "new";
@@ -1300,6 +1366,29 @@ const ProductDetail = () => {
   }, [product?.detailPageDefaultBg]);
 
   const detailTheme = useMemo(() => buildDetailTheme(detailPageBgColor), [detailPageBgColor]);
+  const hasIngredients = ingredients.length > 0;
+  const visibleIngredients = useMemo(() => {
+    if (!hasIngredients) return [];
+    const cardsToShow = Math.min(ingredientCardsPerView, ingredients.length);
+    return Array.from({ length: cardsToShow }, (_, offset) => {
+      const sourceIndex = (ingredientIndex + offset) % ingredients.length;
+      return {
+        sourceIndex,
+        src: ingredients[sourceIndex],
+      };
+    });
+  }, [hasIngredients, ingredientIndex, ingredients]);
+
+  useEffect(() => {
+    if (!ingredients.length) return;
+    ingredients.forEach((src) => {
+      if (!src || ingredientPreloadedRef.current.has(src)) return;
+      const img = new window.Image();
+      img.decoding = "async";
+      img.src = src;
+      ingredientPreloadedRef.current.add(src);
+    });
+  }, [ingredients]);
 
   /* ── Loading / not found states ── */
   if (loading) return (
@@ -1316,7 +1405,6 @@ const ProductDetail = () => {
   const rating = product.rating || 4;
   const beforeAfterPairs = product.beforeAfter || [];
   const hasBeforeAfter = Array.isArray(beforeAfterPairs) && beforeAfterPairs.length > 0;
-
   let additionalInfoArray = [];
   if (Array.isArray(product.additionalInfo)) additionalInfoArray = product.additionalInfo;
   else if (typeof product.additionalInfo === "string" && product.additionalInfo.trim())
@@ -1701,7 +1789,96 @@ const ProductDetail = () => {
           </section>
         </DeferredSection>
 
-        {/* ════ VIDEO SECTION ════ */}
+        {/* INGREDIENTS SECTION */}
+        {hasIngredients && (
+          <DeferredSection minHeight={420}>
+            <section
+              className="max-w-7xl mx-auto px-4 sm:px-6 mb-12 rounded-3xl py-8 sm:py-10"
+              style={{
+                backgroundColor: mixHex(detailTheme.pageBg, "#000000", 0.06),
+                border: `1px solid ${detailTheme.borderSoft}`,
+              }}
+            >
+              <div className="flex items-center justify-center mb-7">
+                <h2 className="text-3xl sm:text-4xl font-semibold" style={{ color: detailTheme.heading }}>
+                  Ingredients
+                </h2>
+              </div>
+
+              <div
+                className="relative px-2 sm:px-8 select-none"
+                onPointerDown={handleIngredientPointerDown}
+                onPointerMove={handleIngredientPointerMove}
+                onPointerUp={handleIngredientPointerEnd}
+                onPointerCancel={handleIngredientPointerEnd}
+                style={{
+                  touchAction: "pan-y",
+                  cursor: ingredients.length > ingredientCardsPerView
+                    ? (isIngredientDragging ? "grabbing" : "grab")
+                    : "default",
+                }}
+              >
+                {ingredients.length > ingredientCardsPerView && (
+                  <>
+                    <button
+                      onClick={() => setIngredientIndex((prev) => (prev - 1 + ingredients.length) % ingredients.length)}
+                      className="absolute left-0 sm:left-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition"
+                      style={{
+                        backgroundColor: detailTheme.accentSoftAlt,
+                        color: detailTheme.accent,
+                        border: `1px solid ${detailTheme.accentLine}`,
+                      }}
+                      aria-label="Previous ingredient cards"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setIngredientIndex((prev) => (prev + 1) % ingredients.length)}
+                      className="absolute right-0 sm:right-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition"
+                      style={{
+                        backgroundColor: detailTheme.accentSoftAlt,
+                        color: detailTheme.accent,
+                        border: `1px solid ${detailTheme.accentLine}`,
+                      }}
+                      aria-label="Next ingredient cards"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+
+                <div className="overflow-hidden rounded-[28px]">
+                  <div
+                    className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+                    style={{
+                      transform: `translateX(${ingredientDragOffset}px)`,
+                      transition: isIngredientDragging ? "none" : "transform 260ms ease",
+                      willChange: "transform",
+                    }}
+                  >
+                    {visibleIngredients.map((item, idx) => (
+                      <div
+                        key={`ingredient-${item.sourceIndex}-${item.src}`}
+                        className="rounded-[24px] overflow-hidden shadow-sm"
+                        style={{ border: `1px solid ${detailTheme.borderSoft}` }}
+                      >
+                        <img
+                          loading="eager"
+                          src={item.src}
+                          alt={`Ingredient ${item.sourceIndex + 1}`}
+                          width="600"
+                          height="600"
+                          className="w-full aspect-square object-cover"
+                          draggable={false}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          </DeferredSection>
+        )}
         {product.videos?.length > 0 && (
           <DeferredSection minHeight={360}>
             <section className="w-full bg-[#fbf7f7] my-10 max-h-[80vh] overflow-hidden">
@@ -1846,7 +2023,7 @@ const ProductDetail = () => {
         {/* ════ RELATED PRODUCTS ════ */}
         {relatedProducts.length > 0 && (
           <DeferredSection minHeight={360}>
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-14">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-2">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
               <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>You may also like</h2>

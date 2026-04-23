@@ -134,6 +134,7 @@ const ImageUploadCell = ({ label, value, previewUrl, onFileChange, onUrlChange }
 const ProductForm = ({ onSubmit, initialData = {} }) => {
   const { categories } = useCategories();
   const fileInputRef = useRef(null);
+  const ingredientInputRef = useRef(null);
   const { admin } = useAdminAuth();
 
   const emptyForm = {
@@ -142,6 +143,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     description: "", additionalInfo: "", tagline: "", points: "",
     images: [], isActive: true, inStock: true,
     beforeAfter: [], hasBeforeAfter: false,
+    ingredients: [],
     hasVideo: false,
     videos: [],
     warranty: "",   // ✅ NEW
@@ -171,6 +173,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     inStock: d.inStock ?? true,
     beforeAfter: (d.beforeAfter || []).map(p => ({ ...p, _beforeFile: null, _afterFile: null })),
     hasBeforeAfter: !!(d.beforeAfter?.length),
+    ingredients: Array.isArray(d.ingredients)
+      ? d.ingredients
+        .map((item) => {
+          if (typeof item === "string") return item;
+          return item?.image || item?.url || "";
+        })
+        .filter(Boolean)
+      : [],
     videos: (d.videos || []).map(v => ({ ...v })),
     hasVideo: !!(d.videos?.length),
     warranty: d.warranty || "",   // ✅ NEW
@@ -182,6 +192,11 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
   const [form, setForm] = useState(fromInitial(initialData));
   const [previewImages, setPreviewImages] = useState(initialData.images || []);
+  const [previewIngredientImages, setPreviewIngredientImages] = useState(
+    Array.isArray(initialData.ingredients)
+      ? initialData.ingredients.map((item) => (typeof item === "string" ? item : item?.image || item?.url || "")).filter(Boolean)
+      : []
+  );
   const [loading, setLoading] = useState(false);
   const [newBgName, setNewBgName] = useState("");
   const [newBgValue, setNewBgValue] = useState("#FFEFEA");
@@ -190,11 +205,19 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     if (!initialData || Object.keys(initialData).length === 0) return;
     setForm(fromInitial(initialData));
     setPreviewImages(initialData.images || []);
+    setPreviewIngredientImages(
+      Array.isArray(initialData.ingredients)
+        ? initialData.ingredients.map((item) => (typeof item === "string" ? item : item?.image || item?.url || "")).filter(Boolean)
+        : []
+    );
   }, [initialData]);
 
   useEffect(() => {
-    return () => previewImages.forEach(img => { if (img.startsWith("blob:")) URL.revokeObjectURL(img); });
-  }, [previewImages]);
+    return () => {
+      previewImages.forEach(img => { if (img.startsWith("blob:")) URL.revokeObjectURL(img); });
+      previewIngredientImages.forEach(img => { if (img.startsWith("blob:")) URL.revokeObjectURL(img); });
+    };
+  }, [previewImages, previewIngredientImages]);
 
   /* ── helpers ── */
   const handleImageSelect = (files) => {
@@ -205,6 +228,15 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   const removeImage = (i) => {
     setForm(prev => ({ ...prev, images: prev.images.filter((_, j) => j !== i) }));
     setPreviewImages(prev => prev.filter((_, j) => j !== i));
+  };
+  const handleIngredientSelect = (files) => {
+    const arr = Array.from(files);
+    setForm(prev => ({ ...prev, ingredients: [...(prev.ingredients || []), ...arr] }));
+    setPreviewIngredientImages(prev => [...prev, ...arr.map(f => URL.createObjectURL(f))]);
+  };
+  const removeIngredient = (i) => {
+    setForm(prev => ({ ...prev, ingredients: (prev.ingredients || []).filter((_, j) => j !== i) }));
+    setPreviewIngredientImages(prev => prev.filter((_, j) => j !== i));
   };
   const handleCategoryChange = (id) => {
     setForm(prev => ({
@@ -233,6 +265,17 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     const [mi] = imgs.splice(from, 1); const [mp] = prvs.splice(from, 1);
     imgs.splice(to, 0, mi); prvs.splice(to, 0, mp);
     setForm({ ...form, images: imgs }); setPreviewImages(prvs);
+  };
+  const handleIngredientReorder = (from, to) => {
+    if (from === to) return;
+    const imgs = [...(form.ingredients || [])];
+    const prvs = [...previewIngredientImages];
+    const [mi] = imgs.splice(from, 1);
+    const [mp] = prvs.splice(from, 1);
+    imgs.splice(to, 0, mi);
+    prvs.splice(to, 0, mp);
+    setForm({ ...form, ingredients: imgs });
+    setPreviewIngredientImages(prvs);
   };
   const handleVariantReorder = (vi, from, to) => {
     from = Number(from); to = Number(to);
@@ -322,6 +365,12 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     return getDownloadURL(r);
   };
 
+  const uploadIngredientImage = async (file) => {
+    const r = ref(storage, `products/ingredients/${crypto.randomUUID()}-${file.name}`);
+    await uploadBytes(r, file);
+    return getDownloadURL(r);
+  };
+
   /* ── submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -380,6 +429,17 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         }));
       }
 
+      const ingredientsData = [];
+      for (const ingredient of (form.ingredients || [])) {
+        if (typeof ingredient === "string" && ingredient.trim()) {
+          ingredientsData.push(ingredient.trim());
+          continue;
+        }
+        if (ingredient instanceof File) {
+          ingredientsData.push(await uploadIngredientImage(ingredient));
+        }
+      }
+
       /* change log */
       if (initialData?.price && Number(initialData.price) !== Number(form.price))
         await logActivity(`${admin?.username || "Admin"} changed price of ${form.name} from ₹${initialData.price} to ₹${form.price}`);
@@ -401,6 +461,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         images: imageUrls,
         isActive: form.isActive, inStock: form.inStock,
         beforeAfter: beforeAfterData,
+        ingredients: ingredientsData,
         videos: videoData,
         warranty: form.warranty || "",   // ✅ NEW
         banners: form.banners || [],
@@ -415,6 +476,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
       setForm(emptyForm);
       setPreviewImages([]);
+      setPreviewIngredientImages([]);
     } catch (err) {
       console.error("PRODUCT SAVE ERROR:", err);
     }
@@ -784,6 +846,53 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               }))}
               className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition"
             >+ Add Before / After Pair</button>
+          </div>
+        )}
+      </div>
+
+      {/* INGREDIENTS CAROUSEL */}
+      <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+        <div>
+          <p className="font-semibold text-sm">Ingredients Carousel (Optional)</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Upload ingredient images only. These will be shown as square cards on the product detail page.
+          </p>
+        </div>
+
+        <div
+          className="border-2 border-dashed p-5 rounded-xl text-center cursor-pointer bg-white"
+          onClick={() => ingredientInputRef.current?.click()}
+        >
+          <input
+            ref={ingredientInputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            hidden
+            onChange={e => handleIngredientSelect(e.target.files)}
+          />
+          <h3 className="font-semibold">Ingredient Images (Square Cards)</h3>
+        </div>
+
+        {previewIngredientImages.length > 0 && (
+          <div className="grid grid-cols-4 gap-3">
+            {previewIngredientImages.map((img, i) => (
+              <div key={i} draggable
+                onDragStart={e => e.dataTransfer.setData("dragIngredientIndex", i)}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => handleIngredientReorder(Number(e.dataTransfer.getData("dragIngredientIndex")), i)}
+                className="relative cursor-move"
+              >
+                <img loading="lazy" src={img} className="h-24 w-full object-cover rounded border" />
+                <button
+                  type="button"
+                  onClick={() => removeIngredient(i)}
+                  className="absolute top-1 right-1 bg-black text-white text-xs px-2 rounded"
+                >
+                  X
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>

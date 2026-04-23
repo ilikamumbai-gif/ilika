@@ -239,7 +239,7 @@ const CouponProductBuilder = () => {
   /* ─── render ─── */
 
   return (
-    <>
+    <div className="mb-12">
       {/* Variant Modal */}
       {modalProduct && (
         <VariantModal
@@ -393,7 +393,7 @@ const CouponProductBuilder = () => {
           </div>
         )}
       </section>
-    </>
+    </div>
   );
 };
 

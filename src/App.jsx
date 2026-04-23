@@ -24,6 +24,10 @@ const AppContent = () => {
   const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const isAdminRoute = useMemo(() => pathname.startsWith("/admin"), [pathname]);
+  const hideCartToast = useMemo(
+    () => pathname === "/blog" || pathname.startsWith("/blog/"),
+    [pathname]
+  );
 
   useEffect(() => {
     if ("requestIdleCallback" in window) {
@@ -97,7 +101,7 @@ const AppContent = () => {
 
       <div className="min-h-screen flex flex-col">
         <CartProvider>
-          <CartStatusToast />
+          {!hideCartToast && <CartStatusToast />}
 
           <CategoryProvider>
             <ProductProvider>
