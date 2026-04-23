@@ -244,7 +244,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             onClick={onClose}
             className="
               whitespace-nowrap font-semibold px-3 py-1 rounded-full
-              bg-gradient-to-r from-[#ecaca7] via-[#E96A6A] to-[#D45A5A]
+              bg-black
               text-white hover:shadow-lg
               transition-all duration-300
               animate-[pulse_2.5s_infinite]

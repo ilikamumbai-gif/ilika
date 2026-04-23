@@ -51,7 +51,7 @@ const Header = () => {
                 onClick={() => navigate("/combo")}
                 className="
                   relative
-                  bg-gradient-to-r from-[#FAD4C0] via-[#E96A6A] to-[#D45A5A]
+                  bg-black
                   text-white text-[11px] px-3 py-[5px]
                   rounded-lg border border-[#E96A6A] shadow-md
                   animate-[pulse_2s_infinite] cursor-pointer whitespace-nowrap
