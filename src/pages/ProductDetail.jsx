@@ -35,6 +35,177 @@ const normalizeHexColor = (value = "") => {
   return "";
 };
 
+const hexToRgb = (hex) => {
+  const normalized = normalizeHexColor(hex);
+  if (!normalized) return null;
+  const value = normalized.slice(1);
+  return {
+    r: parseInt(value.slice(0, 2), 16),
+    g: parseInt(value.slice(2, 4), 16),
+    b: parseInt(value.slice(4, 6), 16),
+  };
+};
+
+const rgbToHex = ({ r, g, b }) => {
+  const clamp = (n) => Math.max(0, Math.min(255, Math.round(n)));
+  return `#${[clamp(r), clamp(g), clamp(b)].map((n) => n.toString(16).padStart(2, "0")).join("")}`.toUpperCase();
+};
+
+const mixHex = (baseHex, mixWithHex, weight = 0.5) => {
+  const base = hexToRgb(baseHex);
+  const mix = hexToRgb(mixWithHex);
+  if (!base || !mix) return normalizeHexColor(baseHex) || DEFAULT_DETAIL_BG;
+  const w = Math.max(0, Math.min(1, weight));
+  return rgbToHex({
+    r: base.r + (mix.r - base.r) * w,
+    g: base.g + (mix.g - base.g) * w,
+    b: base.b + (mix.b - base.b) * w,
+  });
+};
+
+const hexToRgba = (hex, alpha) => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return `rgba(0,0,0,${alpha})`;
+  const a = Math.max(0, Math.min(1, alpha));
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${a})`;
+};
+
+const rgbToHsl = ({ r, g, b }) => {
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const delta = max - min;
+
+  let h = 0;
+  if (delta) {
+    if (max === rn) h = ((gn - bn) / delta) % 6;
+    else if (max === gn) h = (bn - rn) / delta + 2;
+    else h = (rn - gn) / delta + 4;
+  }
+  h = Math.round(h * 60);
+  if (h < 0) h += 360;
+
+  const l = (max + min) / 2;
+  const s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+  return { h, s: s * 100, l: l * 100 };
+};
+
+const hslToRgb = ({ h, s, l }) => {
+  const hn = ((h % 360) + 360) % 360;
+  const sn = Math.max(0, Math.min(100, s)) / 100;
+  const ln = Math.max(0, Math.min(100, l)) / 100;
+  const c = (1 - Math.abs(2 * ln - 1)) * sn;
+  const x = c * (1 - Math.abs(((hn / 60) % 2) - 1));
+  const m = ln - c / 2;
+  let r1 = 0;
+  let g1 = 0;
+  let b1 = 0;
+
+  if (hn < 60) [r1, g1, b1] = [c, x, 0];
+  else if (hn < 120) [r1, g1, b1] = [x, c, 0];
+  else if (hn < 180) [r1, g1, b1] = [0, c, x];
+  else if (hn < 240) [r1, g1, b1] = [0, x, c];
+  else if (hn < 300) [r1, g1, b1] = [x, 0, c];
+  else [r1, g1, b1] = [c, 0, x];
+
+  return {
+    r: (r1 + m) * 255,
+    g: (g1 + m) * 255,
+    b: (b1 + m) * 255,
+  };
+};
+
+const shadeFromBase = (baseHex, { sat = 0, light = 0, minSat = 20 } = {}) => {
+  const rgb = hexToRgb(baseHex);
+  if (!rgb) return normalizeHexColor(baseHex) || DEFAULT_DETAIL_BG;
+  const hsl = rgbToHsl(rgb);
+  const next = {
+    h: hsl.h,
+    s: Math.max(minSat, Math.min(95, hsl.s + sat)),
+    l: Math.max(8, Math.min(96, hsl.l + light)),
+  };
+  return rgbToHex(hslToRgb(next));
+};
+
+const getContrastText = (hex) => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return "#1F1F1F";
+  const luminance = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
+  return luminance > 0.6 ? "#1F1F1F" : "#FFFFFF";
+};
+
+const buildDetailTheme = (rawBgColor) => {
+  const bg = normalizeHexColor(rawBgColor) || DEFAULT_DETAIL_BG;
+  const isDefaultWhite = bg === DEFAULT_DETAIL_BG;
+
+  if (isDefaultWhite) {
+    return {
+      isDefaultWhite,
+      pageBg: bg,
+      heading: "#2B2A29",
+      primary: "#2B2A29",
+      primaryHover: "#1A1918",
+      onPrimary: "#FFFFFF",
+      accent: "#801F1F",
+      accentHover: "#5E1414",
+      accentSoft: "#E7A6A1",
+      accentSoftAlt: "#FFF1EF",
+      accentMuted: "#FFF6F5",
+      accentLine: "rgba(231,166,161,0.4)",
+      price: "#1C371C",
+      priceMuted: "#F0FAF0",
+      onPrice: "#FFFFFF",
+      ratingBg: "#1C7C54",
+      ringSoft: "rgba(231,166,161,0.5)",
+      benefitGradient: "linear-gradient(135deg,#e91e8c_0%,#ff6b35_100%)",
+      benefitTitle: "#463737",
+      reviewSurface: "#FFF6F5",
+      borderSoft: "rgba(231,166,161,0.3)",
+      borderPrice: "rgba(28,55,28,0.2)",
+    };
+  }
+
+  const primary = shadeFromBase(bg, { sat: 20, light: -42, minSat: 30 });
+  const primaryHover = shadeFromBase(bg, { sat: 24, light: -50, minSat: 34 });
+  const accent = shadeFromBase(bg, { sat: 16, light: -28, minSat: 28 });
+  const accentHover = shadeFromBase(bg, { sat: 20, light: -36, minSat: 32 });
+  const accentSoft = shadeFromBase(bg, { sat: 12, light: -14, minSat: 24 });
+  const accentSoftAlt = shadeFromBase(bg, { sat: -6, light: 24, minSat: 14 });
+  const accentMuted = shadeFromBase(bg, { sat: -10, light: 34, minSat: 10 });
+  const price = shadeFromBase(bg, { sat: 18, light: -35, minSat: 32 });
+  const priceMuted = shadeFromBase(bg, { sat: -8, light: 26, minSat: 12 });
+  const ratingBg = shadeFromBase(bg, { sat: 24, light: -38, minSat: 34 });
+  const gradientStart = shadeFromBase(bg, { sat: 14, light: -22, minSat: 24 });
+  const gradientEnd = shadeFromBase(bg, { sat: 26, light: -44, minSat: 34 });
+
+  return {
+    isDefaultWhite,
+    pageBg: bg,
+    heading: "#2B2A29",
+    primary,
+    primaryHover,
+    onPrimary: getContrastText(primary),
+    accent,
+    accentHover,
+    accentSoft,
+    accentSoftAlt,
+    accentMuted,
+    accentLine: hexToRgba(accentSoft, 0.4),
+    price,
+    priceMuted,
+    onPrice: getContrastText(price),
+    ratingBg,
+    ringSoft: hexToRgba(accentSoft, 0.5),
+    benefitGradient: `linear-gradient(135deg, ${gradientStart} 0%, ${gradientEnd} 100%)`,
+    benefitTitle: "#111111",
+    reviewSurface: accentMuted,
+    borderSoft: hexToRgba(accentSoft, 0.3),
+    borderPrice: hexToRgba(price, 0.2),
+  };
+};
+
 /* ═══════════════════════════════════════════════════
    IMAGE LIGHTBOX — full-screen overlay
 ═══════════════════════════════════════════════════ */
@@ -416,7 +587,7 @@ const DeferredSection = ({ children, minHeight = 240, rootMargin = "320px 0px" }
   );
 };
 
-const ReviewModal = ({ product, onClose, onReviewAdded }) => {
+const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
   const [name, setName] = useState("");
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -587,13 +758,15 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
       <div className="bg-white rounded-3xl w-full max-w-md p-7 shadow-2xl relative" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition"><X className="w-4 h-4" /></button>
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-full bg-[#fff6f5] flex items-center justify-center"><Star className="w-5 h-5 text-[#E7A6A1] fill-[#E7A6A1]" /></div>
-          <div><h3 className="font-semibold text-[#2b2a29]">Write a Review</h3><p className="text-xs text-gray-400">{product.name}</p></div>
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.reviewSurface }}>
+            <Star className="w-5 h-5" style={{ color: theme.accentSoft, fill: theme.accentSoft }} />
+          </div>
+          <div><h3 className="font-semibold" style={{ color: theme.heading }}>Write a Review</h3><p className="text-xs text-gray-400">{product.name}</p></div>
         </div>
         <form onSubmit={submit} className="space-y-4">
-          <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Your Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Priya S." className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E7A6A1]/50 focus:border-[#E7A6A1]" /></div>
+          <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Your Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Priya S." className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2" style={{ "--tw-ring-color": theme.ringSoft, borderColor: theme.accentSoft }} /></div>
           <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Rating</label><StarRating value={rating} onChange={setRating} /></div>
-          <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Your Experience</label><textarea rows={4} value={comment} onChange={e => setComment(e.target.value)} placeholder="Tell us what you loved (or didn't)..." className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#E7A6A1]/50 focus:border-[#E7A6A1]" /></div>
+          <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Your Experience</label><textarea rows={4} value={comment} onChange={e => setComment(e.target.value)} placeholder="Tell us what you loved (or didn't)..." className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2" style={{ "--tw-ring-color": theme.ringSoft, borderColor: theme.accentSoft }} /></div>
           <div>
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
               Upload Image (Optional)
@@ -627,7 +800,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
             )}
           </div>
           {error && <p className="text-red-500 text-xs">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full bg-[#2b2a29] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#1a1918] transition disabled:opacity-50">{loading ? "Submitting..." : "Submit Review"}</button>
+          <button type="submit" disabled={loading} className="w-full rounded-xl py-3 text-sm font-medium transition disabled:opacity-50" style={{ backgroundColor: theme.primary, color: theme.onPrimary }}>{loading ? "Submitting..." : "Submit Review"}</button>
         </form>
       </div>
     </div>
@@ -637,7 +810,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded }) => {
 /* ═══════════════════════════════════════════════════
    STICKY FLOATING ATC BAR
 ═══════════════════════════════════════════════════ */
-const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight }) => {
+const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme }) => {
   return (
     <div
       style={{
@@ -653,7 +826,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
       }}
     >
       {/* thin accent line on top */}
-      <div style={{ height: "2px", background: "linear-gradient(90deg, transparent, #E7A6A1 30%, #E7A6A1 70%, transparent)" }} />
+      <div style={{ height: "2px", background: `linear-gradient(90deg, transparent, ${theme.accentSoft} 30%, ${theme.accentSoft} 70%, transparent)` }} />
 
       <div className="bg-white border-t border-gray-100" style={{ boxShadow: "0 -6px 30px rgba(0,0,0,0.10)" }}>
         {/* MAIN ROW */}
@@ -673,7 +846,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
               />
             )}
             <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-[#2b2a29] truncate leading-tight">{product?.name}</p>
+              <p className="text-xs sm:text-sm font-semibold truncate leading-tight" style={{ color: theme.heading }}>{product?.name}</p>
               <p className="text-[10px] sm:text-[11px] text-gray-400 hidden sm:block">Free delivery available</p>
             </div>
           </div>
@@ -684,10 +857,10 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
             {/* PRICE + EMI */}
             <div className="hidden md:flex flex-col items-end justify-center">
               <div className="flex items-baseline gap-1.5 flex-wrap justify-end">
-                <span className="text-base font-bold text-[#1C371C] leading-none">₹{price}</span>
+                <span className="text-base font-bold leading-none" style={{ color: theme.price }}>₹{price}</span>
                 {mrp > 0 && <span className="text-[10px] text-gray-400 line-through">₹{mrp}</span>}
                 {discount > 0 && (
-                  <span className="text-[9px] font-bold bg-[#1C371C] text-white px-1.5 py-0.5 rounded">SAVE {discount}%</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: theme.price, color: theme.onPrice }}>SAVE {discount}%</span>
                 )}
               </div>
               {price >= 1099 && (
@@ -705,7 +878,8 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
               className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap
     ${isOutOfStock || isAdding
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-[#2b2a29] text-white hover:bg-[#1a1918] shadow-sm"}`}
+                  : "shadow-sm"}`}
+              style={isOutOfStock || isAdding ? undefined : { backgroundColor: theme.primary, color: theme.onPrimary }}
             >
               <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>
@@ -724,7 +898,8 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
               className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap
     ${isOutOfStock || isBuying
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "border-2 border-[#2b2a29] text-[#2b2a29] hover:bg-gray-50"}`}
+                  : "border-2 hover:bg-gray-50"}`}
+              style={isOutOfStock || isBuying ? undefined : { borderColor: theme.primary, color: theme.primary }}
             >
               <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
               <span>
@@ -736,9 +911,9 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
 
         {/* WARRANTY STRIP */}
         {product?.warranty && (
-          <div className="bg-[#fff6f5] border-t border-[#E7A6A1]/20 py-1.5 flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-3 h-3 text-[#801f1f] flex-shrink-0" />
-            <span className="text-[10px] font-semibold text-[#801f1f] tracking-wide">
+          <div className="border-t py-1.5 flex items-center justify-center gap-1.5" style={{ backgroundColor: theme.reviewSurface, borderColor: theme.borderSoft }}>
+            <ShieldCheck className="w-3 h-3 flex-shrink-0" style={{ color: theme.accent }} />
+            <span className="text-[10px] font-semibold tracking-wide" style={{ color: theme.accent }}>
               {product.warranty === "manufacturer" ? "18 Months Manufacturer Warranty" : "1 Year Import Warranty"}
             </span>
           </div>
@@ -752,11 +927,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
 /* ═══════════════════════════════════════════════════
    PRODUCT DETAIL PAGE
 ═══════════════════════════════════════════════════ */
-const ProductDetail = ({
-  buttonBg = "bg-[#2b2a29]",
-  buttonText = "text-white",
-  buyNowClass = "border border-[#E7A6A1] text-[#1C371C] hover:bg-[#fff1ef]"
-}) => {
+const ProductDetail = () => {
   const { products = [] } = useProducts();
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -1128,6 +1299,8 @@ const ProductDetail = ({
     return normalizeHexColor(product?.detailPageDefaultBg) || DEFAULT_DETAIL_BG;
   }, [product?.detailPageDefaultBg]);
 
+  const detailTheme = useMemo(() => buildDetailTheme(detailPageBgColor), [detailPageBgColor]);
+
   /* ── Loading / not found states ── */
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -1155,6 +1328,7 @@ const ProductDetail = ({
       {showReviewModal && (
         <ReviewModal
           product={product}
+          theme={detailTheme}
           onClose={() => setShowReviewModal(false)}
           onReviewAdded={(newReview) => {
             setProduct((prev) => {
@@ -1190,6 +1364,7 @@ const ProductDetail = ({
       {/* ── STICKY ATC BAR ── */}
       <StickyATCBar
         product={product}
+        theme={detailTheme}
         price={price}
         mrp={mrp}
         discount={discount}
@@ -1203,7 +1378,7 @@ const ProductDetail = ({
       // footerHeight={footerHeight}
       />
 
-      <div className="primary-bg-color" style={{ backgroundColor: detailPageBgColor }}>
+      <div className="primary-bg-color" style={{ backgroundColor: detailTheme.pageBg }}>
         <Header />
         <CartDrawer />
 
@@ -1243,7 +1418,7 @@ const ProductDetail = ({
                 {/* Zoom hint overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
                   <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md">
-                    <ZoomIn className="w-5 h-5 text-[#2b2a29]" />
+                    <ZoomIn className="w-5 h-5" style={{ color: detailTheme.heading }} />
                   </div>
                 </div>
 
@@ -1251,7 +1426,11 @@ const ProductDetail = ({
                 {images.length > 1 && (
                   <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none">
                     {images.map((img, i) => (
-                      <span key={i} className={`rounded-full transition-all duration-300 ${selectedImage === img ? "w-5 h-2 bg-[#801f1f]" : "w-2 h-2 bg-black/25"}`} />
+                      <span
+                        key={i}
+                        className={`rounded-full transition-all duration-300 ${selectedImage === img ? "w-5 h-2" : "w-2 h-2 bg-black/25"}`}
+                        style={selectedImage === img ? { backgroundColor: detailTheme.accent } : undefined}
+                      />
                     ))}
                   </div>
                 )}
@@ -1267,8 +1446,8 @@ const ProductDetail = ({
                         key={img}
                         onClick={() => { stopAuto(); setSelectedImage(img); }}
                         className={`flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all duration-300
-                          ${selectedImage === img ? "border-[#801f1f] shadow-md scale-105" : "border-transparent hover:border-gray-200"}`}
-                        style={{ width: "74px", height: "74px" }}
+                          ${selectedImage === img ? "shadow-md scale-105" : "border-transparent hover:border-gray-200"}`}
+                        style={{ width: "74px", height: "74px", borderColor: selectedImage === img ? detailTheme.accent : undefined }}
                       >
                         <img loading="lazy" src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`} alt="thumb" width="148" height="148" className="w-full h-full object-cover" />
                       </button>
@@ -1294,12 +1473,12 @@ const ProductDetail = ({
               </button>
 
               <div>
-                <h1 className="text-2xl sm:text-3xl font-luxury font-bold text-[#2b2a29] leading-tight">{product.name}</h1>
+                <h1 className="text-2xl sm:text-3xl font-luxury font-bold leading-tight" style={{ color: detailTheme.heading }}>{product.name}</h1>
                 <p className="text-sm text-gray-500 mt-1.5">{product.shortInfo || "Deep nourishment & long lasting hydration"}</p>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 bg-[#1C7C54] text-white text-xs font-semibold px-2.5 py-1 rounded-lg">
+                <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ backgroundColor: detailTheme.ratingBg, color: getContrastText(detailTheme.ratingBg) }}>
                   <Star className="w-3 h-3 fill-white" /><span>{rating.toFixed(1)}</span>
                 </div>
                 <span className="text-xs text-gray-400">Verified Reviews</span>
@@ -1325,7 +1504,8 @@ const ProductDetail = ({
                           preloadImages(newImgs);
                         }}
                         className={`px-4 py-2 border rounded-xl text-sm font-medium transition
-                          ${activeVariant?.id === v.id ? "bg-[#1C371C] text-white border-[#1C371C]" : "border-gray-200 hover:border-[#1C371C] text-gray-700"}`}
+                          ${activeVariant?.id === v.id ? "text-white" : "text-gray-700"}`}
+                        style={activeVariant?.id === v.id ? { backgroundColor: detailTheme.price, borderColor: detailTheme.price } : { borderColor: "#E5E7EB" }}
                       >{v.label}</button>
                     ))}
                   </div>
@@ -1333,11 +1513,11 @@ const ProductDetail = ({
               )}
 
               {/* Price box */}
-              <div className="bg-[#fff6f5] rounded-2xl px-5 py-4">
+              <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
                 <div className="flex items-baseline flex-wrap gap-3">
-                  <span className="text-3xl font-bold text-[#1C371C]">₹{price}</span>
+                  <span className="text-3xl font-bold" style={{ color: detailTheme.price }}>₹{price}</span>
                   {mrp > 0 && <span className="text-sm text-gray-400 line-through">MRP ₹{mrp}</span>}
-                  {mrp > 0 && <span className="text-xs font-bold bg-[#1C371C] text-white px-2.5 py-1 rounded-lg">{discount}% OFF</span>}
+                  {mrp > 0 && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ backgroundColor: detailTheme.price, color: detailTheme.onPrice }}>{discount}% OFF</span>}
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes</p>
               </div>
@@ -1349,12 +1529,8 @@ const ProductDetail = ({
                   onClick={product.inStock ? handleAddToCart : handleNotifyMe}
                   disabled={isAdding}
                   className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition
-    ${isAdding
-                      ? "bg-gray-300 text-gray-500"
-                      : product.inStock
-                        ? `${buttonBg} ${buttonText}`
-                        : "bg-[#801f1f] text-white"
-                    }`}
+    ${isAdding ? "bg-gray-300 text-gray-500" : ""}`}
+                  style={isAdding ? undefined : product.inStock ? { backgroundColor: detailTheme.primary, color: detailTheme.onPrimary } : { backgroundColor: detailTheme.accent, color: getContrastText(detailTheme.accent) }}
                 >
                   {isAdding
                     ? "Adding..."
@@ -1370,7 +1546,8 @@ const ProductDetail = ({
                   className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition
     ${isOutOfStock || isBuying
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : `${buttonBg} ${buttonText} hover:opacity-90 shadow-sm`}`}
+                      : "hover:opacity-90 shadow-sm"}`}
+                  style={isOutOfStock || isBuying ? undefined : { backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
                 >
                   {isBuying ? "Processing..." : product.inStock ? "Buy Now" : "Out of Stock"}
                 </button>
@@ -1378,12 +1555,19 @@ const ProductDetail = ({
               </div>
 
               {/* Benefits */}
-              <div className="rounded-2xl p-[1.5px] bg-[linear-gradient(135deg,#e91e8c_0%,#ff6b35_100%)]">
+              <div
+                className="rounded-2xl p-[1.5px]"
+                style={{
+                  background: detailTheme.isDefaultWhite
+                    ? "linear-gradient(135deg,#e91e8c 0%,#ff6b35 100%)"
+                    : detailTheme.benefitGradient,
+                }}
+              >
 
                 <div className="rounded-2xl bg-white/10 backdrop-blur-md p-6 space-y-4 border border-white/20">
 
-                  <div className="flex items-center gap-2 font-extrabold text-[#463737] text-xl">
-                    <Sparkles className="w-4 h-4 font-extrabold text-[#463737]" />
+                  <div className="flex items-center gap-2 font-extrabold text-xl" style={{ color: detailTheme.benefitTitle }}>
+                    <Sparkles className="w-4 h-4 font-extrabold" style={{ color: detailTheme.benefitTitle }} />
                     Why You'll Love It
                   </div>
 
@@ -1417,7 +1601,7 @@ const ProductDetail = ({
                   }] : []),
                 ].map(({ icon, label }) => (
                   <div key={label} className="flex items-center gap-2 border border-gray-100 rounded-xl px-3 py-2.5 bg-white text-xs text-gray-600 font-medium">
-                    <span className="text-[#1C371C]">{icon}</span> {label}
+                    <span style={{ color: detailTheme.price }}>{icon}</span> {label}
                   </div>
                 ))}
               </div>
@@ -1431,11 +1615,11 @@ const ProductDetail = ({
           <DeferredSection minHeight={420}>
             <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
             <div className="flex items-center gap-3 mb-8">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#E7A6A1]/40" />
-              <div className="flex items-center gap-2 px-5 py-2.5 bg-[#fff6f5] border border-[#E7A6A1]/40 rounded-full">
-                <Leaf className="w-4 h-4 text-[#801f1f]" /><span className="text-sm font-semibold text-[#801f1f]">See the Difference</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
+              <div className="flex items-center gap-2 px-5 py-2.5 border rounded-full" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentLine }}>
+                <Leaf className="w-4 h-4" style={{ color: detailTheme.accent }} /><span className="text-sm font-semibold" style={{ color: detailTheme.accent }}>See the Difference</span>
               </div>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#E7A6A1]/40" />
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
             </div>
             <div className="space-y-10">
               {beforeAfterPairs.map((pair, idx) => (
@@ -1445,16 +1629,16 @@ const ProductDetail = ({
                     <p className="text-center text-xs text-gray-400 mt-2">← Drag slider to compare →</p>
                   </div>
                   <div className={`flex flex-col justify-center space-y-4 ${idx % 2 === 1 ? "lg:order-1" : ""}`}>
-                    {pair.duration && (<span className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold bg-[#fff6f5] border border-[#E7A6A1] text-[#801f1f] rounded-full px-3.5 py-1.5"><Sparkles className="w-3 h-3" /> {pair.duration}</span>)}
-                    {pair.title && (<h3 className="text-3xl font-luxury font-bold text-[#2b2a29] leading-snug">{pair.title}</h3>)}
+                    {pair.duration && (<span className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold border rounded-full px-3.5 py-1.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentSoft, color: detailTheme.accent }}><Sparkles className="w-3 h-3" /> {pair.duration}</span>)}
+                    {pair.title && (<h3 className="text-3xl font-luxury font-bold leading-snug" style={{ color: detailTheme.heading }}>{pair.title}</h3>)}
                     {pair.description && (<p className="text-sm text-gray-500 leading-relaxed">{pair.description}</p>)}
                     <div className="grid grid-cols-2 gap-3 mt-2">
-                      <div className="bg-[#fff6f5] border border-[#E7A6A1]/30 rounded-2xl p-4">
-                        <p className="text-[12px] font-bold uppercase tracking-widest text-[#801f1f] mb-1">Before</p>
+                      <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.borderSoft }}>
+                        <p className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: detailTheme.accent }}>Before</p>
                         <p className="text-xs text-gray-500 leading-relaxed">{pair.beforeDesc || "Before using the product"}</p>
                       </div>
-                      <div className="bg-[#f0faf0] border border-[#1C371C]/20 rounded-2xl p-4">
-                        <p className="text-[12px] font-bold uppercase tracking-widest text-[#1C371C] mb-1">After</p>
+                      <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.priceMuted, borderColor: detailTheme.borderPrice }}>
+                        <p className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: detailTheme.price }}>After</p>
                         <p className="text-xs text-gray-500 leading-relaxed">{pair.afterDesc || "After consistent use"}</p>
                       </div>
                     </div>
@@ -1472,8 +1656,8 @@ const ProductDetail = ({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-3xl border border-gray-100 p-7 shadow-sm">
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-1 h-6 bg-[#E7A6A1] rounded-full" />
-                <h2 className="text-base font-semibold text-[#2b2a29]">Product Description</h2>
+                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
+                <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Product Description</h2>
               </div>
               {product.description ? (
                 <>
@@ -1481,7 +1665,7 @@ const ProductDetail = ({
                     className={`prose prose-sm max-w-none text-gray-600 leading-relaxed transition-all duration-300 ${expandedDesc ? "" : "line-clamp-1"}`}
                     dangerouslySetInnerHTML={{ __html: product.description }}
                   />
-                  <button onClick={() => setExpandedDesc(!expandedDesc)} className="text-[#801f1f] text-xs font-semibold mt-3 hover:underline">
+                  <button onClick={() => setExpandedDesc(!expandedDesc)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.accent }}>
                     {expandedDesc ? "Read Less ▲" : "Read More ▼"}
                   </button>
                 </>
@@ -1490,8 +1674,8 @@ const ProductDetail = ({
 
             <div className="bg-white rounded-3xl border border-gray-100 p-7 shadow-sm">
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-1 h-6 bg-[#E7A6A1] rounded-full" />
-                <h2 className="text-base font-semibold text-[#2b2a29]">Additional Information</h2>
+                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
+                <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Additional Information</h2>
               </div>
               {additionalInfoArray.length > 0 ? (
                 <>
@@ -1499,13 +1683,13 @@ const ProductDetail = ({
                     <ul className="space-y-1 text-sm text-gray-700">
                       {additionalInfoArray.map((pt, i) => (
                         <li key={i} className="flex gap-3 items-start">
-                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#1C371C] flex-shrink-0" />
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: detailTheme.price }} />
                           {pt}
                         </li>
                       ))}
                     </ul>
                   </div>
-                  <button onClick={() => setExpandedInfo(!expandedInfo)} className="text-[#1C371C] text-xs font-semibold mt-3 hover:underline">
+                  <button onClick={() => setExpandedInfo(!expandedInfo)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.price }}>
                     {expandedInfo ? "Read Less ▲" : "Read More ▼"}
                   </button>
                 </>
@@ -1580,7 +1764,7 @@ const ProductDetail = ({
           <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div>
-              <h2 className="text-xl font-semibold text-[#2b2a29]">
+              <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>
                 Customer Reviews
                 {product.reviews?.length > 0 && <span className="text-sm font-normal text-gray-400 ml-2">({product.reviews.length})</span>}
               </h2>
@@ -1590,7 +1774,8 @@ const ProductDetail = ({
               onClick={() => setShowReviewModal(true)}
               data-track-event="write_review_click"
               data-track-label={product.name}
-              className="flex items-center gap-2 bg-[#2b2a29] text-white text-sm font-medium px-5 py-2.5 rounded-2xl hover:bg-[#1a1918] transition shadow-sm"
+              className="flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-2xl transition shadow-sm"
+              style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
             >
               <Star className="w-4 h-4 fill-white" /> Write a Review
             </button>
@@ -1612,9 +1797,9 @@ const ProductDetail = ({
                       <>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-[#fff6f5] flex items-center justify-center text-sm font-bold text-[#801f1f]">{rev.name?.[0]?.toUpperCase()}</div>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: detailTheme.reviewSurface, color: detailTheme.accent }}>{rev.name?.[0]?.toUpperCase()}</div>
                       <div>
-                        <p className="text-sm font-semibold text-[#2b2a29]">{rev.name}</p>
+                        <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>{rev.name}</p>
                         <div className="flex gap-0.5 mt-0.5">
                           {[1, 2, 3, 4, 5].map(s => (
                             <Star key={s} className={`w-3 h-3 ${s <= rev.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} />
@@ -1647,12 +1832,12 @@ const ProductDetail = ({
             </div>
           ) : (
             <div className="bg-white border border-gray-100 rounded-3xl p-12 text-center">
-              <div className="w-14 h-14 rounded-full bg-[#fff6f5] flex items-center justify-center mx-auto mb-4">
-                <Star className="w-7 h-7 text-[#E7A6A1]" />
+              <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
+                <Star className="w-7 h-7" style={{ color: detailTheme.accentSoft }} />
               </div>
               <p className="text-gray-500 text-sm mb-1">No reviews yet</p>
               <p className="text-gray-400 text-xs mb-4">Be the first to share your experience!</p>
-              <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold text-[#801f1f] hover:underline">Write a Review →</button>
+              <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold hover:underline" style={{ color: detailTheme.accent }}>Write a Review →</button>
             </div>
           )}
           </section>
@@ -1663,8 +1848,8 @@ const ProductDetail = ({
           <DeferredSection minHeight={360}>
             <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-14">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-1 h-6 bg-[#E7A6A1] rounded-full" />
-              <h2 className="text-xl font-semibold text-[#2b2a29]">You may also like</h2>
+              <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
+              <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>You may also like</h2>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
               {relatedProducts.map((item, idx) => (

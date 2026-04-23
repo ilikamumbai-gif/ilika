@@ -5,6 +5,7 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
+import { trackGtmPurchaseFromPending } from "../utils/gtm";
 
 // ✅ Purchase is fired in CheckOut.jsx immediately after order confirmation.
 // This page only shows the success UI — no pixel events fire here.
@@ -15,13 +16,15 @@ const OrderSuccess = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    trackGtmPurchaseFromPending(orderId);
+
     // Clean up any leftover sessionStorage keys from old code versions
     sessionStorage.removeItem("purchase_value");
     sessionStorage.removeItem("purchase_items");
     sessionStorage.removeItem("initiate_checkout_fired");
     sessionStorage.removeItem("purchase_value");
     sessionStorage.removeItem("purchase_items");
-  }, []);
+  }, [orderId]);
 
   return (
     <>

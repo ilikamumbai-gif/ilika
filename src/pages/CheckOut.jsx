@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { trackInitiateCheckout, trackPurchase, trackAddPaymentInfo } from "../utils/pixel";
+import { trackGtmBeginCheckout, savePendingGtmPurchase } from "../utils/gtm";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, signOut } from "firebase/auth";
 import { auth, firebaseConfig } from "../firebase/firebaseConfig";
@@ -426,6 +427,16 @@ const Checkout = () => {
     0
   );
   const total = parseFloat(subtotal.toFixed(2));
+  const source = localStorage.getItem("traffic_source") || "WEBSITE";
+
+  useEffect(() => {
+    if (!cartItems.length || total <= 0) return;
+    trackGtmBeginCheckout({
+      value: total,
+      items: cartItems,
+      source,
+    });
+  }, [cartItems, total, source]);
 
   // ─── FETCH ADDRESSES ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -540,8 +551,6 @@ const Checkout = () => {
 
     setLoading(true);
 
-    const source = localStorage.getItem("traffic_source") || "WEBSITE";
-
     trackInitiateCheckout(total, cartItems.length);
     trackAddPaymentInfo(total, cartItems.length);
 
@@ -582,6 +591,13 @@ const Checkout = () => {
 
         if (window.__allowNextPurchase) window.__allowNextPurchase();
         trackPurchase(data.orderId, parseFloat(Number(total).toFixed(2)), cartItems.length);
+        savePendingGtmPurchase({
+          orderId: data.orderId,
+          value: parseFloat(Number(total).toFixed(2)),
+          items: cartItems,
+          paymentMethod: "COD",
+          source,
+        });
 
         navigate(`/order-success/${data.orderId}`);
         clearCart();
@@ -629,6 +645,13 @@ const Checkout = () => {
 
             if (window.__allowNextPurchase) window.__allowNextPurchase();
             trackPurchase(verifyData.orderId, parseFloat(Number(total).toFixed(2)), cartItems.length);
+            savePendingGtmPurchase({
+              orderId: verifyData.orderId,
+              value: parseFloat(Number(total).toFixed(2)),
+              items: cartItems,
+              paymentMethod: "ONLINE",
+              source,
+            });
 
             navigate(`/order-success/${verifyData.orderId}`);
             clearCart();
