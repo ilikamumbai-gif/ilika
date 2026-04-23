@@ -948,8 +948,6 @@ const ProductDetail = () => {
   const [touchStartX, setTouchStartX] = useState(null);
   const [touchEndX, setTouchEndX] = useState(null);
   const [ingredientIndex, setIngredientIndex] = useState(0);
-  const [ingredientDragOffset, setIngredientDragOffset] = useState(0);
-  const [isIngredientDragging, setIsIngredientDragging] = useState(false);
   const [expandedDesc, setExpandedDesc] = useState(false);
   const [expandedInfo, setExpandedInfo] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -972,6 +970,7 @@ const ProductDetail = () => {
   // ref to cancel in-flight preload when product/variant changes rapidly
   const preloadAbortRef = useRef(false);
   const ingredientPreloadedRef = useRef(new Set());
+  const ingredientTrackRef = useRef(null);
   const ingredientDragStateRef = useRef({
     isDragging: false,
     startX: 0,
@@ -1083,8 +1082,6 @@ const ProductDetail = () => {
       return;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 400));
-
     const loaded = await Promise.allSettled(
       secondaryUrls.map(url => new Promise((resolve) => {
         const img = new window.Image();
@@ -1116,7 +1113,8 @@ const ProductDetail = () => {
         ? trigger.getBoundingClientRect().top < window.innerHeight
         : false;
 
-      setShowStickyBar(atcGone && !triggerVisible);
+      const nextVisible = atcGone && !triggerVisible;
+      setShowStickyBar((prev) => (prev === nextVisible ? prev : nextVisible));
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -1310,11 +1308,12 @@ const ProductDetail = () => {
   const handleIngredientPointerDown = (e) => {
     if (ingredients.length <= ingredientCardsPerView) return;
     if (e.target?.closest?.("button")) return;
+    const track = ingredientTrackRef.current;
+    if (track) track.style.transition = "none";
     ingredientDragStateRef.current.isDragging = true;
     ingredientDragStateRef.current.startX = e.clientX;
     ingredientDragStateRef.current.deltaX = 0;
-    setIsIngredientDragging(true);
-    setIngredientDragOffset(0);
+    e.currentTarget.style.cursor = "grabbing";
     e.currentTarget.setPointerCapture?.(e.pointerId);
   };
 
@@ -1322,18 +1321,28 @@ const ProductDetail = () => {
     if (!ingredientDragStateRef.current.isDragging) return;
     const deltaX = e.clientX - ingredientDragStateRef.current.startX;
     ingredientDragStateRef.current.deltaX = deltaX;
-    setIngredientDragOffset(Math.max(-180, Math.min(180, deltaX)));
+    const track = ingredientTrackRef.current;
+    if (track) {
+      const clamped = Math.max(-180, Math.min(180, deltaX));
+      track.style.transform = `translateX(${clamped}px)`;
+    }
   };
 
-  const handleIngredientPointerEnd = () => {
+  const handleIngredientPointerEnd = (e) => {
     if (!ingredientDragStateRef.current.isDragging) return;
 
     const dragDelta = ingredientDragStateRef.current.deltaX;
     ingredientDragStateRef.current.isDragging = false;
-    setIsIngredientDragging(false);
     ingredientDragStateRef.current.startX = 0;
     ingredientDragStateRef.current.deltaX = 0;
-    setIngredientDragOffset(0);
+    if (ingredients.length > ingredientCardsPerView) {
+      e.currentTarget.style.cursor = "grab";
+    }
+    const track = ingredientTrackRef.current;
+    if (track) {
+      track.style.transition = "transform 260ms ease";
+      track.style.transform = "translateX(0px)";
+    }
 
     if (Math.abs(dragDelta) < 40) return;
 
@@ -1390,6 +1399,14 @@ const ProductDetail = () => {
     });
   }, [ingredients]);
 
+  const additionalInfoArray = useMemo(() => {
+    if (Array.isArray(product?.additionalInfo)) return product.additionalInfo;
+    if (typeof product?.additionalInfo === "string" && product.additionalInfo.trim()) {
+      return product.additionalInfo.split(",").map(i => i.trim()).filter(Boolean);
+    }
+    return [];
+  }, [product?.additionalInfo]);
+
   /* ── Loading / not found states ── */
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -1405,10 +1422,6 @@ const ProductDetail = () => {
   const rating = product.rating || 4;
   const beforeAfterPairs = product.beforeAfter || [];
   const hasBeforeAfter = Array.isArray(beforeAfterPairs) && beforeAfterPairs.length > 0;
-  let additionalInfoArray = [];
-  if (Array.isArray(product.additionalInfo)) additionalInfoArray = product.additionalInfo;
-  else if (typeof product.additionalInfo === "string" && product.additionalInfo.trim())
-    additionalInfoArray = product.additionalInfo.split(",").map(i => i.trim()).filter(Boolean);
 
   return (
     <>
@@ -1813,9 +1826,7 @@ const ProductDetail = () => {
                 onPointerCancel={handleIngredientPointerEnd}
                 style={{
                   touchAction: "pan-y",
-                  cursor: ingredients.length > ingredientCardsPerView
-                    ? (isIngredientDragging ? "grabbing" : "grab")
-                    : "default",
+                  cursor: ingredients.length > ingredientCardsPerView ? "grab" : "default",
                 }}
               >
                 {ingredients.length > ingredientCardsPerView && (
@@ -1849,10 +1860,11 @@ const ProductDetail = () => {
 
                 <div className="overflow-hidden rounded-[28px]">
                   <div
+                    ref={ingredientTrackRef}
                     className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
                     style={{
-                      transform: `translateX(${ingredientDragOffset}px)`,
-                      transition: isIngredientDragging ? "none" : "transform 260ms ease",
+                      transform: "translateX(0px)",
+                      transition: "transform 260ms ease",
                       willChange: "transform",
                     }}
                   >
@@ -1863,7 +1875,7 @@ const ProductDetail = () => {
                         style={{ border: `1px solid ${detailTheme.borderSoft}` }}
                       >
                         <img
-                          loading="eager"
+                          loading={idx === 0 ? "eager" : "lazy"}
                           src={item.src}
                           alt={`Ingredient ${item.sourceIndex + 1}`}
                           width="600"
