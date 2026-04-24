@@ -961,6 +961,7 @@ const ProductDetail = () => {
   const [ingredientIndex, setIngredientIndex] = useState(0);
   const [expandedDesc, setExpandedDesc] = useState(false);
   const [expandedInfo, setExpandedInfo] = useState(false);
+  const [activeInfoTab, setActiveInfoTab] = useState("details");
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -974,6 +975,8 @@ const ProductDetail = () => {
   // Sticky ATC bar
   const [showStickyBar, setShowStickyBar] = useState(false);
   const atcButtonsRef = useRef(null);
+  const detailsTabsRef = useRef(null);
+  const reviewsSectionRef = useRef(null);
   const thumbsRef = useRef(null);
   const autoScrollRef = useRef(null);
   // const footerRef = useRef(null);
@@ -1266,6 +1269,9 @@ const ProductDetail = () => {
     setCouponCodeInput("");
     setAppliedCoupon(null);
     setCouponMessage({ type: "", text: "" });
+    setExpandedDesc(false);
+    setExpandedInfo(false);
+    setActiveInfoTab("details");
   }, [productId]);
 
   useEffect(() => {
@@ -1781,123 +1787,123 @@ const ProductDetail = () => {
               )}
 
               {assignedCoupon && (
-  <div className="space-y-3">
-    <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#aaa" }}>Apply Coupon</p>
+                <div className="space-y-3">
+                  <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#aaa" }}>Apply Coupon</p>
 
-    {/* Coupon input card */}
-    <div
-      className="flex items-stretch overflow-hidden"
-      style={{
-        borderRadius: "16px",
-        border: `1.5px solid ${detailTheme.borderSoft}`,
-        background: "#fff",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-      }}
-    >
-      {/* Left icon strip */}
-      <div
-        className="flex items-center justify-center px-4 flex-shrink-0"
-        style={{
-          background: detailTheme.accentMuted,
-          borderRight: `1.5px dashed ${detailTheme.accentLine}`,
-        }}
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-          stroke={detailTheme.accent} strokeWidth="1.8"
-          strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 5H3a1 1 0 0 0-1 1v4a1 1 0 0 1 0 2v4a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-4a1 1 0 0 1 0-2V6a1 1 0 0 0-1-1z" />
-          <line x1="9" y1="9" x2="9" y2="15" strokeDasharray="2 2" />
-        </svg>
-      </div>
+                  {/* Coupon input card */}
+                  <div
+                    className="flex items-stretch overflow-hidden"
+                    style={{
+                      borderRadius: "16px",
+                      border: `1.5px solid ${detailTheme.borderSoft}`,
+                      background: "#fff",
+                      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    {/* Left icon strip */}
+                    <div
+                      className="flex items-center justify-center px-4 flex-shrink-0"
+                      style={{
+                        background: detailTheme.accentMuted,
+                        borderRight: `1.5px dashed ${detailTheme.accentLine}`,
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke={detailTheme.accent} strokeWidth="1.8"
+                        strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 5H3a1 1 0 0 0-1 1v4a1 1 0 0 1 0 2v4a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-4a1 1 0 0 1 0-2V6a1 1 0 0 0-1-1z" />
+                        <line x1="9" y1="9" x2="9" y2="15" strokeDasharray="2 2" />
+                      </svg>
+                    </div>
 
-      {/* Text input */}
-      <input
-        type="text"
-        value={couponCodeInput}
-        onChange={(e) => {
-          setCouponCodeInput(e.target.value);
-          if (couponMessage.text) setCouponMessage({ type: "", text: "" });
-        }}
-        placeholder="Enter coupon code"
-        className="flex-1 min-w-0 px-3 py-3.5 text-sm font-semibold bg-transparent border-none outline-none placeholder:font-normal placeholder:text-gray-300"
-        style={{ color: detailTheme.heading, letterSpacing: "0.04em" }}
-      />
+                    {/* Text input */}
+                    <input
+                      type="text"
+                      value={couponCodeInput}
+                      onChange={(e) => {
+                        setCouponCodeInput(e.target.value);
+                        if (couponMessage.text) setCouponMessage({ type: "", text: "" });
+                      }}
+                      placeholder="Enter coupon code"
+                      className="flex-1 min-w-0 px-3 py-3.5 text-sm font-semibold bg-transparent border-none outline-none placeholder:font-normal placeholder:text-gray-300"
+                      style={{ color: detailTheme.heading, letterSpacing: "0.04em" }}
+                    />
 
-      {/* Dashed divider */}
-      <div
-        className="flex-shrink-0 w-px my-2.5"
-        style={{
-          background: `repeating-linear-gradient(to bottom, #ddd 0px, #ddd 5px, transparent 5px, transparent 10px)`
-        }}
-      />
+                    {/* Dashed divider */}
+                    <div
+                      className="flex-shrink-0 w-px my-2.5"
+                      style={{
+                        background: `repeating-linear-gradient(to bottom, #ddd 0px, #ddd 5px, transparent 5px, transparent 10px)`
+                      }}
+                    />
 
-      {/* Apply button */}
-      <button
-        type="button"
-        onClick={handleApplyCoupon}
-        className="flex-shrink-0 px-5 text-sm font-bold transition-all"
-        style={{
-          background: appliedCoupon ? "#1c7c54" : detailTheme.primary,
-          color: detailTheme.onPrimary,
-          letterSpacing: "0.04em",
-          minWidth: "80px",
-        }}
-      >
-        {appliedCoupon ? "Applied ✓" : "Apply"}
-      </button>
-    </div>
+                    {/* Apply button */}
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      className="flex-shrink-0 px-5 text-sm font-bold transition-all"
+                      style={{
+                        background: appliedCoupon ? "#1c7c54" : detailTheme.primary,
+                        color: detailTheme.onPrimary,
+                        letterSpacing: "0.04em",
+                        minWidth: "80px",
+                      }}
+                    >
+                      {appliedCoupon ? "Applied ✓" : "Apply"}
+                    </button>
+                  </div>
 
-    {/* Available coupon pill */}
-    <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-[11px] text-gray-400 font-medium">Available:</span>
-      <button
-        type="button"
-        onClick={handleApplyAssignedCoupon}
-        className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-bold transition-all hover:-translate-y-0.5"
-        style={{
-          background: `linear-gradient(135deg, ${detailTheme.accentMuted} 0%, ${detailTheme.accentSoftAlt} 100%)`,
-          border: `1.5px solid ${detailTheme.borderSoft}`,
-          color: detailTheme.accent,
-          boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
-        }}
-      >
-        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: detailTheme.accent }} />
-        {assignedCoupon.code}
-        <span className="font-medium opacity-70">· {assignedCoupon.discountPercent}% off</span>
-      </button>
-    </div>
+                  {/* Available coupon pill */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] text-gray-400 font-medium">Available:</span>
+                    <button
+                      type="button"
+                      onClick={handleApplyAssignedCoupon}
+                      className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-bold transition-all hover:-translate-y-0.5"
+                      style={{
+                        background: `linear-gradient(135deg, ${detailTheme.accentMuted} 0%, ${detailTheme.accentSoftAlt} 100%)`,
+                        border: `1.5px solid ${detailTheme.borderSoft}`,
+                        color: detailTheme.accent,
+                        boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
+                      }}
+                    >
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: detailTheme.accent }} />
+                      {assignedCoupon.code}
+                      <span className="font-medium opacity-70">· {assignedCoupon.discountPercent}% off</span>
+                    </button>
+                  </div>
 
-    {/* Success banner */}
-    {appliedCoupon && (
-      <div
-        className="flex items-center gap-3 rounded-2xl px-4 py-3"
-        style={{
-          background: "linear-gradient(135deg, #f0faf5 0%, #e4f7ec 100%)",
-          border: "1.5px solid #a8dfc0",
-        }}
-      >
-        <span className="text-base leading-none">✓</span>
-        <p className="text-xs font-bold flex-1" style={{ color: "#1c7c54" }}>
-          {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off your order!
-        </p>
-        <button
-          type="button"
-          onClick={handleRemoveCoupon}
-          className="text-[11px] text-gray-400 hover:text-gray-600 underline transition"
-        >
-          Remove
-        </button>
-      </div>
-    )}
+                  {/* Success banner */}
+                  {appliedCoupon && (
+                    <div
+                      className="flex items-center gap-3 rounded-2xl px-4 py-3"
+                      style={{
+                        background: "linear-gradient(135deg, #f0faf5 0%, #e4f7ec 100%)",
+                        border: "1.5px solid #a8dfc0",
+                      }}
+                    >
+                      <span className="text-base leading-none">✓</span>
+                      <p className="text-xs font-bold flex-1" style={{ color: "#1c7c54" }}>
+                        {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off your order!
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="text-[11px] text-gray-600 hover:text-gray-800 underline transition"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
 
-    {/* Error message */}
-    {!appliedCoupon && couponMessage.text && (
-      <p className={`text-xs font-medium px-1 ${couponMessage.type === "error" ? "text-red-500" : "text-green-700"}`}>
-        {couponMessage.type === "error" ? "✗ " : "✓ "}{couponMessage.text}
-      </p>
-    )}
-  </div>
-)}
+                  {/* Error message */}
+                  {!appliedCoupon && couponMessage.text && (
+                    <p className={`text-xs font-medium px-1 ${couponMessage.type === "error" ? "text-red-500" : "text-green-700"}`}>
+                      {couponMessage.type === "error" ? "✗ " : "✓ "}{couponMessage.text}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Price box */}
               <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
@@ -2039,17 +2045,41 @@ const ProductDetail = () => {
 
         {/* ════ DESCRIPTION + ADDITIONAL INFO ════ */}
         <DeferredSection minHeight={360}>
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-3xl border border-gray-100 p-7 shadow-sm">
+          <section ref={detailsTabsRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
+            <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
+              {[
+                { id: "details", label: "Product Detail" },
+                { id: "additional", label: "Additional Information" },
+                { id: "reviews", label: `Reviews${product.reviews?.length ? ` (${product.reviews.length})` : ""}` },
+              ].map((tab) => {
+                const isActive = activeInfoTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveInfoTab(tab.id)}
+                    className="px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold border transition"
+                    style={
+                      isActive
+                        ? { backgroundColor: detailTheme.primary, color: detailTheme.onPrimary, borderColor: detailTheme.primary }
+                        : { backgroundColor: detailTheme.reviewSurface, color: detailTheme.heading, borderColor: detailTheme.borderSoft }
+                    }
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="grid grid-cols-1 gap-6">
+              <div className={`bg-white rounded-3xl border border-gray-100 p-7 shadow-sm ${activeInfoTab === "details" ? "" : "hidden"}`}>
                 <div className="flex items-center gap-2 mb-5">
                   <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
-                  <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Product Description</h2>
+                  <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Product Detail</h2>
                 </div>
                 {product.description ? (
                   <>
                     <div
-                      className={`prose prose-sm max-w-none text-gray-600 leading-relaxed transition-all duration-300 ${expandedDesc ? "" : "line-clamp-1"}`}
+                      className={`prose prose-sm max-w-none text-gray-600 leading-relaxed transition-all duration-300 ${expandedDesc ? "" : "line-clamp-2"}`}
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                     <button onClick={() => setExpandedDesc(!expandedDesc)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.accent }}>
@@ -2059,16 +2089,16 @@ const ProductDetail = () => {
                 ) : <p className="text-sm text-gray-400">No description available.</p>}
               </div>
 
-              <div className="bg-white rounded-3xl border border-gray-100 p-7 shadow-sm">
+              <div className={`bg-white rounded-3xl border border-gray-100 p-7 shadow-sm ${activeInfoTab === "additional" ? "" : "hidden"}`}>
                 <div className="flex items-center gap-2 mb-5">
                   <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
                   <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Additional Information</h2>
                 </div>
                 {additionalInfoArray.length > 0 ? (
                   <>
-                    <div className={`overflow-hidden transition-all duration-300 ${expandedInfo ? "" : "max-h-[1em]"}`}>
+                    <div className="overflow-hidden transition-all duration-300">
                       <ul className="space-y-1 text-sm text-gray-700">
-                        {additionalInfoArray.map((pt, i) => (
+                        {(expandedInfo ? additionalInfoArray : additionalInfoArray.slice(0, 2)).map((pt, i) => (
                           <li key={i} className="flex gap-3 items-start">
                             <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: detailTheme.price }} />
                             {pt}
@@ -2076,9 +2106,11 @@ const ProductDetail = () => {
                         ))}
                       </ul>
                     </div>
-                    <button onClick={() => setExpandedInfo(!expandedInfo)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.price }}>
-                      {expandedInfo ? "Read Less ▲" : "Read More ▼"}
-                    </button>
+                    {additionalInfoArray.length > 4 && (
+                      <button onClick={() => setExpandedInfo(!expandedInfo)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.price }}>
+                        {expandedInfo ? "Read Less ▲" : "Read More ▼"}
+                      </button>
+                    )}
                   </>
                 ) : (
                   <p className="text-sm text-gray-400">No additional information available.</p>
@@ -2089,7 +2121,7 @@ const ProductDetail = () => {
         </DeferredSection>
 
         {/* INGREDIENTS SECTION */}
-        {hasIngredients && (
+        {activeInfoTab !== "reviews" && hasIngredients && (
           <DeferredSection minHeight={420}>
             <section
               className="max-w-7xl mx-auto px-4 sm:px-6 mb-12 rounded-3xl py-8 sm:py-10"
@@ -2177,7 +2209,7 @@ const ProductDetail = () => {
             </section>
           </DeferredSection>
         )}
-        {product.videos?.length > 0 && (
+        {activeInfoTab !== "reviews" && product.videos?.length > 0 && (
           <DeferredSection minHeight={360}>
             <section className="w-full bg-[#fbf7f7] my-10 max-h-[80vh] overflow-hidden">
               {product.videos.map((vid, idx) => (
@@ -2213,7 +2245,7 @@ const ProductDetail = () => {
         )}
 
         {/* ════ PRODUCT BANNERS ════ */}
-        {((product.banners?.length > 0) || product.bannerImage) && (
+        {activeInfoTab !== "reviews" && ((product.banners?.length > 0) || product.bannerImage) && (
           <DeferredSection minHeight={320}>
             <section className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4">
               {(product.banners?.length > 0
@@ -2235,8 +2267,9 @@ const ProductDetail = () => {
         )}
 
         {/* ════ REVIEWS ════ */}
+        {activeInfoTab === "reviews" && (
         <DeferredSection minHeight={420}>
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">
+          <section ref={reviewsSectionRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">
             <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
               <div>
                 <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>
@@ -2317,6 +2350,7 @@ const ProductDetail = () => {
             )}
           </section>
         </DeferredSection>
+        )}
 
         {/* ════ RELATED PRODUCTS ════ */}
         {relatedProducts.length > 0 && (
@@ -2351,3 +2385,6 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+
+
+
