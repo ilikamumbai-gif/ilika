@@ -4,6 +4,7 @@ import { trackPageView } from "../utils/pixel";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AdminProtectedRoute from "../admin/components/AdminProtectedRoute";
 import { AdminAuthProvider } from "../admin/context/AdminAuthContext";
+import { useSeo } from "../hooks/useSeo";
 
 const Home = lazy(() => import("../pages/Home"));
 const Offer = lazy(() => import("../pages/Offer"));
@@ -53,6 +54,62 @@ const PixelPageTracker = () => {
   return null;
 };
 
+const getRouteSeo = (pathname = "") => {
+  if (pathname === "/") return { title: "Home", description: "Elegant beauty, skincare, haircare, and grooming tools from Ilika." };
+  if (pathname === "/offer") return { title: "Offers", description: "Discover latest Ilika offers and beauty deals." };
+  if (pathname === "/checkout") return { title: "Checkout", description: "Secure checkout for your Ilika order." };
+  if (pathname === "/skin") return { title: "Skin Care", description: "Explore Ilika skin care products and routines." };
+  if (pathname === "/hair") return { title: "Hair Care", description: "Shop Ilika hair care and styling essentials." };
+  if (pathname === "/grooming") return { title: "Grooming Tools", description: "Premium grooming tools by Ilika." };
+  if (pathname === "/newarrival") return { title: "New Arrivals", description: "See the newest Ilika products and launches." };
+  if (pathname === "/products") return { title: "All Products", description: "Browse all Ilika beauty and grooming products." };
+  if (pathname === "/skin/face") return { title: "Face Care", description: "Face care products from Ilika." };
+  if (pathname === "/skin/body") return { title: "Body Care", description: "Body care products from Ilika." };
+  if (pathname === "/hair/care") return { title: "Hair Care Collection", description: "Targeted hair care from Ilika." };
+  if (pathname === "/hair/styling") return { title: "Hair Styling", description: "Hair styling tools and products by Ilika." };
+  if (pathname === "/grooming/roller") return { title: "Roller & Gua Sha", description: "Facial rollers and gua sha tools from Ilika." };
+  if (pathname === "/grooming/face") return { title: "Face Grooming", description: "Face grooming tools by Ilika." };
+  if (pathname === "/grooming/remover") return { title: "Hair Removal", description: "Hair removal tools from Ilika." };
+  if (pathname === "/ctm") return { title: "Explore CTM", description: "Build your CTM skincare routine with Ilika." };
+  if (pathname === "/ctmkit") return { title: "Create CTM Kit", description: "Customize your CTM kit with Ilika products." };
+  if (pathname === "/blog") return { title: "Blog", description: "Beauty tips, guides, and updates from Ilika." };
+  if (pathname.startsWith("/blog/")) return { title: "Blog Details", description: "Read Ilika blog articles and beauty insights." };
+  if (pathname.startsWith("/product/")) return { title: "Product Details", description: "Explore product details, benefits, and pricing at Ilika." };
+  if (pathname === "/shopall") return { title: "Shop All", description: "Shop the complete Ilika collection." };
+  if (pathname === "/user") return { title: "My Account", description: "Manage your Ilika account and orders." };
+  if (pathname === "/privacy") return { title: "Privacy Policy", description: "Read Ilika privacy policy." };
+  if (pathname === "/termsandcondition") return { title: "Terms & Conditions", description: "Read Ilika terms and conditions." };
+  if (pathname === "/return") return { title: "Return Policy", description: "Review Ilika return and refund policy." };
+  if (pathname === "/about") return { title: "About Us", description: "Learn more about Ilika." };
+  if (pathname === "/contact") return { title: "Contact Us", description: "Get in touch with Ilika support." };
+  if (pathname === "/feedback") return { title: "Feedback", description: "Share your feedback with Ilika." };
+  if (pathname === "/shippingpolicy") return { title: "Shipping Policy", description: "Read Ilika shipping policy." };
+  if (pathname === "/faq") return { title: "FAQ", description: "Frequently asked questions about Ilika." };
+  if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
+  if (pathname === "/combo") return { title: "Combo Deals", description: "Explore combo packs and bundle offers from Ilika." };
+  if (pathname.startsWith("/combo/")) return { title: "Combo Details", description: "View combo pack details and savings at Ilika." };
+  if (pathname === "/login") return { title: "Login", description: "Login to your Ilika account." };
+  if (pathname === "/signup") return { title: "Sign Up", description: "Create your Ilika account." };
+  if (pathname === "/admin/login") return { title: "Admin Login", description: "Ilika admin login portal." };
+  if (pathname.startsWith("/admin")) return { title: "Admin Panel", description: "Ilika admin panel." };
+  return { title: "Ilika", description: "Ilika beauty and grooming products." };
+};
+
+const RouteSeo = () => {
+  const { pathname } = useLocation();
+  const seo = getRouteSeo(pathname);
+  const isAdminPath = pathname.startsWith("/admin");
+
+  useSeo({
+    title: `${seo.title} | Ilika`,
+    description: seo.description,
+    path: pathname,
+    robots: isAdminPath ? "noindex, nofollow" : "index, follow",
+  });
+
+  return null;
+};
+
 const RouteLoader = () => <div className="min-h-screen" aria-busy="true" />;
 
 const renderLazy = (Page) => (
@@ -65,6 +122,7 @@ const NavRoutes = () => {
   return (
     <>
       <PixelPageTracker />
+      <RouteSeo />
       <Routes>
         <Route path="/" element={renderLazy(Home)} />
         <Route path="/offer" element={renderLazy(Offer)} />

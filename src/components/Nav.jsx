@@ -18,6 +18,32 @@ const getMenuFromPath = (pathname = "") => {
 const normalizeSearchText = (value = "") =>
   String(value || "").toLowerCase().replace(/\s+/g, "");
 
+const getDefaultVariant = (product = {}) => {
+  if (!product?.hasVariants || !Array.isArray(product?.variants) || !product.variants.length) {
+    return null;
+  }
+  return product.variants[0] || null;
+};
+
+const getProductPreviewImage = (product = {}) => {
+  const variant = getDefaultVariant(product);
+  return (
+    variant?.images?.[0] ||
+    variant?.image ||
+    product?.images?.[0] ||
+    product?.imageUrl ||
+    product?.image ||
+    "/placeholder.webp"
+  );
+};
+
+const getProductPreviewPrice = (product = {}) => {
+  const variant = getDefaultVariant(product);
+  const raw = variant?.price ?? product?.price ?? 0;
+  const numeric = Number(raw);
+  return Number.isFinite(numeric) ? numeric : 0;
+};
+
 // ─────────────────────────────────────────────
 // Shared SearchBar — used in both desktop nav
 // and the standalone mobile header search slot
@@ -98,11 +124,15 @@ export const SearchBar = ({ products = [], onClose, className = "" }) => {
       {query && (
         <div className="absolute left-0 right-0 bg-white shadow-xl border rounded-xl mt-2 max-h-80 overflow-y-auto z-50">
           {filtered.length ? (
-            filtered.map((product) => (
+            filtered.map((product) => {
+              const productId = product._id || product.id;
+              const previewImage = getProductPreviewImage(product);
+              const previewPrice = getProductPreviewPrice(product);
+              return (
               <Link
-                key={product._id}
+                key={productId}
                 to={`/product/${createSlug(product.name)}`}
-                state={{ id: product._id }}
+                state={{ id: productId }}
                 onClick={() => {
                   setQuery("");
                   setTimeout(() => onClose?.(), 0);
@@ -110,7 +140,7 @@ export const SearchBar = ({ products = [], onClose, className = "" }) => {
                 className="flex items-center gap-3 px-3 py-3 hover:bg-gray-50"
               >
                 <img loading="lazy"
-                  src={product.images?.[0] || product.imageUrl}
+                  src={previewImage}
                   alt={product.name}
                   className="w-12 h-12 object-cover rounded-md border shrink-0"
                 />
@@ -127,11 +157,12 @@ export const SearchBar = ({ products = [], onClose, className = "" }) => {
                     {product.categoryName}
                   </p>
                   <p className="text-sm font-semibold text-[#1C371C]">
-                    ₹{product.price}
+                    ₹{previewPrice}
                   </p>
                 </div>
               </Link>
-            ))
+              );
+            })
           ) : (
             <>
               <p className="px-4 py-3 text-sm text-gray-500">
@@ -307,17 +338,20 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               }`
               }`}
           >
-            {newArrivals.map((item, idx) => (
+            {newArrivals.map((item, idx) => {
+              const itemId = item._id || item.id;
+              const previewImage = getProductPreviewImage(item);
+              return (
               <Link
-                key={item._id || item.id || `${item.name}-${idx}`}
+                key={itemId || `${item.name}-${idx}`}
                 to={`/product/${createSlug(item.name)}`}
-                state={{ id: item._id }}
+                state={{ id: itemId }}
                 onClick={() => setTimeout(() => onClose?.(), 0)}
                 className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100"
               >
                 {/* PRODUCT IMAGE */}
                 <img loading="lazy"
-                  src={item.images?.[0] || item.imageUrl}
+                  src={previewImage}
                   alt={item.name}
                   className="w-10 h-10 object-cover rounded-md border"
                 />
@@ -327,7 +361,8 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
   {item.name}
 </span>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -565,3 +600,4 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
 };
 
 export default Nav;
+
