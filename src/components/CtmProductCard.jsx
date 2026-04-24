@@ -25,13 +25,13 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
     >
       {/* ── SELECTED BADGE ── */}
       {selected && (
-        <div className="absolute top-2.5 right-2.5 w-6 h-6 bg-[#1C371C] rounded-full flex items-center justify-center text-white text-xs z-10 pointer-events-none">
+        <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-5 h-5 sm:w-6 sm:h-6 bg-[#1C371C] rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs z-10 pointer-events-none">
           ✓
         </div>
       )}
 
       {/* ── IMAGE ── */}
-      <div className="bg-stone-50 aspect-square flex items-center justify-center overflow-hidden p-4">
+      <div className="bg-stone-50 aspect-square flex items-center justify-center overflow-hidden p-3 sm:p-4">
         {image ? (
           <img
             loading="lazy"
@@ -45,13 +45,13 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
       </div>
 
       {/* ── CONTENT ── */}
-      <div className="p-4 flex flex-col gap-1.5 flex-1">
-        <h3 className="font-serif text-[15px] font-semibold text-[#1C371C] leading-snug">
+      <div className="p-3 sm:p-4 flex flex-col gap-1 sm:gap-1.5 flex-1">
+        <h3 className="font-serif text-[13px] sm:text-[15px] font-semibold text-[#1C371C] leading-snug line-clamp-2">
           {product.name}
         </h3>
 
         {product.tagline && (
-          <p className="font-sans text-[11px] text-gray-400 font-light leading-snug">
+          <p className="font-sans text-[10px] sm:text-[11px] text-gray-400 font-light leading-snug line-clamp-2">
             {product.tagline
               .split(",")
               .map((t) => t.trim())
@@ -59,18 +59,18 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
           </p>
         )}
 
-        <div className="text-[#c8a96e] text-xs tracking-widest">
+        <div className="text-[#c8a96e] text-[10px] sm:text-xs tracking-widest">
           {"★".repeat(Math.min(5, Math.max(0, product.rating || 4)))}
           {"☆".repeat(5 - Math.min(5, Math.max(0, product.rating || 4)))}
         </div>
 
-        <p className="font-serif text-lg font-semibold text-[#1C371C] mt-1">
+        <p className="font-serif text-base sm:text-lg font-semibold text-[#1C371C] mt-0.5 sm:mt-1">
           ₹{product.price}
         </p>
       </div>
 
       {/* ── BUTTON ── */}
-      <div className="px-4 pb-4">
+      <div className="px-3 pb-3 sm:px-4 sm:pb-4">
         <button
           type="button"
           onClick={(e) => {
@@ -78,7 +78,7 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
             onSelect(product);
           }}
           className={[
-            "w-full py-2.5 rounded-xl font-sans text-[11px] font-bold",
+            "w-full py-2 sm:py-2.5 rounded-xl font-sans text-[10px] sm:text-[11px] font-bold",
             "tracking-widest uppercase transition-all duration-200",
             selected
               ? "bg-[#1C371C] text-white"

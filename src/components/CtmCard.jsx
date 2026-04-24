@@ -56,7 +56,7 @@ const Section = ({ image, tag, title, subtitle, body, benefits, imageBg, reverse
     {/* IMAGE */}
     <div
       className={`
-        ${imageBg} flex items-center justify-center p-10 min-h-72 md:min-h-[420px] overflow-hidden
+        ${imageBg} flex items-center justify-center p-6 sm:p-10 min-h-56 sm:min-h-72 md:min-h-[420px] overflow-hidden
         ${reverse ? "md:order-2" : "md:order-1"}
       `}
     >
@@ -64,14 +64,14 @@ const Section = ({ image, tag, title, subtitle, body, benefits, imageBg, reverse
         loading="lazy"
         src={image}
         alt={title}
-        className="w-full h-full max-h-80 object-contain transition-transform duration-500 hover:scale-105"
+        className="w-full h-full max-h-56 sm:max-h-80 object-contain transition-transform duration-500 hover:scale-105"
       />
     </div>
 
     {/* CONTENT */}
     <div
       className={`
-        p-8 md:p-12 flex flex-col justify-center gap-5
+        p-6 sm:p-8 md:p-12 flex flex-col justify-center gap-4 sm:gap-5
         ${reverse ? "md:order-1" : "md:order-2"}
       `}
     >
@@ -80,17 +80,17 @@ const Section = ({ image, tag, title, subtitle, body, benefits, imageBg, reverse
         <p className="font-sans text-[10px] tracking-[3px] text-gray-400 font-bold uppercase mb-2">
           {tag}
         </p>
-        <h2 className="font-serif text-3xl md:text-[2.6rem] leading-tight text-[#1C371C] mb-1.5">
+        <h2 className="font-serif text-2xl sm:text-3xl md:text-[2.6rem] leading-tight text-[#1C371C] mb-1.5">
           {title}
         </h2>
-        <p className="font-serif text-lg italic text-gray-400 leading-snug">{subtitle}</p>
+        <p className="font-serif text-base sm:text-lg italic text-gray-400 leading-snug">{subtitle}</p>
       </div>
 
       {/* Body */}
       <p className="font-sans text-sm text-gray-500 font-light leading-relaxed">{body}</p>
 
       {/* Benefits */}
-      <ul className="flex flex-col gap-2.5">
+      <ul className="flex flex-col gap-2 sm:gap-2.5">
         {benefits.map((item, i) => (
           <li key={i} className="flex items-start gap-3">
             <span className="w-1.5 h-1.5 rounded-full bg-[#1C371C] flex-shrink-0 mt-[7px]" />
@@ -109,22 +109,22 @@ const Section = ({ image, tag, title, subtitle, body, benefits, imageBg, reverse
 
 const CtmCard = () => {
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-col gap-5 sm:gap-6">
       {/* Steps number strip */}
-      <div className="grid grid-cols-3 gap-4 mb-2">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-2">
         {steps.map((s) => (
           <div
             key={s.num}
-            className="flex flex-col items-center text-center bg-white border border-stone-200 rounded-2xl py-6 px-4 gap-2"
+            className="flex flex-col items-center text-center bg-white border border-stone-200 rounded-2xl py-5 sm:py-6 px-2 sm:px-4 gap-1.5 sm:gap-2"
           >
-            <span className="font-sans text-[10px] tracking-[3px] text-gray-400 font-bold uppercase">
+            <span className="font-sans text-[9px] tracking-[2px] sm:tracking-[3px] text-gray-400 font-bold uppercase">
               {s.tag}
             </span>
-            <span className="font-serif text-5xl text-[#1C371C] opacity-10 leading-none select-none">
+            <span className="font-serif text-4xl sm:text-5xl text-[#1C371C] opacity-10 leading-none select-none">
               {s.num}
             </span>
-            <h3 className="font-serif text-xl text-[#801f1f] leading-tight">{s.title}</h3>
-            <p className="font-sans text-xs text-gray-400 font-light leading-relaxed">
+            <h3 className="font-serif text-base sm:text-xl text-[#801f1f] leading-tight">{s.title}</h3>
+            <p className="font-sans text-[11px] sm:text-xs text-gray-400 font-light leading-relaxed hidden sm:block">
               {s.subtitle}
             </p>
           </div>

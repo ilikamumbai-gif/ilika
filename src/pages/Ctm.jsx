@@ -46,32 +46,32 @@ const Ctm = () => {
           <div className="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-red-200 opacity-[0.1] pointer-events-none" />
           <div className="absolute right-32 -bottom-16 w-48 h-48 rounded-full bg-red-300 opacity-[0.2] pointer-events-none" />
 
-          <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col md:flex-row items-center justify-between gap-10">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex flex-col md:flex-row items-center justify-between gap-8 sm:gap-10">
             {/* Text */}
-            <div className="flex-1">
-              <span className="inline-block border border-white border-opacity-30 text-green-200 text-[10px] tracking-[3px] uppercase font-sans font-semibold px-4 py-1.5 rounded-full mb-6">
+            <div className="flex-1 text-center md:text-left">
+              <span className="inline-block border border-white border-opacity-30 text-green-200 text-[10px] tracking-[3px] uppercase font-sans font-semibold px-4 py-1.5 rounded-full mb-5 sm:mb-6">
                 Custom Skincare Routine
               </span>
 
-              <h1 className="text-white font-serif leading-tight mb-5 text-5xl md:text-6xl">
+              <h1 className="text-white font-serif leading-tight mb-4 sm:mb-5 text-4xl sm:text-5xl md:text-6xl">
                 The CTM
                 <br />
                 <span className="italic text-[#e96161]">Ritual</span>
               </h1>
 
-              <p className="text-white text-opacity-70 text-base font-sans font-light leading-relaxed mb-8 max-w-md">
+              <p className="text-white text-opacity-70 text-sm sm:text-base font-sans font-light leading-relaxed mb-6 sm:mb-8 max-w-md mx-auto md:mx-0">
                 Cleanse. Tone. Moisturize. Three steps to transform your skin —
                 choose your perfect trio at a special bundled price.
               </p>
 
               <Link to="/ctmkit">
-                <button className="bg-white text-[#1C371C] px-9 py-3.5 rounded-full text-sm font-sans font-semibold tracking-wide hover:bg-green-100 transition-colors duration-200">
+                <button className="bg-white text-[#1C371C] px-8 sm:px-9 py-3 sm:py-3.5 rounded-full text-sm font-sans font-semibold tracking-wide hover:bg-green-100 transition-colors duration-200">
                   Build My Kit →
                 </button>
               </Link>
             </div>
 
-            {/* Product image — clean, no pink blob */}
+            {/* Product image */}
             <div className="flex-shrink-0 flex justify-center">
               {/* <img
                 loading="lazy"
@@ -85,17 +85,17 @@ const Ctm = () => {
 
         {/* ── 3-STEP STRIP ─────────────────────────────────────── */}
         <section className="bg-stone-50 border-b border-stone-200">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-stone-200">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-stone-200">
             {steps.map((s) => (
-              <div key={s.num} className="flex items-start gap-4 px-8 py-9">
-                <div className="w-12 h-12 bg-[#1C371C] rounded-xl flex items-center justify-center text-xl flex-shrink-0 text-white">
+              <div key={s.num} className="flex items-start gap-4 px-5 sm:px-8 py-7 sm:py-9">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 bg-[#1C371C] rounded-xl flex items-center justify-center text-lg sm:text-xl flex-shrink-0 text-white">
                   {s.icon}
                 </div>
                 <div>
                   <p className="font-sans text-[10px] tracking-[2.5px] text-[#1C371C] font-bold uppercase mb-1">
                     Step {s.num}
                   </p>
-                  <h3 className="font-serif text-xl text-[#1C371C] mb-1.5">{s.label}</h3>
+                  <h3 className="font-serif text-lg sm:text-xl text-[#1C371C] mb-1.5">{s.label}</h3>
                   <p className="font-sans text-sm text-gray-500 leading-relaxed font-light">
                     {s.desc}
                   </p>
@@ -106,15 +106,15 @@ const Ctm = () => {
         </section>
 
         {/* ── CTA CARD ─────────────────────────────────────────── */}
-        <section className=" px-6 py-12">
+        <section className="px-4 sm:px-6 py-10 sm:py-12">
           <div className="max-w-6xl mx-auto">
             <Link to="/ctmkit" className="block">
-              <div className="bg-white border border-stone-200 rounded-2xl px-8 py-8 md:px-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:shadow-lg transition-shadow duration-300">
+              <div className="bg-white border border-stone-200 rounded-2xl px-5 py-6 sm:px-8 sm:py-8 md:px-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 sm:gap-6 hover:shadow-lg transition-shadow duration-300">
                 <div>
                   <p className="font-sans text-[10px] tracking-[3px] text-[#1C371C] font-bold uppercase mb-2">
                     Limited Offer
                   </p>
-                  <h2 className="font-serif text-3xl text-[#1C371C] mb-2">
+                  <h2 className="font-serif text-2xl sm:text-3xl text-[#1C371C] mb-2">
                     Build Your Own CTM Routine
                   </h2>
                   <p className="font-sans text-sm text-gray-400 font-light">
@@ -122,12 +122,12 @@ const Ctm = () => {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-5 flex-shrink-0">
+                <div className="flex items-center gap-4 sm:gap-5 flex-shrink-0 w-full md:w-auto justify-between md:justify-end">
                   <div className="text-right">
                     <p className="font-sans text-xs text-gray-400 line-through mb-0.5">₹999</p>
-                    <p className="font-serif text-4xl text-[#1C371C]">₹699</p>
+                    <p className="font-serif text-3xl sm:text-4xl text-[#1C371C]">₹699</p>
                   </div>
-                  <div className="bg-[#801f1f] text-white px-7 py-3 rounded-full font-sans text-sm font-semibold whitespace-nowrap">
+                  <div className="bg-[#801f1f] text-white px-5 sm:px-7 py-3 rounded-full font-sans text-sm font-semibold whitespace-nowrap">
                     Create My Kit →
                   </div>
                 </div>
@@ -137,13 +137,13 @@ const Ctm = () => {
         </section>
 
         {/* ── DETAILED SECTIONS ─────────────────────────────────── */}
-        <section className="pb-16">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center pb-10">
+        <section className="pb-14 sm:pb-16">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center pb-8 sm:pb-10">
               <p className="font-sans text-[10px] tracking-[3px] text-[#1C371C] font-bold uppercase mb-3">
                 The Ilika Ritual
               </p>
-              <h2 className="font-serif text-4xl text-[#801f1f]">What's in Your Kit?</h2>
+              <h2 className="font-serif text-3xl sm:text-4xl text-[#801f1f]">What's in Your Kit?</h2>
             </div>
             <CtmCard />
           </div>

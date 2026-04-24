@@ -21,14 +21,15 @@ const KIT_PRICE = 699;
 const INIT_SELECTED = { cleanser: null, toner: null, moisturizer: null };
 
 const KitSummaryContent = ({ selected, selectedCount, allSelected, addKitToCart }) => (
-  <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-    <div className="flex items-center gap-4 overflow-x-auto pb-1">
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-5">
+    {/* Product thumbnails */}
+    <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-1">
       {TYPES.map((type, i) => (
         <React.Fragment key={type}>
-          <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+          <div className="flex flex-col items-center gap-1 sm:gap-1.5 flex-shrink-0">
             <div
               className={[
-                "w-16 h-16 rounded-xl overflow-hidden flex items-center justify-center transition-all duration-300",
+                "w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden flex items-center justify-center transition-all duration-300",
                 selected[type]
                   ? "border-2 border-[#1C371C] bg-white"
                   : "border-2 border-dashed border-stone-300 bg-stone-50",
@@ -42,14 +43,14 @@ const KitSummaryContent = ({ selected, selectedCount, allSelected, addKitToCart 
                   alt={selected[type].name}
                 />
               ) : (
-                <span className="font-sans text-[9px] text-stone-400 uppercase font-semibold tracking-wide text-center leading-tight px-1">
+                <span className="font-sans text-[8px] sm:text-[9px] text-stone-400 uppercase font-semibold tracking-wide text-center leading-tight px-1">
                   {LABELS[type]}
                 </span>
               )}
             </div>
             <p
               className={[
-                "font-sans text-[9px] text-center max-w-[68px] leading-tight line-clamp-2",
+                "font-sans text-[8px] sm:text-[9px] text-center max-w-[60px] sm:max-w-[68px] leading-tight line-clamp-2",
                 selected[type] ? "text-[#1C371C] font-semibold" : "text-stone-400",
               ].join(" ")}
             >
@@ -57,16 +58,17 @@ const KitSummaryContent = ({ selected, selectedCount, allSelected, addKitToCart 
             </p>
           </div>
           {i < 2 && (
-            <span className="text-lg text-stone-300 font-light flex-shrink-0">+</span>
+            <span className="text-base sm:text-lg text-stone-300 font-light flex-shrink-0">+</span>
           )}
         </React.Fragment>
       ))}
     </div>
 
-    <div className="flex items-center gap-5 flex-shrink-0">
+    {/* Price + CTA */}
+    <div className="flex items-center gap-3 sm:gap-5 flex-shrink-0 justify-between sm:justify-end">
       <div className="text-right">
         <p className="font-sans text-xs text-gray-400 line-through leading-none mb-0.5">₹999</p>
-        <p className="font-serif text-3xl text-[#1C371C] leading-none">₹{KIT_PRICE}</p>
+        <p className="font-serif text-2xl sm:text-3xl text-[#1C371C] leading-none">₹{KIT_PRICE}</p>
         <p className={["font-sans text-[10px] font-semibold mt-1", allSelected ? "text-green-600" : "text-gray-400"].join(" ")}>
           {selectedCount}/3 selected
         </p>
@@ -76,7 +78,7 @@ const KitSummaryContent = ({ selected, selectedCount, allSelected, addKitToCart 
         onClick={addKitToCart}
         disabled={!allSelected}
         className={[
-          "px-8 py-3.5 rounded-full font-sans text-sm font-semibold tracking-wide",
+          "px-5 sm:px-8 py-3 sm:py-3.5 rounded-full font-sans text-xs sm:text-sm font-semibold tracking-wide",
           "transition-all duration-300 whitespace-nowrap",
           allSelected
             ? "bg-[#1C371C] text-white hover:bg-[#2d5a2d] cursor-pointer"
@@ -172,27 +174,27 @@ const CreateCtm = () => {
   const Section = ({ title, items, type, stepNum }) => {
     const done = !!selected[type];
     return (
-      <div className="mb-14">
-        <div className="flex items-center gap-4 mb-7 pb-5 border-b border-stone-200">
+      <div className="mb-10 sm:mb-14">
+        <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-7 pb-4 sm:pb-5 border-b border-stone-200">
           <div
             className={[
-              "w-11 h-11 rounded-xl flex items-center justify-center",
-              "text-base font-bold font-sans flex-shrink-0 transition-all duration-300",
+              "w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center",
+              "text-sm sm:text-base font-bold font-sans flex-shrink-0 transition-all duration-300",
               done ? "bg-[#1C371C] text-white" : "bg-stone-100 text-[#1C371C]",
             ].join(" ")}
           >
             {done ? "✓" : stepNum}
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <p className="font-sans text-[10px] tracking-[2px] text-gray-400 font-bold uppercase mb-0.5">
               Step {stepNum}
             </p>
-            <h2 className="font-serif text-2xl md:text-3xl text-[#1C371C]">
+            <h2 className="font-serif text-xl sm:text-2xl md:text-3xl text-[#1C371C] truncate">
               {title}
             </h2>
           </div>
           {done && (
-            <span className="ml-auto bg-green-50 text-[#1C371C] border border-green-200 font-sans text-[11px] font-bold px-3 py-1 rounded-full flex-shrink-0">
+            <span className="ml-auto bg-green-50 text-[#1C371C] border border-green-200 font-sans text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3 py-1 rounded-full flex-shrink-0">
               Selected ✓
             </span>
           )}
@@ -202,7 +204,7 @@ const CreateCtm = () => {
             No products available.
           </p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {items.map((product) => (
               <CtmProductCard
                 key={getProductId(product)}
@@ -226,20 +228,20 @@ const CreateCtm = () => {
         <CartDrawer />
 
         {/* ── PAGE HEADER ──────────────────────────────────────── */}
-        <div className="bg-[#1C371C] relative overflow-hidden text-center px-6 py-14">
+        <div className="bg-[#1C371C] relative overflow-hidden text-center px-4 sm:px-6 py-10 sm:py-14">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[600px] h-[600px] rounded-full bg-red-300 opacity-[0.1]" />
+            <div className="w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] rounded-full bg-red-300 opacity-[0.1]" />
           </div>
           <p className="font-sans text-[10px] tracking-[4px] text-green-300 font-bold uppercase mb-3">
             Custom Kit Builder
           </p>
-          <h1 className="font-serif text-white leading-tight mb-4 text-4xl md:text-5xl">
+          <h1 className="font-serif text-white leading-tight mb-4 text-3xl sm:text-4xl md:text-5xl">
             Build Your{" "}
             <span className="italic text-[#e76e6e]">Perfect</span>
             <br />
             CTM Routine
           </h1>
-          <p className="font-sans text-white/60 text-sm font-light mb-8 max-w-md mx-auto">
+          <p className="font-sans text-white/60 text-sm font-light mb-6 sm:mb-8 max-w-md mx-auto">
             Choose one from each step — get your personalised trio at ₹699
           </p>
           <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -247,11 +249,11 @@ const CreateCtm = () => {
               const done = !!selected[type];
               return (
                 <React.Fragment key={type}>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <div
                       className={[
-                        "w-7 h-7 rounded-full flex items-center justify-center",
-                        "font-sans text-xs font-bold transition-all duration-300",
+                        "w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center",
+                        "font-sans text-[11px] sm:text-xs font-bold transition-all duration-300",
                         done ? "bg-[#ef6969] text-[#1C371C]" : "bg-white/20 text-white/50",
                       ].join(" ")}
                     >
@@ -266,7 +268,7 @@ const CreateCtm = () => {
                       {LABELS[type]}
                     </span>
                   </div>
-                  {i < 2 && <div className="w-8 h-px bg-white/20 mx-1" />}
+                  {i < 2 && <div className="w-5 sm:w-8 h-px bg-white/20 mx-0.5 sm:mx-1" />}
                 </React.Fragment>
               );
             })}
@@ -274,16 +276,16 @@ const CreateCtm = () => {
         </div>
 
         {/* ── PRODUCT SECTIONS ─────────────────────────────────── */}
-        <div className="max-w-6xl mx-auto px-4 pt-12 pb-10">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 pt-8 sm:pt-12 pb-8 sm:pb-10">
           <Section title="Choose Your Cleanser" items={cleansers} type="cleanser" stepNum="1" />
           <Section title="Choose Your Toner" items={toners} type="toner" stepNum="2" />
           <Section title="Choose Your Moisturizer" items={moisturizers} type="moisturizer" stepNum="3" />
         </div>
 
         {/* ── KIT SUMMARY (in-flow) ────────────────────────────── */}
-        <div className="max-w-6xl mx-auto px-4 pb-14">
-          <div id="ctm-kit-summary" className="bg-white border border-stone-200 rounded-2xl px-6 py-5 shadow-sm">
-            <p className="font-sans text-[10px] tracking-[2px] text-gray-400 font-bold uppercase mb-4">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-10 sm:pb-14">
+          <div id="ctm-kit-summary" className="bg-white border border-stone-200 rounded-2xl px-4 sm:px-6 py-4 sm:py-5 shadow-sm">
+            <p className="font-sans text-[10px] tracking-[2px] text-gray-400 font-bold uppercase mb-3 sm:mb-4">
               Your Kit Summary
             </p>
             <KitSummaryContent
@@ -295,7 +297,7 @@ const CreateCtm = () => {
           </div>
         </div>
 
-        {/* ── STICKY KIT BAR (floats over footer too) ──────────── */}
+        {/* ── STICKY KIT BAR ──────────────────────────────────── */}
         <div
           style={{
             position: "fixed",
@@ -311,7 +313,7 @@ const CreateCtm = () => {
         >
           <div style={{ height: "2px", background: "linear-gradient(90deg, transparent, #1C371C 30%, #1C371C 70%, transparent)" }} />
           <div className="bg-white border-t border-stone-200" style={{ boxShadow: "0 -6px 30px rgba(0,0,0,0.10)" }}>
-            <div className="max-w-6xl mx-auto px-4 py-3">
+            <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3">
               <KitSummaryContent
                 selected={selected}
                 selectedCount={selectedCount}
