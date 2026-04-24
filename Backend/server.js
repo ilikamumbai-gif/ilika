@@ -213,9 +213,7 @@ const normalizeIndianPhone = (phone = "") => {
 
 const normalizeCouponPayload = (payload = {}, fallback = {}) => {
   const code = String(payload?.code ?? fallback.code ?? "")
-    .trim()
-    .toUpperCase()
-    .replace(/\s+/g, "");
+    .trim();
 
   const discountPercentRaw = Number(payload?.discountPercent ?? fallback.discountPercent ?? 0);
   const discountPercent = Number.isFinite(discountPercentRaw)

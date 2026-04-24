@@ -30,7 +30,7 @@ const CouponList = () => {
     e.preventDefault();
     if (saving) return;
 
-    const code = String(form.code || "").trim().toUpperCase().replace(/\s+/g, "");
+    const code = String(form.code || "").trim();
     const discountPercent = Number(form.discountPercent || 0);
 
     if (!code) return alert("Coupon code is required");
@@ -105,8 +105,8 @@ const CouponList = () => {
             type="text"
             placeholder="Code (e.g. SUMMER20)"
             value={form.code}
-            onChange={(e) => setForm((prev) => ({ ...prev, code: e.target.value.toUpperCase().replace(/\s+/g, "") }))}
-            className="border rounded-lg px-3 py-2 text-sm uppercase"
+            onChange={(e) => setForm((prev) => ({ ...prev, code: e.target.value }))}
+            className="border rounded-lg px-3 py-2 text-sm"
             required
           />
           <input
@@ -205,4 +205,3 @@ const CouponList = () => {
 };
 
 export default CouponList;
-

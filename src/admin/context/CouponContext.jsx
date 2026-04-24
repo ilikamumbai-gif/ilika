@@ -4,7 +4,7 @@ const CouponContext = createContext(null);
 const COUPON_CACHE_KEY = "ilika.coupons.v1";
 
 const normalizeCode = (value = "") =>
-  String(value || "").trim().toUpperCase().replace(/\s+/g, "");
+  String(value || "").trim();
 
 export const CouponProvider = ({ children }) => {
   const [coupons, setCoupons] = useState([]);
@@ -113,4 +113,3 @@ export const useCoupons = () => {
   if (!ctx) throw new Error("useCoupons must be used inside CouponProvider");
   return ctx;
 };
-

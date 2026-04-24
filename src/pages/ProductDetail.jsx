@@ -108,7 +108,7 @@ const hslToRgb = ({ h, s, l }) => {
   else if (hn < 180) [r1, g1, b1] = [0, c, x];
   else if (hn < 240) [r1, g1, b1] = [0, x, c];
   else if (hn < 300) [r1, g1, b1] = [x, 0, c];
-  else [r1, g1, b1] = [c, 0, x];
+  else[r1, g1, b1] = [c, 0, x];
 
   return {
     r: (r1 + m) * 255,
@@ -168,23 +168,23 @@ const buildDetailTheme = (rawBgColor) => {
     };
   }
 
-const primary = shadeFromBase(tonedBg, { sat: 24, light: -50, minSat: 34 });
-const primaryHover = shadeFromBase(tonedBg, { sat: 28, light: -60, minSat: 38 });
+  const primary = shadeFromBase(tonedBg, { sat: 24, light: -50, minSat: 34 });
+  const primaryHover = shadeFromBase(tonedBg, { sat: 28, light: -60, minSat: 38 });
 
-const accent = shadeFromBase(tonedBg, { sat: 20, light: -36, minSat: 32 });
-const accentHover = shadeFromBase(tonedBg, { sat: 24, light: -44, minSat: 34 });
+  const accent = shadeFromBase(tonedBg, { sat: 20, light: -36, minSat: 32 });
+  const accentHover = shadeFromBase(tonedBg, { sat: 24, light: -44, minSat: 34 });
 
-const accentSoft = shadeFromBase(tonedBg, { sat: 14, light: -20, minSat: 26 });
-const accentSoftAlt = shadeFromBase(tonedBg, { sat: -6, light: 18, minSat: 14 });
-const accentMuted = shadeFromBase(tonedBg, { sat: -10, light: 28, minSat: 10 });
+  const accentSoft = shadeFromBase(tonedBg, { sat: 14, light: -20, minSat: 26 });
+  const accentSoftAlt = shadeFromBase(tonedBg, { sat: -6, light: 18, minSat: 14 });
+  const accentMuted = shadeFromBase(tonedBg, { sat: -10, light: 28, minSat: 10 });
 
-const price = shadeFromBase(tonedBg, { sat: 22, light: -45, minSat: 36 });
-const priceMuted = shadeFromBase(tonedBg, { sat: -8, light: 20, minSat: 12 });
+  const price = shadeFromBase(tonedBg, { sat: 22, light: -45, minSat: 36 });
+  const priceMuted = shadeFromBase(tonedBg, { sat: -8, light: 20, minSat: 12 });
 
-const ratingBg = shadeFromBase(tonedBg, { sat: 26, light: -48, minSat: 36 });
+  const ratingBg = shadeFromBase(tonedBg, { sat: 26, light: -48, minSat: 36 });
 
-const gradientStart = shadeFromBase(tonedBg, { sat: 18, light: -28, minSat: 28 });
-const gradientEnd = shadeFromBase(tonedBg, { sat: 30, light: -60, minSat: 38 });
+  const gradientStart = shadeFromBase(tonedBg, { sat: 18, light: -28, minSat: 28 });
+  const gradientEnd = shadeFromBase(tonedBg, { sat: 30, light: -60, minSat: 38 });
 
   return {
     isDefaultWhite,
@@ -225,9 +225,7 @@ const normalizeColorKey = (value = "") =>
 
 const normalizeCouponCode = (value = "") =>
   String(value || "")
-    .trim()
-    .toUpperCase()
-    .replace(/\s+/g, "");
+    .trim();
 
 const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe }) => {
   const [current, setCurrent] = useState(initialIndex);
@@ -855,7 +853,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
           {/* LEFT — product name + thumbnail */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {(product?.images?.[0] || product?.imageUrl) && (
-              <img 
+              <img
                 src={product.images?.[0] || product.imageUrl}
                 loading="lazy"
                 decoding="async"
@@ -1774,43 +1772,100 @@ const ProductDetail = () => {
               )}
 
               {assignedCoupon && (
-                <div className="rounded-2xl border p-4 space-y-3" style={{ borderColor: detailTheme.borderSoft, backgroundColor: "#FFFFFF" }}>
+                <div className="space-y-3">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Apply Coupon</p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={couponCodeInput}
-                      onChange={(e) => {
-                        setCouponCodeInput(e.target.value.toUpperCase().replace(/\s+/g, ""));
-                        if (couponMessage.text) setCouponMessage({ type: "", text: "" });
-                      }}
-                      placeholder="Enter coupon code"
-                      className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm uppercase"
+
+                  {/* Coupon card shape */}
+                  <div
+                    className="relative flex items-stretch bg-white overflow-visible"
+                    style={{
+                      borderRadius: "14px",
+                      border: "1.5px dashed",
+                      borderColor: detailTheme.borderSoft,
+                    }}
+                  > 
+                    {/* Left notch */}
+                    <div
+                      className="absolute -left-[10px] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full z-10"
+                      style={{ backgroundColor: detailTheme.pageBg }}
                     />
+                    {/* Right notch */}
+                    <div
+                      className="absolute -right-[10px] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full z-10"
+                      style={{ backgroundColor: detailTheme.pageBg }}
+                    />
+
+                    {/* Left ear */}
+                    <div
+                      className="w-3 flex-shrink-0 rounded-l-[12px]"
+                      style={{ backgroundColor: detailTheme.reviewSurface }}
+                    />
+
+                    {/* Input area */}
+                    <div className="flex items-center gap-2 px-3 py-3 flex-1 min-w-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke={detailTheme.accentSoft} strokeWidth="1.8"
+                        strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+                        <path d="M21 5H3a1 1 0 0 0-1 1v4a1 1 0 0 1 0 2v4a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-4a1 1 0 0 1 0-2V6a1 1 0 0 0-1-1z" />
+                      </svg>
+                      <input
+                        type="text"
+                        value={couponCodeInput}
+                        onChange={(e) => {
+                          setCouponCodeInput(e.target.value);
+                          if (couponMessage.text) setCouponMessage({ type: "", text: "" });
+                        }}
+                        placeholder="Enter coupon code"
+                        className="flex-1 min-w-0 text-sm font-semibold bg-transparent border-none outline-none placeholder:font-normal placeholder:text-gray-400"
+                        style={{ color: detailTheme.heading }}
+                      />
+                    </div>
+
+                    {/* Perforated divider */}
+                    <div
+                      className="flex-shrink-0 w-px my-3"
+                      style={{
+                        background: `repeating-linear-gradient(to bottom, ${detailTheme.borderSoft} 0px, ${detailTheme.borderSoft} 5px, transparent 5px, transparent 10px)`
+                      }}
+                    />
+
+                    {/* Apply button */}
                     <button
                       type="button"
                       onClick={handleApplyCoupon}
-                      className="px-4 py-2.5 rounded-xl text-sm font-semibold"
-                      style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
+                      className="flex-shrink-0 px-4 text-sm font-semibold transition-opacity hover:opacity-80 rounded-r-[12px]"
+                      style={{
+                        backgroundColor: detailTheme.primary,
+                        color: detailTheme.onPrimary,
+                        minWidth: "72px",
+                      }}
                     >
-                      Apply
+                      {appliedCoupon ? "Applied" : "Apply"}
                     </button>
+
+                    {/* Right ear */}
+                    <div className="w-0 flex-shrink-0" />
                   </div>
 
+                  {/* Status messages */}
                   {appliedCoupon && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-green-700 font-semibold">
-                        {appliedCoupon.code} applied ({appliedCoupon.discountPercent}% off selling price)
+                    <div className="flex items-center justify-between text-xs px-1">
+                      <span className="font-semibold" style={{ color: "#1C7C54" }}>
+                        ✓ {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off
                       </span>
-                      <button type="button" onClick={handleRemoveCoupon} className="text-gray-500 hover:underline">
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="text-gray-400 hover:text-gray-600 transition underline"
+                      >
                         Remove
                       </button>
                     </div>
                   )}
 
                   {!appliedCoupon && couponMessage.text && (
-                    <p className={`text-xs font-medium ${couponMessage.type === "error" ? "text-red-600" : "text-green-700"}`}>
-                      {couponMessage.text}
+                    <p className={`text-xs font-medium px-1 ${couponMessage.type === "error" ? "text-red-600" : "text-green-700"}`}>
+                      {couponMessage.type === "error" ? "✗ " : "✓ "}{couponMessage.text}
                     </p>
                   )}
                 </div>
@@ -1918,38 +1973,38 @@ const ProductDetail = () => {
         {hasBeforeAfter && (
           <DeferredSection minHeight={420}>
             <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
-              <div className="flex items-center gap-2 px-5 py-2.5 border rounded-full" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentLine }}>
-                <Leaf className="w-4 h-4" style={{ color: detailTheme.accent }} /><span className="text-sm font-semibold" style={{ color: detailTheme.accent }}>See the Difference</span>
+              <div className="flex items-center gap-3 mb-8">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
+                <div className="flex items-center gap-2 px-5 py-2.5 border rounded-full" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentLine }}>
+                  <Leaf className="w-4 h-4" style={{ color: detailTheme.accent }} /><span className="text-sm font-semibold" style={{ color: detailTheme.accent }}>See the Difference</span>
+                </div>
+                <div className="h-px flex-1 bg-gradient-to-l from-transparent" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
               </div>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
-            </div>
-            <div className="space-y-10">
-              {beforeAfterPairs.map((pair, idx) => (
-                <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                  <div className={idx % 2 === 1 ? "lg:order-2" : ""}>
-                    <BeforeAfterSlider beforeImage={pair.before} afterImage={pair.after} beforeLabel={pair.beforeLabel || "Before"} afterLabel={pair.afterLabel || "After"} />
-                    <p className="text-center text-xs text-gray-400 mt-2">← Drag slider to compare →</p>
-                  </div>
-                  <div className={`flex flex-col justify-center space-y-4 ${idx % 2 === 1 ? "lg:order-1" : ""}`}>
-                    {pair.duration && (<span className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold border rounded-full px-3.5 py-1.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentSoft, color: detailTheme.accent }}><Sparkles className="w-3 h-3" /> {pair.duration}</span>)}
-                    {pair.title && (<h3 className="text-3xl font-luxury font-bold leading-snug" style={{ color: detailTheme.heading }}>{pair.title}</h3>)}
-                    {pair.description && (<p className="text-sm text-gray-500 leading-relaxed">{pair.description}</p>)}
-                    <div className="grid grid-cols-2 gap-3 mt-2">
-                      <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.borderSoft }}>
-                        <p className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: detailTheme.accent }}>Before</p>
-                        <p className="text-xs text-gray-500 leading-relaxed">{pair.beforeDesc || "Before using the product"}</p>
-                      </div>
-                      <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.priceMuted, borderColor: detailTheme.borderPrice }}>
-                        <p className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: detailTheme.price }}>After</p>
-                        <p className="text-xs text-gray-500 leading-relaxed">{pair.afterDesc || "After consistent use"}</p>
+              <div className="space-y-10">
+                {beforeAfterPairs.map((pair, idx) => (
+                  <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div className={idx % 2 === 1 ? "lg:order-2" : ""}>
+                      <BeforeAfterSlider beforeImage={pair.before} afterImage={pair.after} beforeLabel={pair.beforeLabel || "Before"} afterLabel={pair.afterLabel || "After"} />
+                      <p className="text-center text-xs text-gray-400 mt-2">← Drag slider to compare →</p>
+                    </div>
+                    <div className={`flex flex-col justify-center space-y-4 ${idx % 2 === 1 ? "lg:order-1" : ""}`}>
+                      {pair.duration && (<span className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold border rounded-full px-3.5 py-1.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentSoft, color: detailTheme.accent }}><Sparkles className="w-3 h-3" /> {pair.duration}</span>)}
+                      {pair.title && (<h3 className="text-3xl font-luxury font-bold leading-snug" style={{ color: detailTheme.heading }}>{pair.title}</h3>)}
+                      {pair.description && (<p className="text-sm text-gray-500 leading-relaxed">{pair.description}</p>)}
+                      <div className="grid grid-cols-2 gap-3 mt-2">
+                        <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.borderSoft }}>
+                          <p className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: detailTheme.accent }}>Before</p>
+                          <p className="text-xs text-gray-500 leading-relaxed">{pair.beforeDesc || "Before using the product"}</p>
+                        </div>
+                        <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.priceMuted, borderColor: detailTheme.borderPrice }}>
+                          <p className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: detailTheme.price }}>After</p>
+                          <p className="text-xs text-gray-500 leading-relaxed">{pair.afterDesc || "After consistent use"}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
             </section>
           </DeferredSection>
         )}
@@ -1958,49 +2013,49 @@ const ProductDetail = () => {
         <DeferredSection minHeight={360}>
           <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-3xl border border-gray-100 p-7 shadow-sm">
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
-                <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Product Description</h2>
+              <div className="bg-white rounded-3xl border border-gray-100 p-7 shadow-sm">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
+                  <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Product Description</h2>
+                </div>
+                {product.description ? (
+                  <>
+                    <div
+                      className={`prose prose-sm max-w-none text-gray-600 leading-relaxed transition-all duration-300 ${expandedDesc ? "" : "line-clamp-1"}`}
+                      dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
+                    <button onClick={() => setExpandedDesc(!expandedDesc)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.accent }}>
+                      {expandedDesc ? "Read Less ▲" : "Read More ▼"}
+                    </button>
+                  </>
+                ) : <p className="text-sm text-gray-400">No description available.</p>}
               </div>
-              {product.description ? (
-                <>
-                  <div
-                    className={`prose prose-sm max-w-none text-gray-600 leading-relaxed transition-all duration-300 ${expandedDesc ? "" : "line-clamp-1"}`}
-                    dangerouslySetInnerHTML={{ __html: product.description }}
-                  />
-                  <button onClick={() => setExpandedDesc(!expandedDesc)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.accent }}>
-                    {expandedDesc ? "Read Less ▲" : "Read More ▼"}
-                  </button>
-                </>
-              ) : <p className="text-sm text-gray-400">No description available.</p>}
-            </div>
 
-            <div className="bg-white rounded-3xl border border-gray-100 p-7 shadow-sm">
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
-                <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Additional Information</h2>
+              <div className="bg-white rounded-3xl border border-gray-100 p-7 shadow-sm">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
+                  <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Additional Information</h2>
+                </div>
+                {additionalInfoArray.length > 0 ? (
+                  <>
+                    <div className={`overflow-hidden transition-all duration-300 ${expandedInfo ? "" : "max-h-[1em]"}`}>
+                      <ul className="space-y-1 text-sm text-gray-700">
+                        {additionalInfoArray.map((pt, i) => (
+                          <li key={i} className="flex gap-3 items-start">
+                            <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: detailTheme.price }} />
+                            {pt}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <button onClick={() => setExpandedInfo(!expandedInfo)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.price }}>
+                      {expandedInfo ? "Read Less ▲" : "Read More ▼"}
+                    </button>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-400">No additional information available.</p>
+                )}
               </div>
-              {additionalInfoArray.length > 0 ? (
-                <>
-                  <div className={`overflow-hidden transition-all duration-300 ${expandedInfo ? "" : "max-h-[1em]"}`}>
-                    <ul className="space-y-1 text-sm text-gray-700">
-                      {additionalInfoArray.map((pt, i) => (
-                        <li key={i} className="flex gap-3 items-start">
-                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: detailTheme.price }} />
-                          {pt}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <button onClick={() => setExpandedInfo(!expandedInfo)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.price }}>
-                    {expandedInfo ? "Read Less ▲" : "Read More ▼"}
-                  </button>
-                </>
-              ) : (
-                <p className="text-sm text-gray-400">No additional information available.</p>
-              )}
-            </div>
             </div>
           </section>
         </DeferredSection>
@@ -2097,34 +2152,34 @@ const ProductDetail = () => {
         {product.videos?.length > 0 && (
           <DeferredSection minHeight={360}>
             <section className="w-full bg-[#fbf7f7] my-10 max-h-[80vh] overflow-hidden">
-            {product.videos.map((vid, idx) => (
-              <div
-                key={idx}
-                className="grid grid-cols-1 md:grid-cols-12 w-full items-stretch"
-              >
-                <div className="md:col-span-7 lg:col-span-9 bg-black overflow-hidden">
-                  <div className="relative w-full h-[220px] sm:h-[260px] md:h-[300px] lg:h-[340px]">
-                    <iframe
-                      loading="lazy"
-                      src={getVideoEmbedUrl(vid.url)}
-                      className="absolute inset-0 w-full h-full"
-                      style={{ display: "block", border: "none" }}
-                      allow="autoplay; encrypted-media"
-                      allowFullScreen
-                      title={vid.title || "Product Video"}
-                    />
+              {product.videos.map((vid, idx) => (
+                <div
+                  key={idx}
+                  className="grid grid-cols-1 md:grid-cols-12 w-full items-stretch"
+                >
+                  <div className="md:col-span-7 lg:col-span-9 bg-black overflow-hidden">
+                    <div className="relative w-full h-[220px] sm:h-[260px] md:h-[300px] lg:h-[340px]">
+                      <iframe
+                        loading="lazy"
+                        src={getVideoEmbedUrl(vid.url)}
+                        className="absolute inset-0 w-full h-full"
+                        style={{ display: "block", border: "none" }}
+                        allow="autoplay; encrypted-media"
+                        allowFullScreen
+                        title={vid.title || "Product Video"}
+                      />
+                    </div>
+                  </div>
+                  <div className="md:col-span-5 lg:col-span-3 bg-[#1a1a1a] text-white flex flex-col justify-center px-3 sm:px-4 py-4 space-y-2">
+                    {vid.subtitle && <p className="text-xs uppercase text-gray-400 font-semibold tracking-widest">{vid.subtitle}</p>}
+                    {vid.title && <h3 className="text-lg font-bold leading-snug text-white">{vid.title}</h3>}
+                    {vid.description && <p className="text-sm text-gray-300 leading-relaxed">{vid.description}</p>}
+                    <div className="pt-2 border-t border-white/10">
+                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Watch to learn more</p>
+                    </div>
                   </div>
                 </div>
-                <div className="md:col-span-5 lg:col-span-3 bg-[#1a1a1a] text-white flex flex-col justify-center px-3 sm:px-4 py-4 space-y-2">
-                  {vid.subtitle && <p className="text-xs uppercase text-gray-400 font-semibold tracking-widest">{vid.subtitle}</p>}
-                  {vid.title && <h3 className="text-lg font-bold leading-snug text-white">{vid.title}</h3>}
-                  {vid.description && <p className="text-sm text-gray-300 leading-relaxed">{vid.description}</p>}
-                  <div className="pt-2 border-t border-white/10">
-                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Watch to learn more</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
             </section>
           </DeferredSection>
         )}
@@ -2133,20 +2188,20 @@ const ProductDetail = () => {
         {((product.banners?.length > 0) || product.bannerImage) && (
           <DeferredSection minHeight={320}>
             <section className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4">
-            {(product.banners?.length > 0
-              ? product.banners
-              : [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
-            ).filter(b => b?.url).map((banner, idx) => (
-              <div key={idx} className="shadow-sm">
-                <img loading="lazy"
-                  src={banner.url}
-                  alt={banner.alt || `Product Banner ${idx + 1}`}
-                  width="1600"
-                  height="900"
-                  className="w-full object-cover h-auto"
-                />
-              </div>
-            ))}
+              {(product.banners?.length > 0
+                ? product.banners
+                : [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
+              ).filter(b => b?.url).map((banner, idx) => (
+                <div key={idx} className="shadow-sm">
+                  <img loading="lazy"
+                    src={banner.url}
+                    alt={banner.alt || `Product Banner ${idx + 1}`}
+                    width="1600"
+                    height="900"
+                    className="w-full object-cover h-auto"
+                  />
+                </div>
+              ))}
             </section>
           </DeferredSection>
         )}
@@ -2154,84 +2209,84 @@ const ProductDetail = () => {
         {/* ════ REVIEWS ════ */}
         <DeferredSection minHeight={420}>
           <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">
-          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-            <div>
-              <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>
-                Customer Reviews
-                {product.reviews?.length > 0 && <span className="text-sm font-normal text-gray-400 ml-2">({product.reviews.length})</span>}
-              </h2>
-              <p className="text-xs text-gray-400 mt-0.5">Real reviews from real customers</p>
-            </div>
-            <button
-              onClick={() => setShowReviewModal(true)}
-              data-track-event="write_review_click"
-              data-track-label={product.name}
-              className="flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-2xl transition shadow-sm"
-              style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
-            >
-              <Star className="w-4 h-4 fill-white" /> Write a Review
-            </button>
-          </div>
-
-          {product.reviews?.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {product.reviews.map((rev, i) => (
-                <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                  {(() => {
-                    const isGenuine = rev?.verifiedPurchase === true || rev?.userType === "genuine" || rev?.isGenuine === true;
-                    const reviewImages = Array.isArray(rev?.images) && rev.images.length
-                      ? rev.images
-                      : rev?.image
-                        ? [rev.image]
-                        : [];
-
-                    return (
-                      <>
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: detailTheme.reviewSurface, color: detailTheme.accent }}>{rev.name?.[0]?.toUpperCase()}</div>
-                      <div>
-                        <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>{rev.name}</p>
-                        <div className="flex gap-0.5 mt-0.5">
-                          {[1, 2, 3, 4, 5].map(s => (
-                            <Star key={s} className={`w-3 h-3 ${s <= rev.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
-                  {reviewImages.length > 0 && (
-                    <div className="flex gap-2 mt-3">
-                      {reviewImages.map((img, i) => (
-                        <img
-                          key={i}
-                          src={img}
-                          loading="lazy"
-                          width="160"
-                          height="160"
-                          className="w-20 h-20 object-cover rounded-lg border"
-                        />
-                      ))}
-                    </div>
-                  )}
-                      </>
-                    );
-                  })()}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white border border-gray-100 rounded-3xl p-12 text-center">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
-                <Star className="w-7 h-7" style={{ color: detailTheme.accentSoft }} />
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+              <div>
+                <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>
+                  Customer Reviews
+                  {product.reviews?.length > 0 && <span className="text-sm font-normal text-gray-400 ml-2">({product.reviews.length})</span>}
+                </h2>
+                <p className="text-xs text-gray-400 mt-0.5">Real reviews from real customers</p>
               </div>
-              <p className="text-gray-500 text-sm mb-1">No reviews yet</p>
-              <p className="text-gray-400 text-xs mb-4">Be the first to share your experience!</p>
-              <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold hover:underline" style={{ color: detailTheme.accent }}>Write a Review →</button>
+              <button
+                onClick={() => setShowReviewModal(true)}
+                data-track-event="write_review_click"
+                data-track-label={product.name}
+                className="flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-2xl transition shadow-sm"
+                style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
+              >
+                <Star className="w-4 h-4 fill-white" /> Write a Review
+              </button>
             </div>
-          )}
+
+            {product.reviews?.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {product.reviews.map((rev, i) => (
+                  <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    {(() => {
+                      const isGenuine = rev?.verifiedPurchase === true || rev?.userType === "genuine" || rev?.isGenuine === true;
+                      const reviewImages = Array.isArray(rev?.images) && rev.images.length
+                        ? rev.images
+                        : rev?.image
+                          ? [rev.image]
+                          : [];
+
+                      return (
+                        <>
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: detailTheme.reviewSurface, color: detailTheme.accent }}>{rev.name?.[0]?.toUpperCase()}</div>
+                              <div>
+                                <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>{rev.name}</p>
+                                <div className="flex gap-0.5 mt-0.5">
+                                  {[1, 2, 3, 4, 5].map(s => (
+                                    <Star key={s} className={`w-3 h-3 ${s <= rev.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} />
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+                          <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
+                          {reviewImages.length > 0 && (
+                            <div className="flex gap-2 mt-3">
+                              {reviewImages.map((img, i) => (
+                                <img
+                                  key={i}
+                                  src={img}
+                                  loading="lazy"
+                                  width="160"
+                                  height="160"
+                                  className="w-20 h-20 object-cover rounded-lg border"
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white border border-gray-100 rounded-3xl p-12 text-center">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
+                  <Star className="w-7 h-7" style={{ color: detailTheme.accentSoft }} />
+                </div>
+                <p className="text-gray-500 text-sm mb-1">No reviews yet</p>
+                <p className="text-gray-400 text-xs mb-4">Be the first to share your experience!</p>
+                <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold hover:underline" style={{ color: detailTheme.accent }}>Write a Review →</button>
+              </div>
+            )}
           </section>
         </DeferredSection>
 
@@ -2239,18 +2294,18 @@ const ProductDetail = () => {
         {relatedProducts.length > 0 && (
           <DeferredSection minHeight={360}>
             <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-2">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
-              <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>You may also like</h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-              {relatedProducts.map((item, idx) => (
-                <ProductCard
-                  key={item._id || item.id || `${createSlug(item.name || "product")}-${idx}`}
-                  product={item}
-                />
-              ))}
-            </div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
+                <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>You may also like</h2>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                {relatedProducts.map((item, idx) => (
+                  <ProductCard
+                    key={item._id || item.id || `${createSlug(item.name || "product")}-${idx}`}
+                    product={item}
+                  />
+                ))}
+              </div>
             </section>
           </DeferredSection>
         )}

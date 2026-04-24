@@ -56,7 +56,7 @@ const buildDetailBgConfig = (palette = [], defaultColor = "") => {
 };
 
 const normalizeCouponCode = (value = "") =>
-  String(value || "").trim().toUpperCase().replace(/\s+/g, "");
+  String(value || "").trim();
 
 const sanitizeCouponSnapshot = (coupon) => {
   if (!coupon || !coupon.id) return null;
