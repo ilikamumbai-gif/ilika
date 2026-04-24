@@ -935,7 +935,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
             </span>
           </div>
         )}
-        {product?.warranty === "import" && warrantyRegistrationUrl && (
+        {/* {product?.warranty === "import" && warrantyRegistrationUrl && (
           <div className="border-t px-3 py-2 text-center" style={{ borderColor: theme.borderSoft }}>
             <Link
               to={warrantyRegistrationUrl}
@@ -945,7 +945,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
               Register Import Warranty
             </Link>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
@@ -2019,7 +2019,7 @@ const ProductDetail = () => {
                   </div>
                 ))}
               </div>
-              {product?.warranty === "import" && warrantyRegistrationUrl && (
+              {/* {product?.warranty === "import" && warrantyRegistrationUrl && (
                 <div className="mt-3">
                   <Link
                     to={warrantyRegistrationUrl}
@@ -2034,7 +2034,7 @@ const ProductDetail = () => {
                     Register Import Warranty
                   </Link>
                 </div>
-              )}
+              )} */}
             </div>
 
           </div>
