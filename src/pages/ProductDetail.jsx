@@ -1698,10 +1698,10 @@ const ProductDetail = () => {
                     alt={product.name}
                     width="1080"
                     height="1080"
-                    className="w-full h-[280px] sm:h-[400px] lg:h-[540px] object-cover transition-opacity duration-300 ease-out"
+                    className="w-full aspect-square sm:aspect-auto sm:h-[400px] lg:h-[540px] object-contain sm:object-cover transition-opacity duration-300 ease-out"
                   />
                 ) : (
-                  <div className="w-full h-[280px] sm:h-[400px] lg:h-[540px] bg-gray-100 animate-pulse rounded-3xl" />
+                  <div className="w-full aspect-square sm:h-[400px] sm:aspect-auto lg:h-[540px] bg-gray-100 animate-pulse rounded-3xl" />
                 )}
 
                 {/* Zoom hint overlay */}
