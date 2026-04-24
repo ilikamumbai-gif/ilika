@@ -1588,6 +1588,126 @@ app.delete("/api/feedback/:id", async (req, res) => {
   }
 });
 
+/* ============================== WARRANTY REGISTRATION ============================== */
+app.post("/api/warranty-registrations", async (req, res) => {
+  try {
+    const {
+      name = "",
+      email = "",
+      phone = "",
+      orderId = "",
+      productId = "",
+      productName = "",
+      purchaseDate = "",
+      serialNumber = "",
+      city = "",
+      issue = "",
+      userId = null,
+      userEmail = null,
+    } = req.body || {};
+
+    if (!String(name).trim()) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+    if (!String(phone).trim()) {
+      return res.status(400).json({ error: "Phone is required" });
+    }
+    if (!String(orderId).trim()) {
+      return res.status(400).json({ error: "Order ID is required" });
+    }
+    if (!String(productName).trim()) {
+      return res.status(400).json({ error: "Product name is required" });
+    }
+    if (!String(purchaseDate).trim()) {
+      return res.status(400).json({ error: "Purchase date is required" });
+    }
+
+    const registration = {
+      name: String(name).trim(),
+      email: String(email).trim() || null,
+      phone: String(phone).trim(),
+      orderId: String(orderId).trim(),
+      productId: String(productId).trim() || null,
+      productName: String(productName).trim(),
+      purchaseDate: String(purchaseDate).trim(),
+      serialNumber: String(serialNumber).trim() || null,
+      city: String(city).trim() || null,
+      issue: String(issue).trim() || null,
+      userId: userId || null,
+      userEmail: userEmail || null,
+      status: "pending",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const docRef = await db.collection("warrantyRegistrations").add(registration);
+    res.json({ id: docRef.id, ...registration });
+  } catch (error) {
+    console.error("ADD WARRANTY REGISTRATION ERROR:", error);
+    res.status(500).json({ error: "Failed to register warranty" });
+  }
+});
+
+app.get("/api/warranty-registrations", async (req, res) => {
+  try {
+    const snapshot = await db
+      .collection("warrantyRegistrations")
+      .orderBy("createdAt", "desc")
+      .get();
+    res.json(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    console.error("FETCH WARRANTY REGISTRATIONS ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch warranty registrations" });
+  }
+});
+
+app.get("/api/warranty-registrations/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("warrantyRegistrations").doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: "Warranty registration not found" });
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error("FETCH WARRANTY REGISTRATION DETAIL ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch warranty registration detail" });
+  }
+});
+
+app.put("/api/warranty-registrations/:id/status", async (req, res) => {
+  try {
+    const { status, verificationNote = "" } = req.body || {};
+    const allowed = new Set(["pending", "in_review", "eligible", "not_eligible", "closed"]);
+    const nextStatus = String(status || "").trim().toLowerCase();
+    if (!allowed.has(nextStatus)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const ref = db.collection("warrantyRegistrations").doc(req.params.id);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ error: "Warranty registration not found" });
+
+    await ref.update({
+      status: nextStatus,
+      verificationNote: String(verificationNote || "").trim() || null,
+      updatedAt: new Date(),
+    });
+
+    res.json({ message: "Warranty status updated" });
+  } catch (error) {
+    console.error("UPDATE WARRANTY STATUS ERROR:", error);
+    res.status(500).json({ error: "Failed to update warranty status" });
+  }
+});
+
+app.delete("/api/warranty-registrations/:id", async (req, res) => {
+  try {
+    await db.collection("warrantyRegistrations").doc(req.params.id).delete();
+    res.json({ message: "Warranty registration deleted" });
+  } catch (error) {
+    console.error("DELETE WARRANTY REGISTRATION ERROR:", error);
+    res.status(500).json({ error: "Failed to delete warranty registration" });
+  }
+});
+
 /* ============================== DEFAULT ADMIN ============================== */
 const createDefaultAdmin = async () => {
   try {

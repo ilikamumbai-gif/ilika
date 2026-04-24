@@ -43,6 +43,7 @@ const About = lazy(() => import("../pages/About"));
 const Combos = lazy(() => import("../pages/Combos"));
 const ComboDetail = lazy(() => import("../pages/ComboDetail"));
 const Feedback = lazy(() => import("../pages/Feedback"));
+const WarrantyRegistration = lazy(() => import("../pages/WarrantyRegistration"));
 
 const PixelPageTracker = () => {
   const { pathname } = useLocation();
@@ -83,6 +84,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/about") return { title: "About Us", description: "Learn more about Ilika." };
   if (pathname === "/contact") return { title: "Contact Us", description: "Get in touch with Ilika support." };
   if (pathname === "/feedback") return { title: "Feedback", description: "Share your feedback with Ilika." };
+  if (pathname === "/warranty-registration") return { title: "Warranty Registration", description: "Register import product warranty with Ilika support." };
   if (pathname === "/shippingpolicy") return { title: "Shipping Policy", description: "Read Ilika shipping policy." };
   if (pathname === "/faq") return { title: "FAQ", description: "Frequently asked questions about Ilika." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
@@ -166,6 +168,7 @@ const NavRoutes = () => {
         <Route path="/about" element={renderLazy(About)} />
         <Route path="/contact" element={renderLazy(Contact)} />
         <Route path="/feedback" element={renderLazy(Feedback)} />
+        <Route path="/warranty-registration" element={renderLazy(WarrantyRegistration)} />
         <Route path="/shippingpolicy" element={renderLazy(ShippingPolicy)} />
         <Route path="/faq" element={renderLazy(Faq)} />
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />

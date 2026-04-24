@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { trackViewContent, trackAddToCart } from "../utils/pixel";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -827,7 +827,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
 /* ═══════════════════════════════════════════════════
    STICKY FLOATING ATC BAR
 ═══════════════════════════════════════════════════ */
-const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme }) => {
+const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme, warrantyRegistrationUrl }) => {
   return (
     <div
       style={{
@@ -933,6 +933,17 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
             <span className="text-[10px] font-semibold tracking-wide" style={{ color: theme.accent }}>
               {product.warranty === "manufacturer" ? "18 Months Manufacturer Warranty" : "1 Year Import Warranty"}
             </span>
+          </div>
+        )}
+        {product?.warranty === "import" && warrantyRegistrationUrl && (
+          <div className="border-t px-3 py-2 text-center" style={{ borderColor: theme.borderSoft }}>
+            <Link
+              to={warrantyRegistrationUrl}
+              className="text-[11px] font-semibold underline underline-offset-2"
+              style={{ color: theme.accent }}
+            >
+              Register Import Warranty
+            </Link>
           </div>
         )}
       </div>
@@ -1484,6 +1495,15 @@ const ProductDetail = () => {
       .slice(0, 6);
   }, [products, product, productId]);
 
+  const warrantyRegistrationUrl = useMemo(() => {
+    if (!product || product.warranty !== "import") return "";
+    const params = new URLSearchParams({
+      productId: String(product.id || product._id || ""),
+      productName: String(product.name || ""),
+    });
+    return `/warranty-registration?${params.toString()}`;
+  }, [product]);
+
   const detailPageBgColor = useMemo(() => {
     return normalizeHexColor(product?.detailPageDefaultBg) || DEFAULT_DETAIL_BG;
   }, [product?.detailPageDefaultBg]);
@@ -1670,6 +1690,7 @@ const ProductDetail = () => {
         isAdding={isAdding}
         isBuying={isBuying}
         visible={showStickyBar}
+        warrantyRegistrationUrl={warrantyRegistrationUrl}
       // footerHeight={footerHeight}
       />
 
@@ -1998,6 +2019,22 @@ const ProductDetail = () => {
                   </div>
                 ))}
               </div>
+              {product?.warranty === "import" && warrantyRegistrationUrl && (
+                <div className="mt-3">
+                  <Link
+                    to={warrantyRegistrationUrl}
+                    className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border"
+                    style={{
+                      color: detailTheme.accent,
+                      borderColor: detailTheme.accentLine,
+                      backgroundColor: detailTheme.reviewSurface,
+                    }}
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Register Import Warranty
+                  </Link>
+                </div>
+              )}
             </div>
 
           </div>

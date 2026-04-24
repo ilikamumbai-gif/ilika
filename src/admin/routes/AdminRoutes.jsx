@@ -41,6 +41,8 @@ import NotificationList from "../pages/Notification/NotificationList";
 import NotificationDetail from "../pages/Notification/NotificationDetail";
 import FeedbackList from "../pages/Feedback/FeedbackList";
 import FeedbackDetail from "../pages/Feedback/FeedbackDetail";
+import WarrantyList from "../pages/Warranty/WarrantyList";
+import WarrantyDetail from "../pages/Warranty/WarrantyDetail";
 
 const AdminRoutes = () => {
   return (
@@ -95,6 +97,8 @@ const AdminRoutes = () => {
                         <Route path="notifications/:productId" element={<NotificationDetail />} />
                         <Route path="feedback" element={<FeedbackList />} />
                         <Route path="feedback/:id" element={<FeedbackDetail />} />
+                        <Route path="warranty" element={<WarrantyList />} />
+                        <Route path="warranty/:id" element={<WarrantyDetail />} />
                       </Routes>
                     </ReviewProvider>
                   </CartEventProvider>
