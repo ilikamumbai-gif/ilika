@@ -224,8 +224,7 @@ const normalizeColorKey = (value = "") =>
     .trim();
 
 const normalizeCouponCode = (value = "") =>
-  String(value || "")
-    .trim();
+  String(value || "");
 
 const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe }) => {
   const [current, setCurrent] = useState(initialIndex);
@@ -1279,9 +1278,9 @@ const ProductDetail = () => {
     setAppliedCoupon((prev) => (prev?.code === assignedCoupon.code ? assignedCoupon : prev));
   }, [assignedCoupon]);
 
-  const handleApplyCoupon = useCallback(() => {
+  const applyCouponCode = useCallback((rawCode) => {
     if (!assignedCoupon) return;
-    const typed = normalizeCouponCode(couponCodeInput);
+    const typed = normalizeCouponCode(rawCode);
     if (!typed) {
       setCouponMessage({ type: "error", text: "Enter coupon code" });
       setAppliedCoupon(null);
@@ -1294,7 +1293,17 @@ const ProductDetail = () => {
     }
     setAppliedCoupon(assignedCoupon);
     setCouponMessage({ type: "success", text: `${assignedCoupon.code} applied successfully` });
-  }, [assignedCoupon, couponCodeInput]);
+  }, [assignedCoupon]);
+
+  const handleApplyCoupon = useCallback(() => {
+    applyCouponCode(couponCodeInput);
+  }, [applyCouponCode, couponCodeInput]);
+
+  const handleApplyAssignedCoupon = useCallback(() => {
+    if (!assignedCoupon) return;
+    setCouponCodeInput(assignedCoupon.code);
+    applyCouponCode(assignedCoupon.code);
+  }, [assignedCoupon, applyCouponCode]);
 
   const handleRemoveCoupon = useCallback(() => {
     setAppliedCoupon(null);
@@ -1772,104 +1781,123 @@ const ProductDetail = () => {
               )}
 
               {assignedCoupon && (
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Apply Coupon</p>
+  <div className="space-y-3">
+    <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#aaa" }}>Apply Coupon</p>
 
-                  {/* Coupon card shape */}
-                  <div
-                    className="relative flex items-stretch bg-white overflow-visible"
-                    style={{
-                      borderRadius: "14px",
-                      border: "1.5px dashed",
-                      borderColor: detailTheme.borderSoft,
-                    }}
-                  > 
-                    {/* Left notch */}
-                    <div
-                      className="absolute -left-[10px] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full z-10"
-                      style={{ backgroundColor: detailTheme.pageBg }}
-                    />
-                    {/* Right notch */}
-                    <div
-                      className="absolute -right-[10px] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full z-10"
-                      style={{ backgroundColor: detailTheme.pageBg }}
-                    />
+    {/* Coupon input card */}
+    <div
+      className="flex items-stretch overflow-hidden"
+      style={{
+        borderRadius: "16px",
+        border: `1.5px solid ${detailTheme.borderSoft}`,
+        background: "#fff",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+      }}
+    >
+      {/* Left icon strip */}
+      <div
+        className="flex items-center justify-center px-4 flex-shrink-0"
+        style={{
+          background: detailTheme.accentMuted,
+          borderRight: `1.5px dashed ${detailTheme.accentLine}`,
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke={detailTheme.accent} strokeWidth="1.8"
+          strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 5H3a1 1 0 0 0-1 1v4a1 1 0 0 1 0 2v4a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-4a1 1 0 0 1 0-2V6a1 1 0 0 0-1-1z" />
+          <line x1="9" y1="9" x2="9" y2="15" strokeDasharray="2 2" />
+        </svg>
+      </div>
 
-                    {/* Left ear */}
-                    <div
-                      className="w-3 flex-shrink-0 rounded-l-[12px]"
-                      style={{ backgroundColor: detailTheme.reviewSurface }}
-                    />
+      {/* Text input */}
+      <input
+        type="text"
+        value={couponCodeInput}
+        onChange={(e) => {
+          setCouponCodeInput(e.target.value);
+          if (couponMessage.text) setCouponMessage({ type: "", text: "" });
+        }}
+        placeholder="Enter coupon code"
+        className="flex-1 min-w-0 px-3 py-3.5 text-sm font-semibold bg-transparent border-none outline-none placeholder:font-normal placeholder:text-gray-300"
+        style={{ color: detailTheme.heading, letterSpacing: "0.04em" }}
+      />
 
-                    {/* Input area */}
-                    <div className="flex items-center gap-2 px-3 py-3 flex-1 min-w-0">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke={detailTheme.accentSoft} strokeWidth="1.8"
-                        strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-                        <path d="M21 5H3a1 1 0 0 0-1 1v4a1 1 0 0 1 0 2v4a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-4a1 1 0 0 1 0-2V6a1 1 0 0 0-1-1z" />
-                      </svg>
-                      <input
-                        type="text"
-                        value={couponCodeInput}
-                        onChange={(e) => {
-                          setCouponCodeInput(e.target.value);
-                          if (couponMessage.text) setCouponMessage({ type: "", text: "" });
-                        }}
-                        placeholder="Enter coupon code"
-                        className="flex-1 min-w-0 text-sm font-semibold bg-transparent border-none outline-none placeholder:font-normal placeholder:text-gray-400"
-                        style={{ color: detailTheme.heading }}
-                      />
-                    </div>
+      {/* Dashed divider */}
+      <div
+        className="flex-shrink-0 w-px my-2.5"
+        style={{
+          background: `repeating-linear-gradient(to bottom, #ddd 0px, #ddd 5px, transparent 5px, transparent 10px)`
+        }}
+      />
 
-                    {/* Perforated divider */}
-                    <div
-                      className="flex-shrink-0 w-px my-3"
-                      style={{
-                        background: `repeating-linear-gradient(to bottom, ${detailTheme.borderSoft} 0px, ${detailTheme.borderSoft} 5px, transparent 5px, transparent 10px)`
-                      }}
-                    />
+      {/* Apply button */}
+      <button
+        type="button"
+        onClick={handleApplyCoupon}
+        className="flex-shrink-0 px-5 text-sm font-bold transition-all"
+        style={{
+          background: appliedCoupon ? "#1c7c54" : detailTheme.primary,
+          color: detailTheme.onPrimary,
+          letterSpacing: "0.04em",
+          minWidth: "80px",
+        }}
+      >
+        {appliedCoupon ? "Applied ✓" : "Apply"}
+      </button>
+    </div>
 
-                    {/* Apply button */}
-                    <button
-                      type="button"
-                      onClick={handleApplyCoupon}
-                      className="flex-shrink-0 px-4 text-sm font-semibold transition-opacity hover:opacity-80 rounded-r-[12px]"
-                      style={{
-                        backgroundColor: detailTheme.primary,
-                        color: detailTheme.onPrimary,
-                        minWidth: "72px",
-                      }}
-                    >
-                      {appliedCoupon ? "Applied" : "Apply"}
-                    </button>
+    {/* Available coupon pill */}
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-[11px] text-gray-400 font-medium">Available:</span>
+      <button
+        type="button"
+        onClick={handleApplyAssignedCoupon}
+        className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-bold transition-all hover:-translate-y-0.5"
+        style={{
+          background: `linear-gradient(135deg, ${detailTheme.accentMuted} 0%, ${detailTheme.accentSoftAlt} 100%)`,
+          border: `1.5px solid ${detailTheme.borderSoft}`,
+          color: detailTheme.accent,
+          boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
+        }}
+      >
+        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: detailTheme.accent }} />
+        {assignedCoupon.code}
+        <span className="font-medium opacity-70">· {assignedCoupon.discountPercent}% off</span>
+      </button>
+    </div>
 
-                    {/* Right ear */}
-                    <div className="w-0 flex-shrink-0" />
-                  </div>
+    {/* Success banner */}
+    {appliedCoupon && (
+      <div
+        className="flex items-center gap-3 rounded-2xl px-4 py-3"
+        style={{
+          background: "linear-gradient(135deg, #f0faf5 0%, #e4f7ec 100%)",
+          border: "1.5px solid #a8dfc0",
+        }}
+      >
+        <span className="text-base leading-none">✓</span>
+        <p className="text-xs font-bold flex-1" style={{ color: "#1c7c54" }}>
+          {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off your order!
+        </p>
+        <button
+          type="button"
+          onClick={handleRemoveCoupon}
+          className="text-[11px] text-gray-400 hover:text-gray-600 underline transition"
+        >
+          Remove
+        </button>
+      </div>
+    )}
 
-                  {/* Status messages */}
-                  {appliedCoupon && (
-                    <div className="flex items-center justify-between text-xs px-1">
-                      <span className="font-semibold" style={{ color: "#1C7C54" }}>
-                        ✓ {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleRemoveCoupon}
-                        className="text-gray-400 hover:text-gray-600 transition underline"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-
-                  {!appliedCoupon && couponMessage.text && (
-                    <p className={`text-xs font-medium px-1 ${couponMessage.type === "error" ? "text-red-600" : "text-green-700"}`}>
-                      {couponMessage.type === "error" ? "✗ " : "✓ "}{couponMessage.text}
-                    </p>
-                  )}
-                </div>
-              )}
+    {/* Error message */}
+    {!appliedCoupon && couponMessage.text && (
+      <p className={`text-xs font-medium px-1 ${couponMessage.type === "error" ? "text-red-500" : "text-green-700"}`}>
+        {couponMessage.type === "error" ? "✗ " : "✓ "}{couponMessage.text}
+      </p>
+    )}
+  </div>
+)}
 
               {/* Price box */}
               <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
