@@ -139,12 +139,18 @@ const MaskDuoOffer = () => {
         "/placeholder.webp";
 
       const comboItem = {
-        id: "mask-duo-custom",
+        id: `mask-duo-custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        baseProductId: "mask-duo-custom",
         name: "Custom Mask Duo + Free Mask",
         price: COMBO_PRICE,
         quantity: 1,
         isCombo: true,
         image: getImage(selectedMasks[0]),
+        freeMaskOptions: freeMaskProducts.map((mask) => ({
+          id: mask._id || mask.id,
+          name: mask.name,
+          image: getImage(mask),
+        })),
         comboItems: [
           ...selectedMasks.map((p) => ({
             id: p._id || p.id,
@@ -152,7 +158,7 @@ const MaskDuoOffer = () => {
             image: getImage(p),
           })),
           {
-            id: "free-mask",
+            id: `free-mask-${freeMask._id || freeMask.id || Date.now()}`,
             name: freeMask.name + " (FREE)",
             image: getImage(freeMask),
             isFree: true,

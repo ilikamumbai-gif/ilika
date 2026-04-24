@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { X, Minus, Plus } from "lucide-react";
 import { useCart } from "../context/CartProvider";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ const CartDrawer = () => {
   } = useCart();
   const { currentUser } = useAuth();
 
-  const navigate = useNavigate(); // ✅ ADDED
+  const navigate = useNavigate(); // âœ… ADDED
 
   if (!isCartOpen) return null;
 
@@ -79,42 +79,55 @@ const CartDrawer = () => {
                     </p>
                   )}
 
-                  {/* ✅ SHOW KIT PRODUCTS */}
+                  {/* âœ… SHOW KIT PRODUCTS */}
                   {item.isCombo && item.comboItems && (
                     <div className="mt-2 space-y-2 bg-gray-50 p-2 rounded-lg">
 
-                      {item.comboItems.map((sub, i) => (
-                        <div key={i} className="flex items-center gap-2">
+                      {item.comboItems.map((sub, i) => {
+                        const isSurpriseMask =
+                          Boolean(sub?.isFree) || /\(free\)/i.test(sub?.name || "");
+                        const subUnitPrice = Number(sub?.price) || 0;
 
-                          <img loading="lazy"
-                            src={
-                              Array.isArray(sub.image)
-                                ? sub.image[0]
-                                : sub.image || "/placeholder.webp"
-                            }
-                            alt={sub.name}
-                            className="w-10 h-10 rounded object-cover border"
-                          />
+                        return (
+                          <div key={i} className="flex items-center gap-2">
 
-                          <div className="flex-1">
-                            <p className="text-xs font-medium">{sub.name}</p>
-                            {sub.variantLabel && (
-                              <p className="text-[11px] text-gray-500">
-                                {sub.variantLabel}
+                            <img loading="lazy"
+                              src={
+                                Array.isArray(sub.image)
+                                  ? sub.image[0]
+                                  : sub.image || "/placeholder.webp"
+                              }
+                              alt={isSurpriseMask ? "Surprise Mask (FREE)" : sub.name}
+                              className="w-10 h-10 rounded object-cover border"
+                            />
+
+                            <div className="flex-1">
+                              <p className="text-xs font-medium">
+                                {isSurpriseMask ? "Surprise Mask (FREE)" : sub.name}
                               </p>
-                            )}
+                              {sub.variantLabel && (
+                                <p className="text-[11px] text-gray-500">
+                                  {sub.variantLabel}
+                                </p>
+                              )}
+                              {item.quantity > 1 && (
+                                <p className="text-[11px] text-gray-500">
+                                  Qty: {item.quantity}
+                                </p>
+                              )}
+                            </div>
+
+                            <span className="text-xs text-gray-400">
+                              {isSurpriseMask ? "FREE" : `${subUnitPrice * item.quantity}`}
+                            </span>
+
                           </div>
-
-                          <span className="text-xs text-gray-400">
-                            ₹{sub.price}
-                          </span>
-
-                        </div>
-                      ))}
+                        );
+                      })}
 
                       <div className="flex justify-between text-xs font-medium border-t pt-2">
                         <span>Kit Price</span>
-                        <span className="text-green-700">₹{item.price}</span>
+                        <span className="text-green-700">{item.price}</span>
                       </div>
 
                     </div>
@@ -123,7 +136,7 @@ const CartDrawer = () => {
                   {/* Normal product price */}
                   {!item.isCombo && (
                     <p className="text-sm text-gray-500">
-                      ₹{
+                      {
                         item.price ||
                         item?.variants?.find(v => v.label === item.variantLabel)?.price ||
                         item?.variants?.[0]?.price ||
@@ -156,7 +169,7 @@ const CartDrawer = () => {
 
                 {/* PRICE */}
                 <p className="font-medium">
-                  ₹{
+                  {
                     (
                       item.price ||
                       item?.variants?.find(v => v.label === item.variantLabel)?.price ||
@@ -177,7 +190,7 @@ const CartDrawer = () => {
 
             <div className="flex justify-between">
               <span className="text-gray-600">Subtotal</span>
-              <span>₹{subtotal}</span>
+              <span>{subtotal}</span>
             </div>
 
             <div className="flex justify-between">
@@ -191,12 +204,12 @@ const CartDrawer = () => {
 
             <div className="flex justify-between text-base font-semibold">
               <span>Grand Total</span>
-              <span>₹{grandTotal}</span>
+              <span>{grandTotal}</span>
             </div>
 
           </div>
 
-          {/* ✅ UPDATED CHECKOUT BUTTON */}
+          {/* âœ… UPDATED CHECKOUT BUTTON */}
           <button
             disabled={cartItems.length === 0}
             onClick={() => {
@@ -227,3 +240,4 @@ const CartDrawer = () => {
 };
 
 export default CartDrawer;
+

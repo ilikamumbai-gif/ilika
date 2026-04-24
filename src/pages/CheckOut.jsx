@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { trackInitiateCheckout, trackPurchase, trackAddPaymentInfo } from "../utils/pixel";
 import { trackGtmBeginCheckout, savePendingGtmPurchase } from "../utils/gtm";
 import { initializeApp, getApps } from "firebase/app";
@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
 
-// ─── OTP WIDGET — defined OUTSIDE Checkout so it never re-mounts on re-render ─
+// â”€â”€â”€ OTP WIDGET â€” defined OUTSIDE Checkout so it never re-mounts on re-render â”€
 // If defined inside the parent component, React treats it as a new component
 // type on every render and unmounts/remounts it, destroying all input state.
 const OtpWidget = ({
@@ -56,7 +56,7 @@ const OtpWidget = ({
         disabled={otpSending || resendCooldown > 0}
         className="bg-[#E7A6A1] p-2 rounded w-full disabled:opacity-30 text-sm font-medium"
       >
-        {otpSending ? "Sending OTP…" : "Send OTP"}
+        {otpSending ? "Sending OTPâ€¦" : "Send OTP"}
       </button>
     ) : (
       <>
@@ -75,7 +75,7 @@ const OtpWidget = ({
             disabled={verifying || otp.length < 4 || phoneChangedSinceOtp}
             className="bg-black text-white p-2 rounded flex-1 disabled:opacity-50 text-sm font-medium"
           >
-            {verifying ? "Verifying…" : "Verify OTP"}
+            {verifying ? "Verifyingâ€¦" : "Verify OTP"}
           </button>
           <button
             onClick={onResend}
@@ -118,7 +118,7 @@ const getPhoneVerificationAuth = () => {
   return getAuth(verificationApp);
 };
 
-// ─── AUTH CONTEXT FIX — also update AuthContext.jsx (see note at bottom) ─────
+// â”€â”€â”€ AUTH CONTEXT FIX â€” also update AuthContext.jsx (see note at bottom) â”€â”€â”€â”€â”€
 
 const Checkout = () => {
   const { cartItems, clearCart } = useCart();
@@ -128,7 +128,7 @@ const Checkout = () => {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // ─── OTP STATE ────────────────────────────────────────────────────────────
+  // â”€â”€â”€ OTP STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpVerified, setOtpVerified] = useState(false);
@@ -141,11 +141,11 @@ const Checkout = () => {
   const [otpResendCount, setOtpResendCount] = useState(0);
   const MAX_OTP_RESENDS = 3;
 
-  // Single reCAPTCHA container ref — we use ONE div in the DOM, always
+  // Single reCAPTCHA container ref â€” we use ONE div in the DOM, always
   const recaptchaContainerRef = useRef(null);
   const recaptchaWidgetIdRef = useRef(null);
 
-  // ─── RECAPTCHA helpers ────────────────────────────────────────────────────
+  // â”€â”€â”€ RECAPTCHA helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const destroyRecaptcha = () => {
     try {
       if (window.recaptchaVerifier) {
@@ -202,7 +202,7 @@ const Checkout = () => {
     return () => window.clearInterval(timer);
   }, [resendCooldown]);
 
-  // ─── SEND OTP ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€ SEND OTP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const sendOtp = async (phone) => {
     if (!currentUser) {
       alert("Please log in before verifying your phone number");
@@ -281,7 +281,7 @@ const Checkout = () => {
     }
   };
 
-  // ─── VERIFY OTP ───────────────────────────────────────────────────────────
+  // â”€â”€â”€ VERIFY OTP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const verifyOtp = async () => {
     if (!otp || otp.length < 4) return alert("Enter the OTP");
     if (!confirmationResult) return alert("Please send OTP first");
@@ -331,7 +331,7 @@ const Checkout = () => {
     }
   };
 
-  // ─── OTP RESEND handler ───────────────────────────────────────────────────
+  // â”€â”€â”€ OTP RESEND handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleResendOtp = async () => {
     if (otpSending || resendCooldown > 0) return;
     if (otpResendCount >= MAX_OTP_RESENDS) {
@@ -345,7 +345,7 @@ const Checkout = () => {
     }
   };
 
-  // ─── ADDRESS STATE ────────────────────────────────────────────────────────
+  // â”€â”€â”€ ADDRESS STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -353,7 +353,7 @@ const Checkout = () => {
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
 
-  // ─── Reset OTP whenever selected address changes ──────────────────────────
+  // â”€â”€â”€ Reset OTP whenever selected address changes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // IMPORTANT: selectedAddressId must be in the dependency array!
   useEffect(() => {
     setOtpVerified(false);
@@ -382,7 +382,7 @@ const Checkout = () => {
     return () => destroyRecaptcha();
   }, []);
 
-  // ─── Select address handler ───────────────────────────────────────────────
+  // â”€â”€â”€ Select address handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleSelectAddress = (id) => {
     setSelectedAddressId(id);
     // Note: the useEffect above handles OTP reset automatically
@@ -421,7 +421,7 @@ const Checkout = () => {
     }
   };
 
-  // ─── CALCULATIONS ─────────────────────────────────────────────────────────
+  // â”€â”€â”€ CALCULATIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const subtotal = cartItems.reduce(
     (acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1),
     0
@@ -438,7 +438,7 @@ const Checkout = () => {
     });
   }, [cartItems, total, source]);
 
-  // ─── FETCH ADDRESSES ──────────────────────────────────────────────────────
+  // â”€â”€â”€ FETCH ADDRESSES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!currentUser) return;
     (async () => {
@@ -452,7 +452,7 @@ const Checkout = () => {
     })();
   }, [currentUser, API_URL]);
 
-  // ─── LOAD RAZORPAY SCRIPT ─────────────────────────────────────────────────
+  // â”€â”€â”€ LOAD RAZORPAY SCRIPT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -461,7 +461,7 @@ const Checkout = () => {
     return () => document.body.removeChild(script);
   }, []);
 
-  // ─── CLEAN STALE PIXEL DATA ───────────────────────────────────────────────
+  // â”€â”€â”€ CLEAN STALE PIXEL DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     localStorage.removeItem("order_total");
     localStorage.removeItem("order_items");
@@ -469,7 +469,7 @@ const Checkout = () => {
     sessionStorage.removeItem("purchase_items");
   }, []);
 
-  // ─── SAVE ADDRESS ─────────────────────────────────────────────────────────
+  // â”€â”€â”€ SAVE ADDRESS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const saveAddress = async () => {
     if (!currentUser) return alert("Login required");
 
@@ -506,10 +506,10 @@ const Checkout = () => {
     }
   };
 
-  // ─── PAYMENT METHOD ───────────────────────────────────────────────────────
+  // â”€â”€â”€ PAYMENT METHOD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
-  // ─── PHONE VERIFIED CHECK ─────────────────────────────────────────────────
+  // â”€â”€â”€ PHONE VERIFIED CHECK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const selectedPhone = normalizeIndianPhone(selectedAddress?.phone || "");
   const verifiedPhoneNumbers = Array.isArray(userData?.verifiedPhoneNumbers)
     ? userData.verifiedPhoneNumbers.map(normalizeIndianPhone)
@@ -529,7 +529,7 @@ const Checkout = () => {
     Boolean(otpSent && otpRequestedPhone) &&
     normalizeIndianPhone(otpPhone) !== otpRequestedPhone;
 
-  // ─── PLACE ORDER ──────────────────────────────────────────────────────────
+  // â”€â”€â”€ PLACE ORDER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handlePlaceOrder = async () => {
     if (loading) return;
 
@@ -570,7 +570,7 @@ const Checkout = () => {
         comboItems: item.comboItems || item.items || [],
       }));
 
-      /* ── COD FLOW ── */
+      /* â”€â”€ COD FLOW â”€â”€ */
       if (paymentMethod === "COD") {
         const res = await fetch(`${API_URL}/api/orders`, {
           method: "POST",
@@ -604,7 +604,7 @@ const Checkout = () => {
         return;
       }
 
-      /* ── ONLINE PAYMENT FLOW ── */
+      /* â”€â”€ ONLINE PAYMENT FLOW â”€â”€ */
       const orderRes = await fetch(`${API_URL}/api/payments/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -680,7 +680,7 @@ const Checkout = () => {
     setLoading(false);
   };
 
-  // ─── EMPTY CART GUARD ─────────────────────────────────────────────────────
+  // â”€â”€â”€ EMPTY CART GUARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (!cartItems.length)
     return (
       <>
@@ -694,10 +694,10 @@ const Checkout = () => {
       </>
     );
 
-  // ─── RENDER ───────────────────────────────────────────────────────────────
+  // â”€â”€â”€ RENDER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <>
-      {/* Single invisible reCAPTCHA container — always in DOM, never conditionally rendered */}
+      {/* Single invisible reCAPTCHA container â€” always in DOM, never conditionally rendered */}
       <div id="recaptcha-container" ref={recaptchaContainerRef} />
 
       <MiniDivider />
@@ -707,7 +707,7 @@ const Checkout = () => {
 
         <div className="max-w-7xl mx-auto px-4 py-8 grid lg:grid-cols-2 gap-8">
 
-          {/* ── LEFT ── */}
+          {/* â”€â”€ LEFT â”€â”€ */}
           <div className="space-y-6">
             <Heading heading="Select Address" />
 
@@ -725,13 +725,13 @@ const Checkout = () => {
                 <span className="font-medium">{addr.name}</span>
                 <p className="text-sm text-gray-600">{addr.addressLine}</p>
                 <p className="text-sm text-gray-600">
-                  {addr.city}, {addr.state} — {addr.pincode}
+                  {addr.city}, {addr.state} â€” {addr.pincode}
                 </p>
                 <p className="text-sm text-gray-600">{addr.phone}</p>
               </label>
             ))}
 
-            {/* OTP widget — only shown when address selected and phone unverified */}
+            {/* OTP widget â€” only shown when address selected and phone unverified */}
             {showOtpWidget && selectedAddress && (
               <OtpWidget
                 phone={otpPhone}
@@ -752,7 +752,7 @@ const Checkout = () => {
             )}
 
             {isPhoneVerified && selectedAddress && (
-              <p className="text-green-600 text-sm font-medium">✅ Phone verified</p>
+              <p className="text-green-600 text-sm font-medium">âœ… Phone verified</p>
             )}
 
             <button
@@ -784,7 +784,7 @@ const Checkout = () => {
                   />
                   {pincodeLoading && (
                     <span className="absolute right-3 top-3.5 text-xs text-gray-400">
-                      Fetching…
+                      Fetchingâ€¦
                     </span>
                   )}
                 </div>
@@ -836,30 +836,54 @@ const Checkout = () => {
             </div>
           </div>
 
-          {/* ── RIGHT ── */}
+          {/* â”€â”€ RIGHT â”€â”€ */}
           <div className="bg-white border rounded-xl p-5 h-fit sticky top-24">
             <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
             {cartItems.map((item) => (
-              <div key={item.id} className="flex gap-3 border-b pb-3 mb-3">
-                <img loading="lazy"
-                  src={item.image || item.images?.[0] || item.imageUrl || "/placeholder.webp"}
-                  className="w-16 h-16 rounded-md object-cover"
-                  alt={item.name}
-                />
-                <div className="flex-1 text-sm">
-                  <p className="font-medium">{item.name}</p>
-                  <p className="text-gray-500">Qty: {item.quantity}</p>
+              <div key={item.id} className="border-b pb-3 mb-3">
+                <div className="flex gap-3">
+                  <img loading="lazy"
+                    src={item.image || item.images?.[0] || item.imageUrl || "/placeholder.webp"}
+                    className="w-16 h-16 rounded-md object-cover"
+                    alt={item.name}
+                  />
+                  <div className="flex-1 text-sm">
+                    <p className="font-medium">{item.name}</p>
+                    <p className="text-gray-500">Qty: {item.quantity}</p>
+                  </div>
+                  <div className="font-medium text-sm">
+                    {Number(item.price) * Number(item.quantity)}
+                  </div>
                 </div>
-                <div className="font-medium text-sm">
-                  ₹{Number(item.price) * Number(item.quantity)}
-                </div>
+
+                {item.isCombo && Array.isArray(item.comboItems) && item.comboItems.length > 0 && (
+                  <div className="mt-2 ml-[76px] rounded-lg bg-gray-50 p-2 space-y-1.5">
+                    {item.comboItems.map((sub, index) => {
+                      const isSurpriseMask =
+                        Boolean(sub?.isFree) || /\(free\)/i.test(sub?.name || "");
+                      const freeMaskName =
+                        sub?.name && sub.name.trim()
+                          ? sub.name
+                          : "Surprise Mask (FREE)";
+
+                      return (
+                        <div key={`${item.id}-combo-${index}`} className="flex items-center justify-between text-xs">
+                          <span className="text-gray-700">
+                            {isSurpriseMask ? freeMaskName : sub?.name}
+                          </span>
+                          <span className="text-gray-500">x{item.quantity}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ))}
 
             <div className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between">
-                <span>Subtotal</span><span>₹{subtotal}</span>
+                <span>Subtotal</span><span>{subtotal}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
@@ -867,7 +891,7 @@ const Checkout = () => {
               </div>
               <hr />
               <div className="flex justify-between font-semibold text-lg">
-                <span>Total</span><span>₹{total}</span>
+                <span>Total</span><span>{total}</span>
               </div>
             </div>
 
@@ -876,7 +900,7 @@ const Checkout = () => {
               onClick={handlePlaceOrder}
               className="mt-6 w-full bg-black text-white py-3 rounded-xl hover:bg-gray-900 transition disabled:opacity-60"
             >
-              {loading ? "Processing Payment…" : "Continue to Payment"}
+              {loading ? "Processing Paymentâ€¦" : "Continue to Payment"}
             </button>
           </div>
 

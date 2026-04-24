@@ -1,43 +1,133 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-  <!-- MAIN -->
-  <url><loc>https://ilika.in/</loc><priority>1.0</priority></url>
-  <url><loc>https://ilika.in/shopall</loc><priority>0.9</priority></url>
-  <url><loc>https://ilika.in/newarrival</loc><priority>0.9</priority></url>
-  <url><loc>https://ilika.in/offer</loc><priority>0.8</priority></url>
-
-  <!-- CATEGORY -->
-  <url><loc>https://ilika.in/skin</loc><priority>0.8</priority></url>
-  <url><loc>https://ilika.in/hair</loc><priority>0.8</priority></url>
-  <url><loc>https://ilika.in/grooming</loc><priority>0.8</priority></url>
-
-  <!-- SUB CATEGORY -->
-  <url><loc>https://ilika.in/skin/face</loc><priority>0.7</priority></url>
-  <url><loc>https://ilika.in/skin/body</loc><priority>0.7</priority></url>
-  <url><loc>https://ilika.in/hair/care</loc><priority>0.7</priority></url>
-  <url><loc>https://ilika.in/hair/styling</loc><priority>0.7</priority></url>
-  <url><loc>https://ilika.in/grooming/roller</loc><priority>0.7</priority></url>
-  <url><loc>https://ilika.in/grooming/face</loc><priority>0.7</priority></url>
-  <url><loc>https://ilika.in/grooming/remover</loc><priority>0.7</priority></url>
-
-  <!-- CTM -->
-  <url><loc>https://ilika.in/ctm</loc><priority>0.8</priority></url>
-  <url><loc>https://ilika.in/ctmkit</loc><priority>0.8</priority></url>
-
-  <!-- COMBO -->
-  <url><loc>https://ilika.in/combo</loc><priority>0.8</priority></url>
-
-  <!-- CONTENT -->
-  <url><loc>https://ilika.in/blog</loc><priority>0.8</priority></url>
-  <url><loc>https://ilika.in/about</loc><priority>0.7</priority></url>
-  <url><loc>https://ilika.in/contact</loc><priority>0.7</priority></url>
-
-  <!-- POLICY -->
-  <url><loc>https://ilika.in/privacy</loc><priority>0.5</priority></url>
-  <url><loc>https://ilika.in/termsandcondition</loc><priority>0.5</priority></url>
-  <url><loc>https://ilika.in/return</loc><priority>0.5</priority></url>
-  <url><loc>https://ilika.in/shippingpolicy</loc><priority>0.5</priority></url>
-  <url><loc>https://ilika.in/faq</loc><priority>0.5</priority></url>
-
+  <url>
+    <loc>https://ilika.in/</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/shopall</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/products</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/newarrival</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/offer</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/skin</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/hair</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/grooming</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/skin/face</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/skin/body</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/hair/care</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/hair/styling</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/grooming/roller</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/grooming/face</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/grooming/remover</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/ctm</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/ctmkit</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/combo</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/about</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/contact</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/privacy</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/termsandcondition</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/return</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/shippingpolicy</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/faq</loc>
+    <lastmod>2026-04-24</lastmod>
+    <priority>0.5</priority>
+  </url>
 </urlset>
