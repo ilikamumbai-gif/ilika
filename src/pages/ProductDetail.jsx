@@ -1213,11 +1213,11 @@ const ProductDetail = () => {
     };
   }, [product?.couponSnapshot, product?.coupon]);
 
-  const couponDiscountAmount = appliedCoupon && mrp > 0
-    ? Number(((mrp * appliedCoupon.discountPercent) / 100).toFixed(2))
+  const couponDiscountAmount = appliedCoupon && basePrice > 0
+    ? Number(((basePrice * appliedCoupon.discountPercent) / 100).toFixed(2))
     : 0;
-  const price = appliedCoupon && mrp > 0
-    ? Number(Math.max(0, mrp - couponDiscountAmount).toFixed(2))
+  const price = appliedCoupon && basePrice > 0
+    ? Number(Math.max(0, basePrice - couponDiscountAmount).toFixed(2))
     : basePrice;
 
   const ingredients = useMemo(() => {
@@ -1326,7 +1326,7 @@ const ProductDetail = () => {
               ? {
                 code: appliedCoupon.code,
                 percent: appliedCoupon.discountPercent,
-                basedOn: "mrp",
+                basedOn: "selling_price",
                 amount: couponDiscountAmount,
               }
               : null,
@@ -1340,7 +1340,7 @@ const ProductDetail = () => {
               ? {
                 code: appliedCoupon.code,
                 percent: appliedCoupon.discountPercent,
-                basedOn: "mrp",
+                basedOn: "selling_price",
                 amount: couponDiscountAmount,
               }
               : null,
@@ -1800,7 +1800,7 @@ const ProductDetail = () => {
                   {appliedCoupon && (
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-green-700 font-semibold">
-                        {appliedCoupon.code} applied ({appliedCoupon.discountPercent}% off MRP)
+                        {appliedCoupon.code} applied ({appliedCoupon.discountPercent}% off selling price)
                       </span>
                       <button type="button" onClick={handleRemoveCoupon} className="text-gray-500 hover:underline">
                         Remove
