@@ -215,6 +215,20 @@ const gradientEnd = shadeFromBase(tonedBg, { sat: 30, light: -60, minSat: 38 });
 /* ═══════════════════════════════════════════════════
    IMAGE LIGHTBOX — full-screen overlay
 ═══════════════════════════════════════════════════ */
+const normalizeColorKey = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const normalizeCouponCode = (value = "") =>
+  String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+
 const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe }) => {
   const [current, setCurrent] = useState(initialIndex);
   const thumbsRef = useRef(null);
@@ -951,6 +965,9 @@ const ProductDetail = () => {
   const [expandedDesc, setExpandedDesc] = useState(false);
   const [expandedInfo, setExpandedInfo] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [couponCodeInput, setCouponCodeInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponMessage, setCouponMessage] = useState({ type: "", text: "" });
   // const [footerHeight, setFooterHeight] = useState(0);
 
   // Lightbox state
@@ -1181,8 +1198,28 @@ const ProductDetail = () => {
   // `images` = source of truth for lightbox, swipe, auto-scroll logic
   const images = activeVariant?.images?.length ? activeVariant.images : product?.images || [];
   // `displayImages` = what thumbnails actually render — only set after async preload
-  const price = activeVariant?.price ?? product?.price ?? 0;
-  const mrp = activeVariant?.mrp ?? product?.mrp ?? 0;
+  const basePrice = Number(activeVariant?.price ?? product?.price ?? 0);
+  const mrp = Number(activeVariant?.mrp ?? product?.mrp ?? 0);
+  const assignedCoupon = useMemo(() => {
+    const snapshot = product?.couponSnapshot || product?.coupon || null;
+    if (!snapshot) return null;
+    const code = normalizeCouponCode(snapshot.code);
+    const discountPercent = Number(snapshot.discountPercent || 0);
+    if (!code || !discountPercent || snapshot.isActive === false) return null;
+    return {
+      code,
+      discountPercent,
+      name: snapshot.name || "",
+    };
+  }, [product?.couponSnapshot, product?.coupon]);
+
+  const couponDiscountAmount = appliedCoupon && mrp > 0
+    ? Number(((mrp * appliedCoupon.discountPercent) / 100).toFixed(2))
+    : 0;
+  const price = appliedCoupon && mrp > 0
+    ? Number(Math.max(0, mrp - couponDiscountAmount).toFixed(2))
+    : basePrice;
+
   const ingredients = useMemo(() => {
     const raw = Array.isArray(product?.ingredients) ? product.ingredients : [];
     return raw
@@ -1219,7 +1256,7 @@ const ProductDetail = () => {
 
   const stopAuto = () => clearInterval(autoScrollRef.current);
 
-  const discount = mrp ? Math.round(((mrp - price) / mrp) * 100) : 0;
+  const discount = mrp ? Math.max(0, Math.round(((mrp - price) / mrp) * 100)) : 0;
   const cartId = activeVariant ? `${productId}_${activeVariant.id}` : productId;
   const isInCart = cartItems.some(i => i.id === cartId);
   const isOutOfStock = product?.inStock === false;
@@ -1227,6 +1264,45 @@ const ProductDetail = () => {
   useEffect(() => {
     setIngredientIndex(0);
   }, [productId, ingredients.length]);
+
+  useEffect(() => {
+    setCouponCodeInput("");
+    setAppliedCoupon(null);
+    setCouponMessage({ type: "", text: "" });
+  }, [productId]);
+
+  useEffect(() => {
+    if (!assignedCoupon) {
+      setCouponCodeInput("");
+      setAppliedCoupon(null);
+      setCouponMessage({ type: "", text: "" });
+      return;
+    }
+    setAppliedCoupon((prev) => (prev?.code === assignedCoupon.code ? assignedCoupon : prev));
+  }, [assignedCoupon]);
+
+  const handleApplyCoupon = useCallback(() => {
+    if (!assignedCoupon) return;
+    const typed = normalizeCouponCode(couponCodeInput);
+    if (!typed) {
+      setCouponMessage({ type: "error", text: "Enter coupon code" });
+      setAppliedCoupon(null);
+      return;
+    }
+    if (typed !== assignedCoupon.code) {
+      setCouponMessage({ type: "error", text: "Invalid coupon code for this product" });
+      setAppliedCoupon(null);
+      return;
+    }
+    setAppliedCoupon(assignedCoupon);
+    setCouponMessage({ type: "success", text: `${assignedCoupon.code} applied successfully` });
+  }, [assignedCoupon, couponCodeInput]);
+
+  const handleRemoveCoupon = useCallback(() => {
+    setAppliedCoupon(null);
+    setCouponCodeInput("");
+    setCouponMessage({ type: "", text: "" });
+  }, []);
 
   const handleAddToCart = useCallback(async () => {
     if (isOutOfStock || isAdding) return;
@@ -1242,11 +1318,33 @@ const ProductDetail = () => {
             baseProductId: productId,
             variantId: activeVariant.id,
             variantLabel: activeVariant.label,
-            price: activeVariant.price,
+            price,
             mrp: activeVariant.mrp,
             image: activeVariant.images?.[0],
+            originalPrice: appliedCoupon ? basePrice : null,
+            discountApplied: appliedCoupon
+              ? {
+                code: appliedCoupon.code,
+                percent: appliedCoupon.discountPercent,
+                basedOn: "mrp",
+                amount: couponDiscountAmount,
+              }
+              : null,
           }
-          : { ...product, id: productId }
+          : {
+            ...product,
+            id: productId,
+            price,
+            originalPrice: appliedCoupon ? basePrice : null,
+            discountApplied: appliedCoupon
+              ? {
+                code: appliedCoupon.code,
+                percent: appliedCoupon.discountPercent,
+                basedOn: "mrp",
+                amount: couponDiscountAmount,
+              }
+              : null,
+          }
       );
 
       trackAddToCart(productId, product?.name, price, 1);
@@ -1260,6 +1358,9 @@ const ProductDetail = () => {
     cartId,
     productId,
     price,
+    basePrice,
+    appliedCoupon,
+    couponDiscountAmount,
     addToCart]);
 
   const handleBuyNow = useCallback(async () => {
@@ -1375,6 +1476,86 @@ const ProductDetail = () => {
   }, [product?.detailPageDefaultBg]);
 
   const detailTheme = useMemo(() => buildDetailTheme(detailPageBgColor), [detailPageBgColor]);
+  const variantPaletteMap = useMemo(() => {
+    const map = new Map();
+    const palette = Array.isArray(product?.detailPageBgPalette) ? product.detailPageBgPalette : [];
+    palette.forEach((item) => {
+      const key = normalizeColorKey(item?.name || item?.label || "");
+      const color = normalizeHexColor(item?.value || item?.color || "");
+      if (!key || !color || map.has(key)) return;
+      map.set(key, color);
+    });
+    return map;
+  }, [product?.detailPageBgPalette]);
+
+  const isCssColorValue = useCallback((value) => {
+    if (!value) return false;
+    if (normalizeHexColor(value)) return true;
+    if (typeof window !== "undefined" && window.CSS?.supports) {
+      return window.CSS.supports("color", value);
+    }
+    return false;
+  }, []);
+
+  const getVariantSwatchColor = useCallback((variant) => {
+    const label = String(variant?.label || "").trim();
+    const directHex = normalizeHexColor(label);
+    if (directHex) return directHex;
+
+    const labelKey = normalizeColorKey(label);
+    if (labelKey && variantPaletteMap.has(labelKey)) return variantPaletteMap.get(labelKey);
+
+    if (labelKey) {
+      for (const [paletteKey, paletteColor] of variantPaletteMap.entries()) {
+        if (labelKey.includes(paletteKey) || paletteKey.includes(labelKey)) {
+          return paletteColor;
+        }
+      }
+    }
+
+    if (isCssColorValue(label)) return label;
+    return detailTheme.accentSoft;
+  }, [variantPaletteMap, isCssColorValue, detailTheme.accentSoft]);
+
+  const handleVariantSelect = useCallback((variant) => {
+    setSelectedImage(null);
+    setDisplayImages([]);
+    stopAuto();
+    const newImgs = variant.images?.length ? variant.images : product?.images || [];
+    setActiveVariant(variant);
+    setSelectedImage(variant.images?.[0] || variant.image || null);
+    preloadImages(newImgs);
+  }, [product?.images, preloadImages]);
+
+  const renderVariantSelector = () => (
+    <div>
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Select Option</p>
+      <div className="flex flex-wrap gap-2">
+        {product.variants.map((variant) => {
+          const active = activeVariant?.id === variant.id;
+          const swatchColor = getVariantSwatchColor(variant);
+
+          return (
+            <button
+              key={variant.id}
+              onClick={() => handleVariantSelect(variant)}
+              aria-label={`Select ${variant.label}`}
+              title={variant.label}
+              className="w-9 h-9 rounded-lg border-2 transition hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+              style={
+                active
+                  ? { backgroundColor: swatchColor, borderColor: detailTheme.price, boxShadow: `0 0 0 2px ${detailTheme.pageBg}` }
+                  : { backgroundColor: swatchColor, borderColor: "#D1D5DB" }
+              }
+            >
+              <span className="sr-only">{variant.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   const hasIngredients = ingredients.length > 0;
   const visibleIngredients = useMemo(() => {
     if (!hasIngredients) return [];
@@ -1573,6 +1754,8 @@ const ProductDetail = () => {
                 <ChevronLeft className="w-3.5 h-3.5" /> Back
               </button>
 
+              {product.hasVariants && <div className="sm:hidden">{renderVariantSelector()}</div>}
+
               <div>
                 <h1 className="text-2xl sm:text-3xl font-luxury font-bold leading-tight" style={{ color: detailTheme.heading }}>{product.name}</h1>
                 <p className="text-sm text-gray-500 mt-1.5">{product.shortInfo || "Deep nourishment & long lasting hydration"}</p>
@@ -1587,29 +1770,49 @@ const ProductDetail = () => {
 
               {/* Variants */}
               {product.hasVariants && (
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Select Option</p>
-                  <div className="flex flex-wrap gap-2">
-                    {product.variants.map(v => (
-                      <button
-                        key={v.id}
-                        onClick={() => {
-                          // Clear stale variant thumbnails immediately
-                          setSelectedImage(null);
-                          setDisplayImages([]);
-                          stopAuto();
-                          // Set main image fast, preload the rest async
-                          const newImgs = v.images?.length ? v.images : product?.images || [];
-                          setActiveVariant(v);
-                          setSelectedImage(v.images?.[0] || v.image || null);
-                          preloadImages(newImgs);
-                        }}
-                        className={`px-4 py-2 border rounded-xl text-sm font-medium transition
-                          ${activeVariant?.id === v.id ? "text-white" : "text-gray-700"}`}
-                        style={activeVariant?.id === v.id ? { backgroundColor: detailTheme.price, borderColor: detailTheme.price } : { borderColor: "#E5E7EB" }}
-                      >{v.label}</button>
-                    ))}
+                <div className="hidden sm:block">{renderVariantSelector()}</div>
+              )}
+
+              {assignedCoupon && (
+                <div className="rounded-2xl border p-4 space-y-3" style={{ borderColor: detailTheme.borderSoft, backgroundColor: "#FFFFFF" }}>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Apply Coupon</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCodeInput}
+                      onChange={(e) => {
+                        setCouponCodeInput(e.target.value.toUpperCase().replace(/\s+/g, ""));
+                        if (couponMessage.text) setCouponMessage({ type: "", text: "" });
+                      }}
+                      placeholder="Enter coupon code"
+                      className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm uppercase"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      className="px-4 py-2.5 rounded-xl text-sm font-semibold"
+                      style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
+                    >
+                      Apply
+                    </button>
                   </div>
+
+                  {appliedCoupon && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-green-700 font-semibold">
+                        {appliedCoupon.code} applied ({appliedCoupon.discountPercent}% off MRP)
+                      </span>
+                      <button type="button" onClick={handleRemoveCoupon} className="text-gray-500 hover:underline">
+                        Remove
+                      </button>
+                    </div>
+                  )}
+
+                  {!appliedCoupon && couponMessage.text && (
+                    <p className={`text-xs font-medium ${couponMessage.type === "error" ? "text-red-600" : "text-green-700"}`}>
+                      {couponMessage.text}
+                    </p>
+                  )}
                 </div>
               )}
 

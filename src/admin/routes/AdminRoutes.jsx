@@ -25,6 +25,7 @@ import ReviewDetail from "../pages/Reviews/ReviewDetail";
 import AdminLog from "../pages/AdminLog/AdminLog";
 import BlogComments from "../pages/Blogs/BlogComments";
 import AdminList from "../pages/Admins/AdminList";
+import CouponList from "../pages/Coupons/CouponList";
 
 import { ProductProvider } from "../context/ProductContext";
 import { CategoryProvider } from "../context/CategoryContext";
@@ -35,6 +36,7 @@ import BlogProvider from "../context/BlogProvider";
 import { ComboProvider } from "../context/ComboContext";
 import { CartEventProvider } from "../context/CartEventContext";
 import { ReviewProvider } from "../context/ReviewContext";
+import { CouponProvider } from "../context/CouponContext";
 import NotificationList from "../pages/Notification/NotificationList";
 import NotificationDetail from "../pages/Notification/NotificationDetail";
 import FeedbackList from "../pages/Feedback/FeedbackList";
@@ -43,14 +45,15 @@ import FeedbackDetail from "../pages/Feedback/FeedbackDetail";
 const AdminRoutes = () => {
   return (
     <CategoryProvider>
-      <ProductProvider>
-        <ComboProvider>
-          <OrderProvider>
-            <AdminStatsProvider>
-              <UserProvider>
-                <BlogProvider>
-                  <CartEventProvider>
-                    <ReviewProvider>
+      <CouponProvider>
+        <ProductProvider>
+          <ComboProvider>
+            <OrderProvider>
+              <AdminStatsProvider>
+                <UserProvider>
+                  <BlogProvider>
+                    <CartEventProvider>
+                      <ReviewProvider>
                       <Routes>
                         <Route index element={<Dashboard />} />
 
@@ -59,6 +62,7 @@ const AdminRoutes = () => {
                         <Route path="products" element={<ProductList />} />
                         <Route path="products/add" element={<AddProduct />} />
                         <Route path="products/edit/:id" element={<EditProduct />} />
+                        <Route path="coupons" element={<CouponList />} />
 
                         <Route path="combos" element={<ComboList />} />
                         <Route path="combos/add" element={<AddCombo />} />
@@ -100,6 +104,7 @@ const AdminRoutes = () => {
           </OrderProvider>
         </ComboProvider>
       </ProductProvider>
+      </CouponProvider>
     </CategoryProvider>
   );
 };

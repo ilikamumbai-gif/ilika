@@ -211,6 +211,25 @@ const normalizeIndianPhone = (phone = "") => {
   return digits.length >= 10 ? digits.slice(-10) : digits;
 };
 
+const normalizeCouponPayload = (payload = {}, fallback = {}) => {
+  const code = String(payload?.code ?? fallback.code ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+
+  const discountPercentRaw = Number(payload?.discountPercent ?? fallback.discountPercent ?? 0);
+  const discountPercent = Number.isFinite(discountPercentRaw)
+    ? Math.max(1, Math.min(100, Math.round(discountPercentRaw)))
+    : 0;
+
+  return {
+    name: String(payload?.name ?? fallback.name ?? "").trim(),
+    code,
+    discountPercent,
+    isActive: typeof payload?.isActive === "boolean" ? payload.isActive : (fallback.isActive ?? true),
+  };
+};
+
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -429,6 +448,113 @@ app.put("/api/users/:uid/address/:addressId", async (req, res) => {
 });
 
 /* ============================== PRODUCTS ============================== */
+app.post("/api/coupons", async (req, res) => {
+  try {
+    const normalized = normalizeCouponPayload(req.body);
+
+    if (!normalized.code) {
+      return res.status(400).json({ error: "Coupon code is required" });
+    }
+    if (!normalized.discountPercent) {
+      return res.status(400).json({ error: "Discount percent must be between 1 and 100" });
+    }
+
+    const duplicate = await db
+      .collection("coupons")
+      .where("code", "==", normalized.code)
+      .limit(1)
+      .get();
+
+    if (!duplicate.empty) {
+      return res.status(409).json({ error: "Coupon code already exists" });
+    }
+
+    const now = Date.now();
+    const couponData = {
+      ...normalized,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const docRef = await db.collection("coupons").add(couponData);
+    res.json({ id: docRef.id, ...couponData });
+  } catch (error) {
+    console.error("ADD COUPON ERROR:", error);
+    res.status(500).json({ error: "Failed to add coupon" });
+  }
+});
+
+app.get("/api/coupons", async (req, res) => {
+  try {
+    const snapshot = await db.collection("coupons").orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    console.error("FETCH COUPONS ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch coupons" });
+  }
+});
+
+app.get("/api/coupons/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("coupons").doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: "Coupon not found" });
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error("FETCH COUPON ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch coupon" });
+  }
+});
+
+app.put("/api/coupons/:id", async (req, res) => {
+  try {
+    const couponRef = db.collection("coupons").doc(req.params.id);
+    const existing = await couponRef.get();
+    if (!existing.exists) return res.status(404).json({ error: "Coupon not found" });
+
+    const current = existing.data() || {};
+    const normalized = normalizeCouponPayload(req.body, current);
+
+    if (!normalized.code) {
+      return res.status(400).json({ error: "Coupon code is required" });
+    }
+    if (!normalized.discountPercent) {
+      return res.status(400).json({ error: "Discount percent must be between 1 and 100" });
+    }
+
+    const duplicate = await db
+      .collection("coupons")
+      .where("code", "==", normalized.code)
+      .limit(1)
+      .get();
+
+    const hasOther = duplicate.docs.some((doc) => doc.id !== req.params.id);
+    if (hasOther) {
+      return res.status(409).json({ error: "Coupon code already exists" });
+    }
+
+    await couponRef.update({
+      ...normalized,
+      updatedAt: Date.now(),
+    });
+
+    const updated = await couponRef.get();
+    res.json({ message: "Coupon updated", coupon: { id: updated.id, ...updated.data() } });
+  } catch (error) {
+    console.error("UPDATE COUPON ERROR:", error);
+    res.status(500).json({ error: "Failed to update coupon" });
+  }
+});
+
+app.delete("/api/coupons/:id", async (req, res) => {
+  try {
+    await db.collection("coupons").doc(req.params.id).delete();
+    res.json({ message: "Coupon deleted" });
+  } catch (error) {
+    console.error("DELETE COUPON ERROR:", error);
+    res.status(500).json({ error: "Failed to delete coupon" });
+  }
+});
+
 app.post("/api/products", async (req, res) => {
   try {
     const now = Date.now();

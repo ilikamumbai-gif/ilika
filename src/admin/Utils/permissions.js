@@ -8,6 +8,7 @@ export const hasPermission = (admin, permission) => {
 
     superadmin: [
       "products",
+      "coupons",
       "orders",
       "users",
       "categories",
@@ -20,6 +21,7 @@ export const hasPermission = (admin, permission) => {
 
     admin: [
       "products",
+      "coupons",
       "orders",
       "categories",
       "combos",

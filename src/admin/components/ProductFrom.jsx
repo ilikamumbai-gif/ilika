@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { app } from "../../firebase/firebaseConfig";
 import { useCategories } from "../context/CategoryContext";
+import { useCoupons } from "../context/CouponContext";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -51,6 +52,25 @@ const buildDetailBgConfig = (palette = [], defaultColor = "") => {
   return {
     palette: cleaned,
     defaultColor: normalizedDefault,
+  };
+};
+
+const normalizeCouponCode = (value = "") =>
+  String(value || "").trim().toUpperCase().replace(/\s+/g, "");
+
+const sanitizeCouponSnapshot = (coupon) => {
+  if (!coupon || !coupon.id) return null;
+  const discountPercent = Number(coupon.discountPercent || 0);
+  if (!discountPercent) return null;
+  const code = normalizeCouponCode(coupon.code);
+  if (!code) return null;
+
+  return {
+    id: coupon.id,
+    name: String(coupon.name || "").trim(),
+    code,
+    discountPercent,
+    isActive: coupon.isActive !== false,
   };
 };
 
@@ -133,6 +153,7 @@ const ImageUploadCell = ({ label, value, previewUrl, onFileChange, onUrlChange }
 ══════════════════════════════════════ */
 const ProductForm = ({ onSubmit, initialData = {} }) => {
   const { categories } = useCategories();
+  const { coupons = [] } = useCoupons();
   const fileInputRef = useRef(null);
   const ingredientInputRef = useRef(null);
   const { admin } = useAdminAuth();
@@ -150,10 +171,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     banners: [],
     detailPageBgPalette: [],
     detailPageDefaultBg: DEFAULT_DETAIL_BG,
+    couponId: "",
+    couponSnapshot: null,
   };
 
   const fromInitial = (d) => {
     const detailBg = buildDetailBgConfig(d.detailPageBgPalette, d.detailPageDefaultBg);
+    const initialCouponId = d.couponId || d.couponSnapshot?.id || "";
+    const initialCouponSnapshot = sanitizeCouponSnapshot(d.couponSnapshot) || sanitizeCouponSnapshot(d.coupon);
     return {
     name: d.name || "",
     shortInfo: d.shortInfo || "",
@@ -187,6 +212,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     banners: Array.isArray(d.banners) ? d.banners : (d.bannerImage ? [{ url: d.bannerImage, alt: d.bannerAlt || "" }] : []),
     detailPageBgPalette: detailBg.palette,
     detailPageDefaultBg: detailBg.defaultColor,
+    couponId: initialCouponId,
+    couponSnapshot: initialCouponSnapshot,
   };
 };
 
@@ -467,6 +494,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         banners: form.banners || [],
         detailPageBgPalette: sanitizePalette(form.detailPageBgPalette),
         detailPageDefaultBg: normalizeHexColor(form.detailPageDefaultBg) || DEFAULT_DETAIL_BG,
+        couponId: form.couponId || null,
+        couponSnapshot: form.couponId ? sanitizeCouponSnapshot(form.couponSnapshot) : null,
       });
 
       await logActivity(initialData?.id
@@ -636,6 +665,48 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             {cat.name}
           </label>
         ))}
+      </div>
+
+      {/* COUPON MAPPING */}
+      <div className="border rounded-xl p-5 bg-gray-50 space-y-3">
+        <div>
+          <p className="font-semibold text-sm">Offer Coupon</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Assign one coupon to this product. Coupon input will appear on product detail page only when selected.
+          </p>
+        </div>
+
+        <select
+          value={form.couponId || ""}
+          onChange={(e) => {
+            const nextId = e.target.value;
+            const selected = (coupons || []).find((coupon) => String(coupon.id) === String(nextId));
+            setForm((prev) => ({
+              ...prev,
+              couponId: nextId,
+              couponSnapshot: nextId ? sanitizeCouponSnapshot(selected) : null,
+            }));
+          }}
+          className="w-full border border-gray-200 rounded-lg p-2.5 text-sm bg-white"
+        >
+          {form.couponId && !(coupons || []).some((coupon) => String(coupon.id) === String(form.couponId)) && form.couponSnapshot && (
+            <option value={form.couponId}>
+              {form.couponSnapshot.code} - {form.couponSnapshot.discountPercent}% (Unavailable)
+            </option>
+          )}
+          <option value="">No coupon</option>
+          {(coupons || []).map((coupon) => (
+            <option key={coupon.id} value={coupon.id}>
+              {normalizeCouponCode(coupon.code)} - {Number(coupon.discountPercent || 0)}% {coupon.isActive === false ? "(Inactive)" : ""}
+            </option>
+          ))}
+        </select>
+
+        {form.couponSnapshot && (
+          <p className="text-xs text-gray-600">
+            Selected: <span className="font-semibold">{form.couponSnapshot.code}</span> ({form.couponSnapshot.discountPercent}% off)
+          </p>
+        )}
       </div>
 
       {/* PRODUCT DETAIL BACKGROUND COLORS */}
