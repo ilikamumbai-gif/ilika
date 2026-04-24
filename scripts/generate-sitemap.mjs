@@ -1,8 +1,41 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const SITE_URL = (process.env.SITE_URL || "https://ilika.in").replace(/\/+$/, "");
-const API_URL = (process.env.SITEMAP_API_URL || process.env.VITE_API_URL || "").replace(/\/+$/, "");
+const readEnvFile = async (filePath) => {
+  try {
+    const raw = await fs.readFile(filePath, "utf8");
+    const out = {};
+    for (const line of raw.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eqIndex = trimmed.indexOf("=");
+      if (eqIndex <= 0) continue;
+
+      const key = trimmed.slice(0, eqIndex).trim();
+      const value = trimmed.slice(eqIndex + 1).trim().replace(/^['"]|['"]$/g, "");
+      if (key) out[key] = value;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+};
+
+const resolveEnv = async () => {
+  const cwd = process.cwd();
+  const envFiles = [
+    path.join(cwd, "Backend", ".env"),
+    path.join(cwd, ".env"),
+    path.join(cwd, ".env.local"),
+  ];
+
+  const fileEnvs = {};
+  for (const envFile of envFiles) {
+    Object.assign(fileEnvs, await readEnvFile(envFile));
+  }
+
+  return { ...fileEnvs, ...process.env };
+};
 
 const STATIC_URLS = [
   { loc: "/", priority: "1.0" },
@@ -48,42 +81,74 @@ const escapeXml = (value = "") =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
 
-const absolute = (loc) => `${SITE_URL}${loc}`;
+const absolute = (siteUrl, loc) => `${siteUrl}${loc}`;
 
-async function fetchProducts() {
-  if (!API_URL) {
-    console.warn("[sitemap] SITEMAP_API_URL/VITE_API_URL not provided; generating static-only sitemap.");
+const normalizeEndpoint = (url = "") => String(url || "").trim().replace(/\/+$/, "");
+
+const addEndpointCandidates = (set, raw) => {
+  const normalized = normalizeEndpoint(raw);
+  if (!normalized) return;
+
+  set.add(normalized);
+  if (!/\/api\/products$/i.test(normalized)) {
+    set.add(`${normalized}/api/products`);
+  }
+};
+
+const resolveProductsEndpoints = (env) => {
+  const endpoints = new Set();
+  addEndpointCandidates(endpoints, env.SITEMAP_PRODUCTS_URL);
+  addEndpointCandidates(endpoints, env.SITEMAP_API_URL);
+  addEndpointCandidates(endpoints, env.VITE_API_URL);
+  return Array.from(endpoints);
+};
+
+const extractProductList = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.products)) return data.products;
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
+};
+
+async function fetchProducts(productsEndpoints) {
+  if (!productsEndpoints.length) {
+    console.warn("[sitemap] Products endpoint missing. Set SITEMAP_PRODUCTS_URL or SITEMAP_API_URL/VITE_API_URL.");
     return [];
   }
 
-  try {
-    const res = await fetch(`${API_URL}/api/products`);
-    if (!res.ok) {
-      console.warn(`[sitemap] Product API failed: ${res.status}. Generating static-only sitemap.`);
-      return [];
+  for (const endpoint of productsEndpoints) {
+    try {
+      const res = await fetch(endpoint);
+      if (!res.ok) {
+        console.warn(`[sitemap] Product API failed (${res.status}) for ${endpoint}. Trying next endpoint...`);
+        continue;
+      }
+
+      const data = await res.json();
+      const list = extractProductList(data);
+      const active = list.filter((p) => p?.isActive !== false && p?.name);
+      const urls = active.map((p) => ({
+        loc: `/product/${createSlug(p.name)}`,
+        priority: "0.8",
+      }));
+
+      console.log(`[sitemap] Product source: ${endpoint}`);
+      return Array.from(new Map(urls.map((u) => [u.loc, u])).values());
+    } catch (err) {
+      console.warn(`[sitemap] Product API error for ${endpoint}: ${err?.message || err}. Trying next endpoint...`);
     }
-
-    const data = await res.json();
-    const list = Array.isArray(data) ? data : [];
-    const active = list.filter((p) => p?.isActive !== false && p?.name);
-    const urls = active.map((p) => ({
-      loc: `/product/${createSlug(p.name)}`,
-      priority: "0.8",
-    }));
-
-    return Array.from(new Map(urls.map((u) => [u.loc, u])).values());
-  } catch (err) {
-    console.warn(`[sitemap] Product API error: ${err?.message || err}. Generating static-only sitemap.`);
-    return [];
   }
+
+  console.warn("[sitemap] Could not fetch products from any endpoint. Generating static-only sitemap.");
+  return [];
 }
 
-function toSitemapXml(urls) {
+function toSitemapXml(urls, siteUrl) {
   const today = new Date().toISOString().slice(0, 10);
   const body = urls
     .map(
       (u) => `  <url>
-    <loc>${escapeXml(absolute(u.loc))}</loc>
+    <loc>${escapeXml(absolute(siteUrl, u.loc))}</loc>
     <lastmod>${today}</lastmod>
     <priority>${u.priority}</priority>
   </url>`
@@ -104,7 +169,7 @@ function toSitemapHtml(staticUrls, productUrls) {
 
   const productLinks = productUrls.length
     ? productUrls.map((u) => `    <li><a href="${u.loc}">${u.loc}</a></li>`).join("\n")
-    : "    <li>No product URLs generated. Set SITEMAP_API_URL and rerun.</li>";
+    : "    <li>No product URLs generated. Set SITEMAP_PRODUCTS_URL (or SITEMAP_API_URL) and rerun.</li>";
 
   return `<!doctype html>
 <html lang="en">
@@ -129,14 +194,19 @@ ${productLinks}
 }
 
 async function main() {
-  const productUrls = await fetchProducts();
+  const env = await resolveEnv();
+  const siteUrl = String(env.SITE_URL || "https://ilika.in").trim().replace(/\/+$/, "");
+  const productsEndpoints = resolveProductsEndpoints(env);
+  const productUrls = await fetchProducts(productsEndpoints);
   const urls = [...STATIC_URLS, ...productUrls];
 
   const publicDir = path.resolve(process.cwd(), "public");
-  await fs.writeFile(path.join(publicDir, "sitemap.xml"), toSitemapXml(urls), "utf8");
+  await fs.writeFile(path.join(publicDir, "sitemap.xml"), toSitemapXml(urls, siteUrl), "utf8");
   await fs.writeFile(path.join(publicDir, "sitemap.html"), toSitemapHtml(STATIC_URLS, productUrls), "utf8");
 
   console.log(`[sitemap] Done. Static URLs: ${STATIC_URLS.length}, Product URLs: ${productUrls.length}`);
+  console.log(`[sitemap] SITE_URL=${siteUrl}`);
+  console.log(`[sitemap] PRODUCTS_ENDPOINTS=${productsEndpoints.join(", ") || "(not set)"}`);
 }
 
 main().catch((err) => {
