@@ -15,6 +15,9 @@ const getMenuFromPath = (pathname = "") => {
   return null;
 };
 
+const normalizeSearchText = (value = "") =>
+  String(value || "").toLowerCase().replace(/\s+/g, "");
+
 // ─────────────────────────────────────────────
 // Shared SearchBar — used in both desktop nav
 // and the standalone mobile header search slot
@@ -37,10 +40,8 @@ export const SearchBar = ({ products = [], onClose, className = "" }) => {
             Array.isArray(p.benefits)
               ? p.benefits.join(" ")
               : p.benefits || "",
-          ]
-            .join(" ")
-            .toLowerCase();
-          return haystack.includes(query.toLowerCase());
+          ].join(" ");
+          return normalizeSearchText(haystack).includes(normalizeSearchText(query));
         })
         .slice(0, 6)
       : [];

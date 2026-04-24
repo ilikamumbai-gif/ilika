@@ -11,6 +11,9 @@ import ProductCard from "../components/ProductCard";
 import Footer from "../components/Footer";
 import Heading from "../components/Heading";
 
+const normalizeSearchText = (value = "") =>
+  String(value || "").toLowerCase().replace(/\s+/g, "");
+
 const Products = () => {
   const { products = [] } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,7 +22,7 @@ const Products = () => {
   // Filter across name + shortInfo + benefits
   const filtered = useMemo(() => {
     if (!query.trim()) return products;
-    const q = query.toLowerCase();
+    const q = normalizeSearchText(query);
     return products.filter((p) => {
       const haystack = [
         p.name,
@@ -27,9 +30,9 @@ const Products = () => {
         p.categoryName,
         Array.isArray(p.benefits) ? p.benefits.join(" ") : p.benefits || "",
       ]
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(q);
+        .join(" ");
+      const normalizedHaystack = normalizeSearchText(haystack);
+      return normalizedHaystack.includes(q);
     });
   }, [query, products]);
 
