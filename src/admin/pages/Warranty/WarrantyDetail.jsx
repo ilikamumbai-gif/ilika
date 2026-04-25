@@ -122,8 +122,8 @@ const WarrantyDetail = () => {
             <p className="font-medium">{item.email || "-"}</p>
           </div>
           <div>
-            <p className="text-gray-500">Order ID</p>
-            <p className="font-medium">{item.orderId || "-"}</p>
+            <p className="text-gray-500">Address</p>
+            <p className="font-medium">{item.address || "-"}</p>
           </div>
           <div>
             <p className="text-gray-500">Product Name</p>
@@ -138,10 +138,6 @@ const WarrantyDetail = () => {
             <p className="font-medium">{item.purchaseDate || "-"}</p>
           </div>
           <div>
-            <p className="text-gray-500">Serial Number</p>
-            <p className="font-medium">{item.serialNumber || "-"}</p>
-          </div>
-          <div>
             <p className="text-gray-500">City</p>
             <p className="font-medium">{item.city || "-"}</p>
           </div>
@@ -152,9 +148,9 @@ const WarrantyDetail = () => {
         </div>
 
         <div>
-          <p className="text-sm text-gray-500 mb-2">Customer Note / Issue</p>
+          <p className="text-sm text-gray-500 mb-2">Customer Address</p>
           <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 text-sm whitespace-pre-wrap">
-            {item.issue || "-"}
+            {item.address || item.issue || "-"}
           </div>
         </div>
 

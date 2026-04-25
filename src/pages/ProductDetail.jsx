@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { trackViewContent, trackAddToCart } from "../utils/pixel";
 import Header from "../components/Header";
@@ -212,9 +212,9 @@ const buildDetailTheme = (rawBgColor) => {
   };
 };
 
-/* ═══════════════════════════════════════════════════
-   IMAGE LIGHTBOX — full-screen overlay
-═══════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   IMAGE LIGHTBOX â€” full-screen overlay
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const normalizeColorKey = (value = "") =>
   String(value || "")
     .trim()
@@ -269,7 +269,7 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
       style={{ background: "rgba(20,18,18,0.82)", backdropFilter: "blur(8px)" }}
       onClick={onClose}
     >
-      {/* ── CLOSE ── */}
+      {/* â”€â”€ CLOSE â”€â”€ */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition text-white"
@@ -277,14 +277,14 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
         <X className="w-4 h-4" />
       </button>
 
-      {/* ── INNER CARD ── */}
+      {/* â”€â”€ INNER CARD â”€â”€ */}
       <div
         className="relative m-auto flex flex-col sm:flex-row w-full max-w-5xl rounded-3xl overflow-hidden"
         style={{ maxHeight: "90vh", background: "#fff" }}
         onClick={e => e.stopPropagation()}
       >
 
-        {/* ══ LEFT — main image + nav ══ */}
+        {/* â•â• LEFT â€” main image + nav â•â• */}
         <div className="relative flex-1 bg-[#fafafa] flex items-center justify-center min-w-0">
           {/* Prev */}
           {images.length > 1 && (
@@ -324,10 +324,10 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
           )}
         </div>
 
-        {/* ══ RIGHT PANEL ══ */}
+        {/* â•â• RIGHT PANEL â•â• */}
         <div className="hidden sm:flex w-full sm:w-[280px] flex-shrink-0 flex-col border-t sm:border-t-0 sm:border-l border-gray-100 bg-white">
 
-          {/* Thumbnail grid — scrollable */}
+          {/* Thumbnail grid â€” scrollable */}
           <div
             ref={thumbsRef}
             className="flex-1 overflow-y-auto p-3"
@@ -356,8 +356,8 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
 
             {/* Price row */}
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-xl font-bold text-[#1C371C]">₹{price}</span>
-              {mrp > 0 && <span className="text-xs text-gray-400 line-through">MRP ₹{mrp}</span>}
+              <span className="text-xl font-bold text-[#1C371C]">â‚¹{price}</span>
+              {mrp > 0 && <span className="text-xs text-gray-400 line-through">MRP â‚¹{mrp}</span>}
               {discount > 0 && (
                 <span className="text-[10px] font-bold bg-[#1C371C] text-white px-2 py-0.5 rounded-md">{discount}% OFF</span>
               )}
@@ -403,9 +403,9 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
 };
 
 
-/* ═══════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    BEFORE / AFTER SLIDER
-═══════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const BeforeAfterSlider = ({
   beforeImage, afterImage,
   beforeLabel = "Before", afterLabel = "After"
@@ -427,7 +427,7 @@ const BeforeAfterSlider = ({
           startAnimation();
         }
       },
-      { threshold: [0, 0.5, 1] }  // ← 0.5 is reliable; 0.95 often never fires on mobile
+      { threshold: [0, 0.5, 1] }  // â† 0.5 is reliable; 0.95 often never fires on mobile
     );
 
     observer.observe(containerRef.current);
@@ -477,7 +477,7 @@ const BeforeAfterSlider = ({
       className="relative w-full overflow-hidden rounded-2xl shadow-md select-none"
       style={{ aspectRatio: "16/12", touchAction: "none", userSelect: "none", WebkitUserSelect: "none", cursor: "col-resize" }}
     >
-      {/* AFTER — full background */}
+      {/* AFTER â€” full background */}
       <img loading="lazy"
         src={afterImage}
         alt={afterLabel}
@@ -487,7 +487,7 @@ const BeforeAfterSlider = ({
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />
 
-      {/* BEFORE — clipped from the right using clip-path */}
+      {/* BEFORE â€” clipped from the right using clip-path */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -531,9 +531,9 @@ const BeforeAfterSlider = ({
   );
 };
 
-/* ═══════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    VIDEO EMBED URL HELPER
-═══════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const getVideoEmbedUrl = (url) => {
   if (!url) return "";
   if (url.includes("youtube.com") || url.includes("youtu.be")) {
@@ -555,9 +555,9 @@ const getVideoEmbedUrl = (url) => {
   return url;
 };
 
-/* ═══════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STAR RATING
-═══════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const StarRating = ({ value, onChange }) => {
   const [hov, setHov] = useState(0);
   return (
@@ -571,9 +571,9 @@ const StarRating = ({ value, onChange }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    REVIEW MODAL
-═══════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const DeferredSection = ({ children, minHeight = 240, rootMargin = "320px 0px" }) => {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -655,7 +655,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
   const submit = async (e) => {
     e?.preventDefault();
 
-    // ✅ VALIDATIONS
+    // âœ… VALIDATIONS
     if (!name.trim()) {
       setError("Please enter your name.");
       return;
@@ -751,10 +751,10 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
         savedReview.userType = savedReview.verifiedPurchase ? "genuine" : "fake";
       }
 
-      // ✅ Update UI instantly
+      // âœ… Update UI instantly
       onReviewAdded?.(savedReview);
 
-      // ✅ Reset form (important UX)
+      // âœ… Reset form (important UX)
       setName("");
       setRating(0);
       setComment("");
@@ -795,7 +795,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
               onChange={handleImageChange}
             />
             <p className="text-[11px] text-gray-400 mt-1">
-              Upload 1–2 images (Max 2MB each)
+              Upload 1â€“2 images (Max 2MB each)
             </p>
             {reviewImages.length > 0 && (
               <div className="flex gap-2 mt-2">
@@ -824,9 +824,9 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STICKY FLOATING ATC BAR
-═══════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme, warrantyRegistrationUrl }) => {
   return (
     <div
@@ -849,7 +849,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
         {/* MAIN ROW */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 py-3">
 
-          {/* LEFT — product name + thumbnail */}
+          {/* LEFT â€” product name + thumbnail */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {(product?.images?.[0] || product?.imageUrl) && (
               <img
@@ -868,20 +868,20 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
             </div>
           </div>
 
-          {/* RIGHT GROUP — price + buttons */}
+          {/* RIGHT GROUP â€” price + buttons */}
           <div className="flex items-center gap-3 flex-shrink-0">
 
             {/* PRICE + EMI */}
             <div className="hidden md:flex flex-col items-end justify-center">
               <div className="flex items-baseline gap-1.5 flex-wrap justify-end">
-                <span className="text-base font-bold leading-none" style={{ color: theme.price }}>₹{price}</span>
-                {mrp > 0 && <span className="text-[10px] text-gray-400 line-through">₹{mrp}</span>}
+                <span className="text-base font-bold leading-none" style={{ color: theme.price }}>â‚¹{price}</span>
+                {mrp > 0 && <span className="text-[10px] text-gray-400 line-through">â‚¹{mrp}</span>}
                 {discount > 0 && (
                   <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: theme.price, color: theme.onPrice }}>SAVE {discount}%</span>
                 )}
               </div>
               {price >= 1099 && (
-                <span className="text-[10px] text-gray-400 mt-0.5 font-medium">No Cost EMI · Extra 5% off</span>
+                <span className="text-[10px] text-gray-400 mt-0.5 font-medium">No Cost EMI Â· Extra 5% off</span>
               )}
             </div>
 
@@ -952,9 +952,9 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
 };
 
 
-/* ═══════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    PRODUCT DETAIL PAGE
-═══════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const ProductDetail = () => {
   const { products = [] } = useProducts();
   const { slug } = useParams();
@@ -993,7 +993,7 @@ const ProductDetail = () => {
   // const footerRef = useRef(null);
 
 
-  // displayImages — only populated after images are preloaded so old thumbs never flash
+  // displayImages â€” only populated after images are preloaded so old thumbs never flash
   const [displayImages, setDisplayImages] = useState([]);
   // ref to cancel in-flight preload when product/variant changes rapidly
   const preloadAbortRef = useRef(false);
@@ -1075,7 +1075,7 @@ const ProductDetail = () => {
 
       if (!res.ok) throw new Error();
 
-      showNotifyToast("You’ll be notified when it's back in stock!", "success");
+      showNotifyToast("Youâ€™ll be notified when it's back in stock!", "success");
 
     } catch (err) {
       console.error(err);
@@ -1086,7 +1086,7 @@ const ProductDetail = () => {
 
 
 
-  /* ── Async image preloader — waits for each img to load before showing thumbnails ── */
+  /* â”€â”€ Async image preloader â€” waits for each img to load before showing thumbnails â”€â”€ */
   const preloadImages = useCallback(async (urls) => {
     // Signal any previous preload to abort
     preloadAbortRef.current = true;
@@ -1128,7 +1128,7 @@ const ProductDetail = () => {
 
 
 
-  /* ── Unified sticky bar visibility — single source of truth ── */
+  /* â”€â”€ Unified sticky bar visibility â€” single source of truth â”€â”€ */
   useEffect(() => {
     const handleScroll = () => {
       if (!atcButtonsRef.current) return;
@@ -1152,7 +1152,7 @@ const ProductDetail = () => {
   }, []);// re-register when product loads so ref is valid
 
 
-  /* ── Fetch product by slug ── */
+  /* â”€â”€ Fetch product by slug â”€â”€ */
   useEffect(() => {
     const load = async () => {
       try {
@@ -1170,7 +1170,7 @@ const ProductDetail = () => {
     if (slug && products.length) load();
   }, [slug, products]);
 
-  /* ── Set first image — clear stale data immediately, then preload & populate ── */
+  /* â”€â”€ Set first image â€” clear stale data immediately, then preload & populate â”€â”€ */
   useEffect(() => {
     if (!product) return;
 
@@ -1198,7 +1198,7 @@ const ProductDetail = () => {
       // Show the main (first) image right away
       setSelectedImage(firstImage);
 
-      // Preload ALL images async — thumbnails only appear once images are ready
+      // Preload ALL images async â€” thumbnails only appear once images are ready
       await preloadImages(newImages);
     };
 
@@ -1208,7 +1208,7 @@ const ProductDetail = () => {
   const productId = product?.id || product?._id || null;
   // `images` = source of truth for lightbox, swipe, auto-scroll logic
   const images = activeVariant?.images?.length ? activeVariant.images : product?.images || [];
-  // `displayImages` = what thumbnails actually render — only set after async preload
+  // `displayImages` = what thumbnails actually render â€” only set after async preload
   const basePrice = Number(activeVariant?.price ?? product?.price ?? 0);
   const mrp = Number(activeVariant?.mrp ?? product?.mrp ?? 0);
   const assignedCoupon = useMemo(() => {
@@ -1242,7 +1242,7 @@ const ProductDetail = () => {
   }, [product?.ingredients]);
   const ingredientCardsPerView = 4;
 
-  /* ── Auto-scroll thumbnails on product page ── */
+  /* â”€â”€ Auto-scroll thumbnails on product page â”€â”€ */
   useEffect(() => {
     clearInterval(autoScrollRef.current);
     if (!images || images.length <= 1) return;
@@ -1621,7 +1621,7 @@ const ProductDetail = () => {
     return [];
   }, [product?.additionalInfo]);
 
-  /* ── Loading / not found states ── */
+  /* â”€â”€ Loading / not found states â”€â”€ */
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <p className="text-gray-500 animate-pulse">Loading product...</p>
@@ -1657,7 +1657,7 @@ const ProductDetail = () => {
         />
       )}
 
-      {/* ── LIGHTBOX ── */}
+      {/* â”€â”€ LIGHTBOX â”€â”€ */}
       {lightboxOpen && images.length > 0 && (
         <ImageLightbox
           images={images}
@@ -1676,7 +1676,7 @@ const ProductDetail = () => {
         />
       )}
 
-      {/* ── STICKY ATC BAR ── */}
+      {/* â”€â”€ STICKY ATC BAR â”€â”€ */}
       <StickyATCBar
         product={product}
         theme={detailTheme}
@@ -1698,11 +1698,11 @@ const ProductDetail = () => {
         <Header />
         <CartDrawer />
 
-        {/* ════ HERO ════ */}
+        {/* â•â•â•â• HERO â•â•â•â• */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-4 sm:pt-14">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
 
-            {/* ── LEFT: IMAGES ── */}
+            {/* â”€â”€ LEFT: IMAGES â”€â”€ */}
             <div className="flex flex-col gap-4">
               {/* Main image */}
               <div
@@ -1752,11 +1752,11 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Thumbnails strip — only renders after async preload completes */}
+              {/* Thumbnails strip â€” only renders after async preload completes */}
               {images.length > 1 && (
                 <div ref={thumbsRef} className="flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                   {displayImages.length > 0 ? (
-                    /* Real thumbnails — shown only after preload */
+                    /* Real thumbnails â€” shown only after preload */
                     displayImages.map((img, i) => (
                       <button
                         key={img}
@@ -1782,7 +1782,7 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* ── RIGHT: INFO ── */}
+            {/* â”€â”€ RIGHT: INFO â”€â”€ */}
             <div className="flex flex-col gap-5 lg:sticky lg:top-24 h-fit">
               <button onClick={() => navigate(-1)} className="text-xs text-gray-400 hover:text-gray-700 w-fit flex items-center gap-1 transition">
                 <ChevronLeft className="w-3.5 h-3.5" /> Back
@@ -1870,7 +1870,7 @@ const ProductDetail = () => {
                         minWidth: "80px",
                       }}
                     >
-                      {appliedCoupon ? "Applied ✓" : "Apply"}
+                      {appliedCoupon ? "Applied âœ“" : "Apply"}
                     </button>
                   </div>
 
@@ -1890,7 +1890,7 @@ const ProductDetail = () => {
                     >
                       <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: detailTheme.accent }} />
                       {assignedCoupon.code}
-                      <span className="font-medium opacity-70">· {assignedCoupon.discountPercent}% off</span>
+                      <span className="font-medium opacity-70">Â· {assignedCoupon.discountPercent}% off</span>
                     </button>
                   </div>
 
@@ -1903,9 +1903,9 @@ const ProductDetail = () => {
                         border: "1.5px solid #a8dfc0",
                       }}
                     >
-                      <span className="text-base leading-none">✓</span>
+                      <span className="text-base leading-none">âœ“</span>
                       <p className="text-xs font-bold flex-1" style={{ color: "#1c7c54" }}>
-                        {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off your order!
+                        {appliedCoupon.code} applied â€” {appliedCoupon.discountPercent}% off your order!
                       </p>
                       <button
                         type="button"
@@ -1920,20 +1920,39 @@ const ProductDetail = () => {
                   {/* Error message */}
                   {!appliedCoupon && couponMessage.text && (
                     <p className={`text-xs font-medium px-1 ${couponMessage.type === "error" ? "text-red-500" : "text-green-700"}`}>
-                      {couponMessage.type === "error" ? "✗ " : "✓ "}{couponMessage.text}
+                      {couponMessage.type === "error" ? "âœ— " : "âœ“ "}{couponMessage.text}
                     </p>
                   )}
                 </div>
               )}
 
-              {/* Price box */}
+                            {/* Price box */}
               <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
-                <div className="flex items-baseline flex-wrap gap-3">
-                  <span className="text-3xl font-bold" style={{ color: detailTheme.price }}>₹{price}</span>
-                  {mrp > 0 && <span className="text-sm text-gray-400 line-through">MRP ₹{mrp}</span>}
-                  {mrp > 0 && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ backgroundColor: detailTheme.price, color: detailTheme.onPrice }}>{discount}% OFF</span>}
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                  <div>
+                    <div className="flex items-baseline flex-wrap gap-3">
+                      <span className="text-3xl font-bold" style={{ color: detailTheme.price }}>₹{price}</span>
+                      {mrp > 0 && <span className="text-sm text-gray-400 line-through">MRP ₹{mrp}</span>}
+                      {mrp > 0 && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ backgroundColor: detailTheme.price, color: detailTheme.onPrice }}>{discount}% OFF</span>}
+                    </div>
+                    <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes</p>
+                  </div>
+
+                  {product?.warranty === "import" && warrantyRegistrationUrl && (
+                    <Link
+                      to={warrantyRegistrationUrl}
+                      className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border self-start sm:self-auto"
+                      style={{
+                        color: detailTheme.accent,
+                        borderColor: detailTheme.accentLine,
+                        backgroundColor: detailTheme.reviewSurface,
+                      }}
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Register Import Warranty
+                    </Link>
+                  )}
                 </div>
-                <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes</p>
               </div>
 
               {/* ATC + Buy Now — observed by IntersectionObserver for sticky bar */}
@@ -1987,14 +2006,14 @@ const ProductDetail = () => {
 
                   <ul className="space-y-2">
                     {(product.benefits || [
-                      "Instant Lip Plumping Effect – Visible volume in 1–2 minutes.",
-                      "Soft Silicone Material – Comfortable & skin-safe.",
-                      "Non-Invasive & Needle-Free – No fillers required.",
-                      "Enhances Lip Shape – Defines natural lip contour.",
-                      "Reusable & Easy to Clean – Durable design."
+                      "Instant Lip Plumping Effect â€“ Visible volume in 1â€“2 minutes.",
+                      "Soft Silicone Material â€“ Comfortable & skin-safe.",
+                      "Non-Invasive & Needle-Free â€“ No fillers required.",
+                      "Enhances Lip Shape â€“ Defines natural lip contour.",
+                      "Reusable & Easy to Clean â€“ Durable design."
                     ]).map((b, i) => (
                       <li key={i} className="flex gap-2 items-start text-sm font-semibold text-white/90">
-                        <span className="text-white font-bold mt-0.5">✓</span>
+                        <span className="text-white font-bold mt-0.5">âœ“</span>
                         {b}
                       </li>
                     ))}
@@ -2019,28 +2038,12 @@ const ProductDetail = () => {
                   </div>
                 ))}
               </div>
-              {/* {product?.warranty === "import" && warrantyRegistrationUrl && (
-                <div className="mt-3">
-                  <Link
-                    to={warrantyRegistrationUrl}
-                    className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border"
-                    style={{
-                      color: detailTheme.accent,
-                      borderColor: detailTheme.accentLine,
-                      backgroundColor: detailTheme.reviewSurface,
-                    }}
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    Register Import Warranty
-                  </Link>
-                </div>
-              )} */}
             </div>
 
           </div>
         </section>
 
-        {/* ════ BEFORE / AFTER ════ */}
+        {/* â•â•â•â• BEFORE / AFTER â•â•â•â• */}
         {hasBeforeAfter && (
           <DeferredSection minHeight={420}>
             <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
@@ -2056,7 +2059,7 @@ const ProductDetail = () => {
                   <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                     <div className={idx % 2 === 1 ? "lg:order-2" : ""}>
                       <BeforeAfterSlider beforeImage={pair.before} afterImage={pair.after} beforeLabel={pair.beforeLabel || "Before"} afterLabel={pair.afterLabel || "After"} />
-                      <p className="text-center text-xs text-gray-400 mt-2">← Drag slider to compare →</p>
+                      <p className="text-center text-xs text-gray-400 mt-2">â† Drag slider to compare â†’</p>
                     </div>
                     <div className={`flex flex-col justify-center space-y-4 ${idx % 2 === 1 ? "lg:order-1" : ""}`}>
                       {pair.duration && (<span className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold border rounded-full px-3.5 py-1.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentSoft, color: detailTheme.accent }}><Sparkles className="w-3 h-3" /> {pair.duration}</span>)}
@@ -2080,7 +2083,7 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-        {/* ════ DESCRIPTION + ADDITIONAL INFO ════ */}
+        {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
         <DeferredSection minHeight={360}>
           <section ref={detailsTabsRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
             <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
@@ -2120,7 +2123,7 @@ const ProductDetail = () => {
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                     <button onClick={() => setExpandedDesc(!expandedDesc)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.accent }}>
-                      {expandedDesc ? "Read Less ▲" : "Read More ▼"}
+                      {expandedDesc ? "Read Less â–²" : "Read More â–¼"}
                     </button>
                   </>
                 ) : <p className="text-sm text-gray-400">No description available.</p>}
@@ -2145,7 +2148,7 @@ const ProductDetail = () => {
                     </div>
                     {additionalInfoArray.length > 4 && (
                       <button onClick={() => setExpandedInfo(!expandedInfo)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.price }}>
-                        {expandedInfo ? "Read Less ▲" : "Read More ▼"}
+                        {expandedInfo ? "Read Less â–²" : "Read More â–¼"}
                       </button>
                     )}
                   </>
@@ -2281,7 +2284,7 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-        {/* ════ PRODUCT BANNERS ════ */}
+        {/* â•â•â•â• PRODUCT BANNERS â•â•â•â• */}
         {activeInfoTab !== "reviews" && ((product.banners?.length > 0) || product.bannerImage) && (
           <DeferredSection minHeight={320}>
             <section className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4">
@@ -2303,7 +2306,7 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-        {/* ════ REVIEWS ════ */}
+        {/* â•â•â•â• REVIEWS â•â•â•â• */}
         {activeInfoTab === "reviews" && (
         <DeferredSection minHeight={420}>
           <section ref={reviewsSectionRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">
@@ -2382,14 +2385,14 @@ const ProductDetail = () => {
                 </div>
                 <p className="text-gray-500 text-sm mb-1">No reviews yet</p>
                 <p className="text-gray-400 text-xs mb-4">Be the first to share your experience!</p>
-                <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold hover:underline" style={{ color: detailTheme.accent }}>Write a Review →</button>
+                <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold hover:underline" style={{ color: detailTheme.accent }}>Write a Review â†’</button>
               </div>
             )}
           </section>
         </DeferredSection>
         )}
 
-        {/* ════ RELATED PRODUCTS ════ */}
+        {/* â•â•â•â• RELATED PRODUCTS â•â•â•â• */}
         {relatedProducts.length > 0 && (
           <DeferredSection minHeight={360}>
             <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-2">
@@ -2422,6 +2425,7 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+
 
 
 

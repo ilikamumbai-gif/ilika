@@ -26,13 +26,11 @@ const WarrantyRegistration = () => {
     name: "",
     email: user?.email || "",
     phone: "",
-    orderId: searchParams.get("orderId") || "",
     productId: searchParams.get("productId") || "",
     productName: searchParams.get("productName") || "",
     purchaseDate: "",
-    serialNumber: "",
     city: "",
-    issue: "",
+    address: "",
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -44,7 +42,6 @@ const WarrantyRegistration = () => {
       form.name.trim() &&
       form.phone.trim() &&
       form.productName.trim() &&
-      form.orderId.trim() &&
       form.purchaseDate
     );
   }, [form]);
@@ -66,13 +63,11 @@ const WarrantyRegistration = () => {
         name: form.name.trim(),
         email: form.email.trim() || null,
         phone: form.phone.trim(),
-        orderId: form.orderId.trim(),
         productId: form.productId.trim() || null,
         productName: form.productName.trim(),
         purchaseDate: form.purchaseDate,
-        serialNumber: form.serialNumber.trim() || null,
         city: form.city.trim() || null,
-        issue: form.issue.trim() || null,
+        address: form.address.trim() || null,
         userId: user?.uid || null,
         userEmail: user?.email || form.email.trim() || null,
       };
@@ -97,9 +92,8 @@ const WarrantyRegistration = () => {
         ...prev,
         phone: "",
         purchaseDate: "",
-        serialNumber: "",
         city: "",
-        issue: "",
+        address: "",
       }));
     } catch (err) {
       setError(err?.message || "Unable to submit warranty registration.");
@@ -152,26 +146,9 @@ const WarrantyRegistration = () => {
                 />
                 <input
                   type="text"
-                  value={form.orderId}
-                  onChange={(e) => updateField("orderId", e.target.value)}
-                  placeholder="Order ID *"
-                  className="w-full p-3 rounded-xl border border-gray-200 text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="text"
                   value={form.productName}
                   onChange={(e) => updateField("productName", e.target.value)}
                   placeholder="Product Name *"
-                  className="w-full p-3 rounded-xl border border-gray-200 text-sm"
-                />
-                <input
-                  type="text"
-                  value={form.serialNumber}
-                  onChange={(e) => updateField("serialNumber", e.target.value)}
-                  placeholder="Serial Number (optional)"
                   className="w-full p-3 rounded-xl border border-gray-200 text-sm"
                 />
               </div>
@@ -194,9 +171,9 @@ const WarrantyRegistration = () => {
 
               <textarea
                 rows="4"
-                value={form.issue}
-                onChange={(e) => updateField("issue", e.target.value)}
-                placeholder="Issue/Note (optional)"
+                value={form.address}
+                onChange={(e) => updateField("address", e.target.value)}
+                placeholder="Address (optional)"
                 className="w-full p-3 rounded-xl border border-gray-200 text-sm resize-none"
               />
 

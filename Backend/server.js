@@ -1828,13 +1828,11 @@ app.post("/api/warranty-registrations", async (req, res) => {
       name = "",
       email = "",
       phone = "",
-      orderId = "",
       productId = "",
       productName = "",
       purchaseDate = "",
-      serialNumber = "",
       city = "",
-      issue = "",
+      address = "",
       userId = null,
       userEmail = null,
     } = req.body || {};
@@ -1844,9 +1842,6 @@ app.post("/api/warranty-registrations", async (req, res) => {
     }
     if (!String(phone).trim()) {
       return res.status(400).json({ error: "Phone is required" });
-    }
-    if (!String(orderId).trim()) {
-      return res.status(400).json({ error: "Order ID is required" });
     }
     if (!String(productName).trim()) {
       return res.status(400).json({ error: "Product name is required" });
@@ -1859,13 +1854,11 @@ app.post("/api/warranty-registrations", async (req, res) => {
       name: String(name).trim(),
       email: String(email).trim() || null,
       phone: String(phone).trim(),
-      orderId: String(orderId).trim(),
       productId: String(productId).trim() || null,
       productName: String(productName).trim(),
       purchaseDate: String(purchaseDate).trim(),
-      serialNumber: String(serialNumber).trim() || null,
       city: String(city).trim() || null,
-      issue: String(issue).trim() || null,
+      address: String(address).trim() || null,
       userId: userId || null,
       userEmail: userEmail || null,
       status: "pending",
