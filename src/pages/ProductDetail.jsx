@@ -21,6 +21,22 @@ import { FiBell } from "react-icons/fi";
 
 const DEFAULT_DETAIL_BG = "#FFFFFF";
 
+const stripHtml = (value = "") =>
+  String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const toAbsoluteUrl = (value = "", fallbackOrigin = "https://ilika.in") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    return new URL(raw, fallbackOrigin).toString();
+  } catch {
+    return "";
+  }
+};
+
 const normalizeHexColor = (value = "") => {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -1636,10 +1652,79 @@ const ProductDetail = () => {
   const rating = product.rating || 4;
   const beforeAfterPairs = product.beforeAfter || [];
   const hasBeforeAfter = Array.isArray(beforeAfterPairs) && beforeAfterPairs.length > 0;
+  const productJsonLd = useMemo(() => {
+    const fallbackOrigin =
+      (typeof window !== "undefined" && window.location?.origin) || "https://ilika.in";
+    const canonicalPath = `/product/${slug || createSlug(product?.name || "")}`;
+    const canonicalUrl = toAbsoluteUrl(
+      typeof window !== "undefined" ? window.location?.href : canonicalPath,
+      fallbackOrigin
+    );
+
+    const rawImages = Array.isArray(images) ? images : [];
+    const imageUrls = rawImages
+      .map((img) => toAbsoluteUrl(img, fallbackOrigin))
+      .filter(Boolean)
+      .slice(0, 10);
+
+    const cleanDescription =
+      stripHtml(product?.shortInfo) ||
+      stripHtml(product?.description) ||
+      "Buy this product online at Ilika.";
+
+    const productIdValue = String(product?.id || product?._id || slug || "").trim();
+    const variantId = String(activeVariant?.id || "").trim();
+    const sku = variantId ? `${productIdValue}_${variantId}` : productIdValue;
+
+    const numericPrice = Number(price);
+    if (!Number.isFinite(numericPrice) || numericPrice <= 0) return null;
+
+    const data = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: String(product?.name || "").trim(),
+      description: cleanDescription,
+      sku: sku || undefined,
+      mpn: String(product?.mpn || product?.sku || "").trim() || undefined,
+      image: imageUrls.length ? imageUrls : undefined,
+      brand: {
+        "@type": "Brand",
+        name: String(product?.brand || "Ilika"),
+      },
+      offers: {
+        "@type": "Offer",
+        url: canonicalUrl,
+        priceCurrency: "INR",
+        price: numericPrice.toFixed(2),
+        availability: isOutOfStock
+          ? "https://schema.org/OutOfStock"
+          : "https://schema.org/InStock",
+        itemCondition: "https://schema.org/NewCondition",
+      },
+    };
+
+    const reviewCount = Array.isArray(product?.reviews) ? product.reviews.length : 0;
+    const numericRating = Number(rating);
+    if (reviewCount > 0 && Number.isFinite(numericRating) && numericRating > 0) {
+      data.aggregateRating = {
+        "@type": "AggregateRating",
+        ratingValue: String(numericRating),
+        reviewCount: String(reviewCount),
+      };
+    }
+
+    return data;
+  }, [product, activeVariant?.id, images, isOutOfStock, price, rating, slug]);
 
   return (
     <>
       <MiniDivider />
+      {productJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
+      )}
       {showReviewModal && (
         <ReviewModal
           product={product}
@@ -1870,7 +1955,7 @@ const ProductDetail = () => {
                         minWidth: "80px",
                       }}
                     >
-                      {appliedCoupon ? "Applied âœ“" : "Apply"}
+                      {appliedCoupon ? "Applied ✔" : "Apply"}
                     </button>
                   </div>
 
@@ -1903,7 +1988,7 @@ const ProductDetail = () => {
                         border: "1.5px solid #a8dfc0",
                       }}
                     >
-                      <span className="text-base leading-none">âœ“</span>
+                      <span className="text-base leading-none">✔</span>
                       <p className="text-xs font-bold flex-1" style={{ color: "#1c7c54" }}>
                         {appliedCoupon.code} applied â€” {appliedCoupon.discountPercent}% off your order!
                       </p>
@@ -1920,7 +2005,7 @@ const ProductDetail = () => {
                   {/* Error message */}
                   {!appliedCoupon && couponMessage.text && (
                     <p className={`text-xs font-medium px-1 ${couponMessage.type === "error" ? "text-red-500" : "text-green-700"}`}>
-                      {couponMessage.type === "error" ? "âœ— " : "âœ“ "}{couponMessage.text}
+                      {couponMessage.type === "error" ? "âœ— " : "✔ "}{couponMessage.text}
                     </p>
                   )}
                 </div>
@@ -2013,7 +2098,7 @@ const ProductDetail = () => {
                       "Reusable & Easy to Clean â€“ Durable design."
                     ]).map((b, i) => (
                       <li key={i} className="flex gap-2 items-start text-sm font-semibold text-white/90">
-                        <span className="text-white font-bold mt-0.5">âœ“</span>
+                        <span className="text-white font-bold mt-0.5">✔</span>
                         {b}
                       </li>
                     ))}
