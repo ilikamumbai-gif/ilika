@@ -9,7 +9,7 @@ import { admin, db } from "./firebaseAdmin.js";
 dotenv.config();
 const app = express();
 
-const SUPPORT_ALERT_EMAIL = "ilikaadmin@gmail.com";
+const SUPPORT_ALERT_EMAIL = "adminilika@gmail.com";
 const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
 const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
 const SMTP_SECURE = String(process.env.SMTP_SECURE || "true").toLowerCase() !== "false";
