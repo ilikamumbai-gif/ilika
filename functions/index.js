@@ -1,6 +1,12 @@
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const { google } = require("googleapis");
+const dotenv = require("dotenv");
+const path = require("path");
+
+// Use Backend/.env as the single local source of env vars.
+// In deployed Firebase runtime, process.env is still provided by the platform.
+dotenv.config({ path: path.resolve(__dirname, "../Backend/.env") });
 
 admin.initializeApp();
 
