@@ -42,7 +42,8 @@ const WarrantyRegistration = () => {
       form.name.trim() &&
       form.phone.trim() &&
       form.productName.trim() &&
-      form.purchaseDate
+      form.purchaseDate &&
+      form.address.trim()
     );
   }, [form]);
 
@@ -173,7 +174,7 @@ const WarrantyRegistration = () => {
                 rows="4"
                 value={form.address}
                 onChange={(e) => updateField("address", e.target.value)}
-                placeholder="Address (optional)"
+                placeholder="Address *"
                 className="w-full p-3 rounded-xl border border-gray-200 text-sm resize-none"
               />
 
