@@ -3,10 +3,81 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import nodemailer from "nodemailer";
 import { admin, db } from "./firebaseAdmin.js";
 
 dotenv.config();
 const app = express();
+
+const SUPPORT_ALERT_EMAIL = "ilikaadmin@gmail.com";
+const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
+const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
+const SMTP_SECURE = String(process.env.SMTP_SECURE || "true").toLowerCase() !== "false";
+const SMTP_USER = process.env.SMTP_USER || process.env.GMAIL_USER || "";
+const SMTP_PASS = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "";
+const SMTP_FROM = process.env.SMTP_FROM || SMTP_USER;
+let mailTransporter = null;
+
+const getMailTransporter = () => {
+  if (mailTransporter) return mailTransporter;
+  if (!SMTP_USER || !SMTP_PASS) {
+    return null;
+  }
+
+  mailTransporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_SECURE,
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+  });
+
+  return mailTransporter;
+};
+
+const formatIstDateTime = (date = new Date()) => {
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "full",
+    timeStyle: "long",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+};
+
+const sendAdminLoginAlert = async ({ username, role, req }) => {
+  const transporter = getMailTransporter();
+  if (!transporter) {
+    console.warn("Admin login alert email skipped: SMTP credentials are missing");
+    return;
+  }
+
+  const loginAt = new Date();
+  const forwardedFor = req.headers["x-forwarded-for"];
+  const ipAddress = Array.isArray(forwardedFor)
+    ? forwardedFor[0]
+    : String(forwardedFor || req.ip || "Unknown").split(",")[0].trim();
+  const userAgent = req.get("user-agent") || "Unknown";
+
+  const subject = `Ilika Admin Login Alert: ${username} (${role})`;
+  const text = [
+    "An admin has logged into Ilika Admin Panel.",
+    "",
+    `Username: ${username}`,
+    `Role: ${role}`,
+    `Login Time (IST): ${formatIstDateTime(loginAt)}`,
+    `Login Time (UTC): ${loginAt.toISOString()}`,
+    `IP Address: ${ipAddress || "Unknown"}`,
+    `Device/User Agent: ${userAgent}`,
+  ].join("\n");
+
+  await transporter.sendMail({
+    from: SMTP_FROM,
+    to: SUPPORT_ALERT_EMAIL,
+    subject,
+    text,
+  });
+};
 
 /* ============================== RAZORPAY ============================== */
 const razorpay = new Razorpay({
@@ -1367,11 +1438,22 @@ app.post("/api/admin-login", async (req, res) => {
 
     const admin = snapshot.docs[0].data();
     if (admin.password !== password) return res.status(401).json({ error: "Invalid credentials" });
+    const adminRole = admin.role || "admin";
+
+    try {
+      await sendAdminLoginAlert({
+        username: admin.username,
+        role: adminRole,
+        req,
+      });
+    } catch (mailErr) {
+      console.error("Admin login alert email failed:", mailErr?.message || mailErr);
+    }
 
     res.json({
       id: snapshot.docs[0].id,
       username: admin.username,
-      role: admin.role || "admin",
+      role: adminRole,
       permissions: Array.isArray(admin.permissions) ? admin.permissions : [],
     });
   } catch {
