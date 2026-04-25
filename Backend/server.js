@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import { google } from "googleapis";
 import { admin, db } from "./firebaseAdmin.js";
 
 dotenv.config();
@@ -78,6 +79,216 @@ const sendAdminLoginAlert = async ({ username, role, req }) => {
     text,
   });
   return { status: "sent" };
+};
+
+/* ============================== GOOGLE MERCHANT ============================== */
+const MERCHANT_CENTER_ACCOUNT_ID =
+  process.env.GOOGLE_MERCHANT_ID ||
+  process.env.MERCHANT_CENTER_ACCOUNT_ID ||
+  "";
+const MERCHANT_CONTENT_LANGUAGE = process.env.GOOGLE_MERCHANT_CONTENT_LANGUAGE || "en";
+const MERCHANT_TARGET_COUNTRY = process.env.GOOGLE_MERCHANT_TARGET_COUNTRY || "IN";
+const MERCHANT_CURRENCY = process.env.GOOGLE_MERCHANT_CURRENCY || "INR";
+const MERCHANT_CHANNEL = process.env.GOOGLE_MERCHANT_CHANNEL || "online";
+const MERCHANT_BRAND_DEFAULT = process.env.GOOGLE_MERCHANT_BRAND || "Ilika";
+const MERCHANT_SYNC_AUTO = String(process.env.GOOGLE_MERCHANT_SYNC_AUTO || "false").toLowerCase() === "true";
+const MERCHANT_CLIENT_EMAIL = process.env.GOOGLE_MERCHANT_CLIENT_EMAIL || "";
+const MERCHANT_PRIVATE_KEY = String(process.env.GOOGLE_MERCHANT_PRIVATE_KEY || "").replace(/\\n/g, "\n");
+let merchantContentClient = null;
+
+const isMerchantConfigured = () => {
+  return Boolean(MERCHANT_CENTER_ACCOUNT_ID && MERCHANT_CLIENT_EMAIL && MERCHANT_PRIVATE_KEY);
+};
+
+const getMerchantContentClient = () => {
+  if (merchantContentClient) return merchantContentClient;
+  if (!isMerchantConfigured()) return null;
+
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: MERCHANT_CLIENT_EMAIL,
+      private_key: MERCHANT_PRIVATE_KEY,
+    },
+    scopes: ["https://www.googleapis.com/auth/content"],
+  });
+
+  merchantContentClient = google.content({
+    version: "v2.1",
+    auth,
+  });
+
+  return merchantContentClient;
+};
+
+const merchantSlugify = (value = "") =>
+  String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-");
+
+const stripHtml = (value = "") =>
+  String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const normalizeAbsoluteUrl = (value = "", siteBase = "https://ilika.in") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    return new URL(raw, siteBase).toString();
+  } catch {
+    return "";
+  }
+};
+
+const getSiteBaseUrl = () =>
+  String(process.env.SITE_URL || process.env.FRONTEND_URL || "https://ilika.in")
+    .trim()
+    .replace(/\/+$/, "");
+
+const getMerchantProductId = (offerId = "") =>
+  `${MERCHANT_CHANNEL}:${MERCHANT_CONTENT_LANGUAGE}:${MERCHANT_TARGET_COUNTRY}:${offerId}`;
+
+const getProductSellPrice = (product = {}) => {
+  if (product?.hasVariants && Array.isArray(product?.variants)) {
+    const variantPrices = product.variants
+      .map((variant) => Number(variant?.price))
+      .filter((value) => Number.isFinite(value) && value > 0);
+    if (variantPrices.length) return Math.min(...variantPrices);
+  }
+  const base = Number(product?.price);
+  return Number.isFinite(base) && base > 0 ? base : 0;
+};
+
+const mapProductToMerchantPayload = (product = {}) => {
+  const name = String(product?.name || "").trim();
+  const offerId = String(product?.id || "").trim();
+  if (!name || !offerId || product?.isActive === false) return null;
+
+  const priceValue = getProductSellPrice(product);
+  if (!priceValue) return null;
+
+  const siteBaseUrl = getSiteBaseUrl();
+  const slug = merchantSlugify(name);
+  const productUrl = normalizeAbsoluteUrl(`/product/${slug}`, siteBaseUrl);
+  const primaryImage = Array.isArray(product?.images) ? product.images[0] : "";
+  const imageLink = normalizeAbsoluteUrl(primaryImage, siteBaseUrl);
+  const additionalImageLinks = (Array.isArray(product?.images) ? product.images : [])
+    .map((img) => normalizeAbsoluteUrl(img, siteBaseUrl))
+    .filter(Boolean)
+    .slice(1, 10);
+
+  const payload = {
+    offerId,
+    title: name,
+    description: stripHtml(product?.shortInfo || product?.description || name),
+    link: productUrl,
+    imageLink: imageLink || undefined,
+    additionalImageLinks: additionalImageLinks.length ? additionalImageLinks : undefined,
+    contentLanguage: MERCHANT_CONTENT_LANGUAGE,
+    targetCountry: MERCHANT_TARGET_COUNTRY,
+    channel: MERCHANT_CHANNEL,
+    availability: product?.inStock === false ? "out of stock" : "in stock",
+    condition: "new",
+    price: {
+      value: Number(priceValue).toFixed(2),
+      currency: MERCHANT_CURRENCY,
+    },
+    brand: String(product?.brand || MERCHANT_BRAND_DEFAULT).trim() || MERCHANT_BRAND_DEFAULT,
+  };
+
+  const gtin = String(product?.gtin || "").trim();
+  const mpn = String(product?.mpn || "").trim();
+  if (gtin) payload.gtin = gtin;
+  if (mpn) payload.mpn = mpn;
+  if (!gtin && !mpn) payload.identifierExists = false;
+
+  return payload;
+};
+
+const upsertMerchantProduct = async (product = {}) => {
+  const content = getMerchantContentClient();
+  if (!content) {
+    return { status: "skipped", reason: "merchant_api_not_configured", offerId: product?.id || null };
+  }
+
+  const payload = mapProductToMerchantPayload(product);
+  if (!payload) {
+    return { status: "skipped", reason: "product_not_eligible", offerId: product?.id || null };
+  }
+
+  await content.products.insert({
+    merchantId: MERCHANT_CENTER_ACCOUNT_ID,
+    requestBody: payload,
+  });
+
+  return { status: "upserted", offerId: payload.offerId };
+};
+
+const deleteMerchantProduct = async (offerId = "") => {
+  const content = getMerchantContentClient();
+  const cleanOfferId = String(offerId || "").trim();
+  if (!content || !cleanOfferId) {
+    return { status: "skipped", reason: "merchant_api_not_configured_or_missing_offer_id", offerId: cleanOfferId || null };
+  }
+
+  try {
+    await content.products.delete({
+      merchantId: MERCHANT_CENTER_ACCOUNT_ID,
+      productId: getMerchantProductId(cleanOfferId),
+    });
+    return { status: "deleted", offerId: cleanOfferId };
+  } catch (err) {
+    const code = Number(err?.code || err?.response?.status || 0);
+    if (code === 404) {
+      return { status: "not_found", offerId: cleanOfferId };
+    }
+    throw err;
+  }
+};
+
+const syncMerchantProductById = async (productId = "") => {
+  const cleanId = String(productId || "").trim();
+  if (!cleanId) return { status: "skipped", reason: "missing_product_id", offerId: null };
+
+  const ref = db.collection("products").doc(cleanId);
+  const doc = await ref.get();
+
+  if (!doc.exists) {
+    return deleteMerchantProduct(cleanId);
+  }
+
+  return upsertMerchantProduct({ id: doc.id, ...doc.data() });
+};
+
+const syncAllProductsToMerchant = async () => {
+  const snapshot = await db.collection("products").get();
+  const results = [];
+  for (const doc of snapshot.docs) {
+    const product = { id: doc.id, ...doc.data() };
+    if (product?.isActive === false) {
+      results.push(await deleteMerchantProduct(doc.id));
+      continue;
+    }
+    results.push(await upsertMerchantProduct(product));
+  }
+
+  const summary = results.reduce(
+    (acc, item) => {
+      const key = item?.status || "unknown";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
+  return {
+    total: results.length,
+    summary,
+    results,
+  };
 };
 
 /* ============================== RAZORPAY ============================== */
@@ -636,6 +847,13 @@ app.post("/api/products", async (req, res) => {
       updatedAt: now,
     };
     const docRef = await db.collection("products").add(productData);
+
+    if (MERCHANT_SYNC_AUTO) {
+      syncMerchantProductById(docRef.id).catch((err) => {
+        console.error("MERCHANT AUTO SYNC (CREATE) FAILED:", err?.message || err);
+      });
+    }
+
     res.json({ id: docRef.id, ...productData });
   } catch (error) {
     console.error("ADD PRODUCT ERROR:", error);
@@ -694,6 +912,13 @@ app.put("/api/products/:id", async (req, res) => {
 
     await productRef.update(updateData);
     const updatedDoc = await productRef.get();
+
+    if (MERCHANT_SYNC_AUTO) {
+      syncMerchantProductById(req.params.id).catch((err) => {
+        console.error("MERCHANT AUTO SYNC (UPDATE) FAILED:", err?.message || err);
+      });
+    }
+
     res.json({ message: "Product updated successfully", product: { id: updatedDoc.id, ...updatedDoc.data() } });
   } catch (error) {
     console.error("UPDATE PRODUCT ERROR:", error);
@@ -704,6 +929,13 @@ app.put("/api/products/:id", async (req, res) => {
 app.delete("/api/products/:id", async (req, res) => {
   try {
     await db.collection("products").doc(req.params.id).delete();
+
+    if (MERCHANT_SYNC_AUTO) {
+      deleteMerchantProduct(req.params.id).catch((err) => {
+        console.error("MERCHANT AUTO SYNC (DELETE) FAILED:", err?.message || err);
+      });
+    }
+
     res.json({ message: "Product deleted successfully" });
   } catch {
     res.status(500).json({ error: "Failed to delete product" });
@@ -1409,6 +1641,62 @@ const requireSuperAdmin = async (req, res) => {
   }
   return requester;
 };
+
+app.get("/api/merchant/sync-status", async (req, res) => {
+  res.json({
+    configured: isMerchantConfigured(),
+    autoSyncEnabled: MERCHANT_SYNC_AUTO,
+    merchantId: MERCHANT_CENTER_ACCOUNT_ID || null,
+    targetCountry: MERCHANT_TARGET_COUNTRY,
+    contentLanguage: MERCHANT_CONTENT_LANGUAGE,
+    channel: MERCHANT_CHANNEL,
+    currency: MERCHANT_CURRENCY,
+  });
+});
+
+app.post("/api/merchant/sync-products", async (req, res) => {
+  try {
+    const requester = await requireSuperAdmin(req, res);
+    if (!requester) return;
+
+    if (!isMerchantConfigured()) {
+      return res.status(400).json({
+        error: "Merchant API is not configured. Set GOOGLE_MERCHANT_ID / GOOGLE_MERCHANT_CLIENT_EMAIL / GOOGLE_MERCHANT_PRIVATE_KEY.",
+      });
+    }
+
+    const result = await syncAllProductsToMerchant();
+    res.json({
+      message: "Merchant sync completed",
+      ...result,
+    });
+  } catch (error) {
+    console.error("MERCHANT SYNC ALL FAILED:", error);
+    res.status(500).json({ error: "Merchant sync failed" });
+  }
+});
+
+app.post("/api/merchant/sync-products/:id", async (req, res) => {
+  try {
+    const requester = await requireSuperAdmin(req, res);
+    if (!requester) return;
+
+    if (!isMerchantConfigured()) {
+      return res.status(400).json({
+        error: "Merchant API is not configured. Set GOOGLE_MERCHANT_ID / GOOGLE_MERCHANT_CLIENT_EMAIL / GOOGLE_MERCHANT_PRIVATE_KEY.",
+      });
+    }
+
+    const result = await syncMerchantProductById(req.params.id);
+    res.json({
+      message: "Merchant single-product sync completed",
+      result,
+    });
+  } catch (error) {
+    console.error("MERCHANT SYNC ONE FAILED:", error);
+    res.status(500).json({ error: "Merchant single-product sync failed" });
+  }
+});
 
 app.post("/api/admin-log", async (req, res) => {
   try {

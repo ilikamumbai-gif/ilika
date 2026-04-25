@@ -1637,22 +1637,12 @@ const ProductDetail = () => {
     return [];
   }, [product?.additionalInfo]);
 
-  /* â”€â”€ Loading / not found states â”€â”€ */
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500 animate-pulse">Loading product...</p>
-    </div>
-  );
-  if (!product || product.isActive === false) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">Product not available</p>
-    </div>
-  );
-
-  const rating = product.rating || 4;
-  const beforeAfterPairs = product.beforeAfter || [];
+  const rating = product?.rating || 4;
+  const beforeAfterPairs = product?.beforeAfter || [];
   const hasBeforeAfter = Array.isArray(beforeAfterPairs) && beforeAfterPairs.length > 0;
   const productJsonLd = useMemo(() => {
+    if (!product || product.isActive === false) return null;
+
     const fallbackOrigin =
       (typeof window !== "undefined" && window.location?.origin) || "https://ilika.in";
     const canonicalPath = `/product/${slug || createSlug(product?.name || "")}`;
@@ -1715,6 +1705,18 @@ const ProductDetail = () => {
 
     return data;
   }, [product, activeVariant?.id, images, isOutOfStock, price, rating, slug]);
+
+  /* â”€â”€ Loading / not found states â”€â”€ */
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-gray-500 animate-pulse">Loading product...</p>
+    </div>
+  );
+  if (!product || product.isActive === false) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-gray-500">Product not available</p>
+    </div>
+  );
 
   return (
     <>
