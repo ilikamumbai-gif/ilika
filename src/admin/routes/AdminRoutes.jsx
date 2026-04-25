@@ -43,6 +43,11 @@ import FeedbackList from "../pages/Feedback/FeedbackList";
 import FeedbackDetail from "../pages/Feedback/FeedbackDetail";
 import WarrantyList from "../pages/Warranty/WarrantyList";
 import WarrantyDetail from "../pages/Warranty/WarrantyDetail";
+import AdminPermissionRoute from "../components/AdminPermissionRoute";
+
+const withPermission = (permission, element) => (
+  <AdminPermissionRoute permission={permission}>{element}</AdminPermissionRoute>
+);
 
 const AdminRoutes = () => {
   return (
@@ -59,46 +64,46 @@ const AdminRoutes = () => {
                       <Routes>
                         <Route index element={<Dashboard />} />
 
-                        <Route path="admins" element={<AdminList />} />
+                        <Route path="admins" element={withPermission("admins", <AdminList />)} />
 
-                        <Route path="products" element={<ProductList />} />
-                        <Route path="products/add" element={<AddProduct />} />
-                        <Route path="products/edit/:id" element={<EditProduct />} />
-                        <Route path="coupons" element={<CouponList />} />
+                        <Route path="products" element={withPermission("products", <ProductList />)} />
+                        <Route path="products/add" element={withPermission("products", <AddProduct />)} />
+                        <Route path="products/edit/:id" element={withPermission("products", <EditProduct />)} />
+                        <Route path="coupons" element={withPermission("coupons", <CouponList />)} />
 
-                        <Route path="combos" element={<ComboList />} />
-                        <Route path="combos/add" element={<AddCombo />} />
-                        <Route path="combos/edit/:id" element={<EditCombo />} />
+                        <Route path="combos" element={withPermission("combos", <ComboList />)} />
+                        <Route path="combos/add" element={withPermission("combos", <AddCombo />)} />
+                        <Route path="combos/edit/:id" element={withPermission("combos", <EditCombo />)} />
 
-                        <Route path="categories" element={<CategoryList />} />
-                        <Route path="categories/add" element={<AddCategory />} />
+                        <Route path="categories" element={withPermission("categories", <CategoryList />)} />
+                        <Route path="categories/add" element={withPermission("categories", <AddCategory />)} />
 
-                        <Route path="orders" element={<OrderList />} />
-                        <Route path="orders/:id" element={<OrderDetail />} />
+                        <Route path="orders" element={withPermission("orders", <OrderList />)} />
+                        <Route path="orders/:id" element={withPermission("orders", <OrderDetail />)} />
 
-                        <Route path="cart-products" element={<CartProductList />} />
-                        <Route path="cart-products/:productId" element={<CartProductDetail />} />
+                        <Route path="cart-products" element={withPermission("cart-products", <CartProductList />)} />
+                        <Route path="cart-products/:productId" element={withPermission("cart-products", <CartProductDetail />)} />
 
-                        <Route path="users" element={<UserList />} />
-                        <Route path="users/:id" element={<UserDetail />} />
+                        <Route path="users" element={withPermission("users", <UserList />)} />
+                        <Route path="users/:id" element={withPermission("users", <UserDetail />)} />
 
-                        <Route path="reviews" element={<ReviewList />} />
-                        <Route path="reviews/:productId/:index" element={<ReviewDetail />} />
+                        <Route path="reviews" element={withPermission("reviews", <ReviewList />)} />
+                        <Route path="reviews/:productId/:index" element={withPermission("reviews", <ReviewDetail />)} />
 
-                        <Route path="blogs" element={<BlogList />} />
-                        <Route path="blogs/create" element={<AddBlog />} />
-                        <Route path="blogs/:id" element={<ViewBlogDetails />} />
-                        <Route path="blog-comments" element={<BlogComments />} />
+                        <Route path="blogs" element={withPermission("blogs", <BlogList />)} />
+                        <Route path="blogs/create" element={withPermission("blogs", <AddBlog />)} />
+                        <Route path="blogs/:id" element={withPermission("blogs", <ViewBlogDetails />)} />
+                        <Route path="blog-comments" element={withPermission("blogs", <BlogComments />)} />
 
-                        <Route path="reports" element={<Report />} />
-                        <Route path="log" element={<AdminLog />} />
+                        <Route path="reports" element={withPermission("reports", <Report />)} />
+                        <Route path="log" element={withPermission("logs", <AdminLog />)} />
 
-                        <Route path="notifications" element={<NotificationList />} />
-                        <Route path="notifications/:productId" element={<NotificationDetail />} />
-                        <Route path="feedback" element={<FeedbackList />} />
-                        <Route path="feedback/:id" element={<FeedbackDetail />} />
-                        <Route path="warranty" element={<WarrantyList />} />
-                        <Route path="warranty/:id" element={<WarrantyDetail />} />
+                        <Route path="notifications" element={withPermission("notifications", <NotificationList />)} />
+                        <Route path="notifications/:productId" element={withPermission("notifications", <NotificationDetail />)} />
+                        <Route path="feedback" element={withPermission("feedback", <FeedbackList />)} />
+                        <Route path="feedback/:id" element={withPermission("feedback", <FeedbackDetail />)} />
+                        <Route path="warranty" element={withPermission("warranty", <WarrantyList />)} />
+                        <Route path="warranty/:id" element={withPermission("warranty", <WarrantyDetail />)} />
                       </Routes>
                     </ReviewProvider>
                   </CartEventProvider>

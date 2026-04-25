@@ -104,7 +104,7 @@ const CartProductList = () => {
               {filtered.map((p, i) => (
                 <div key={p.productId} className="p-4 flex items-center gap-3">
                   {p.image ? (
-                    <img loading="lazy" loading="lazy" src={p.image} alt={p.name} className="w-12 h-12 rounded-xl object-cover border shrink-0" />
+                    <img loading="lazy" src={p.image} alt={p.name} className="w-12 h-12 rounded-xl object-cover border shrink-0" />
                   ) : (
                     <div className="w-12 h-12 rounded-xl bg-gray-100 shrink-0" />
                   )}

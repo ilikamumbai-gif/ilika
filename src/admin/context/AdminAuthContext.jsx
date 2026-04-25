@@ -162,11 +162,49 @@ export const AdminAuthProvider = ({ children }) => {
 
   };
 
+  const refreshAdmin = async () => {
+    const currentAdmin = JSON.parse(localStorage.getItem("admin"));
+    if (!currentAdmin?.id) return;
+
+    try {
+      const res = await fetch(`${API}/admins`, {
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-id": currentAdmin.id,
+        },
+      });
+      if (!res.ok) return;
+
+      const admins = await res.json();
+      const latest = admins.find((item) => item.id === currentAdmin.id);
+      if (!latest) return;
+
+      const mergedAdmin = {
+        ...currentAdmin,
+        role: latest.role || currentAdmin.role,
+        permissions: Array.isArray(latest.permissions) ? latest.permissions : [],
+      };
+
+      setAdmin(mergedAdmin);
+      localStorage.setItem("admin", JSON.stringify(mergedAdmin));
+    } catch (err) {
+      console.log("Admin refresh failed");
+    }
+  };
+
+  const getAdminAuthHeaders = () => {
+    const currentAdmin = JSON.parse(localStorage.getItem("admin"));
+    if (!currentAdmin?.id) return {};
+    return {
+      "x-admin-id": currentAdmin.id,
+    };
+  };
+
 
   return (
 
     <AdminAuthContext.Provider
-      value={{ admin, login, logout }}
+      value={{ admin, login, logout, refreshAdmin, getAdminAuthHeaders }}
     >
 
       {children}

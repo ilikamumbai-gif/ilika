@@ -1315,6 +1315,29 @@ app.delete("/api/categories/:id", async (req, res) => {
 });
 
 /* ============================== ADMIN ============================== */
+const getRequesterAdmin = async (req) => {
+  try {
+    const adminId = String(req.headers["x-admin-id"] || "").trim();
+    if (!adminId) return null;
+
+    const adminDoc = await db.collection("admins").doc(adminId).get();
+    if (!adminDoc.exists) return null;
+
+    return { id: adminDoc.id, ...adminDoc.data() };
+  } catch {
+    return null;
+  }
+};
+
+const requireSuperAdmin = async (req, res) => {
+  const requester = await getRequesterAdmin(req);
+  if (!requester || requester.role !== "superadmin") {
+    res.status(403).json({ error: "Only superadmin can perform this action" });
+    return null;
+  }
+  return requester;
+};
+
 app.post("/api/admin-log", async (req, res) => {
   try {
     const { action = "", message = "", admin = "admin" } = req.body;
@@ -1345,7 +1368,12 @@ app.post("/api/admin-login", async (req, res) => {
     const admin = snapshot.docs[0].data();
     if (admin.password !== password) return res.status(401).json({ error: "Invalid credentials" });
 
-    res.json({ id: snapshot.docs[0].id, username: admin.username, role: admin.role });
+    res.json({
+      id: snapshot.docs[0].id,
+      username: admin.username,
+      role: admin.role || "admin",
+      permissions: Array.isArray(admin.permissions) ? admin.permissions : [],
+    });
   } catch {
     res.status(500).json({ error: "Login failed" });
   }
@@ -1353,8 +1381,25 @@ app.post("/api/admin-login", async (req, res) => {
 
 app.get("/api/admins", async (req, res) => {
   try {
+    const requester = await getRequesterAdmin(req);
+    const canViewPasswords = requester?.role === "superadmin";
     const snapshot = await db.collection("admins").orderBy("createdAt", "desc").get();
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const admins = snapshot.docs.map((doc) => {
+      const data = doc.data() || {};
+      const base = {
+        id: doc.id,
+        username: data.username || "",
+        role: data.role || "admin",
+        permissions: Array.isArray(data.permissions) ? data.permissions : [],
+      };
+
+      if (canViewPasswords) {
+        return { ...base, password: data.password || "" };
+      }
+      return base;
+    });
+
+    res.json(admins);
   } catch {
     res.status(500).json({ error: "Failed to fetch admins" });
   }
@@ -1362,13 +1407,43 @@ app.get("/api/admins", async (req, res) => {
 
 app.post("/api/admins", async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const requester = await requireSuperAdmin(req, res);
+    if (!requester) return;
+
+    const { username, password, role, permissions = [] } = req.body;
     if (!username || !password) return res.status(400).json({ error: "Missing fields" });
 
+    const normalizedRole = role === "superadmin" ? "superadmin" : "admin";
+
+    if (normalizedRole === "superadmin") {
+      const superAdminSnapshot = await db
+        .collection("admins")
+        .where("role", "==", "superadmin")
+        .limit(1)
+        .get();
+      if (!superAdminSnapshot.empty) {
+        return res.status(400).json({ error: "Only one superadmin is allowed" });
+      }
+    }
+
     const docRef = await db.collection("admins").add({
-      username, password, role: role || "admin", createdAt: new Date(),
+      username: String(username).trim(),
+      password: String(password),
+      role: normalizedRole,
+      permissions: normalizedRole === "superadmin"
+        ? []
+        : Array.from(new Set(Array.isArray(permissions) ? permissions : [])),
+      createdAt: new Date(),
     });
-    res.json({ id: docRef.id, username, role });
+
+    res.json({
+      id: docRef.id,
+      username: String(username).trim(),
+      role: normalizedRole,
+      permissions: normalizedRole === "superadmin"
+        ? []
+        : Array.from(new Set(Array.isArray(permissions) ? permissions : [])),
+    });
   } catch {
     res.status(500).json({ error: "Failed to create admin" });
   }
@@ -1376,7 +1451,23 @@ app.post("/api/admins", async (req, res) => {
 
 app.delete("/api/admins/:id", async (req, res) => {
   try {
-    await db.collection("admins").doc(req.params.id).delete();
+    const requester = await requireSuperAdmin(req, res);
+    if (!requester) return;
+
+    if (req.params.id === requester.id) {
+      return res.status(400).json({ error: "Superadmin cannot delete own account" });
+    }
+
+    const targetRef = db.collection("admins").doc(req.params.id);
+    const target = await targetRef.get();
+    if (!target.exists) return res.status(404).json({ error: "Admin not found" });
+
+    const targetData = target.data() || {};
+    if (targetData.role === "superadmin") {
+      return res.status(400).json({ error: "Superadmin account cannot be deleted" });
+    }
+
+    await targetRef.delete();
     res.json({ message: "Admin deleted" });
   } catch {
     res.status(500).json({ error: "Delete failed" });
@@ -1385,11 +1476,52 @@ app.delete("/api/admins/:id", async (req, res) => {
 
 app.put("/api/admins/:id/password", async (req, res) => {
   try {
+    const requester = await requireSuperAdmin(req, res);
+    if (!requester) return;
+
+    const targetRef = db.collection("admins").doc(req.params.id);
+    const target = await targetRef.get();
+    if (!target.exists) return res.status(404).json({ error: "Admin not found" });
+
+    const targetData = target.data() || {};
+    if (targetData.role === "superadmin" && requester.id !== req.params.id) {
+      return res.status(400).json({ error: "Superadmin password can only be changed by self" });
+    }
+
     const { password } = req.body;
-    await db.collection("admins").doc(req.params.id).update({ password });
+    if (!password || String(password).length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+    await targetRef.update({ password: String(password) });
     res.json({ message: "Password updated" });
   } catch {
     res.status(500).json({ error: "Update failed" });
+  }
+});
+
+app.put("/api/admins/:id/permissions", async (req, res) => {
+  try {
+    const requester = await requireSuperAdmin(req, res);
+    if (!requester) return;
+
+    const targetRef = db.collection("admins").doc(req.params.id);
+    const target = await targetRef.get();
+    if (!target.exists) return res.status(404).json({ error: "Admin not found" });
+
+    const targetData = target.data() || {};
+    if ((targetData.role || "admin") === "superadmin") {
+      return res.status(400).json({ error: "Superadmin permissions cannot be modified" });
+    }
+
+    const incomingPermissions = Array.isArray(req.body?.permissions) ? req.body.permissions : [];
+    const normalizedPermissions = Array.from(
+      new Set(incomingPermissions.map((permission) => String(permission).trim()).filter(Boolean))
+    );
+
+    await targetRef.update({ permissions: normalizedPermissions });
+    res.json({ message: "Permissions updated", permissions: normalizedPermissions });
+  } catch {
+    res.status(500).json({ error: "Permission update failed" });
   }
 });
 
@@ -1717,6 +1849,7 @@ const createDefaultAdmin = async () => {
         username: "admin",
         password: "ilika@admin123",
         role: "superadmin",
+        permissions: [],
         createdAt: new Date(),
       });
       console.log("✅ Default Admin Created — username: admin / password: ilika@admin123");

@@ -1,6 +1,7 @@
 import React from "react";
-import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAdminAuth } from "../context/AdminAuthContext";
+import { hasPermission } from "../Utils/permissions";
 import {
   LayoutDashboard, Package, Layers, ShoppingCart, Users,
   X, Gift, Star, ClipboardList, Logs, MessageSquare,
@@ -18,42 +19,52 @@ const NAV_GROUPS = [
   {
     label: "Catalogue",
     items: [
-      { to: "/admin/products",    icon: Package,         label: "Products"       },
-      { to: "/admin/coupons",     icon: TicketPercent,   label: "Coupons"        },
-      { to: "/admin/combos",      icon: Gift,            label: "Combos"         },
-      { to: "/admin/categories",  icon: Layers,          label: "Categories"     },
+      { to: "/admin/products",    icon: Package,         label: "Products", permission: "products"       },
+      { to: "/admin/coupons",     icon: TicketPercent,   label: "Coupons", permission: "coupons"        },
+      { to: "/admin/combos",      icon: Gift,            label: "Combos", permission: "combos"         },
+      { to: "/admin/categories",  icon: Layers,          label: "Categories", permission: "categories"     },
     ]
   },
   {
     label: "Sales",
     items: [
-      { to: "/admin/orders",      icon: ClipboardList,   label: "Orders"         },
-      { to: "/admin/cart-products",icon: ShoppingCart,   label: "Cart Interest"  },
-      { to: "/admin/notifications", icon: Bell, label: "Notifications" }
+      { to: "/admin/orders",      icon: ClipboardList,   label: "Orders", permission: "orders"         },
+      { to: "/admin/cart-products",icon: ShoppingCart,   label: "Cart Interest", permission: "cart-products"  },
+      { to: "/admin/notifications", icon: Bell, label: "Notifications", permission: "notifications" }
     ]
   },
   {
     label: "Community",
     items: [
-      { to: "/admin/users",       icon: Users,           label: "Users"          },
-      { to: "/admin/reviews",     icon: Star,            label: "Reviews"        },
-      { to: "/admin/feedback",    icon: MessageSquare,   label: "Feedback"       },
-      { to: "/admin/warranty",    icon: ShieldIcon,      label: "Warranty"       },
-      { to: "/admin/blogs",       icon: BookOpen,        label: "Blogs"          },
-      { to: "/admin/blog-comments",icon: MessageSquare,  label: "Blog Comments"  },
+      { to: "/admin/users",       icon: Users,           label: "Users", permission: "users"          },
+      { to: "/admin/reviews",     icon: Star,            label: "Reviews", permission: "reviews"        },
+      { to: "/admin/feedback",    icon: MessageSquare,   label: "Feedback", permission: "feedback"       },
+      { to: "/admin/warranty",    icon: ShieldIcon,      label: "Warranty", permission: "warranty"       },
+      { to: "/admin/blogs",       icon: BookOpen,        label: "Blogs", permission: "blogs"          },
+      { to: "/admin/blog-comments",icon: MessageSquare,  label: "Blog Comments", permission: "blogs"  },
     ]
   },
   {
     label: "System",
     items: [
-      { to: "/admin/reports",     icon: FileText,        label: "Reports"        },
-      { to: "/admin/admins",      icon: ShieldIcon,      label: "Manage Admins"  },
-      { to: "/admin/log",         icon: Logs,            label: "Activity Log"   },
+      { to: "/admin/reports",     icon: FileText,        label: "Reports", permission: "reports"        },
+      { to: "/admin/admins",      icon: ShieldIcon,      label: "Manage Admins", permission: "admins"  },
+      { to: "/admin/log",         icon: Logs,            label: "Activity Log", permission: "logs"   },
     ]
   },
 ];
 
 const AdminSidebar = ({ open, onClose }) => {
+  const { admin } = useAdminAuth();
+
+  const visibleGroups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
+      if (!item.permission) return true;
+      return hasPermission(admin, item.permission);
+    }),
+  })).filter((group) => group.items.length > 0);
+
   return (
     <>
       {/* OVERLAY */}
@@ -90,7 +101,7 @@ const AdminSidebar = ({ open, onClose }) => {
 
         {/* NAV */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-          {NAV_GROUPS.map((group) => (
+          {visibleGroups.map((group) => (
             <div key={group.label}>
               <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: "#555" }}>
                 {group.label}
