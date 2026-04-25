@@ -49,7 +49,7 @@ const sendAdminLoginAlert = async ({ username, role, req }) => {
   const transporter = getMailTransporter();
   if (!transporter) {
     console.warn("Admin login alert email skipped: SMTP credentials are missing");
-    return;
+    return { status: "skipped", reason: "missing_smtp_credentials" };
   }
 
   const loginAt = new Date();
@@ -77,6 +77,7 @@ const sendAdminLoginAlert = async ({ username, role, req }) => {
     subject,
     text,
   });
+  return { status: "sent" };
 };
 
 /* ============================== RAZORPAY ============================== */
@@ -1440,14 +1441,31 @@ app.post("/api/admin-login", async (req, res) => {
     if (admin.password !== password) return res.status(401).json({ error: "Invalid credentials" });
     const adminRole = admin.role || "admin";
 
+    let alertEmailStatus = { status: "unknown" };
     try {
-      await sendAdminLoginAlert({
+      alertEmailStatus = await sendAdminLoginAlert({
         username: admin.username,
         role: adminRole,
         req,
       });
     } catch (mailErr) {
+      alertEmailStatus = {
+        status: "failed",
+        reason: mailErr?.message || "unknown_error",
+      };
       console.error("Admin login alert email failed:", mailErr?.message || mailErr);
+    }
+
+    try {
+      await db.collection("adminLogs").add({
+        action: `ADMIN_LOGIN_ALERT_${String(alertEmailStatus.status || "unknown").toUpperCase()}`,
+        admin: admin.username,
+        message: `Login alert email ${alertEmailStatus.status || "unknown"} for ${admin.username}`,
+        emailStatus: alertEmailStatus,
+        createdAt: new Date(),
+      });
+    } catch (logErr) {
+      console.error("Admin login alert log failed:", logErr?.message || logErr);
     }
 
     res.json({
@@ -1455,6 +1473,7 @@ app.post("/api/admin-login", async (req, res) => {
       username: admin.username,
       role: adminRole,
       permissions: Array.isArray(admin.permissions) ? admin.permissions : [],
+      loginAlertEmail: alertEmailStatus,
     });
   } catch {
     res.status(500).json({ error: "Login failed" });
