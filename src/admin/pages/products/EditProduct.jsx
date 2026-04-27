@@ -44,13 +44,10 @@ const EditProduct = () => {
 
 
   const handleUpdate = async (data) => {
-
-    await updateProduct(id, data);
-
-   
-
+    const result = await updateProduct(id, data);
+    console.log("Product update response:", result);
+    console.log("Merchant sync result:", result?.merchantSync || { status: "missing" });
     navigate("/admin/products");
-
   };
 
 

@@ -76,9 +76,13 @@ const fetchProducts = async () => {
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) throw new Error("Failed to add product");
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(payload?.error || "Failed to add product");
+    }
 
     await fetchProducts();
+    return payload;
   };
 
   /* ================= UPDATE PRODUCT ================= */
@@ -89,9 +93,13 @@ const fetchProducts = async () => {
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) throw new Error("Failed to update product");
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(payload?.error || "Failed to update product");
+    }
 
     await fetchProducts();
+    return payload;
   };
 
   /* ================= DELETE PRODUCT ================= */
@@ -100,9 +108,13 @@ const fetchProducts = async () => {
       method: "DELETE",
     });
 
-    if (!res.ok) throw new Error("Failed to delete product");
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(payload?.error || "Failed to delete product");
+    }
 
     await fetchProducts();
+    return payload;
   };
 
   /* ================= GET BY ID ================= */
