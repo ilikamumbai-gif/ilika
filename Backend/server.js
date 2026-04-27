@@ -155,6 +155,20 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
   return { status: "sent" };
 };
 
+const withTimeout = async (promise, timeoutMs = 12000, timeoutLabel = "operation_timeout") => {
+  let timeoutId;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(timeoutLabel)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
+
 /* ============================== GOOGLE MERCHANT ============================== */
 const MERCHANT_CENTER_ACCOUNT_ID =
   process.env.GOOGLE_MERCHANT_ID ||
@@ -1443,11 +1457,20 @@ app.post("/api/payments/verify", async (req, res) => {
       source: orderData.source || "WEBSITE",
       createdAt: new Date(),
     };
-    sendOrderReceivedAlert({ orderId: docRef.id, orderPayload }).catch((err) => {
+    let orderAlertEmail = { status: "unknown" };
+    try {
+      orderAlertEmail = await withTimeout(
+        sendOrderReceivedAlert({ orderId: docRef.id, orderPayload }),
+        12000,
+        "order_alert_email_timeout_paid"
+      );
+      console.log("ORDER ALERT EMAIL (PAID):", orderAlertEmail);
+    } catch (err) {
+      orderAlertEmail = { status: "error", reason: err?.message || "send_failed" };
       console.error("ORDER ALERT EMAIL FAILED (PAID):", err?.message || err);
-    });
+    }
 
-    res.json({ success: true, orderId: docRef.id });
+    res.json({ success: true, orderId: docRef.id, orderAlertEmail });
   } catch (error) {
     console.error("VERIFY PAYMENT ERROR:", error);
     res.status(500).json({ error: "Payment verification failed" });
@@ -1550,11 +1573,20 @@ app.post("/api/orders", async (req, res) => {
       source: detectSource(source),
       createdAt: new Date(),
     };
-    sendOrderReceivedAlert({ orderId: docRef.id, orderPayload }).catch((err) => {
+    let orderAlertEmail = { status: "unknown" };
+    try {
+      orderAlertEmail = await withTimeout(
+        sendOrderReceivedAlert({ orderId: docRef.id, orderPayload }),
+        12000,
+        "order_alert_email_timeout_cod"
+      );
+      console.log("ORDER ALERT EMAIL (COD):", orderAlertEmail);
+    } catch (err) {
+      orderAlertEmail = { status: "error", reason: err?.message || "send_failed" };
       console.error("ORDER ALERT EMAIL FAILED (COD):", err?.message || err);
-    });
+    }
 
-    res.json({ orderId: docRef.id });
+    res.json({ orderId: docRef.id, orderAlertEmail });
   } catch (err) {
     console.error("CREATE ORDER ERROR:", err);
     res.status(500).json({ error: "Failed to place order" });
@@ -1903,6 +1935,41 @@ app.post("/api/merchant/sync-products/:id", async (req, res) => {
   } catch (error) {
     console.error("MERCHANT SYNC ONE FAILED:", error);
     res.status(500).json({ error: "Merchant single-product sync failed" });
+  }
+});
+
+app.post("/api/test/order-alert-email", async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const sampleOrderId = String(payload.orderId || `TEST-${Date.now()}`).trim();
+    const orderPayload = {
+      userEmail: payload.userEmail || "test.user@example.com",
+      totalAmount: Number(payload.totalAmount || 999),
+      paymentStatus: payload.paymentStatus || "Paid",
+      source: payload.source || "WEBSITE",
+      createdAt: new Date(),
+      shippingAddress: {
+        name: payload.name || "Test Customer",
+        phone: payload.phone || "9000000000",
+        addressLine: payload.addressLine || "Test address line",
+        city: payload.city || "Mumbai",
+        state: payload.state || "Maharashtra",
+        pincode: payload.pincode || "400001",
+      },
+      items: Array.isArray(payload.items) && payload.items.length
+        ? payload.items
+        : [{ name: "Test Product", quantity: 1, price: 999 }],
+    };
+
+    const result = await withTimeout(
+      sendOrderReceivedAlert({ orderId: sampleOrderId, orderPayload }),
+      12000,
+      "order_alert_email_timeout_test"
+    );
+    res.json({ message: "Order alert test email attempted", result, to: ORDER_ALERT_EMAIL });
+  } catch (error) {
+    console.error("ORDER ALERT EMAIL TEST FAILED:", error);
+    res.status(500).json({ error: "Order alert email test failed", reason: error?.message || "unknown" });
   }
 });
 
