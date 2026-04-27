@@ -302,6 +302,9 @@ const OrderDetail = () => {
         alternateRowStyles: { fillColor: [248, 248, 252] },
       });
 
+      const footerHeight = 16;
+      const footerTopY = pageHeight - footerHeight;
+
       /* ── TOTALS BLOCK ── */
       const finalY = doc.lastAutoTable.finalY + 8;
       const totalsX = pageWidth - margin - 80;
@@ -338,7 +341,12 @@ const OrderDetail = () => {
       doc.text(formatPrice(total), totalsX + 75, finalY + 31, { align: "right" });
 
       /* ── REVERSE CHARGE NOTE ── */
-      const noteY = finalY + 46;
+      let noteY = finalY + 46;
+      const safeBottomY = footerTopY - 4;
+      const signatureBottomY = noteY + 29;
+      if (signatureBottomY > safeBottomY) {
+        noteY -= signatureBottomY - safeBottomY;
+      }
       doc.setFontSize(7.5);
       doc.setFont(undefined, "normal");
       doc.setTextColor(150, 150, 150);
@@ -358,10 +366,10 @@ const OrderDetail = () => {
 
       /* ── FOOTER (light indigo band) ── */
       doc.setFillColor(241, 241, 250);
-      doc.rect(0, pageHeight - 16, pageWidth, 16, "F");
+      doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
 
       doc.setFillColor(99, 102, 241);
-      doc.rect(0, pageHeight - 16, pageWidth, 1.5, "F");
+      doc.rect(0, pageHeight - footerHeight, pageWidth, 1.5, "F");
 
       doc.setFontSize(7.5);
       doc.setFont(undefined, "normal");
@@ -369,7 +377,7 @@ const OrderDetail = () => {
       doc.text(
         "Thank you for shopping with ILIKA  |  www.ilika.in  |  ilika.official4vs@gmail.com",
         pageWidth / 2,
-        pageHeight - 6,
+        pageHeight - 7,
         { align: "center" }
       );
 

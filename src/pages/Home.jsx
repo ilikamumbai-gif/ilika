@@ -1,16 +1,16 @@
-import React, { Suspense, lazy, useMemo } from "react";
+import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
-import CategoryNav from "../components/CategoryNav";
 import Heading from "../components/Heading";
 import { categoriesData } from "../Dummy/categoriesData";
-import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 
 import { useCategories } from "../admin/context/CategoryContext";
 
 const ProductList = lazy(() => import("../components/ProductList"));
 const Banner = lazy(() => import("../components/Banner"));
+const CategoryNav = lazy(() => import("../components/CategoryNav"));
+const Footer = lazy(() => import("../components/Footer"));
 import PromoCardGrid from "../components/PromoCardGrid";
 
 /* assets (correct import) */
@@ -27,17 +27,46 @@ const skinMobile = "/Images/skinMobile.webp";
 const hairMobile = "/Images/hairMobile.webp";
 const BannerStyle = "/Images/Banner.webp";
 
-const DeferredSection = ({ children, minHeight = 320, className = "" }) => (
-  <section
-    className={className}
-    style={{
-      contentVisibility: "auto",
-      containIntrinsicSize: `1px ${minHeight}px`,
-    }}
-  >
-    {children}
-  </section>
-);
+const LazyMountSection = ({
+  children,
+  minHeight = 320,
+  className = "",
+  rootMargin = "300px 0px",
+}) => {
+  const sectionRef = useRef(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setIsMounted(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [rootMargin]);
+
+  return (
+    <section
+      ref={sectionRef}
+      className={className}
+      style={{
+        contentVisibility: "auto",
+        containIntrinsicSize: `1px ${minHeight}px`,
+      }}
+    >
+      {isMounted ? children : <div style={{ minHeight }} />}
+    </section>
+  );
+};
 
 const Home = () => {
 
@@ -66,21 +95,21 @@ const Home = () => {
           <PromoCardGrid />
 
 
-          <DeferredSection minHeight={380}>
+          <LazyMountSection minHeight={380}>
             <Suspense fallback={<div className="h-36" />}>
               <Offers />
             </Suspense>
-          </DeferredSection>
+          </LazyMountSection>
 
 
-          <DeferredSection minHeight={220}>
+          <LazyMountSection minHeight={220}>
             <Suspense fallback={<div className="h-40" />}>
               {/* CATEGORY NAV */}
               <CategoryNav categories={categoriesData} />
             </Suspense>
-          </DeferredSection>
+          </LazyMountSection>
 
-          <DeferredSection minHeight={600}>
+          <LazyMountSection minHeight={600}>
             <Suspense fallback={<div className="h-40" />}>
               <Heading heading="OUR TOP PRODUCTS" />
 
@@ -95,10 +124,10 @@ const Home = () => {
                 limit={8}
               />
             </Suspense>
-          </DeferredSection>
+          </LazyMountSection>
 
 
-          <DeferredSection minHeight={620}>
+          <LazyMountSection minHeight={620}>
             <Suspense fallback={<div className="h-40" />}>
 
               {/* SKIN CARE */}
@@ -127,11 +156,11 @@ const Home = () => {
                 </p>
               )}
             </Suspense>
-          </DeferredSection>
+          </LazyMountSection>
 
 
 
-          <DeferredSection minHeight={620}>
+          <LazyMountSection minHeight={620}>
             <Suspense fallback={<div className="h-40" />}>
 
               {/* APPLIANCES */}
@@ -155,11 +184,11 @@ const Home = () => {
                 </p>
               )}
             </Suspense>
-          </DeferredSection>
+          </LazyMountSection>
 
 
 
-          <DeferredSection minHeight={620}>
+          <LazyMountSection minHeight={620}>
             <Suspense fallback={<div className="h-40" />}>
 
 
@@ -189,27 +218,29 @@ const Home = () => {
                 </p>
               )}
             </Suspense>
-          </DeferredSection>
+          </LazyMountSection>
 
 
           {/* MANIFESTO */}
-          <DeferredSection minHeight={200}>
+          <LazyMountSection minHeight={200}>
             <Suspense fallback={<div className="h-24" />}>
               <Menifesto />
             </Suspense>
-          </DeferredSection>
+          </LazyMountSection>
 
 
           {/* TESTIMONIAL */}
-          <DeferredSection minHeight={440}>
+          <LazyMountSection minHeight={440}>
             <Heading heading="COSTUMER'S STORIES" />
             <Suspense fallback={<div className="h-24" />}>
               <TestimonialList />
             </Suspense>
-          </DeferredSection>
+          </LazyMountSection>
 
 
-          <Footer />
+          <Suspense fallback={<div className="h-32" />}>
+            <Footer />
+          </Suspense>
         </main>
 
       </div>

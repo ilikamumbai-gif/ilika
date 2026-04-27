@@ -18,15 +18,16 @@ const MaskDuoOffer = () => {
   ];
 
   const FREE_MASK_NAMES = [
-    "collagen sheet mask | firming & anti-aging",
-    "red algae hydrating sheet mask | hydration & radiance",
-    "tea tree face sheet mask | hydration & acne-control",
-    "cucumber sheet mask | acne control",
-    "kakadu plum sheet mask | glowing & youthful skin",
-    "kumkumadi face sheet mask | hydration & rejuvenation",
-    "ginseng anti-aging sheet mask | anti-aging & revitalizing",
-    "alpha arbutin sheet mask | bright & spotless skin",
-    "acai berry face sheet mask | antiwrinkle",
+    // "collagen sheet mask | firming & anti-aging",
+    // "red algae hydrating sheet mask | hydration & radiance",
+    // "tea tree face sheet mask | hydration & acne-control",
+    // "cucumber sheet mask | acne control",
+    // "kakadu plum sheet mask | glowing & youthful skin",
+    // "kumkumadi face sheet mask | hydration & rejuvenation",
+    // "ginseng anti-aging sheet mask | anti-aging & revitalizing",
+    // "alpha arbutin sheet mask | bright & spotless skin",
+    // "acai berry face sheet mask | antiwrinkle",
+    "hydra gel face moisturizer | for dry & dehydrated skin | 50g",
   ];
 
   const maskProducts = products.filter(
