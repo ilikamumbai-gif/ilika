@@ -1938,41 +1938,6 @@ app.post("/api/merchant/sync-products/:id", async (req, res) => {
   }
 });
 
-app.post("/api/test/order-alert-email", async (req, res) => {
-  try {
-    const payload = req.body || {};
-    const sampleOrderId = String(payload.orderId || `TEST-${Date.now()}`).trim();
-    const orderPayload = {
-      userEmail: payload.userEmail || "test.user@example.com",
-      totalAmount: Number(payload.totalAmount || 999),
-      paymentStatus: payload.paymentStatus || "Paid",
-      source: payload.source || "WEBSITE",
-      createdAt: new Date(),
-      shippingAddress: {
-        name: payload.name || "Test Customer",
-        phone: payload.phone || "9000000000",
-        addressLine: payload.addressLine || "Test address line",
-        city: payload.city || "Mumbai",
-        state: payload.state || "Maharashtra",
-        pincode: payload.pincode || "400001",
-      },
-      items: Array.isArray(payload.items) && payload.items.length
-        ? payload.items
-        : [{ name: "Test Product", quantity: 1, price: 999 }],
-    };
-
-    const result = await withTimeout(
-      sendOrderReceivedAlert({ orderId: sampleOrderId, orderPayload }),
-      12000,
-      "order_alert_email_timeout_test"
-    );
-    res.json({ message: "Order alert test email attempted", result, to: ORDER_ALERT_EMAIL });
-  } catch (error) {
-    console.error("ORDER ALERT EMAIL TEST FAILED:", error);
-    res.status(500).json({ error: "Order alert email test failed", reason: error?.message || "unknown" });
-  }
-});
-
 app.post("/api/admin-log", async (req, res) => {
   try {
     const { action = "", message = "", admin = "admin" } = req.body;
