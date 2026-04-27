@@ -75,12 +75,21 @@ const toAbsoluteUrl = (value = "", fallbackOrigin = merchantConfig.siteUrl) => {
 
 const isPublicHttpUrl = (value = "") => /^https?:\/\//i.test(String(value || "").trim());
 
+const readImageValue = (value) => {
+  if (typeof value === "string") return value.trim();
+  if (value && typeof value === "object") {
+    const candidate = value.url || value.image || value.src || "";
+    return typeof candidate === "string" ? candidate.trim() : "";
+  }
+  return "";
+};
+
 const sanitizeMerchantImageCandidates = (values = []) => {
   const seen = new Set();
   const clean = [];
 
   values
-    .map((value) => String(value || "").trim())
+    .map((value) => readImageValue(value))
     .filter(Boolean)
     .forEach((value) => {
       const key = value.toLowerCase();
@@ -94,7 +103,17 @@ const sanitizeMerchantImageCandidates = (values = []) => {
 
 const getPrimaryImage = (product = {}) => {
   const imageList = Array.isArray(product.images) ? product.images : [];
-  const normalized = sanitizeMerchantImageCandidates([product.image, product.imageUrl, ...imageList])
+  const variantImages = Array.isArray(product?.variants)
+    ? product.variants.flatMap((variant) =>
+        Array.isArray(variant?.images) ? variant.images : []
+      )
+    : [];
+  const normalized = sanitizeMerchantImageCandidates([
+    product.image,
+    product.imageUrl,
+    ...imageList,
+    ...variantImages,
+  ])
     .map((value) => toAbsoluteUrl(value))
     .filter((value) => isPublicHttpUrl(value));
   return normalized[0] || "";
@@ -125,6 +144,11 @@ const mapProductForMerchant = ({ product = {}, productId = "" }) => {
     product.image,
     product.imageUrl,
     ...(Array.isArray(product.images) ? product.images : []),
+    ...(Array.isArray(product?.variants)
+      ? product.variants.flatMap((variant) =>
+          Array.isArray(variant?.images) ? variant.images : []
+        )
+      : []),
   ])
     .map((img) => toAbsoluteUrl(img))
     .filter((img) => isPublicHttpUrl(img));

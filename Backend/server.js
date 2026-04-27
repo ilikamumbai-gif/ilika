@@ -154,12 +154,21 @@ const normalizeAbsoluteUrl = (value = "", siteBase = "https://ilika.in") => {
 
 const isPublicHttpUrl = (value = "") => /^https?:\/\//i.test(String(value || "").trim());
 
+const readImageValue = (value) => {
+  if (typeof value === "string") return value.trim();
+  if (value && typeof value === "object") {
+    const candidate = value.url || value.image || value.src || "";
+    return typeof candidate === "string" ? candidate.trim() : "";
+  }
+  return "";
+};
+
 const sanitizeMerchantImageCandidates = (values = []) => {
   const seen = new Set();
   const clean = [];
 
   values
-    .map((value) => String(value || "").trim())
+    .map((value) => readImageValue(value))
     .filter(Boolean)
     .forEach((value) => {
       const key = value.toLowerCase();
@@ -173,7 +182,18 @@ const sanitizeMerchantImageCandidates = (values = []) => {
 
 const getMerchantImageCandidates = (product = {}) => {
   const imageList = Array.isArray(product?.images) ? product.images : [];
-  return sanitizeMerchantImageCandidates([product?.image, product?.imageUrl, ...imageList]);
+  const variantImages = Array.isArray(product?.variants)
+    ? product.variants.flatMap((variant) =>
+        Array.isArray(variant?.images) ? variant.images : []
+      )
+    : [];
+
+  return sanitizeMerchantImageCandidates([
+    product?.image,
+    product?.imageUrl,
+    ...imageList,
+    ...variantImages,
+  ]);
 };
 
 const getSiteBaseUrl = () =>
