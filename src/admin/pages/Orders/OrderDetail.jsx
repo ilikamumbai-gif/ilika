@@ -32,20 +32,20 @@ const getImage = (item) =>
 /* ─────────────────── STATUS / SOURCE CONFIG ─────────────────── */
 
 const STATUS_CONFIG = {
-  Placed: { color: "bg-blue-100 text-blue-700 border-blue-300", icon: <Package size={13} />, label: "Placed" },
-  Shipped: { color: "bg-purple-100 text-purple-700 border-purple-300", icon: <Truck size={13} />, label: "Shipped" },
-  Delivered: { color: "bg-green-100 text-green-700 border-green-300", icon: <CheckCircle size={13} />, label: "Delivered" },
-  Cancelled: { color: "bg-red-100 text-red-700 border-red-300", icon: <XCircle size={13} />, label: "Cancelled" },
+  Placed:    { color: "bg-blue-100 text-blue-700 border-blue-300",      icon: <Package size={13} />,     label: "Placed" },
+  Shipped:   { color: "bg-purple-100 text-purple-700 border-purple-300", icon: <Truck size={13} />,      label: "Shipped" },
+  Delivered: { color: "bg-green-100 text-green-700 border-green-300",   icon: <CheckCircle size={13} />, label: "Delivered" },
+  Cancelled: { color: "bg-red-100 text-red-700 border-red-300",         icon: <XCircle size={13} />,     label: "Cancelled" },
 };
 
-const SOURCE_CONFIG = {
-  FB: { color: "bg-blue-600", label: "Facebook" },
-  FB_ADS: { color: "bg-blue-800", label: "FB Ads" },
-  INSTA: { color: "bg-pink-500", label: "Instagram" },
-  INSTA_ADS: { color: "bg-pink-700", label: "Insta Ads" },
-  GOOGLE: { color: "bg-yellow-500", label: "Google" },
-  GOOGLE_ADS: { color: "bg-yellow-700", label: "Google Ads" },
-  WEBSITE: { color: "bg-gray-500", label: "Website" },
+const SOURCE_STYLES = {
+  "Facebook":   "bg-blue-600",
+  "FB Ads":     "bg-blue-800",
+  "Instagram":  "bg-pink-500",
+  "Insta Ads":  "bg-pink-700",
+  "Google":     "bg-yellow-500",
+  "Google Ads": "bg-yellow-700",
+  "Website":    "bg-gray-500",
 };
 
 /* ─────────────────── REUSABLE BITS ─────────────────── */
@@ -88,13 +88,13 @@ const OrderDetail = () => {
     );
   }
 
-  const total = order.totalAmount || order.total || 0;
-  const statusCfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.Placed;
-  const srcKey = (order.source || "WEBSITE").toUpperCase();
-  const srcCfg = SOURCE_CONFIG[srcKey] || SOURCE_CONFIG.WEBSITE;
-  const isPaid = order.paymentStatus === "Paid";
-  const itemCount = order.items?.length || 0;
-  const addr = order.shippingAddress || {};
+  const total      = order.totalAmount || order.total || 0;
+  const statusCfg  = STATUS_CONFIG[order.status] || STATUS_CONFIG.Placed;
+  const srcDisplay = normalizeSource(order.source);
+  const srcColor   = SOURCE_STYLES[srcDisplay] || SOURCE_STYLES.Website;
+  const isPaid     = order.paymentStatus === "Paid";
+  const itemCount  = order.items?.length || 0;
+  const addr       = order.shippingAddress || {};
 
   const handleStatusChange = async (newStatus) => {
     setStatusUpdating(true);
@@ -105,10 +105,11 @@ const OrderDetail = () => {
 
   /* ─── PDF ─── */
   const downloadInvoice = async () => {
-    const doc = new jsPDF();
-    const margin = 14;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
+    const doc          = new jsPDF();
+    const margin       = 14;
+    const pageWidth    = doc.internal.pageSize.getWidth();
+    const pageHeight   = doc.internal.pageSize.getHeight();
+    const footerHeight = 16;
 
     const date = new Date(order.createdAt?._seconds * 1000 || order.createdAt);
     const invoiceNumber =
@@ -122,56 +123,68 @@ const OrderDetail = () => {
     const formatPrice = (v) =>
       `Rs. ${Number(v).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
 
+    /* ── draw footer on current page ── */
+    const drawFooter = () => {
+      doc.setFillColor(241, 241, 250);
+      doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
+      doc.setFillColor(99, 102, 241);
+      doc.rect(0, pageHeight - footerHeight, pageWidth, 1.5, "F");
+      doc.setFontSize(7.5);
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(80, 80, 120);
+      doc.text(
+        "Thank you for shopping with ILIKA  |  www.ilika.in  |  ilika.official4vs@gmail.com",
+        pageWidth / 2,
+        pageHeight - 7,
+        { align: "center" }
+      );
+    };
+
     const logo = new Image();
     logo.crossOrigin = "anonymous";
     logo.src = "/Images/logo2.webp";
 
     logo.onload = () => {
-      /* ── HEADER (white bg, logo left, title right) ── */
-      doc.setFillColor(255, 255, 255);
-      doc.rect(0, 0, pageWidth, 40, "F");
 
+      /* ── PAGE 1 HEADER ── */
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, pageWidth, 34, "F");
+      doc.setFillColor(99, 102, 241);
+      doc.rect(0, 34, pageWidth, 2, "F");
+      doc.setFillColor(248, 248, 250);
+      doc.rect(0, 36, pageWidth, 1, "F");
+
+      /* logo */
       const logoCanvas = document.createElement("canvas");
-      logoCanvas.width = logo.naturalWidth || logo.width;
+      logoCanvas.width  = logo.naturalWidth  || logo.width;
       logoCanvas.height = logo.naturalHeight || logo.height;
       const logoCtx = logoCanvas.getContext("2d");
       if (logoCtx) {
         logoCtx.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
         logoCtx.drawImage(logo, 0, 0);
-        const logoPngDataUrl = logoCanvas.toDataURL("image/png");
-        doc.addImage(logoPngDataUrl, "PNG", margin, 8, 36, 14);
+        doc.addImage(logoCanvas.toDataURL("image/png"), "PNG", margin, 6, 34, 12.5);
       }
 
       doc.setTextColor(30, 30, 30);
       doc.setFontSize(22);
       doc.setFont(undefined, "bold");
-      doc.text("TAX INVOICE", pageWidth - margin, 18, { align: "right" });
+      doc.text("TAX INVOICE", pageWidth - margin, 16, { align: "right" });
 
       doc.setFontSize(8.5);
       doc.setFont(undefined, "normal");
       doc.setTextColor(120, 120, 120);
-      doc.text("PTCGRAM PRIVATE LIMITED  |  www.ilika.in", pageWidth - margin, 27, { align: "right" });
-
-      /* ── INDIGO ACCENT LINE ── */
-      doc.setFillColor(99, 102, 241);
-      doc.rect(0, 40, pageWidth, 2, "F");
-
-      /* ── LIGHT GRAY SEPARATOR UNDER ACCENT ── */
-      doc.setFillColor(248, 248, 250);
-      doc.rect(0, 42, pageWidth, 1, "F");
+      doc.text("PTCGRAM PRIVATE LIMITED  |  www.ilika.in", pageWidth - margin, 24, { align: "right" });
 
       /* ── INVOICE META (left column) ── */
-      let y = 55;
+      let y = 47;
       doc.setFontSize(8);
-
       const metaLeft = [
-        ["Invoice No", invoiceNumber],
-        ["Invoice Date", date.toLocaleDateString("en-IN")],
-        ["Order ID", order.id],
+        ["Invoice No",     invoiceNumber],
+        ["Invoice Date",   date.toLocaleDateString("en-IN")],
+        ["Order ID",       order.id],
         ["Payment Method", order.paymentMethod === "ONLINE" ? "Online (Razorpay)" : "Cash on Delivery"],
         ["Payment Status", order.paymentStatus],
       ];
-
       metaLeft.forEach(([label, val]) => {
         doc.setFont(undefined, "normal");
         doc.setTextColor(130, 130, 130);
@@ -179,69 +192,86 @@ const OrderDetail = () => {
         doc.setFont(undefined, "bold");
         doc.setTextColor(30, 30, 30);
         doc.text(String(val), margin + 34, y);
-        y += 7;
+        y += 6;
       });
 
       /* ── ADDRESS BOXES (right half) ── */
-      const boxTop = 55;
+      const boxTop = 44;
       const boxMid = pageWidth / 2 + 4;
-      const boxW = pageWidth - boxMid - margin;
+      const boxW   = pageWidth - boxMid - margin;
 
-      // Sold By box
+      /* ── SOLD BY box — height calculated from content ── */
+      const soldByLines = [
+        "Office No. 201-202, Hirubai Residency",
+        "Virar (West) - 401303, Maharashtra, India",
+        "+91 91208 79879",
+        "GSTIN: 27AALCP9913F1Z2",
+        "ilika.official4vs@gmail.com",
+      ];
+      // label row (5.2) + company name (4.8) + lines + top padding (8) + bottom padding (5)
+      const soldByHeight = 8 + 5.2 + 4.8 + soldByLines.length * 4.2 + 5;
+
       doc.setDrawColor(220, 220, 230);
       doc.setFillColor(250, 250, 253);
-      doc.roundedRect(boxMid, boxTop, boxW, 50, 3, 3, "FD");
+      doc.roundedRect(boxMid, boxTop, boxW, soldByHeight, 3, 3, "FD");
 
       let bY = boxTop + 8;
       doc.setFontSize(7);
       doc.setFont(undefined, "bold");
       doc.setTextColor(99, 102, 241);
-      doc.text("SOLD BY", boxMid + 5, bY); bY += 6;
+      doc.text("SOLD BY", boxMid + 5, bY); bY += 5.2;
 
       doc.setFont(undefined, "bold");
       doc.setFontSize(8);
       doc.setTextColor(20, 20, 20);
-      doc.text("PTCGRAM PRIVATE LIMITED", boxMid + 5, bY); bY += 5.5;
+      doc.text("PTCGRAM PRIVATE LIMITED", boxMid + 5, bY); bY += 4.8;
 
       doc.setFont(undefined, "normal");
       doc.setFontSize(7.5);
       doc.setTextColor(80, 80, 80);
-      [
-        "310 Padmi Bai Tower",
-        "Near Virar Railway Station Subway East",
-        "Thane, Maharashtra 401303",
-        "GSTIN: 27AALCP9913F1Z2",
-        "ilika.official4vs@gmail.com",
-      ].forEach((line) => { doc.text(line, boxMid + 5, bY); bY += 5; });
+      soldByLines.forEach((line) => { doc.text(line, boxMid + 5, bY); bY += 4.2; });
 
-      // Ship To box
-      const shipTop = boxTop + 56;
+      /* ── SHIP TO box — fully dynamic height + word-wrap ── */
+      const shipTop = boxTop + soldByHeight + 4;  // ← defined HERE, after soldByHeight
+
+      // set font before splitTextToSize so measurements are accurate
+      doc.setFontSize(7.5);
+      const rawShipLines = [
+        addr.addressLine || addr.line || "",
+        `${addr.city || ""}, ${addr.state || ""} ${addr.pincode || ""}`.trim(),
+        addr.phone ? `Phone: ${addr.phone}` : "",
+      ].filter(Boolean);
+
+      // pre-wrap all lines so we can calculate the exact box height
+      const wrappedShipLines = rawShipLines.flatMap(
+        (line) => doc.splitTextToSize(line, boxW - 10)
+      );
+
+      // label row (5.2) + name row (4.8) + wrapped lines + top padding (8) + bottom padding (5)
+      const shipHeight = 8 + 5.2 + 4.8 + wrappedShipLines.length * 4.2 + 5;
+
       doc.setDrawColor(220, 220, 230);
       doc.setFillColor(250, 250, 253);
-      doc.roundedRect(boxMid, shipTop, boxW, 44, 3, 3, "FD");
+      doc.roundedRect(boxMid, shipTop, boxW, shipHeight, 3, 3, "FD");
 
       let sY = shipTop + 8;
       doc.setFontSize(7);
       doc.setFont(undefined, "bold");
       doc.setTextColor(99, 102, 241);
-      doc.text("SHIP TO", boxMid + 5, sY); sY += 6;
+      doc.text("SHIP TO", boxMid + 5, sY); sY += 5.2;
 
       doc.setFont(undefined, "bold");
       doc.setFontSize(8);
       doc.setTextColor(20, 20, 20);
-      doc.text(addr.name || "", boxMid + 5, sY); sY += 5.5;
+      doc.text(addr.name || "", boxMid + 5, sY); sY += 4.8;
 
       doc.setFont(undefined, "normal");
       doc.setFontSize(7.5);
       doc.setTextColor(80, 80, 80);
-      [
-        addr.addressLine || addr.line || "",
-        `${addr.city || ""}, ${addr.state || ""} ${addr.pincode || ""}`,
-        `Phone: ${addr.phone || ""}`,
-      ].filter(Boolean).forEach((line) => { doc.text(line, boxMid + 5, sY); sY += 5; });
+      wrappedShipLines.forEach((line) => { doc.text(line, boxMid + 5, sY); sY += 4.2; });
 
       /* ── ORDER ITEMS SECTION LABEL ── */
-      const tableStartY = Math.max(shipTop + 44 + 10, 122);
+      const tableStartY = Math.max(shipTop + shipHeight + 10, 130);
 
       doc.setFillColor(241, 241, 248);
       doc.rect(margin, tableStartY - 7, pageWidth - margin * 2, 7, "F");
@@ -250,14 +280,17 @@ const OrderDetail = () => {
       doc.setTextColor(99, 102, 241);
       doc.text("ORDER ITEMS", margin + 3, tableStartY - 1.5);
 
-      /* ── PRODUCT TABLE ── */
+      /* ── PRODUCT TABLE (auto multi-page) ── */
       autoTable(doc, {
         startY: tableStartY,
         margin: { left: margin, right: margin },
+        pageBreak: "auto",
+        rowPageBreak: "auto",
+        showHead: "everyPage",
         head: [["#", "Product", "HSN", "Qty", "Unit Price", "Discount", "Taxable Value", "IGST", "Total"]],
         body: order.items.map((item, i) => {
-          const qty = item.quantity || 1;
-          const price = item.price || 0;
+          const qty       = item.quantity || 1;
+          const price     = item.price    || 0;
           const itemTotal = qty * price;
           return [
             i + 1,
@@ -280,8 +313,8 @@ const OrderDetail = () => {
           lineWidth: 0.3,
         },
         headStyles: {
-          fillColor: [241, 241, 248],   // light indigo-tinted gray
-          textColor: [60, 60, 100],      // dark indigo-ish
+          fillColor: [241, 241, 248],
+          textColor: [60, 60, 100],
           fontStyle: "bold",
           fontSize: 8,
           halign: "center",
@@ -293,23 +326,27 @@ const OrderDetail = () => {
           1: { cellWidth: 50 },
           2: { halign: "center", cellWidth: 18 },
           3: { halign: "center", cellWidth: 10 },
-          4: { halign: "right", cellWidth: 22 },
+          4: { halign: "right",  cellWidth: 22 },
           5: { halign: "center", cellWidth: 16 },
-          6: { halign: "right", cellWidth: 24 },
+          6: { halign: "right",  cellWidth: 24 },
           7: { halign: "center", cellWidth: 12 },
-          8: { halign: "right", cellWidth: 22 },
+          8: { halign: "right",  cellWidth: 22 },
         },
         alternateRowStyles: { fillColor: [248, 248, 252] },
+        didDrawPage: () => { drawFooter(); },
       });
 
-      const footerHeight = 16;
-      const footerTopY = pageHeight - footerHeight;
-
       /* ── TOTALS BLOCK ── */
-      const finalY = doc.lastAutoTable.finalY + 8;
+      const lastFinalY     = doc.lastAutoTable.finalY;
+      const remainingSpace = pageHeight - footerHeight - lastFinalY;
+      if (remainingSpace < 72) {
+        doc.addPage();
+        drawFooter();
+      }
+
+      const finalY  = doc.lastAutoTable.finalY + 8;
       const totalsX = pageWidth - margin - 80;
 
-      // Outer card
       doc.setDrawColor(220, 220, 230);
       doc.setFillColor(250, 250, 253);
       doc.roundedRect(totalsX, finalY, 80, 34, 3, 3, "FD");
@@ -323,15 +360,12 @@ const OrderDetail = () => {
       doc.setFont(undefined, "bold");
       doc.setTextColor(30, 30, 30);
       doc.text(formatPrice(total), totalsX + 75, finalY + 10, { align: "right" });
-
       doc.setTextColor(22, 163, 74);
       doc.text("FREE", totalsX + 75, finalY + 19, { align: "right" });
 
-      // Divider line inside card
       doc.setDrawColor(210, 210, 225);
       doc.line(totalsX + 4, finalY + 23, totalsX + 76, finalY + 23);
 
-      // Grand total row (indigo tint instead of black)
       doc.setFillColor(238, 238, 255);
       doc.roundedRect(totalsX + 1, finalY + 25, 78, 8, 2, 2, "F");
       doc.setFontSize(9);
@@ -340,19 +374,19 @@ const OrderDetail = () => {
       doc.text("GRAND TOTAL", totalsX + 5, finalY + 31);
       doc.text(formatPrice(total), totalsX + 75, finalY + 31, { align: "right" });
 
-      /* ── REVERSE CHARGE NOTE ── */
-      let noteY = finalY + 46;
-      const safeBottomY = footerTopY - 4;
+      /* ── REVERSE CHARGE NOTE + SIGNATURE ── */
+      const footerTopY       = pageHeight - footerHeight;
+      let noteY              = finalY + 46;
       const signatureBottomY = noteY + 29;
-      if (signatureBottomY > safeBottomY) {
-        noteY -= signatureBottomY - safeBottomY;
+      if (signatureBottomY > footerTopY - 4) {
+        noteY -= signatureBottomY - (footerTopY - 4);
       }
+
       doc.setFontSize(7.5);
       doc.setFont(undefined, "normal");
       doc.setTextColor(150, 150, 150);
       doc.text("* Tax payable under reverse charge: No", margin, noteY);
 
-      /* ── SIGNATURE ── */
       const sigX = pageWidth - margin - 62;
       doc.setDrawColor(180, 180, 200);
       doc.line(sigX, noteY + 18, pageWidth - margin, noteY + 18);
@@ -363,23 +397,6 @@ const OrderDetail = () => {
       doc.setFont(undefined, "bold");
       doc.setTextColor(40, 40, 40);
       doc.text("PTCGRAM PRIVATE LIMITED", sigX, noteY + 29);
-
-      /* ── FOOTER (light indigo band) ── */
-      doc.setFillColor(241, 241, 250);
-      doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
-
-      doc.setFillColor(99, 102, 241);
-      doc.rect(0, pageHeight - footerHeight, pageWidth, 1.5, "F");
-
-      doc.setFontSize(7.5);
-      doc.setFont(undefined, "normal");
-      doc.setTextColor(80, 80, 120);
-      doc.text(
-        "Thank you for shopping with ILIKA  |  www.ilika.in  |  ilika.official4vs@gmail.com",
-        pageWidth / 2,
-        pageHeight - 7,
-        { align: "center" }
-      );
 
       doc.save(`invoice_${invoiceNumber}.pdf`);
     };
@@ -408,8 +425,8 @@ const OrderDetail = () => {
           <div>
             <div className="flex items-center flex-wrap gap-2">
               <h1 className="text-xl font-bold text-gray-900">Order #{order.id.slice(-10)}</h1>
-              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold text-white rounded-full ${srcCfg.color}`}>
-                <Globe size={11} /> {srcCfg.label}
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold text-white rounded-full ${srcColor}`}>
+                <Globe size={11} /> {srcDisplay}
               </span>
               <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold border rounded-full ${statusCfg.color}`}>
                 {statusCfg.icon} {statusCfg.label}
@@ -454,10 +471,10 @@ const OrderDetail = () => {
       {/* ══ STAT PILLS ══ */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         {[
-          { label: "Order Total", value: `₹${total.toLocaleString("en-IN")}`, bg: "bg-green-50", border: "border-green-200", text: "text-green-800" },
-          { label: "Total Items", value: `${itemCount} item${itemCount !== 1 ? "s" : ""}`, bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-800" },
-          { label: "Payment", value: order.paymentStatus, bg: isPaid ? "bg-emerald-50" : "bg-orange-50", border: isPaid ? "border-emerald-200" : "border-orange-200", text: isPaid ? "text-emerald-800" : "text-orange-800" },
-          { label: "Method", value: order.paymentMethod === "ONLINE" ? "Online Pay" : "Cash on Delivery", bg: "bg-gray-50", border: "border-gray-200", text: "text-gray-800" },
+          { label: "Order Total", value: `₹${total.toLocaleString("en-IN")}`,                                  bg: "bg-green-50",                            border: "border-green-200",                            text: "text-green-800" },
+          { label: "Total Items", value: `${itemCount} item${itemCount !== 1 ? "s" : ""}`,                      bg: "bg-blue-50",                             border: "border-blue-200",                             text: "text-blue-800" },
+          { label: "Payment",     value: order.paymentStatus,                                                    bg: isPaid ? "bg-emerald-50" : "bg-orange-50", border: isPaid ? "border-emerald-200" : "border-orange-200", text: isPaid ? "text-emerald-800" : "text-orange-800" },
+          { label: "Method",      value: order.paymentMethod === "ONLINE" ? "Online Pay" : "Cash on Delivery",  bg: "bg-gray-50",                             border: "border-gray-200",                             text: "text-gray-800" },
         ].map((s) => (
           <div key={s.label} className={`${s.bg} ${s.border} border rounded-xl px-4 py-3`}>
             <p className="text-xs text-gray-400 mb-0.5">{s.label}</p>
@@ -469,25 +486,22 @@ const OrderDetail = () => {
       {/* ══ INFO GRID ══ */}
       <div className="grid lg:grid-cols-3 gap-4 mb-5">
 
-        {/* Customer */}
         <SectionCard icon={<User size={15} />} title="Customer Info">
           <InfoRow label="Full Name" value={addr.name || order.shippingAddress?.name} />
-          <InfoRow label="Email" value={order.userEmail} />
-          <InfoRow label="Phone" value={addr.phone} />
-          <InfoRow label="User ID" value={order.userId ? `…${order.userId.slice(-12)}` : "—"} />
+          <InfoRow label="Email"     value={order.userEmail} />
+          <InfoRow label="Phone"     value={addr.phone} />
+          <InfoRow label="User ID"   value={order.userId ? `…${order.userId.slice(-12)}` : "—"} />
         </SectionCard>
 
-        {/* Shipping */}
         <SectionCard icon={<MapPin size={15} />} title="Shipping Address">
-          <InfoRow label="Name" value={addr.name} />
+          <InfoRow label="Name"    value={addr.name} />
           <InfoRow label="Address" value={addr.addressLine || addr.line} />
-          <InfoRow label="City" value={addr.city} />
-          <InfoRow label="State" value={addr.state} />
+          <InfoRow label="City"    value={addr.city} />
+          <InfoRow label="State"   value={addr.state} />
           <InfoRow label="Pincode" value={addr.pincode} />
-          <InfoRow label="Phone" value={addr.phone} />
+          <InfoRow label="Phone"   value={addr.phone} />
         </SectionCard>
 
-        {/* Payment & Source */}
         <SectionCard icon={<CreditCard size={15} />} title="Payment & Source">
           <InfoRow label="Status" value={
             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isPaid ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
@@ -499,14 +513,12 @@ const OrderDetail = () => {
             <InfoRow label="Payment ID" value={order.razorpay_payment_id} />
           )}
           <InfoRow label="Source" value={
-            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold text-white ${srcCfg.color}`}>
-              {srcCfg.label}
+            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold text-white ${srcColor}`}>
+              {srcDisplay}
             </span>
           } />
           <InfoRow label="Ordered At" value={formatDateTime(order.createdAt)} />
-          {order.paidAt && (
-            <InfoRow label="Paid At" value={formatDateTime(order.paidAt)} />
-          )}
+          {order.paidAt && <InfoRow label="Paid At" value={formatDateTime(order.paidAt)} />}
         </SectionCard>
       </div>
 
@@ -516,12 +528,12 @@ const OrderDetail = () => {
           <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="pb-3 text-left text-xs text-gray-400 font-semibold uppercase tracking-wide w-8">#</th>
-                <th className="pb-3 text-left text-xs text-gray-400 font-semibold uppercase tracking-wide">Product</th>
+                <th className="pb-3 text-left   text-xs text-gray-400 font-semibold uppercase tracking-wide w-8">#</th>
+                <th className="pb-3 text-left   text-xs text-gray-400 font-semibold uppercase tracking-wide">Product</th>
                 <th className="pb-3 text-center text-xs text-gray-400 font-semibold uppercase tracking-wide">Qty</th>
-                <th className="pb-3 text-right text-xs text-gray-400 font-semibold uppercase tracking-wide">Unit Price</th>
-                <th className="pb-3 text-right text-xs text-gray-400 font-semibold uppercase tracking-wide">Discount</th>
-                <th className="pb-3 text-right text-xs text-gray-400 font-semibold uppercase tracking-wide">Subtotal</th>
+                <th className="pb-3 text-right  text-xs text-gray-400 font-semibold uppercase tracking-wide">Unit Price</th>
+                <th className="pb-3 text-right  text-xs text-gray-400 font-semibold uppercase tracking-wide">Discount</th>
+                <th className="pb-3 text-right  text-xs text-gray-400 font-semibold uppercase tracking-wide">Subtotal</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -529,9 +541,7 @@ const OrderDetail = () => {
                 const comboList = item.comboItems || item.items || [];
                 return (
                   <tr key={i} className="hover:bg-gray-50 transition-colors">
-
                     <td className="py-4 text-xs text-gray-400">{i + 1}</td>
-
                     <td className="py-4 pr-4">
                       <div className="flex items-start gap-3">
                         <img loading="lazy"
@@ -564,20 +574,17 @@ const OrderDetail = () => {
                         </div>
                       </div>
                     </td>
-
                     <td className="py-4 text-center">
                       <span className="inline-block min-w-[28px] bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded-full">
                         ×{item.quantity}
                       </span>
                     </td>
-
                     <td className="py-4 text-right">
                       <p className="font-medium text-gray-800">₹{item.price?.toLocaleString("en-IN")}</p>
                       {item.originalPrice && item.originalPrice !== item.price && (
                         <p className="text-xs text-gray-400 line-through">₹{item.originalPrice}</p>
                       )}
                     </td>
-
                     <td className="py-4 text-right">
                       {item.discountApplied ? (
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">
@@ -587,13 +594,11 @@ const OrderDetail = () => {
                         <span className="text-gray-300 text-xs">—</span>
                       )}
                     </td>
-
                     <td className="py-4 text-right">
                       <span className="font-bold text-gray-900">
                         ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                       </span>
                     </td>
-
                   </tr>
                 );
               })}
