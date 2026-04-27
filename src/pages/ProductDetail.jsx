@@ -1907,25 +1907,22 @@ const ProductDetail = () => {
                       background: "#fff",
                     }}
                   >
-                    {/* LEFT — code input area */}
-                    <div className="flex-1 flex flex-col justify-center px-5 py-5 gap-2 min-w-0">
+                    {/* LEFT — code input area (smaller) */}
+                    <div className="flex flex-col justify-center px-5 py-5 gap-2 min-w-0" style={{ flex: "0 0 40%" }}>
                       <p className="text-xl font-black uppercase tracking-widest" style={{ color: "#E83E8C" }}>Coupon Code</p>
                       <input
                         type="text"
                         value={couponCodeInput || assignedCoupon.code}
-                        onChange={(e) => {
-                          setCouponCodeInput(e.target.value);
-                          if (couponMessage.text) setCouponMessage({ type: "", text: "" });
-                        }}
+                        readOnly
                         placeholder={assignedCoupon.code}
-                        className="w-full rounded-xl px-4 py-2.5 font-black focus:outline-none focus:ring-2"
+                        className="w-full rounded-xl px-4 py-2.5 font-black focus:outline-none"
                         style={{
                           fontSize: "20px",
                           border: `2px solid #f4a0c8`,
                           background: "#E83E8C",
                           color: "#ffffff",
                           letterSpacing: "0.06em",
-                          "--tw-ring-color": "#E83E8C",
+                          cursor: "default",
                         }}
                       />
                     </div>
@@ -1934,7 +1931,7 @@ const ProductDetail = () => {
                     <div
                       className="absolute -top-3 w-6 h-6 rounded-full"
                       style={{
-                        left: "calc(55% - 12px)",
+                        left: "calc(40% - 12px)",
                         background: detailTheme.pageBg,
                         border: `2.5px dashed #E83E8C`,
                         zIndex: 2,
@@ -1943,7 +1940,7 @@ const ProductDetail = () => {
                     <div
                       className="absolute -bottom-3 w-6 h-6 rounded-full"
                       style={{
-                        left: "calc(55% - 12px)",
+                        left: "calc(40% - 12px)",
                         background: detailTheme.pageBg,
                         border: `2.5px dashed #E83E8C`,
                         zIndex: 2,
@@ -1958,21 +1955,36 @@ const ProductDetail = () => {
                       }}
                     />
 
-                    {/* RIGHT — discount badge — yellow bg, green border */}
+                    {/* RIGHT — discount badge (bigger) */}
+
+                    {/* RIGHT — discount badge (bigger) */}
                     <div
-                      className="flex flex-col items-center justify-center px-6 py-5 flex-shrink-0 gap-1 cursor-pointer select-none"
+                      className="flex flex-row items-center justify-center px-6 py-5 flex-shrink-0 gap-4 cursor-pointer select-none"
                       style={{
                         background: "#ebce5a",
-                        minWidth: "160px",
+                        flex: "0 0 60%",
                       }}
                       onClick={handleApplyAssignedCoupon}
                     >
-                      
+                      {/* Left text — Extra (outside the box) */}
+                      <span className="text-2xl font-black italic" style={{ color: "#15803d" }}>Extra</span>
+
+                      {/* Vertical Divider (outside the box) */}
+                      <div className="w-px self-stretch my-2" style={{ background: "#15803d", opacity: 0.3 }} />
+
+                      {/* Right — Get / 15% / Off stacked — highlighted box */}
+                      <div
+                        className="flex flex-col items-center gap-0.5 px-4 py-3 rounded-2xl"
+                        style={{
+                          background: "#fff",
+                          border: "2px solid #15803d",
+                          boxShadow: "0 2px 10px rgba(21,128,61,0.12)",
+                        }}
+                      >
                         <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "#16a34a" }}>Get</span>
-                        <span className="text-4xl font-black leading-none" style={{ color: "#15803d" }}>15%</span>
+                        <span className="text-5xl font-black leading-none" style={{ color: "#15803d" }}>15%</span>
                         <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "#16a34a" }}>Off</span>
-                     
-                      <p className="text-[11px] mt-1 font-semibold" style={{ color: "#15803d" }}>Tap to apply</p>
+                      </div>
                     </div>
                   </div>
 
@@ -2022,6 +2034,10 @@ const ProductDetail = () => {
                   )}
                 </div>
               )}
+
+
+
+
               {/* Price box */}
               <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
