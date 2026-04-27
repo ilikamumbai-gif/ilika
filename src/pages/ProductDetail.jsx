@@ -229,7 +229,7 @@ const buildDetailTheme = (rawBgColor) => {
 };
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   IMAGE LIGHTBOX â€” full-screen overlay
+   IMAGE LIGHTBOX - full-screen overlay
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const normalizeColorKey = (value = "") =>
   String(value || "")
@@ -300,7 +300,7 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
         onClick={e => e.stopPropagation()}
       >
 
-        {/* â•â• LEFT â€” main image + nav â•â• */}
+        {/* â•â• LEFT - main image + nav â•â• */}
         <div className="relative flex-1 bg-[#fafafa] flex items-center justify-center min-w-0">
           {/* Prev */}
           {images.length > 1 && (
@@ -343,7 +343,7 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
         {/* â•â• RIGHT PANEL â•â• */}
         <div className="hidden sm:flex w-full sm:w-[280px] flex-shrink-0 flex-col border-t sm:border-t-0 sm:border-l border-gray-100 bg-white">
 
-          {/* Thumbnail grid â€” scrollable */}
+          {/* Thumbnail grid - scrollable */}
           <div
             ref={thumbsRef}
             className="flex-1 overflow-y-auto p-3"
@@ -372,8 +372,8 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
 
             {/* Price row */}
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-xl font-bold text-[#1C371C]">â‚¹{price}</span>
-              {mrp > 0 && <span className="text-xs text-gray-400 line-through">MRP â‚¹{mrp}</span>}
+              <span className="text-xl font-bold text-[#1C371C]">₹{price}</span>
+              {mrp > 0 && <span className="text-xs text-gray-400 line-through">MRP ₹{mrp}</span>}
               {discount > 0 && (
                 <span className="text-[10px] font-bold bg-[#1C371C] text-white px-2 py-0.5 rounded-md">{discount}% OFF</span>
               )}
@@ -493,7 +493,7 @@ const BeforeAfterSlider = ({
       className="relative w-full overflow-hidden rounded-2xl shadow-md select-none"
       style={{ aspectRatio: "16/12", touchAction: "none", userSelect: "none", WebkitUserSelect: "none", cursor: "col-resize" }}
     >
-      {/* AFTER â€” full background */}
+      {/* AFTER - full background */}
       <img loading="lazy"
         src={afterImage}
         alt={afterLabel}
@@ -503,7 +503,7 @@ const BeforeAfterSlider = ({
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />
 
-      {/* BEFORE â€” clipped from the right using clip-path */}
+      {/* BEFORE - clipped from the right using clip-path */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -865,7 +865,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
         {/* MAIN ROW */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 py-3">
 
-          {/* LEFT â€” product name + thumbnail */}
+          {/* LEFT - product name + thumbnail */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {(product?.images?.[0] || product?.imageUrl) && (
               <img
@@ -884,20 +884,20 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
             </div>
           </div>
 
-          {/* RIGHT GROUP â€” price + buttons */}
+          {/* RIGHT GROUP - price + buttons */}
           <div className="flex items-center gap-3 flex-shrink-0">
 
             {/* PRICE + EMI */}
             <div className="hidden md:flex flex-col items-end justify-center">
               <div className="flex items-baseline gap-1.5 flex-wrap justify-end">
-                <span className="text-base font-bold leading-none" style={{ color: theme.price }}>â‚¹{price}</span>
-                {mrp > 0 && <span className="text-[10px] text-gray-400 line-through">â‚¹{mrp}</span>}
+                <span className="text-base font-bold leading-none" style={{ color: theme.price }}>₹{price}</span>
+                {mrp > 0 && <span className="text-[10px] text-gray-400 line-through">₹{mrp}</span>}
                 {discount > 0 && (
                   <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: theme.price, color: theme.onPrice }}>SAVE {discount}%</span>
                 )}
               </div>
               {price >= 1099 && (
-                <span className="text-[10px] text-gray-400 mt-0.5 font-medium">No Cost EMI Â· Extra 5% off</span>
+                <span className="text-[10px] text-gray-400 mt-0.5 font-medium">No Cost EMI • Extra 5% off</span>
               )}
             </div>
 
@@ -1009,7 +1009,7 @@ const ProductDetail = () => {
   // const footerRef = useRef(null);
 
 
-  // displayImages â€” only populated after images are preloaded so old thumbs never flash
+  // displayImages - only populated after images are preloaded so old thumbs never flash
   const [displayImages, setDisplayImages] = useState([]);
   // ref to cancel in-flight preload when product/variant changes rapidly
   const preloadAbortRef = useRef(false);
@@ -1102,7 +1102,7 @@ const ProductDetail = () => {
 
 
 
-  /* â”€â”€ Async image preloader â€” waits for each img to load before showing thumbnails â”€â”€ */
+  /* â”€â”€ Async image preloader - waits for each img to load before showing thumbnails â”€â”€ */
   const preloadImages = useCallback(async (urls) => {
     // Signal any previous preload to abort
     preloadAbortRef.current = true;
@@ -1144,7 +1144,7 @@ const ProductDetail = () => {
 
 
 
-  /* â”€â”€ Unified sticky bar visibility â€” single source of truth â”€â”€ */
+  /* â”€â”€ Unified sticky bar visibility - single source of truth â”€â”€ */
   useEffect(() => {
     const handleScroll = () => {
       if (!atcButtonsRef.current) return;
@@ -1186,7 +1186,7 @@ const ProductDetail = () => {
     if (slug && products.length) load();
   }, [slug, products]);
 
-  /* â”€â”€ Set first image â€” clear stale data immediately, then preload & populate â”€â”€ */
+  /* â”€â”€ Set first image - clear stale data immediately, then preload & populate â”€â”€ */
   useEffect(() => {
     if (!product) return;
 
@@ -1214,7 +1214,7 @@ const ProductDetail = () => {
       // Show the main (first) image right away
       setSelectedImage(firstImage);
 
-      // Preload ALL images async â€” thumbnails only appear once images are ready
+      // Preload ALL images async - thumbnails only appear once images are ready
       await preloadImages(newImages);
     };
 
@@ -1224,7 +1224,7 @@ const ProductDetail = () => {
   const productId = product?.id || product?._id || null;
   // `images` = source of truth for lightbox, swipe, auto-scroll logic
   const images = activeVariant?.images?.length ? activeVariant.images : product?.images || [];
-  // `displayImages` = what thumbnails actually render â€” only set after async preload
+  // `displayImages` = what thumbnails actually render - only set after async preload
   const basePrice = Number(activeVariant?.price ?? product?.price ?? 0);
   const mrp = Number(activeVariant?.mrp ?? product?.mrp ?? 0);
   const assignedCoupon = useMemo(() => {
@@ -1839,11 +1839,11 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Thumbnails strip â€” only renders after async preload completes */}
+              {/* Thumbnails strip - only renders after async preload completes */}
               {images.length > 1 && (
                 <div ref={thumbsRef} className="flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                   {displayImages.length > 0 ? (
-                    /* Real thumbnails â€” shown only after preload */
+                    /* Real thumbnails - shown only after preload */
                     displayImages.map((img, i) => (
                       <button
                         key={img}
@@ -1977,7 +1977,7 @@ const ProductDetail = () => {
                     >
                       <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: detailTheme.accent }} />
                       {assignedCoupon.code}
-                      <span className="font-medium opacity-70">Â· {assignedCoupon.discountPercent}% off</span>
+                      <span className="font-medium opacity-70">• {assignedCoupon.discountPercent}% off</span>
                     </button>
                   </div>
 
@@ -1992,7 +1992,7 @@ const ProductDetail = () => {
                     >
                       <span className="text-base leading-none">✔</span>
                       <p className="text-xs font-bold flex-1" style={{ color: "#1c7c54" }}>
-                        {appliedCoupon.code} applied â€” {appliedCoupon.discountPercent}% off your order!
+                        {appliedCoupon.code} applied - {appliedCoupon.discountPercent}% off your order!
                       </p>
                       <button
                         type="button"

@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
 
-// â”€â”€â”€ OTP WIDGET â€” defined OUTSIDE Checkout so it never re-mounts on re-render â”€
+// â”€â”€â”€ OTP WIDGET - defined OUTSIDE Checkout so it never re-mounts on re-render â”€
 // If defined inside the parent component, React treats it as a new component
 // type on every render and unmounts/remounts it, destroying all input state.
 const OtpWidget = ({
@@ -118,7 +118,7 @@ const getPhoneVerificationAuth = () => {
   return getAuth(verificationApp);
 };
 
-// â”€â”€â”€ AUTH CONTEXT FIX â€” also update AuthContext.jsx (see note at bottom) â”€â”€â”€â”€â”€
+// â”€â”€â”€ AUTH CONTEXT FIX - also update AuthContext.jsx (see note at bottom) â”€â”€â”€â”€â”€
 
 const Checkout = () => {
   const { cartItems, clearCart } = useCart();
@@ -141,7 +141,7 @@ const Checkout = () => {
   const [otpResendCount, setOtpResendCount] = useState(0);
   const MAX_OTP_RESENDS = 3;
 
-  // Single reCAPTCHA container ref â€” we use ONE div in the DOM, always
+  // Single reCAPTCHA container ref - we use ONE div in the DOM, always
   const recaptchaContainerRef = useRef(null);
   const recaptchaWidgetIdRef = useRef(null);
 
@@ -697,7 +697,7 @@ const Checkout = () => {
   // â”€â”€â”€ RENDER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <>
-      {/* Single invisible reCAPTCHA container â€” always in DOM, never conditionally rendered */}
+      {/* Single invisible reCAPTCHA container - always in DOM, never conditionally rendered */}
       <div id="recaptcha-container" ref={recaptchaContainerRef} />
 
       <MiniDivider />
@@ -725,13 +725,13 @@ const Checkout = () => {
                 <span className="font-medium">{addr.name}</span>
                 <p className="text-sm text-gray-600">{addr.addressLine}</p>
                 <p className="text-sm text-gray-600">
-                  {addr.city}, {addr.state} â€” {addr.pincode}
+                  {addr.city}, {addr.state} - {addr.pincode}
                 </p>
                 <p className="text-sm text-gray-600">{addr.phone}</p>
               </label>
             ))}
 
-            {/* OTP widget â€” only shown when address selected and phone unverified */}
+            {/* OTP widget - only shown when address selected and phone unverified */}
             {showOtpWidget && selectedAddress && (
               <OtpWidget
                 phone={otpPhone}
