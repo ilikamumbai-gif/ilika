@@ -1816,7 +1816,7 @@ app.post("/api/admin-log", async (req, res) => {
 
 app.get("/api/admin-log", async (req, res) => {
   try {
-    const snapshot = await db.collection("adminLogs").orderBy("createdAt", "desc").limit(50).get();
+    const snapshot = await db.collection("adminLogs").orderBy("createdAt", "desc").get();
     res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   } catch {
     res.status(500).json({ error: "Failed" });
