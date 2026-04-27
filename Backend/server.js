@@ -760,11 +760,12 @@ app.put("/api/users/:uid/verify-phone", async (req, res) => {
 /* ============================== ADDRESSES ============================== */
 app.post("/api/users/:uid/address", async (req, res) => {
   try {
+    const { id, docId, addressId, ...addressPayload } = req.body || {};
     const docRef = await db
       .collection("users")
       .doc(req.params.uid)
       .collection("addresses")
-      .add({ ...req.body, createdAt: new Date() });
+      .add({ ...addressPayload, createdAt: new Date() });
     res.json({ id: docRef.id });
   } catch {
     res.status(500).json({ error: "Failed to save address" });
@@ -779,7 +780,8 @@ app.get("/api/users/:uid/address", async (req, res) => {
       .collection("addresses")
       .orderBy("createdAt", "desc")
       .get();
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    // Keep Firestore document id authoritative even if stored payload contains stale/empty id field.
+    res.json(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, docId: doc.id })));
   } catch {
     res.status(500).json({ error: "Failed to fetch addresses" });
   }
@@ -787,12 +789,13 @@ app.get("/api/users/:uid/address", async (req, res) => {
 
 app.put("/api/users/:uid/address/:addressId", async (req, res) => {
   try {
+    const { id, docId, addressId, ...addressPayload } = req.body || {};
     await db
       .collection("users")
       .doc(req.params.uid)
       .collection("addresses")
       .doc(req.params.addressId)
-      .update(req.body);
+      .update(addressPayload);
     res.json({ message: "Address updated" });
   } catch {
     res.status(500).json({ error: "Failed to update address" });

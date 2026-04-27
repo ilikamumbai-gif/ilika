@@ -23,7 +23,7 @@ const formatDate = (value) => {
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
 
 const normalizeAddress = (address = {}) => ({
-  id: address.id || "",
+  id: address.id || address.addressId || address.docId || "",
   name: String(address.name || "").trim(),
   phone: String(address.phone || "").trim(),
   addressLine: String(address.addressLine || address.address || "").trim(),
@@ -122,6 +122,15 @@ const emptyAddressDraft = {
   pincode: "",
 };
 
+const buildAddressPayload = (address = {}) => ({
+  name: String(address.name || "").trim(),
+  phone: String(address.phone || "").trim(),
+  addressLine: String(address.addressLine || "").trim(),
+  city: String(address.city || "").trim(),
+  state: String(address.state || "").trim(),
+  pincode: String(address.pincode || "").trim(),
+});
+
 /* ─── main component ─── */
 const UserDetail = () => {
   const { currentUser, logout } = useAuth();
@@ -161,7 +170,11 @@ const UserDetail = () => {
             createdAt: profileData.createdAt || "",
           });
         }
-        setAddresses(Array.isArray(addressData) ? addressData.map(normalizeAddress) : []);
+        const normalizedAddresses = Array.isArray(addressData) ? addressData.map(normalizeAddress) : [];
+        if (normalizedAddresses.some((address) => !address.id)) {
+          console.warn("Some addresses are missing id in API response:", normalizedAddresses);
+        }
+        setAddresses(normalizedAddresses);
         setOrders(Array.isArray(orderData) ? orderData : []);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
@@ -215,7 +228,7 @@ const UserDetail = () => {
     if (!currentUser?.uid || !addressId) return;
     setAddressBusyId(addressId);
     try {
-      const payload = normalizeAddress(addressDraft);
+      const payload = buildAddressPayload(addressDraft);
       const res = await fetch(`${API_URL}/api/users/${currentUser.uid}/address/${addressId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -225,7 +238,7 @@ const UserDetail = () => {
 
       setAddresses((prev) =>
         prev.map((address) =>
-          address.id === addressId ? { ...address, ...payload } : address
+          address.id === addressId ? { ...address, ...payload, id: address.id } : address
         )
       );
       cancelEditAddress();
@@ -381,12 +394,12 @@ const UserDetail = () => {
                     />
                     {addresses.length ? (
                       <div className="flex flex-col gap-3">
-                        {addresses.map((addr) => (
+                        {addresses.map((addr, idx) => (
                           <div
-                            key={addr.id}
+                            key={addr.id || `addr-${idx}`}
                             className="rounded-xl border border-gray-100 bg-gray-50/60 hover:bg-amber-50/40 hover:border-amber-100 transition-colors p-4"
                           >
-                            {editingAddressId === addr.id ? (
+                            {editingAddressId && editingAddressId === addr.id ? (
                               <div className="space-y-3">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                   <Field
@@ -428,10 +441,10 @@ const UserDetail = () => {
                                   <button
                                     type="button"
                                     onClick={() => saveAddressEdit(addr.id)}
-                                    disabled={addressBusyId === addr.id}
+                                    disabled={Boolean(addressBusyId) && addressBusyId === addr.id}
                                     className="rounded-lg bg-[#2B2A29] text-white px-4 py-2 text-xs font-semibold disabled:opacity-60"
                                   >
-                                    {addressBusyId === addr.id ? "Saving..." : "Save"}
+                                    {Boolean(addressBusyId) && addressBusyId === addr.id ? "Saving..." : "Save"}
                                   </button>
                                   <button
                                     type="button"
@@ -454,18 +467,25 @@ const UserDetail = () => {
                                 <div className="mt-3 flex gap-2 flex-wrap">
                                   <button
                                     type="button"
-                                    onClick={() => beginEditAddress(addr)}
-                                    className="rounded-lg border border-amber-200 bg-amber-50 text-amber-700 px-3 py-1.5 text-xs font-semibold"
+                                    onClick={() => {
+                                      if (!addr.id) {
+                                        alert("Address id is missing. Please restart backend and refresh this page.");
+                                        return;
+                                      }
+                                      beginEditAddress(addr);
+                                    }}
+                                    disabled={!addr.id}
+                                    className="rounded-lg border border-amber-200 bg-amber-50 text-amber-700 px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
                                   >
                                     Edit
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => deleteAddress(addr.id)}
-                                    disabled={addressBusyId === addr.id}
+                                    disabled={!addr.id || (Boolean(addressBusyId) && addressBusyId === addr.id)}
                                     className="rounded-lg border border-red-200 bg-red-50 text-red-700 px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
                                   >
-                                    {addressBusyId === addr.id ? "Deleting..." : "Delete"}
+                                    {Boolean(addressBusyId) && addressBusyId === addr.id ? "Deleting..." : "Delete"}
                                   </button>
                                 </div>
                               </>
