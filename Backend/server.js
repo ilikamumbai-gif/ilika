@@ -10,7 +10,8 @@ import { admin, db } from "./firebaseAdmin.js";
 dotenv.config();
 const app = express();
 
-const SUPPORT_ALERT_EMAIL = "adminilika@gmail.com";
+const SUPPORT_ALERT_EMAIL = process.env.SUPPORT_ALERT_EMAIL || "adminilika@gmail.com";
+const ORDER_ALERT_EMAIL = process.env.ORDER_ALERT_EMAIL || "ilika.mumbai@gmail.com";
 const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
 const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
 const SMTP_SECURE = String(process.env.SMTP_SECURE || "true").toLowerCase() !== "false";
@@ -78,6 +79,79 @@ const sendAdminLoginAlert = async ({ username, role, req }) => {
     subject,
     text,
   });
+  return { status: "sent" };
+};
+
+const formatAddressForEmail = (address = {}) => {
+  const line = String(address?.addressLine || address?.line || address?.address || "").trim();
+  const city = String(address?.city || "").trim();
+  const state = String(address?.state || "").trim();
+  const pincode = String(address?.pincode || "").trim();
+  return [line, [city, state, pincode].filter(Boolean).join(", ")].filter(Boolean).join("\n");
+};
+
+const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
+  const transporter = getMailTransporter();
+  if (!transporter) {
+    console.warn("Order alert email skipped: SMTP credentials are missing");
+    return { status: "skipped", reason: "missing_smtp_credentials" };
+  }
+
+  const shippingAddress = orderPayload?.shippingAddress || {};
+  const createdAt = orderPayload?.createdAt instanceof Date ? orderPayload.createdAt : new Date();
+  const userName =
+    String(shippingAddress?.name || "").trim() ||
+    String(orderPayload?.userName || "").trim() ||
+    "Customer";
+  const userEmail = String(orderPayload?.userEmail || "").trim() || "Not provided";
+  const userPhone = String(shippingAddress?.phone || orderPayload?.userPhone || "").trim() || "Not provided";
+  const addressText = formatAddressForEmail(shippingAddress) || "Not provided";
+  const items = Array.isArray(orderPayload?.items) ? orderPayload.items : [];
+  const itemsText = items.length
+    ? items
+        .map((item, idx) => {
+          const qty = Number(item?.quantity || 1);
+          const name = String(item?.name || "Product").trim();
+          const price = Number(item?.price || 0);
+          return `${idx + 1}. ${name} | Qty: ${qty} | Unit Price: Rs ${price.toFixed(2)}`;
+        })
+        .join("\n")
+    : "No items found";
+
+  const totalAmount = Number(orderPayload?.totalAmount || 0);
+  const source = String(orderPayload?.source || "WEBSITE");
+  const paymentStatus = String(orderPayload?.paymentStatus || "Unpaid");
+
+  const subject = `New Order Received: ${String(orderId || "").slice(-8).toUpperCase()}`;
+  const text = [
+    "A new customer order has been received.",
+    "",
+    `Order ID: ${orderId}`,
+    `Order Time (IST): ${formatIstDateTime(createdAt)}`,
+    `Order Time (UTC): ${createdAt.toISOString()}`,
+    `Source: ${source}`,
+    `Payment Status: ${paymentStatus}`,
+    `Total Amount: Rs ${totalAmount.toFixed(2)}`,
+    "",
+    "Customer Details:",
+    `Name: ${userName}`,
+    `Email: ${userEmail}`,
+    `Phone: ${userPhone}`,
+    "",
+    "Shipping Address:",
+    addressText,
+    "",
+    "Ordered Items:",
+    itemsText,
+  ].join("\n");
+
+  await transporter.sendMail({
+    from: SMTP_FROM,
+    to: ORDER_ALERT_EMAIL,
+    subject,
+    text,
+  });
+
   return { status: "sent" };
 };
 
@@ -1358,6 +1432,21 @@ app.post("/api/payments/verify", async (req, res) => {
       createdAt: new Date(),
     });
 
+    const orderPayload = {
+      userId: orderData.userId,
+      userEmail: orderData.userEmail,
+      items: validatedItems,
+      totalAmount,
+      shippingAddress: addressDoc.data(),
+      status: "Placed",
+      paymentStatus: "Paid",
+      source: orderData.source || "WEBSITE",
+      createdAt: new Date(),
+    };
+    sendOrderReceivedAlert({ orderId: docRef.id, orderPayload }).catch((err) => {
+      console.error("ORDER ALERT EMAIL FAILED (PAID):", err?.message || err);
+    });
+
     res.json({ success: true, orderId: docRef.id });
   } catch (error) {
     console.error("VERIFY PAYMENT ERROR:", error);
@@ -1448,6 +1537,21 @@ app.post("/api/orders", async (req, res) => {
       paymentStatus: "Unpaid",
       source: detectSource(source),
       createdAt: new Date(),
+    });
+
+    const orderPayload = {
+      userId,
+      userEmail,
+      items: validatedItems,
+      totalAmount,
+      shippingAddress: addressDoc.data(),
+      status: "Placed",
+      paymentStatus: "Unpaid",
+      source: detectSource(source),
+      createdAt: new Date(),
+    };
+    sendOrderReceivedAlert({ orderId: docRef.id, orderPayload }).catch((err) => {
+      console.error("ORDER ALERT EMAIL FAILED (COD):", err?.message || err);
     });
 
     res.json({ orderId: docRef.id });
@@ -2356,4 +2460,5 @@ app.listen(PORT, () => {
     } target=${MERCHANT_TARGET_COUNTRY} language=${MERCHANT_CONTENT_LANGUAGE}`
   );
 });
+
 

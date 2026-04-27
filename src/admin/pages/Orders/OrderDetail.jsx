@@ -123,6 +123,7 @@ const OrderDetail = () => {
       `Rs. ${Number(v).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
 
     const logo = new Image();
+    logo.crossOrigin = "anonymous";
     logo.src = "/Images/logo2.webp";
 
     logo.onload = () => {
@@ -130,7 +131,16 @@ const OrderDetail = () => {
       doc.setFillColor(255, 255, 255);
       doc.rect(0, 0, pageWidth, 40, "F");
 
-      doc.addImage(logo, "PNG", margin, 8, 36, 14);
+      const logoCanvas = document.createElement("canvas");
+      logoCanvas.width = logo.naturalWidth || logo.width;
+      logoCanvas.height = logo.naturalHeight || logo.height;
+      const logoCtx = logoCanvas.getContext("2d");
+      if (logoCtx) {
+        logoCtx.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
+        logoCtx.drawImage(logo, 0, 0);
+        const logoPngDataUrl = logoCanvas.toDataURL("image/png");
+        doc.addImage(logoPngDataUrl, "PNG", margin, 8, 36, 14);
+      }
 
       doc.setTextColor(30, 30, 30);
       doc.setFontSize(22);
