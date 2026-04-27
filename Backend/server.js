@@ -799,6 +799,20 @@ app.put("/api/users/:uid/address/:addressId", async (req, res) => {
   }
 });
 
+app.delete("/api/users/:uid/address/:addressId", async (req, res) => {
+  try {
+    await db
+      .collection("users")
+      .doc(req.params.uid)
+      .collection("addresses")
+      .doc(req.params.addressId)
+      .delete();
+    res.json({ message: "Address deleted" });
+  } catch {
+    res.status(500).json({ error: "Failed to delete address" });
+  }
+});
+
 /* ============================== PRODUCTS ============================== */
 app.post("/api/coupons", async (req, res) => {
   try {
