@@ -117,7 +117,7 @@ const Home = () => {
                 mobileScroll
                 productNames={[
                   "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
-                  "Hot & Cold Facial Pore Blackhead Remover For Men & Women",
+                  "Hot & Cold Facial Pore Blackhead Remover For Men & Women ",
                   "Ilika High-Speed Leafless Hair Dryer For Men & Women",
                   "Ilika Automatic Voice Version Face Mask Maker Machine",
                 ]}
@@ -146,7 +146,7 @@ const Home = () => {
                     "Red Algae Hydrating Sheet Mask | Hydration & Radiance",
                     "Kumkumadi Face Sheet Mask | Hydration & Rejuvenation",
                     "Collagen Sheet Mask | Firming & Anti-aging",
-                    "Kakadu Plum Sheet Mask | Glowing & Youthful Skin"
+                    "Kakadu Plum Sheet Mask | Glowing & Youthful Skin "
                   ]}
                   limit={4}
                 />
@@ -206,9 +206,9 @@ const Home = () => {
                   mobileScroll
                   productNames={[
                     "Keratin Rich Conditioner | For Normal to Damaged Hair | 200 ML",
-                    "Black Seed Hair Oil | Prevents Premature Graying | 200ML",
-                    "Frizz Control Hair Serum | Control Frizz & Detangle Hair | 50 ML",
-                    "Keratin Rich Shampoo | Natural Shine & Softness | 200 ML"
+                    "Black Seed Hair Oil | Prevents Premature Graying | Boosts Hair Growth",
+                    "Frizz Control Hair Serum | Control Frizz & Detangle Hair | 50 ML ",
+                    "Keratin Rich Shampoo | Natural Shine & Softness | 200 ML "
                   ]}
                   limit={4}
                 />
