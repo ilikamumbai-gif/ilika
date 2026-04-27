@@ -687,8 +687,15 @@ const Checkout = () => {
         <MiniDivider />
         <Header />
         <CartDrawer />
-        <div className="min-h-[60vh] flex items-center justify-center text-gray-500">
-          Your cart is empty
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-gray-500">
+          <p>Your cart is empty</p>
+          <button
+            type="button"
+            onClick={() => navigate("/shopall")}
+            className="bg-black text-white px-6 py-2 rounded-md hover:opacity-90 transition"
+          >
+            Shop All
+          </button>
         </div>
         <Footer />
       </>

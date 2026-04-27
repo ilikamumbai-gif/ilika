@@ -50,9 +50,20 @@ const CartDrawer = () => {
         {/* ITEMS */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {cartItems.length === 0 ? (
-            <p className="text-gray-500 text-center mt-10">
-              Your bag is empty
-            </p>
+            <div className="text-center mt-10 space-y-3">
+              <p className="text-gray-500">Your bag is empty</p>
+              <button
+                type="button"
+                onClick={() => {
+                  closeCart();
+                  navigate("/shopall");
+                }}
+                className="bg-gradient-to-r from-[#c97b7b] to-[#e6a4a4]
+                text-black px-5 py-2 rounded-md hover:opacity-90 transition"
+              >
+                Shop All
+              </button>
+            </div>
           ) : (
             cartItems.map((item) => (
               <div key={item.id} className="flex gap-4 border-b pb-4">
@@ -240,4 +251,3 @@ const CartDrawer = () => {
 };
 
 export default CartDrawer;
-
