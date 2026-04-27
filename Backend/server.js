@@ -91,7 +91,16 @@ const MERCHANT_TARGET_COUNTRY = process.env.GOOGLE_MERCHANT_TARGET_COUNTRY || "I
 const MERCHANT_CURRENCY = process.env.GOOGLE_MERCHANT_CURRENCY || "INR";
 const MERCHANT_CHANNEL = process.env.GOOGLE_MERCHANT_CHANNEL || "online";
 const MERCHANT_BRAND_DEFAULT = process.env.GOOGLE_MERCHANT_BRAND || "Ilika";
-const MERCHANT_SYNC_AUTO = String(process.env.GOOGLE_MERCHANT_SYNC_AUTO || "false").toLowerCase() === "true";
+const toBoolean = (value, fallback = true) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true") return true;
+    if (normalized === "false") return false;
+  }
+  return fallback;
+};
+const MERCHANT_SYNC_AUTO = toBoolean(process.env.GOOGLE_MERCHANT_SYNC_AUTO, true);
 const MERCHANT_CLIENT_EMAIL = process.env.GOOGLE_MERCHANT_CLIENT_EMAIL || "";
 const MERCHANT_PRIVATE_KEY = String(process.env.GOOGLE_MERCHANT_PRIVATE_KEY || "").replace(/\\n/g, "\n");
 let merchantContentClient = null;
