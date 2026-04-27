@@ -2210,7 +2210,7 @@ const ProductDetail = () => {
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                     <button onClick={() => setExpandedDesc(!expandedDesc)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.accent }}>
-                      {expandedDesc ? "Read Less â–²" : "Read More â–¼"}
+                      {expandedDesc ? "Read Less ▲" : "Read More ▼"}
                     </button>
                   </>
                 ) : <p className="text-sm text-gray-400">No description available.</p>}
@@ -2235,7 +2235,7 @@ const ProductDetail = () => {
                     </div>
                     {additionalInfoArray.length > 4 && (
                       <button onClick={() => setExpandedInfo(!expandedInfo)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.price }}>
-                        {expandedInfo ? "Read Less â–²" : "Read More â–¼"}
+                        {expandedInfo ? "Read Less ▲" : "Read More ▼"}
                       </button>
                     )}
                   </>
