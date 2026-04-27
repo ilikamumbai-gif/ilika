@@ -258,6 +258,23 @@ const deleteMerchantProduct = async (offerId = "") => {
   }
 };
 
+const getMerchantErrorSummary = (error) => {
+  const status = Number(error?.code || error?.response?.status || 0) || null;
+  const apiError = error?.response?.data?.error || null;
+  const details = Array.isArray(apiError?.errors)
+    ? apiError.errors.map((item) => ({
+        reason: item?.reason || null,
+        message: item?.message || null,
+      }))
+    : [];
+
+  return {
+    status,
+    message: apiError?.message || error?.message || "Unknown Merchant API error",
+    details,
+  };
+};
+
 const syncMerchantProductById = async (productId = "") => {
   const cleanId = String(productId || "").trim();
   if (!cleanId) return { status: "skipped", reason: "missing_product_id", offerId: null };
@@ -857,13 +874,17 @@ app.post("/api/products", async (req, res) => {
     };
     const docRef = await db.collection("products").add(productData);
 
+    let merchantSync = { status: "disabled", reason: "auto_sync_disabled" };
     if (MERCHANT_SYNC_AUTO) {
-      syncMerchantProductById(docRef.id).catch((err) => {
-        console.error("MERCHANT AUTO SYNC (CREATE) FAILED:", err?.message || err);
-      });
+      try {
+        merchantSync = await syncMerchantProductById(docRef.id);
+      } catch (err) {
+        merchantSync = { status: "error", ...getMerchantErrorSummary(err) };
+        console.error("MERCHANT AUTO SYNC (CREATE) FAILED:", merchantSync);
+      }
     }
 
-    res.json({ id: docRef.id, ...productData });
+    res.json({ id: docRef.id, ...productData, merchantSync });
   } catch (error) {
     console.error("ADD PRODUCT ERROR:", error);
     res.status(500).json({ error: "Failed to add product" });
@@ -922,13 +943,21 @@ app.put("/api/products/:id", async (req, res) => {
     await productRef.update(updateData);
     const updatedDoc = await productRef.get();
 
+    let merchantSync = { status: "disabled", reason: "auto_sync_disabled" };
     if (MERCHANT_SYNC_AUTO) {
-      syncMerchantProductById(req.params.id).catch((err) => {
-        console.error("MERCHANT AUTO SYNC (UPDATE) FAILED:", err?.message || err);
-      });
+      try {
+        merchantSync = await syncMerchantProductById(req.params.id);
+      } catch (err) {
+        merchantSync = { status: "error", ...getMerchantErrorSummary(err) };
+        console.error("MERCHANT AUTO SYNC (UPDATE) FAILED:", merchantSync);
+      }
     }
 
-    res.json({ message: "Product updated successfully", product: { id: updatedDoc.id, ...updatedDoc.data() } });
+    res.json({
+      message: "Product updated successfully",
+      product: { id: updatedDoc.id, ...updatedDoc.data() },
+      merchantSync,
+    });
   } catch (error) {
     console.error("UPDATE PRODUCT ERROR:", error);
     res.status(500).json({ error: "Failed to update product" });
@@ -939,13 +968,17 @@ app.delete("/api/products/:id", async (req, res) => {
   try {
     await db.collection("products").doc(req.params.id).delete();
 
+    let merchantSync = { status: "disabled", reason: "auto_sync_disabled" };
     if (MERCHANT_SYNC_AUTO) {
-      deleteMerchantProduct(req.params.id).catch((err) => {
-        console.error("MERCHANT AUTO SYNC (DELETE) FAILED:", err?.message || err);
-      });
+      try {
+        merchantSync = await deleteMerchantProduct(req.params.id);
+      } catch (err) {
+        merchantSync = { status: "error", ...getMerchantErrorSummary(err) };
+        console.error("MERCHANT AUTO SYNC (DELETE) FAILED:", merchantSync);
+      }
     }
 
-    res.json({ message: "Product deleted successfully" });
+    res.json({ message: "Product deleted successfully", merchantSync });
   } catch {
     res.status(500).json({ error: "Failed to delete product" });
   }
@@ -2253,4 +2286,12 @@ const createDefaultAdmin = async () => {
 createDefaultAdmin();
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(
+    `[Merchant] configured=${isMerchantConfigured()} autoSync=${MERCHANT_SYNC_AUTO} merchantId=${
+      MERCHANT_CENTER_ACCOUNT_ID || "missing"
+    } target=${MERCHANT_TARGET_COUNTRY} language=${MERCHANT_CONTENT_LANGUAGE}`
+  );
+});
+
