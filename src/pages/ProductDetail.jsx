@@ -2007,7 +2007,7 @@ const ProductDetail = () => {
                   {/* Error message */}
                   {!appliedCoupon && couponMessage.text && (
                     <p className={`text-xs font-medium px-1 ${couponMessage.type === "error" ? "text-red-500" : "text-green-700"}`}>
-                      {couponMessage.type === "error" ? "✔— " : "✔ "}{couponMessage.text}
+                      {couponMessage.type === "error" ? "✘" : "✔ "}{couponMessage.text}
                     </p>
                   )}
                 </div>
