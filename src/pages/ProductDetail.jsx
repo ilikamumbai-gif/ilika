@@ -1898,88 +1898,97 @@ const ProductDetail = () => {
                 <div className="space-y-3">
                   <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#aaa" }}>Apply Coupon</p>
 
-                  {/* Coupon input card */}
+                  {/* ── TICKET CARD ── */}
                   <div
-                    className="flex items-stretch overflow-hidden"
+                    className="relative flex items-stretch overflow-hidden"
                     style={{
-                      borderRadius: "16px",
-                      border: `1.5px solid ${detailTheme.borderSoft}`,
+                      border: `2.5px dashed #E83E8C`,
+                      borderRadius: "18px",
                       background: "#fff",
-                      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
                     }}
                   >
-                    {/* Left icon strip */}
-                    <div
-                      className="flex items-center justify-center px-4 flex-shrink-0"
-                      style={{
-                        background: detailTheme.accentMuted,
-                        borderRight: `1.5px dashed ${detailTheme.accentLine}`,
-                      }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke={detailTheme.accent} strokeWidth="1.8"
-                        strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 5H3a1 1 0 0 0-1 1v4a1 1 0 0 1 0 2v4a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-4a1 1 0 0 1 0-2V6a1 1 0 0 0-1-1z" />
-                        <line x1="9" y1="9" x2="9" y2="15" strokeDasharray="2 2" />
-                      </svg>
+                    {/* LEFT — code input area */}
+                    <div className="flex-1 flex flex-col justify-center px-5 py-5 gap-2 min-w-0">
+                      <p className="text-xl font-black uppercase tracking-widest" style={{ color: "#E83E8C" }}>Coupon Code</p>
+                      <input
+                        type="text"
+                        value={couponCodeInput || assignedCoupon.code}
+                        onChange={(e) => {
+                          setCouponCodeInput(e.target.value);
+                          if (couponMessage.text) setCouponMessage({ type: "", text: "" });
+                        }}
+                        placeholder={assignedCoupon.code}
+                        className="w-full rounded-xl px-4 py-2.5 font-black focus:outline-none focus:ring-2"
+                        style={{
+                          fontSize: "20px",
+                          border: `2px solid #f4a0c8`,
+                          background: "#E83E8C",
+                          color: "#ffffff",
+                          letterSpacing: "0.06em",
+                          "--tw-ring-color": "#E83E8C",
+                        }}
+                      />
                     </div>
 
-                    {/* Text input */}
-                    <input
-                      type="text"
-                      value={couponCodeInput}
-                      onChange={(e) => {
-                        setCouponCodeInput(e.target.value);
-                        if (couponMessage.text) setCouponMessage({ type: "", text: "" });
-                      }}
-                      placeholder="Enter coupon code"
-                      className="flex-1 min-w-0 px-3 py-3.5 text-sm font-semibold bg-transparent border-none outline-none placeholder:font-normal placeholder:text-gray-300"
-                      style={{ color: detailTheme.heading, letterSpacing: "0.04em" }}
-                    />
-
-                    {/* Dashed divider */}
+                    {/* NOTCH divider — left cutout */}
                     <div
-                      className="flex-shrink-0 w-px my-2.5"
+                      className="absolute -top-3 w-6 h-6 rounded-full"
                       style={{
-                        background: `repeating-linear-gradient(to bottom, #ddd 0px, #ddd 5px, transparent 5px, transparent 10px)`
+                        left: "calc(55% - 12px)",
+                        background: detailTheme.pageBg,
+                        border: `2.5px dashed #E83E8C`,
+                        zIndex: 2,
+                      }}
+                    />
+                    <div
+                      className="absolute -bottom-3 w-6 h-6 rounded-full"
+                      style={{
+                        left: "calc(55% - 12px)",
+                        background: detailTheme.pageBg,
+                        border: `2.5px dashed #E83E8C`,
+                        zIndex: 2,
                       }}
                     />
 
-                    {/* Apply button */}
-                    <button
-                      type="button"
-                      onClick={handleApplyCoupon}
-                      className="flex-shrink-0 px-5 text-sm font-bold transition-all"
+                    {/* Vertical dashed separator */}
+                    <div
+                      className="w-px my-4 flex-shrink-0"
                       style={{
-                        background: appliedCoupon ? "#1c7c54" : detailTheme.primary,
-                        color: detailTheme.onPrimary,
-                        letterSpacing: "0.04em",
-                        minWidth: "80px",
+                        background: `repeating-linear-gradient(to bottom, #E83E8C 0px, #E83E8C 6px, transparent 6px, transparent 14px)`
                       }}
+                    />
+
+                    {/* RIGHT — discount badge — yellow bg, green border */}
+                    <div
+                      className="flex flex-col items-center justify-center px-6 py-5 flex-shrink-0 gap-1 cursor-pointer select-none"
+                      style={{
+                        background: "#ebce5a",
+                        minWidth: "160px",
+                      }}
+                      onClick={handleApplyAssignedCoupon}
                     >
-                      {appliedCoupon ? "Applied ✔" : "Apply"}
-                    </button>
+                      
+                        <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "#16a34a" }}>Get</span>
+                        <span className="text-4xl font-black leading-none" style={{ color: "#15803d" }}>15%</span>
+                        <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "#16a34a" }}>Off</span>
+                     
+                      <p className="text-[11px] mt-1 font-semibold" style={{ color: "#15803d" }}>Tap to apply</p>
+                    </div>
                   </div>
 
-                  {/* Available coupon pill */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[11px] text-gray-400 font-medium">Available:</span>
-                    <button
-                      type="button"
-                      onClick={handleApplyAssignedCoupon}
-                      className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-bold transition-all hover:-translate-y-0.5"
-                      style={{
-                        background: `linear-gradient(135deg, ${detailTheme.accentMuted} 0%, ${detailTheme.accentSoftAlt} 100%)`,
-                        border: `1.5px solid ${detailTheme.borderSoft}`,
-                        color: detailTheme.accent,
-                        boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
-                      }}
-                    >
-                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: detailTheme.accent }} />
-                      {assignedCoupon.code}
-                      <span className="font-medium opacity-70">• {assignedCoupon.discountPercent}% off</span>
-                    </button>
-                  </div>
+                  {/* Apply button */}
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    className="w-full py-3 rounded-2xl text-sm font-bold transition-all"
+                    style={{
+                      background: appliedCoupon ? "#8b0a4a" : "#E83E8C",
+                      color: "#fff",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    {appliedCoupon ? "✔ Coupon Applied" : "Apply Coupon"}
+                  </button>
 
                   {/* Success banner */}
                   {appliedCoupon && (
@@ -1990,14 +1999,15 @@ const ProductDetail = () => {
                         border: "1.5px solid #a8dfc0",
                       }}
                     >
-                      <span className="text-base leading-none">✔</span>
+                      <span className="text-base leading-none" style={{ color: "#1c7c54" }}>✔</span>
                       <p className="text-xs font-bold flex-1" style={{ color: "#1c7c54" }}>
-                        {appliedCoupon.code} applied - {appliedCoupon.discountPercent}% off your order!
+                        {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off your order!
                       </p>
                       <button
                         type="button"
                         onClick={handleRemoveCoupon}
-                        className="text-[11px] text-gray-600 hover:text-gray-800 underline transition"
+                        className="text-[11px] underline transition hover:text-green-900"
+                        style={{ color: "#1c7c54" }}
                       >
                         Remove
                       </button>
@@ -2006,14 +2016,13 @@ const ProductDetail = () => {
 
                   {/* Error message */}
                   {!appliedCoupon && couponMessage.text && (
-                    <p className={`text-xs font-medium px-1 ${couponMessage.type === "error" ? "text-red-500" : "text-green-700"}`}>
+                    <p className="text-xs font-medium px-1" style={{ color: couponMessage.type === "error" ? "#E83E8C" : "#2d6a4f" }}>
                       {couponMessage.type === "error" ? "✘ " : "✔ "}{couponMessage.text}
                     </p>
                   )}
                 </div>
               )}
-
-                            {/* Price box */}
+              {/* Price box */}
               <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                   <div>
@@ -2395,88 +2404,88 @@ const ProductDetail = () => {
 
         {/* â•â•â•â• REVIEWS â•â•â•â• */}
         {activeInfoTab === "reviews" && (
-        <DeferredSection minHeight={420}>
-          <section ref={reviewsSectionRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">
-            <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-              <div>
-                <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>
-                  Customer Reviews
-                  {product.reviews?.length > 0 && <span className="text-sm font-normal text-gray-400 ml-2">({product.reviews.length})</span>}
-                </h2>
-                <p className="text-xs text-gray-400 mt-0.5">Real reviews from real customers</p>
+          <DeferredSection minHeight={420}>
+            <section ref={reviewsSectionRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">
+              <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+                <div>
+                  <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>
+                    Customer Reviews
+                    {product.reviews?.length > 0 && <span className="text-sm font-normal text-gray-400 ml-2">({product.reviews.length})</span>}
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">Real reviews from real customers</p>
+                </div>
+                <button
+                  onClick={() => setShowReviewModal(true)}
+                  data-track-event="write_review_click"
+                  data-track-label={product.name}
+                  className="flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-2xl transition shadow-sm"
+                  style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
+                >
+                  <Star className="w-4 h-4 fill-white" /> Write a Review
+                </button>
               </div>
-              <button
-                onClick={() => setShowReviewModal(true)}
-                data-track-event="write_review_click"
-                data-track-label={product.name}
-                className="flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-2xl transition shadow-sm"
-                style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
-              >
-                <Star className="w-4 h-4 fill-white" /> Write a Review
-              </button>
-            </div>
 
-            {product.reviews?.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {product.reviews.map((rev, i) => (
-                  <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                    {(() => {
-                      const isGenuine = rev?.verifiedPurchase === true || rev?.userType === "genuine" || rev?.isGenuine === true;
-                      const reviewImages = Array.isArray(rev?.images) && rev.images.length
-                        ? rev.images
-                        : rev?.image
-                          ? [rev.image]
-                          : [];
+              {product.reviews?.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {product.reviews.map((rev, i) => (
+                    <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                      {(() => {
+                        const isGenuine = rev?.verifiedPurchase === true || rev?.userType === "genuine" || rev?.isGenuine === true;
+                        const reviewImages = Array.isArray(rev?.images) && rev.images.length
+                          ? rev.images
+                          : rev?.image
+                            ? [rev.image]
+                            : [];
 
-                      return (
-                        <>
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: detailTheme.reviewSurface, color: detailTheme.accent }}>{rev.name?.[0]?.toUpperCase()}</div>
-                              <div>
-                                <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>{rev.name}</p>
-                                <div className="flex gap-0.5 mt-0.5">
-                                  {[1, 2, 3, 4, 5].map(s => (
-                                    <Star key={s} className={`w-3 h-3 ${s <= rev.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} />
-                                  ))}
+                        return (
+                          <>
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: detailTheme.reviewSurface, color: detailTheme.accent }}>{rev.name?.[0]?.toUpperCase()}</div>
+                                <div>
+                                  <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>{rev.name}</p>
+                                  <div className="flex gap-0.5 mt-0.5">
+                                    {[1, 2, 3, 4, 5].map(s => (
+                                      <Star key={s} className={`w-3 h-3 ${s <= rev.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} />
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
 
-                          </div>
-                          <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
-                          {reviewImages.length > 0 && (
-                            <div className="flex gap-2 mt-3">
-                              {reviewImages.map((img, i) => (
-                                <img
-                                  key={i}
-                                  src={img}
-                                  loading="lazy"
-                                  width="160"
-                                  height="160"
-                                  className="w-20 h-20 object-cover rounded-lg border"
-                                />
-                              ))}
                             </div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white border border-gray-100 rounded-3xl p-12 text-center">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
-                  <Star className="w-7 h-7" style={{ color: detailTheme.accentSoft }} />
+                            <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
+                            {reviewImages.length > 0 && (
+                              <div className="flex gap-2 mt-3">
+                                {reviewImages.map((img, i) => (
+                                  <img
+                                    key={i}
+                                    src={img}
+                                    loading="lazy"
+                                    width="160"
+                                    height="160"
+                                    className="w-20 h-20 object-cover rounded-lg border"
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  ))}
                 </div>
-                <p className="text-gray-500 text-sm mb-1">No reviews yet</p>
-                <p className="text-gray-400 text-xs mb-4">Be the first to share your experience!</p>
-                <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold hover:underline" style={{ color: detailTheme.accent }}>Write a Review â†’</button>
-              </div>
-            )}
-          </section>
-        </DeferredSection>
+              ) : (
+                <div className="bg-white border border-gray-100 rounded-3xl p-12 text-center">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
+                    <Star className="w-7 h-7" style={{ color: detailTheme.accentSoft }} />
+                  </div>
+                  <p className="text-gray-500 text-sm mb-1">No reviews yet</p>
+                  <p className="text-gray-400 text-xs mb-4">Be the first to share your experience!</p>
+                  <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold hover:underline" style={{ color: detailTheme.accent }}>Write a Review â†’</button>
+                </div>
+              )}
+            </section>
+          </DeferredSection>
         )}
 
         {/* â•â•â•â• RELATED PRODUCTS â•â•â•â• */}

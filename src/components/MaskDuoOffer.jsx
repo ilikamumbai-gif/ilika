@@ -70,6 +70,7 @@ const MaskDuoOffer = () => {
     );
 
     if (!freeMaskProducts.length) return;
+    
 
     let index = 0;
 

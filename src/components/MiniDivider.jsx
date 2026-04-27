@@ -2,7 +2,7 @@ import React from "react";
 const MiniDivider = () => {
 
   const saleText =
-"🛍️ BEAUTY OFFERS 🛍️ SHOP NOW ";
+"Make Salon Quality Face Mask At Home • Use Coupon Code: ilikaDIY";
 
   return (
     <div className="w-full bg-black overflow-hidden">
