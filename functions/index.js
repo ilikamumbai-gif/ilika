@@ -73,11 +73,31 @@ const toAbsoluteUrl = (value = "", fallbackOrigin = merchantConfig.siteUrl) => {
   }
 };
 
+const isPublicHttpUrl = (value = "") => /^https?:\/\//i.test(String(value || "").trim());
+
+const sanitizeMerchantImageCandidates = (values = []) => {
+  const seen = new Set();
+  const clean = [];
+
+  values
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .forEach((value) => {
+      const key = value.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      clean.push(value);
+    });
+
+  return clean;
+};
+
 const getPrimaryImage = (product = {}) => {
-  if (typeof product.image === "string" && product.image.trim()) return product.image;
-  if (typeof product.imageUrl === "string" && product.imageUrl.trim()) return product.imageUrl;
-  if (Array.isArray(product.images) && product.images.length) return product.images[0];
-  return "";
+  const imageList = Array.isArray(product.images) ? product.images : [];
+  const normalized = sanitizeMerchantImageCandidates([product.image, product.imageUrl, ...imageList])
+    .map((value) => toAbsoluteUrl(value))
+    .filter((value) => isPublicHttpUrl(value));
+  return normalized[0] || "";
 };
 
 const getSellPrice = (product = {}) => {
@@ -101,8 +121,14 @@ const mapProductForMerchant = ({ product = {}, productId = "" }) => {
   const slug = String(product.slug || slugify(title) || offerId);
   const link = toAbsoluteUrl(`/product/${slug}`);
   const imageLink = toAbsoluteUrl(getPrimaryImage(product));
-  const additionalImageLinks = (Array.isArray(product.images) ? product.images : [])
+  const normalizedImages = sanitizeMerchantImageCandidates([
+    product.image,
+    product.imageUrl,
+    ...(Array.isArray(product.images) ? product.images : []),
+  ])
     .map((img) => toAbsoluteUrl(img))
+    .filter((img) => isPublicHttpUrl(img));
+  const additionalImageLinks = normalizedImages
     .filter(Boolean)
     .slice(1, 10);
 

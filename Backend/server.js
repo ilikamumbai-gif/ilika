@@ -152,6 +152,30 @@ const normalizeAbsoluteUrl = (value = "", siteBase = "https://ilika.in") => {
   }
 };
 
+const isPublicHttpUrl = (value = "") => /^https?:\/\//i.test(String(value || "").trim());
+
+const sanitizeMerchantImageCandidates = (values = []) => {
+  const seen = new Set();
+  const clean = [];
+
+  values
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .forEach((value) => {
+      const key = value.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      clean.push(value);
+    });
+
+  return clean;
+};
+
+const getMerchantImageCandidates = (product = {}) => {
+  const imageList = Array.isArray(product?.images) ? product.images : [];
+  return sanitizeMerchantImageCandidates([product?.image, product?.imageUrl, ...imageList]);
+};
+
 const getSiteBaseUrl = () =>
   String(process.env.SITE_URL || process.env.FRONTEND_URL || "https://ilika.in")
     .trim()
@@ -182,10 +206,11 @@ const mapProductToMerchantPayload = (product = {}) => {
   const siteBaseUrl = getSiteBaseUrl();
   const slug = merchantSlugify(name);
   const productUrl = normalizeAbsoluteUrl(`/product/${slug}`, siteBaseUrl);
-  const primaryImage = Array.isArray(product?.images) ? product.images[0] : "";
-  const imageLink = normalizeAbsoluteUrl(primaryImage, siteBaseUrl);
-  const additionalImageLinks = (Array.isArray(product?.images) ? product.images : [])
+  const normalizedImages = getMerchantImageCandidates(product)
     .map((img) => normalizeAbsoluteUrl(img, siteBaseUrl))
+    .filter((img) => isPublicHttpUrl(img));
+  const imageLink = normalizedImages[0] || "";
+  const additionalImageLinks = normalizedImages
     .filter(Boolean)
     .slice(1, 10);
 
