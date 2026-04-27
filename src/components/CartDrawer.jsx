@@ -58,7 +58,7 @@ const CartDrawer = () => {
                   closeCart();
                   navigate("/shopall");
                 }}
-                className="bg-gradient-to-r from-[#c97b7b] to-[#e6a4a4]
+                className="bg-gradient-to-r from-[#cb8484] to-[#ecb7b7]
                 text-black px-5 py-2 rounded-md hover:opacity-90 transition"
               >
                 Shop All
