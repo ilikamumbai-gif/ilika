@@ -752,7 +752,7 @@ const Checkout = () => {
             )}
 
             {isPhoneVerified && selectedAddress && (
-              <p className="text-green-600 text-sm font-medium">âœ… Phone verified</p>
+              <p className="text-green-600 text-sm font-medium">✔… Phone verified</p>
             )}
 
             <button

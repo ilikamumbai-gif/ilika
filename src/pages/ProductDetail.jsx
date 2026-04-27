@@ -671,7 +671,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
   const submit = async (e) => {
     e?.preventDefault();
 
-    // âœ… VALIDATIONS
+    // ✔… VALIDATIONS
     if (!name.trim()) {
       setError("Please enter your name.");
       return;
@@ -767,10 +767,10 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
         savedReview.userType = savedReview.verifiedPurchase ? "genuine" : "fake";
       }
 
-      // âœ… Update UI instantly
+      // ✔… Update UI instantly
       onReviewAdded?.(savedReview);
 
-      // âœ… Reset form (important UX)
+      // ✔… Reset form (important UX)
       setName("");
       setRating(0);
       setComment("");
@@ -2007,7 +2007,7 @@ const ProductDetail = () => {
                   {/* Error message */}
                   {!appliedCoupon && couponMessage.text && (
                     <p className={`text-xs font-medium px-1 ${couponMessage.type === "error" ? "text-red-500" : "text-green-700"}`}>
-                      {couponMessage.type === "error" ? "âœ— " : "✔ "}{couponMessage.text}
+                      {couponMessage.type === "error" ? "✔— " : "✔ "}{couponMessage.text}
                     </p>
                   )}
                 </div>

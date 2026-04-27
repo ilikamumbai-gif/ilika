@@ -14,7 +14,7 @@ const CartDrawer = () => {
   } = useCart();
   const { currentUser } = useAuth();
 
-  const navigate = useNavigate(); // âœ… ADDED
+  const navigate = useNavigate(); // ✔… ADDED
 
   if (!isCartOpen) return null;
 
@@ -79,7 +79,7 @@ const CartDrawer = () => {
                     </p>
                   )}
 
-                  {/* âœ… SHOW KIT PRODUCTS */}
+                  {/* ✔… SHOW KIT PRODUCTS */}
                   {item.isCombo && item.comboItems && (
                     <div className="mt-2 space-y-2 bg-gray-50 p-2 rounded-lg">
 
@@ -209,7 +209,7 @@ const CartDrawer = () => {
 
           </div>
 
-          {/* âœ… UPDATED CHECKOUT BUTTON */}
+          {/* ✔… UPDATED CHECKOUT BUTTON */}
           <button
             disabled={cartItems.length === 0}
             onClick={() => {
