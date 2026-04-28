@@ -159,6 +159,76 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
   return { status: "sent" };
 };
 
+const sendOrderCancelledAlert = async ({ orderId, orderPayload = {}, previousStatus = "" }) => {
+  const transporter = getMailTransporter();
+  if (!transporter) {
+    console.warn("Order cancellation alert email skipped: SMTP credentials are missing");
+    return { status: "skipped", reason: "missing_smtp_credentials" };
+  }
+
+  const shippingAddress = orderPayload?.shippingAddress || {};
+  const cancelledAt = new Date();
+  const createdAt = orderPayload?.createdAt?._seconds
+    ? new Date(orderPayload.createdAt._seconds * 1000)
+    : orderPayload?.createdAt instanceof Date
+      ? orderPayload.createdAt
+      : orderPayload?.createdAt
+        ? new Date(orderPayload.createdAt)
+        : null;
+  const userName =
+    String(shippingAddress?.name || "").trim() ||
+    String(orderPayload?.userName || "").trim() ||
+    "Customer";
+  const userEmail = String(orderPayload?.userEmail || "").trim() || "Not provided";
+  const userPhone = String(shippingAddress?.phone || orderPayload?.userPhone || "").trim() || "Not provided";
+  const addressText = formatAddressForEmail(shippingAddress) || "Not provided";
+  const totalAmount = Number(orderPayload?.totalAmount || 0);
+  const items = Array.isArray(orderPayload?.items) ? orderPayload.items : [];
+  const itemsText = items.length
+    ? items
+        .map((item, idx) => {
+          const qty = Number(item?.quantity || 1);
+          const name = String(item?.name || "Product").trim();
+          const price = Number(item?.price || 0);
+          return `${idx + 1}. ${name} | Qty: ${qty} | Unit Price: Rs ${price.toFixed(2)}`;
+        })
+        .join("\n")
+    : "No items found";
+
+  const subject = `Order Cancelled Alert: ${String(orderId || "").slice(-8).toUpperCase()}`;
+  const text = [
+    "A customer order has been cancelled.",
+    "",
+    `Order ID: ${orderId}`,
+    `Cancelled Time (IST): ${formatIstDateTime(cancelledAt)}`,
+    `Cancelled Time (UTC): ${cancelledAt.toISOString()}`,
+    `Previous Status: ${String(previousStatus || "Unknown")}`,
+    createdAt && !Number.isNaN(createdAt.getTime()) ? `Placed Time (IST): ${formatIstDateTime(createdAt)}` : null,
+    `Payment Status: ${String(orderPayload?.paymentStatus || "Pending")}`,
+    `Grand Total: Rs ${totalAmount.toFixed(2)}`,
+    "",
+    "Customer Details:",
+    `Name: ${userName}`,
+    `Email: ${userEmail}`,
+    `Phone: ${userPhone}`,
+    "",
+    "Shipping Address:",
+    addressText,
+    "",
+    "Order Items:",
+    itemsText,
+  ].filter(Boolean).join("\n");
+
+  await transporter.sendMail({
+    from: SMTP_FROM,
+    to: ORDER_ALERT_EMAIL,
+    subject,
+    text,
+  });
+
+  return { status: "sent" };
+};
+
 const withTimeout = async (promise, timeoutMs = 12000, timeoutLabel = "operation_timeout") => {
   let timeoutId;
   try {
@@ -1657,9 +1727,38 @@ app.put("/api/orders/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
     if (!status) return res.status(400).json({ error: "Status is required" });
+    const orderRef = db.collection("orders").doc(req.params.id);
+    const orderSnap = await orderRef.get();
+    if (!orderSnap.exists) return res.status(404).json({ error: "Order not found" });
 
-    await db.collection("orders").doc(req.params.id).update({ status, updatedAt: new Date() });
-    res.json({ message: "Order status updated successfully" });
+    const existingOrder = orderSnap.data() || {};
+    const previousStatus = String(existingOrder.status || "");
+    const nextStatus = String(status || "");
+
+    await orderRef.update({ status: nextStatus, updatedAt: new Date() });
+
+    let cancellationAlertEmail = null;
+    const isNowCancelled = nextStatus.trim().toLowerCase().includes("cancel");
+    const wasAlreadyCancelled = previousStatus.trim().toLowerCase().includes("cancel");
+    if (isNowCancelled && !wasAlreadyCancelled) {
+      try {
+        cancellationAlertEmail = await withTimeout(
+          sendOrderCancelledAlert({
+            orderId: req.params.id,
+            orderPayload: { ...existingOrder, status: nextStatus },
+            previousStatus,
+          }),
+          12000,
+          "order_cancellation_alert_email_timeout"
+        );
+        console.log("ORDER CANCELLATION ALERT EMAIL:", cancellationAlertEmail);
+      } catch (mailErr) {
+        cancellationAlertEmail = { status: "error", reason: mailErr?.message || "send_failed" };
+        console.error("Order cancellation alert email failed:", mailErr?.message || mailErr);
+      }
+    }
+
+    res.json({ message: "Order status updated successfully", cancellationAlertEmail });
   } catch (error) {
     console.error("STATUS UPDATE ERROR:", error);
     res.status(500).json({ error: "Failed to update order status" });

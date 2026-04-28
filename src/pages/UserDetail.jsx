@@ -8,6 +8,7 @@ import CartDrawer from "../components/CartDrawer";
 import { useAuth } from "../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL;
+const CANCEL_SUPPORT_EMAIL = "ilika.mumbai@gamil.com";
 
 /* ─── helpers ─── */
 const formatDate = (value) => {
@@ -41,6 +42,12 @@ const statusMeta = (status = "") => {
   if (s.includes("cancel"))  return { label: "Cancelled",  dotCls: "bg-red-500",   bgCls: "bg-red-50",   textCls: "text-red-700"   };
   if (s.includes("ship"))    return { label: "Shipped",    dotCls: "bg-blue-500",  bgCls: "bg-blue-50",  textCls: "text-blue-700"  };
   return { label: status || "Placed", dotCls: "bg-amber-400", bgCls: "bg-amber-50", textCls: "text-amber-700" };
+};
+
+const isCancellationAllowed = (status = "") => {
+  const s = String(status || "").toLowerCase();
+  if (!s) return true;
+  return !(s.includes("ship") || s.includes("deliver") || s.includes("cancel"));
 };
 
 /* ─── icons ─── */
@@ -146,6 +153,55 @@ const UserDetail = () => {
   const [editingAddressId, setEditingAddressId] = useState("");
   const [addressDraft, setAddressDraft] = useState(emptyAddressDraft);
   const [addressBusyId, setAddressBusyId] = useState("");
+  const [cancelBusyOrderId, setCancelBusyOrderId] = useState("");
+
+  const buildCancellationMailto = (order = {}) => {
+    const orderIdShort = String(order?.id || "").slice(-8).toUpperCase();
+    const subject = `Order Cancellation Request - ${orderIdShort || "Order"}`;
+    const body = [
+      "Hi Ilika Team,",
+      "",
+      "I want to cancel my order.",
+      `Order ID: ${order?.id || "-"}`,
+      `Registered Email: ${profile.email || currentUser?.email || "-"}`,
+      `Registered Phone: ${profile.phone || "-"}`,
+      "",
+      "Please confirm the cancellation.",
+      "",
+      "Thank you.",
+    ].join("\n");
+    return `mailto:${CANCEL_SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const cancelOrder = async (order) => {
+    if (!order?.id) return;
+    const confirmed = window.confirm("Cancel this order?");
+    if (!confirmed) return;
+
+    setCancelBusyOrderId(order.id);
+    try {
+      const res = await fetch(`${API_URL}/api/orders/${order.id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Cancelled" }),
+      });
+
+      if (!res.ok) throw new Error("Failed to cancel order");
+
+      setOrders((prev) =>
+        prev.map((item) =>
+          item.id === order.id ? { ...item, status: "Cancelled" } : item
+        )
+      );
+
+      window.location.href = buildCancellationMailto(order);
+    } catch (error) {
+      console.error("Order cancellation failed:", error);
+      alert("Unable to cancel order right now.");
+    } finally {
+      setCancelBusyOrderId("");
+    }
+  };
 
   useEffect(() => { if (!currentUser) navigate("/login"); }, [currentUser, navigate]);
 
@@ -591,6 +647,26 @@ const UserDetail = () => {
                                         <p className="text-sm font-medium text-gray-700 mt-1 break-all">{val}</p>
                                       </div>
                                     ))}
+                                  </div>
+
+                                  <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50/60 p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                    <p className="text-xs text-rose-700">
+                                      Need to cancel this order? Email us at <span className="font-semibold">{CANCEL_SUPPORT_EMAIL}</span>.
+                                    </p>
+                                    {isCancellationAllowed(order.status) ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => cancelOrder(order)}
+                                        disabled={cancelBusyOrderId === order.id}
+                                        className="inline-flex items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 text-xs font-semibold transition-colors"
+                                      >
+                                        {cancelBusyOrderId === order.id ? "Cancelling..." : "Easy Cancellation"}
+                                      </button>
+                                    ) : (
+                                      <span className="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-500">
+                                        Cancellation unavailable
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               )}

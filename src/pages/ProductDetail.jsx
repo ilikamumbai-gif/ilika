@@ -2038,7 +2038,8 @@ const ProductDetail = () => {
                   onClick={product.inStock ? handleAddToCart : handleNotifyMe}
                   disabled={isAdding}
                   className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition
-    ${isAdding ? "bg-gray-300 text-gray-500" : ""}`}
+                ${isAdding ? 
+                  "bg-gray-300 text-gray-500" : ""}`}
                   style={isAdding ? undefined : product.inStock ? { backgroundColor: detailTheme.primary, color: detailTheme.onPrimary } : { backgroundColor: detailTheme.accent, color: getContrastText(detailTheme.accent) }}
                 >
                   {isAdding
@@ -2053,7 +2054,8 @@ const ProductDetail = () => {
                   onClick={handleBuyNow}
                   disabled={isOutOfStock || isBuying}
                   className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition
-    ${isOutOfStock || isBuying
+                    ${isOutOfStock || 
+                      isBuying
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "hover:opacity-90 shadow-sm"}`}
                   style={isOutOfStock || isBuying ? undefined : { backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
@@ -2119,7 +2121,7 @@ const ProductDetail = () => {
           </div>
         </section>
 
-        {/* â•â•â•â• BEFORE / AFTER â•â•â•â• */}
+        {/* BEFORE / AFTER */}
         {hasBeforeAfter && (
           <DeferredSection minHeight={420}>
             <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
