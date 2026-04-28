@@ -1897,8 +1897,11 @@ const ProductDetail = () => {
              {assignedCoupon && (
   <div className="space-y-3">
 
-    {/* ── TICKET CARD ── */}
-    <div className="relative flex items-stretch rounded-2xl border-2 border-dashed border-pink-300 bg-white overflow-hidden">
+  {/* ── TICKET CARD ── */}
+<div 
+  className="relative flex items-stretch rounded-2xl border-2 border-dashed border-pink-300 bg-white overflow-hidden cursor-pointer hover:border-pink-500 hover:shadow-md transition-all duration-200"
+  onClick={handleApplyAssignedCoupon}
+>
 
       {/* Decorative spark */}
       <span className="absolute -top-1.5 -right-1.5 text-pink-400 text-lg leading-none select-none pointer-events-none z-10">✦</span>
