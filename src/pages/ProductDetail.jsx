@@ -1894,146 +1894,108 @@ const ProductDetail = () => {
                 <div className="hidden sm:block">{renderVariantSelector()}</div>
               )}
 
-              {assignedCoupon && (
-                <div className="space-y-3">
-                  <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#aaa" }}>Apply Coupon</p>
+             {assignedCoupon && (
+  <div className="space-y-3">
 
-                  {/* ── TICKET CARD ── */}
-                  <div
-                    className="relative flex items-stretch overflow-hidden"
-                    style={{
-                      border: `2.5px dashed #E83E8C`,
-                      borderRadius: "18px",
-                      background: "#fff",
-                    }}
-                  >
-                    {/* LEFT — code input area (smaller) */}
-                    <div className="flex flex-col justify-center px-5 py-5 gap-2 min-w-0" style={{ flex: "0 0 40%" }}>
-                      <p className="text-xl font-black uppercase tracking-widest" style={{ color: "#E83E8C" }}>Coupon Code</p>
-                      <input
-                        type="text"
-                        value={couponCodeInput || assignedCoupon.code}
-                        readOnly
-                        placeholder={assignedCoupon.code}
-                        className="w-full rounded-xl px-4 py-2.5 font-black focus:outline-none"
-                        style={{
-                          fontSize: "20px",
-                          border: `2px solid #f4a0c8`,
-                          background: "#E83E8C",
-                          color: "#ffffff",
-                          letterSpacing: "0.06em",
-                          cursor: "default",
-                        }}
-                      />
-                    </div>
+    {/* ── TICKET CARD ── */}
+    <div className="relative flex items-stretch rounded-2xl border-2 border-dashed border-pink-300 bg-white overflow-hidden">
 
-                    {/* NOTCH divider — left cutout */}
-                    <div
-                      className="absolute -top-3 w-6 h-6 rounded-full"
-                      style={{
-                        left: "calc(40% - 12px)",
-                        background: detailTheme.pageBg,
-                        border: `2.5px dashed #E83E8C`,
-                        zIndex: 2,
-                      }}
-                    />
-                    <div
-                      className="absolute -bottom-3 w-6 h-6 rounded-full"
-                      style={{
-                        left: "calc(40% - 12px)",
-                        background: detailTheme.pageBg,
-                        border: `2.5px dashed #E83E8C`,
-                        zIndex: 2,
-                      }}
-                    />
+      {/* Decorative spark */}
+      <span className="absolute -top-1.5 -right-1.5 text-pink-400 text-lg leading-none select-none pointer-events-none z-10">✦</span>
 
-                    {/* Vertical dashed separator */}
-                    <div
-                      className="w-px my-4 flex-shrink-0"
-                      style={{
-                        background: `repeating-linear-gradient(to bottom, #E83E8C 0px, #E83E8C 6px, transparent 6px, transparent 14px)`
-                      }}
-                    />
+      {/* COL 1 — ticket icon */}
+      <div className="flex items-center justify-center px-4 py-4 flex-shrink-0 border-r-2 border-dashed border-pink-300">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V8l4-4h4l8.59 8.59a2 2 0 010 2.82z" stroke="#e91e8c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="7" cy="7" r="1.2" fill="#e91e8c"/>
+        </svg>
+      </div>
 
-                    {/* RIGHT — discount badge (bigger) */}
+   {/* COL 2 — label + pill, grows to fill */}
+<div className="flex flex-col items-start justify-center px-4 py-4 flex-1 gap-1.5 min-w-0">
+  <span className="text-sm sm:text-base font-black uppercase tracking-wide text-pink-700">
+  Coupon Code
+</span>
+  <span className="w-full flex items-center justify-center py-2 rounded-full bg-pink-600 text-white font-black text-base sm:text-lg tracking-wide">
+    {assignedCoupon.code}
+  </span>
+</div>
 
-                    {/* RIGHT — discount badge (bigger) */}
-                    <div
-                      className="flex flex-row items-center justify-center px-6 py-5 flex-shrink-0 gap-4 cursor-pointer select-none"
-                      style={{
-                        background: "#ebce5a",
-                        flex: "0 0 60%",
-                      }}
-                      onClick={handleApplyAssignedCoupon}
-                    >
-                      {/* Left text — Extra (outside the box) */}
-                      <span className="text-2xl font-black italic" style={{ color: "#15803d" }}>Extra</span>
+{/* COL 3 — FLAT % OFF badge, fills height */}
+<div className="flex flex-col items-center justify-center bg-yellow-200 px-6 py-4 flex-shrink-0 w-[140px] sm:w-[160px]">
+  <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-green-800 leading-tight">FLAT</span>
+  <div className="flex items-baseline gap-0.5">
+    <span className="text-3xl sm:text-4xl font-black text-green-800 leading-none">{assignedCoupon.discountPercent}%</span>
+    <span className="text-sm sm:text-base font-black text-green-800 leading-none">OFF</span>
+  </div>
+</div>
+    </div>
 
-                      {/* Vertical Divider (outside the box) */}
-                      <div className="w-px self-stretch my-2" style={{ background: "#15803d", opacity: 0.3 }} />
+    {/* ── INPUT ROW ── */}
+    <div className="flex items-center rounded-2xl border border-pink-200 bg-white overflow-hidden">
+      <div className="pl-4 pr-2 flex-shrink-0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V8l4-4h4l8.59 8.59a2 2 0 010 2.82z" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="7" cy="7" r="1" fill="#d1d5db"/>
+        </svg>
+      </div>
+      <input
+        type="text"
+        value={couponCodeInput}
+        onChange={(e) => setCouponCodeInput(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+        placeholder="Enter coupon code"
+        className="flex-1 py-3.5 px-2 text-sm text-gray-700 bg-transparent focus:outline-none placeholder:text-gray-400"
+      />
+      <button
+        type="button"
+        onClick={handleApplyCoupon}
+        className={`flex-shrink-0 px-6 py-3.5 text-sm font-bold text-white transition-colors rounded-r-2xl ${
+          appliedCoupon ? "bg-green-700" : "bg-gray-900 hover:bg-gray-700"
+        }`}
+      >
+        {appliedCoupon ? "✔ Applied" : "Apply"}
+      </button>
+    </div>
 
-                      {/* Right — Get / 15% / Off stacked — highlighted box */}
-                      <div
-                        className="flex flex-col items-center gap-0.5 px-4 py-3 rounded-2xl"
-                        style={{
-                          background: "#fff",
-                          border: "2px solid #15803d",
-                          boxShadow: "0 2px 10px rgba(21,128,61,0.12)",
-                        }}
-                      >
-                        <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "#16a34a" }}>Get</span>
-                        <span className="text-5xl font-black leading-none" style={{ color: "#15803d" }}>15%</span>
-                        <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "#16a34a" }}>Off</span>
-                      </div>
-                    </div>
-                  </div>
+    {/* ── AVAILABLE HINT ── */}
+    {!appliedCoupon && (
+      <div className="flex items-center gap-1.5 px-1">
+        <span className="text-xs text-gray-400 font-medium">Available:</span>
+        <button
+          type="button"
+          onClick={handleApplyAssignedCoupon}
+          className="flex items-center gap-1.5 text-xs font-semibold text-pink-600 hover:underline transition"
+        >
+          <span className="w-2 h-2 rounded-full bg-pink-600 flex-shrink-0" />
+          {assignedCoupon.code} • {assignedCoupon.discountPercent}% off
+        </button>
+      </div>
+    )}
 
-                  {/* Apply button */}
-                  <button
-                    type="button"
-                    onClick={handleApplyCoupon}
-                    className="w-full py-3 rounded-2xl text-sm font-bold transition-all"
-                    style={{
-                      background: appliedCoupon ? "#8b0a4a" : "#E83E8C",
-                      color: "#fff",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    {appliedCoupon ? "✔ Coupon Applied" : "Apply Coupon"}
-                  </button>
+    {/* ── SUCCESS BANNER ── */}
+    {appliedCoupon && (
+      <div className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
+        <span className="text-green-700 text-base leading-none">✔</span>
+        <p className="text-xs font-bold flex-1 text-green-700">
+          {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off your order!
+        </p>
+        <button
+          type="button"
+          onClick={handleRemoveCoupon}
+          className="text-[11px] text-green-700 underline hover:text-green-900 transition"
+        >
+          Remove
+        </button>
+      </div>
+    )}
 
-                  {/* Success banner */}
-                  {appliedCoupon && (
-                    <div
-                      className="flex items-center gap-3 rounded-2xl px-4 py-3"
-                      style={{
-                        background: "linear-gradient(135deg, #f0faf5 0%, #e4f7ec 100%)",
-                        border: "1.5px solid #a8dfc0",
-                      }}
-                    >
-                      <span className="text-base leading-none" style={{ color: "#1c7c54" }}>✔</span>
-                      <p className="text-xs font-bold flex-1" style={{ color: "#1c7c54" }}>
-                        {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off your order!
-                      </p>
-                      <button
-                        type="button"
-                        onClick={handleRemoveCoupon}
-                        className="text-[11px] underline transition hover:text-green-900"
-                        style={{ color: "#1c7c54" }}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Error message */}
-                  {!appliedCoupon && couponMessage.text && (
-                    <p className="text-xs font-medium px-1" style={{ color: couponMessage.type === "error" ? "#E83E8C" : "#2d6a4f" }}>
-                      {couponMessage.type === "error" ? "✘ " : "✔ "}{couponMessage.text}
-                    </p>
-                  )}
-                </div>
-              )}
+    {/* ── ERROR ── */}
+    {!appliedCoupon && couponMessage.text && couponMessage.type === "error" && (
+      <p className="text-xs font-medium px-1 text-pink-600">✘ {couponMessage.text}</p>
+    )}
+  </div>
+)}
 
 
 
