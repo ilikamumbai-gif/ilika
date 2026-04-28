@@ -119,6 +119,8 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
     : "No items found";
 
   const totalAmount = Number(orderPayload?.totalAmount || 0);
+  const originalSubtotal = Number(orderPayload?.originalSubtotal ?? totalAmount);
+  const discountAmount = Number(orderPayload?.discountAmount || 0);
   const source = String(orderPayload?.source || "WEBSITE");
   const paymentStatus = String(orderPayload?.paymentStatus || "Unpaid");
 
@@ -131,7 +133,9 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
     `Order Time (UTC): ${createdAt.toISOString()}`,
     `Source: ${source}`,
     `Payment Status: ${paymentStatus}`,
-    `Total Amount: Rs ${totalAmount.toFixed(2)}`,
+    `Subtotal (Before Discount): Rs ${originalSubtotal.toFixed(2)}`,
+    `Discount: Rs ${discountAmount.toFixed(2)}`,
+    `Grand Total: Rs ${totalAmount.toFixed(2)}`,
     "",
     "Customer Details:",
     `Name: ${userName}`,
@@ -646,6 +650,31 @@ const resolveCheckoutProductId = (item = {}) => {
   }
 
   return rawItemId;
+};
+
+const calculateOrderPricing = (items = []) => {
+  const safeItems = Array.isArray(items) ? items : [];
+
+  const originalSubtotal = safeItems.reduce((sum, item) => {
+    const qty = Math.max(Number(item?.quantity) || 1, 1);
+    const originalUnit = Number(item?.originalPrice ?? item?.price ?? 0);
+    return sum + (originalUnit * qty);
+  }, 0);
+
+  const discountedSubtotal = safeItems.reduce((sum, item) => {
+    const qty = Math.max(Number(item?.quantity) || 1, 1);
+    const discountedUnit = Number(item?.price || 0);
+    return sum + (discountedUnit * qty);
+  }, 0);
+
+  const discountAmount = Math.max(0, originalSubtotal - discountedSubtotal);
+
+  return {
+    originalSubtotal: Number(originalSubtotal.toFixed(2)),
+    discountedSubtotal: Number(discountedSubtotal.toFixed(2)),
+    discountAmount: Number(discountAmount.toFixed(2)),
+    grandTotal: Number(discountedSubtotal.toFixed(2)),
+  };
 };
 
 const normalizeIndianPhone = (phone = "") => {
@@ -1432,11 +1461,14 @@ app.post("/api/payments/verify", async (req, res) => {
       });
     }
 
+    const pricing = calculateOrderPricing(validatedItems);
     const docRef = await db.collection("orders").add({
       userId: orderData.userId,
       userEmail: orderData.userEmail,
       items: validatedItems,
-      totalAmount,
+      totalAmount: pricing.grandTotal,
+      originalSubtotal: pricing.originalSubtotal,
+      discountAmount: pricing.discountAmount,
       shippingAddress: addressDoc.data(),
       status: "Placed",
       paymentStatus: "Paid",
@@ -1450,7 +1482,9 @@ app.post("/api/payments/verify", async (req, res) => {
       userId: orderData.userId,
       userEmail: orderData.userEmail,
       items: validatedItems,
-      totalAmount,
+      totalAmount: pricing.grandTotal,
+      originalSubtotal: pricing.originalSubtotal,
+      discountAmount: pricing.discountAmount,
       shippingAddress: addressDoc.data(),
       status: "Placed",
       paymentStatus: "Paid",
@@ -1550,11 +1584,14 @@ app.post("/api/orders", async (req, res) => {
       });
     }
 
+    const pricing = calculateOrderPricing(validatedItems);
     const docRef = await db.collection("orders").add({
       userId,
       userEmail,
       items: validatedItems,
-      totalAmount,
+      totalAmount: pricing.grandTotal,
+      originalSubtotal: pricing.originalSubtotal,
+      discountAmount: pricing.discountAmount,
       shippingAddress: addressDoc.data(),
       status: "Placed",
       paymentStatus: "Unpaid",
@@ -1566,7 +1603,9 @@ app.post("/api/orders", async (req, res) => {
       userId,
       userEmail,
       items: validatedItems,
-      totalAmount,
+      totalAmount: pricing.grandTotal,
+      originalSubtotal: pricing.originalSubtotal,
+      discountAmount: pricing.discountAmount,
       shippingAddress: addressDoc.data(),
       status: "Placed",
       paymentStatus: "Unpaid",

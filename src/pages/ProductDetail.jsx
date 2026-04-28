@@ -1894,111 +1894,110 @@ const ProductDetail = () => {
                 <div className="hidden sm:block">{renderVariantSelector()}</div>
               )}
 
-             {assignedCoupon && (
-  <div className="space-y-3">
+              {assignedCoupon && (
+                <div className="space-y-3">
 
-  {/* ── TICKET CARD ── */}
-<div 
-  className="relative flex items-stretch rounded-2xl border-2 border-dashed border-pink-300 bg-white overflow-hidden cursor-pointer hover:border-pink-500 hover:shadow-md transition-all duration-200"
-  onClick={handleApplyAssignedCoupon}
->
+                  {/* ── TICKET CARD ── */}
+                  <div
+                    className="relative flex items-stretch rounded-2xl border-2 border-dashed border-pink-300 bg-white overflow-hidden cursor-pointer hover:border-pink-500 hover:shadow-md transition-all duration-200"
+                    onClick={handleApplyAssignedCoupon}
+                  >
 
-      {/* Decorative spark */}
-      <span className="absolute -top-1.5 -right-1.5 text-pink-400 text-lg leading-none select-none pointer-events-none z-10">✦</span>
+                    {/* Decorative spark */}
+                    <span className="absolute -top-1.5 -right-1.5 text-pink-400 text-lg leading-none select-none pointer-events-none z-10">✦</span>
 
-      {/* COL 1 — ticket icon */}
-      <div className="flex items-center justify-center px-4 py-4 flex-shrink-0 border-r-2 border-dashed border-pink-300">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V8l4-4h4l8.59 8.59a2 2 0 010 2.82z" stroke="#e91e8c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="7" cy="7" r="1.2" fill="#e91e8c"/>
-        </svg>
-      </div>
+                    {/* COL 1 — ticket icon */}
+                    <div className="flex items-center justify-center px-4 py-4 flex-shrink-0 border-r-2 border-dashed border-pink-300">
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V8l4-4h4l8.59 8.59a2 2 0 010 2.82z" stroke="#e91e8c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="7" cy="7" r="1.2" fill="#e91e8c" />
+                      </svg>
+                    </div>
 
-   {/* COL 2 — label + pill, grows to fill */}
-<div className="flex flex-col items-start justify-center px-4 py-4 flex-1 gap-1.5 min-w-0">
-  <span className="text-sm sm:text-base font-black uppercase tracking-wide text-pink-700">
-  Coupon Code
-</span>
-  <span className="w-full flex items-center justify-center py-2 rounded-full bg-pink-600 text-white font-black text-base sm:text-lg tracking-wide">
-    {assignedCoupon.code}
-  </span>
-</div>
+                    {/* COL 2 — label + pill, grows to fill */}
+                    <div className="flex flex-col items-start justify-center px-4 py-4 flex-1 gap-1.5 min-w-0">
+                      <span className="text-sm sm:text-base font-black uppercase tracking-wide text-pink-700">
+                        Coupon Code
+                      </span>
+                      <span className="w-full flex items-center justify-center py-2 rounded-full bg-pink-600 text-white font-black text-base sm:text-lg tracking-wide">
+                        {assignedCoupon.code}
+                      </span>
+                    </div>
 
-{/* COL 3 — FLAT % OFF badge, fills height */}
-<div className="flex flex-col items-center justify-center bg-yellow-200 px-6 py-4 flex-shrink-0 w-[140px] sm:w-[160px]">
-  <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-green-800 leading-tight">FLAT</span>
-  <div className="flex items-baseline gap-0.5">
-    <span className="text-3xl sm:text-4xl font-black text-green-800 leading-none">{assignedCoupon.discountPercent}%</span>
-    <span className="text-sm sm:text-base font-black text-green-800 leading-none">OFF</span>
-  </div>
-</div>
-    </div>
+                    {/* COL 3 — FLAT % OFF badge, fills height */}
+                    <div className="flex flex-col items-center justify-center bg-yellow-200 px-6 py-4 flex-shrink-0 w-[140px] sm:w-[160px]">
+                      <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-green-800 leading-tight">FLAT</span>
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-3xl sm:text-4xl font-black text-green-800 leading-none">{assignedCoupon.discountPercent}%</span>
+                        <span className="text-sm sm:text-base font-black text-green-800 leading-none">OFF</span>
+                      </div>
+                    </div>
+                  </div>
 
-    {/* ── INPUT ROW ── */}
-    <div className="flex items-center rounded-2xl border border-pink-200 bg-white overflow-hidden">
-      <div className="pl-4 pr-2 flex-shrink-0">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V8l4-4h4l8.59 8.59a2 2 0 010 2.82z" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="7" cy="7" r="1" fill="#d1d5db"/>
-        </svg>
-      </div>
-      <input
-        type="text"
-        value={couponCodeInput}
-        onChange={(e) => setCouponCodeInput(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
-        placeholder="Enter coupon code"
-        className="flex-1 py-3.5 px-2 text-sm text-gray-700 bg-transparent focus:outline-none placeholder:text-gray-400"
-      />
-      <button
-        type="button"
-        onClick={handleApplyCoupon}
-        className={`flex-shrink-0 px-6 py-3.5 text-sm font-bold text-white transition-colors rounded-r-2xl ${
-          appliedCoupon ? "bg-green-700" : "bg-gray-900 hover:bg-gray-700"
-        }`}
-      >
-        {appliedCoupon ? "✔ Applied" : "Apply"}
-      </button>
-    </div>
+                  {/* ── INPUT ROW ── */}
+                  <div className="flex items-center rounded-2xl border border-pink-200 bg-white overflow-hidden">
+                    <div className="pl-4 pr-2 flex-shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V8l4-4h4l8.59 8.59a2 2 0 010 2.82z" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="7" cy="7" r="1" fill="#d1d5db" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      value={couponCodeInput}
+                      onChange={(e) => setCouponCodeInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                      placeholder="Enter coupon code"
+                      className="flex-1 py-3.5 px-2 text-sm text-gray-700 bg-transparent focus:outline-none placeholder:text-gray-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      className={`flex-shrink-0 px-6 py-3.5 text-sm font-bold text-white transition-colors rounded-r-2xl ${appliedCoupon ? "bg-green-700" : "bg-gray-900 hover:bg-gray-700"
+                        }`}
+                    >
+                      {appliedCoupon ? "✔ Applied" : "Apply"}
+                    </button>
+                  </div>
 
-    {/* ── AVAILABLE HINT ── */}
-    {!appliedCoupon && (
-      <div className="flex items-center gap-1.5 px-1">
-        <span className="text-xs text-gray-400 font-medium">Available:</span>
-        <button
-          type="button"
-          onClick={handleApplyAssignedCoupon}
-          className="flex items-center gap-1.5 text-xs font-semibold text-pink-600 hover:underline transition"
-        >
-          <span className="w-2 h-2 rounded-full bg-pink-600 flex-shrink-0" />
-          {assignedCoupon.code} • {assignedCoupon.discountPercent}% off
-        </button>
-      </div>
-    )}
+                  {/* ── AVAILABLE HINT ── */}
+                  {!appliedCoupon && (
+                    <div className="flex items-center gap-1.5 px-1">
+                      <span className="text-xs text-gray-400 font-medium">Available:</span>
+                      <button
+                        type="button"
+                        onClick={handleApplyAssignedCoupon}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-pink-600 hover:underline transition"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-pink-600 flex-shrink-0" />
+                        {assignedCoupon.code} • {assignedCoupon.discountPercent}% off
+                      </button>
+                    </div>
+                  )}
 
-    {/* ── SUCCESS BANNER ── */}
-    {appliedCoupon && (
-      <div className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
-        <span className="text-green-700 text-base leading-none">✔</span>
-        <p className="text-xs font-bold flex-1 text-green-700">
-          {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off your order!
-        </p>
-        <button
-          type="button"
-          onClick={handleRemoveCoupon}
-          className="text-[11px] text-green-700 underline hover:text-green-900 transition"
-        >
-          Remove
-        </button>
-      </div>
-    )}
+                  {/* ── SUCCESS BANNER ── */}
+                  {appliedCoupon && (
+                    <div className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
+                      <span className="text-green-700 text-base leading-none">✔</span>
+                      <p className="text-xs font-bold flex-1 text-green-700">
+                        {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off your order!
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="text-[11px] text-green-700 underline hover:text-green-900 transition"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
 
-    {/* ── ERROR ── */}
-    {!appliedCoupon && couponMessage.text && couponMessage.type === "error" && (
-      <p className="text-xs font-medium px-1 text-pink-600">✘ {couponMessage.text}</p>
-    )}
-  </div>
-)}
+                  {/* ── ERROR ── */}
+                  {!appliedCoupon && couponMessage.text && couponMessage.type === "error" && (
+                    <p className="text-xs font-medium px-1 text-pink-600">✘ {couponMessage.text}</p>
+                  )}
+                </div>
+              )}
 
 
 

@@ -33,6 +33,8 @@ export const OrderProvider = ({ children }) => {
         userEmail: o.userEmail || "guest@email.com",
         total: o.totalAmount || 0,
         totalAmount: o.totalAmount || 0,
+        originalSubtotal: Number(o.originalSubtotal ?? o.totalAmount ?? 0),
+        discountAmount: Number(o.discountAmount || 0),
         status: o.status || "Placed",
         paymentStatus: o.paymentStatus || "Unpaid",
         paymentMethod: o.paymentMethod || (o.razorpay_payment_id ? "ONLINE" : "COD"),

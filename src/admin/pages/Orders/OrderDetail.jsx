@@ -88,7 +88,9 @@ const OrderDetail = () => {
     );
   }
 
-  const total      = order.totalAmount || order.total || 0;
+  const total      = Number(order.totalAmount || order.total || 0);
+  const originalSubtotal = Number(order.originalSubtotal ?? total);
+  const discountAmount = Number(order.discountAmount || Math.max(0, originalSubtotal - total));
   const statusCfg  = STATUS_CONFIG[order.status] || STATUS_CONFIG.Placed;
   const srcDisplay = normalizeSource(order.source);
   const srcColor   = SOURCE_STYLES[srcDisplay] || SOURCE_STYLES.Website;
@@ -349,34 +351,36 @@ const OrderDetail = () => {
 
       doc.setDrawColor(220, 220, 230);
       doc.setFillColor(250, 250, 253);
-      doc.roundedRect(totalsX, finalY, 80, 34, 3, 3, "FD");
+      doc.roundedRect(totalsX, finalY, 80, 42, 3, 3, "FD");
 
       doc.setFontSize(8.5);
       doc.setFont(undefined, "normal");
       doc.setTextColor(110, 110, 110);
       doc.text("Subtotal", totalsX + 5, finalY + 10);
-      doc.text("Shipping", totalsX + 5, finalY + 19);
+      doc.text("Discount", totalsX + 5, finalY + 18);
+      doc.text("Shipping", totalsX + 5, finalY + 26);
 
       doc.setFont(undefined, "bold");
       doc.setTextColor(30, 30, 30);
-      doc.text(formatPrice(total), totalsX + 75, finalY + 10, { align: "right" });
+      doc.text(formatPrice(originalSubtotal), totalsX + 75, finalY + 10, { align: "right" });
       doc.setTextColor(22, 163, 74);
-      doc.text("FREE", totalsX + 75, finalY + 19, { align: "right" });
+      doc.text(`-Rs. ${discountAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`, totalsX + 75, finalY + 18, { align: "right" });
+      doc.text("FREE", totalsX + 75, finalY + 26, { align: "right" });
 
       doc.setDrawColor(210, 210, 225);
-      doc.line(totalsX + 4, finalY + 23, totalsX + 76, finalY + 23);
+      doc.line(totalsX + 4, finalY + 30, totalsX + 76, finalY + 30);
 
       doc.setFillColor(238, 238, 255);
-      doc.roundedRect(totalsX + 1, finalY + 25, 78, 8, 2, 2, "F");
+      doc.roundedRect(totalsX + 1, finalY + 32, 78, 8, 2, 2, "F");
       doc.setFontSize(9);
       doc.setFont(undefined, "bold");
       doc.setTextColor(60, 60, 180);
-      doc.text("GRAND TOTAL", totalsX + 5, finalY + 31);
-      doc.text(formatPrice(total), totalsX + 75, finalY + 31, { align: "right" });
+      doc.text("GRAND TOTAL", totalsX + 5, finalY + 38);
+      doc.text(formatPrice(total), totalsX + 75, finalY + 38, { align: "right" });
 
       /* ── REVERSE CHARGE NOTE + SIGNATURE ── */
       const footerTopY       = pageHeight - footerHeight;
-      let noteY              = finalY + 46;
+      let noteY              = finalY + 54;
       const signatureBottomY = noteY + 29;
       if (signatureBottomY > footerTopY - 4) {
         noteY -= signatureBottomY - (footerTopY - 4);
@@ -611,7 +615,11 @@ const OrderDetail = () => {
           <div className="w-72 space-y-2 text-sm">
             <div className="flex justify-between text-gray-500">
               <span>Subtotal</span>
-              <span>₹{total.toLocaleString("en-IN")}</span>
+              <span>₹{originalSubtotal.toLocaleString("en-IN")}</span>
+            </div>
+            <div className="flex justify-between text-gray-500">
+              <span>Discount</span>
+              <span className="text-green-600">-{"\u20B9"}{discountAmount.toLocaleString("en-IN")}</span>
             </div>
             <div className="flex justify-between text-gray-500">
               <span>Shipping</span>
