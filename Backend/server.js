@@ -47,6 +47,58 @@ const formatIstDateTime = (date = new Date()) => {
   }).format(date);
 };
 
+const getIstDateStamp = (date = new Date()) => {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const year = parts.find((part) => part.type === "year")?.value || "0000";
+  const month = parts.find((part) => part.type === "month")?.value || "00";
+  const day = parts.find((part) => part.type === "day")?.value || "00";
+  return `${year}${month}${day}`;
+};
+
+const createOrderWithGeneratedId = async (orderData = {}) => {
+  const dateStamp = getIstDateStamp(new Date());
+  const counterRef = db
+    .collection("meta")
+    .doc("orderCounters")
+    .collection("daily")
+    .doc(dateStamp);
+
+  return db.runTransaction(async (transaction) => {
+    const counterSnap = await transaction.get(counterRef);
+    let nextSeq = Number(counterSnap.exists ? counterSnap.data()?.lastSeq : 0) || 0;
+    let selectedId = "";
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      nextSeq += 1;
+      const candidateId = `ORD-${dateStamp}-${String(nextSeq).padStart(4, "0")}`;
+      const orderRef = db.collection("orders").doc(candidateId);
+      const orderSnap = await transaction.get(orderRef);
+      if (!orderSnap.exists) {
+        selectedId = candidateId;
+        transaction.set(orderRef, orderData);
+        break;
+      }
+    }
+
+    if (!selectedId) {
+      throw new Error("order_id_generation_failed");
+    }
+
+    transaction.set(
+      counterRef,
+      { lastSeq: nextSeq, updatedAt: new Date() },
+      { merge: true }
+    );
+
+    return selectedId;
+  });
+};
+
 const sendAdminLoginAlert = async ({ username, role, req }) => {
   const transporter = getMailTransporter();
   if (!transporter) {
@@ -124,7 +176,7 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
   const source = String(orderPayload?.source || "WEBSITE");
   const paymentStatus = String(orderPayload?.paymentStatus || "Unpaid");
 
-  const subject = `New Order Received: ${String(orderId || "").slice(-8).toUpperCase()}`;
+  const subject = `New Order Received: ${String(orderId || "").toUpperCase()}`;
   const text = [
     "A new customer order has been received.",
     "",
@@ -195,7 +247,7 @@ const sendOrderCancelledAlert = async ({ orderId, orderPayload = {}, previousSta
         .join("\n")
     : "No items found";
 
-  const subject = `Order Cancelled Alert: ${String(orderId || "").slice(-8).toUpperCase()}`;
+  const subject = `Order Cancelled Alert: ${String(orderId || "").toUpperCase()}`;
   const text = [
     "A customer order has been cancelled.",
     "",
@@ -1532,7 +1584,7 @@ app.post("/api/payments/verify", async (req, res) => {
     }
 
     const pricing = calculateOrderPricing(validatedItems);
-    const docRef = await db.collection("orders").add({
+    const orderPayload = {
       userId: orderData.userId,
       userEmail: orderData.userEmail,
       items: validatedItems,
@@ -1546,25 +1598,12 @@ app.post("/api/payments/verify", async (req, res) => {
       razorpay_payment_id,
       paidAt: new Date(),
       createdAt: new Date(),
-    });
-
-    const orderPayload = {
-      userId: orderData.userId,
-      userEmail: orderData.userEmail,
-      items: validatedItems,
-      totalAmount: pricing.grandTotal,
-      originalSubtotal: pricing.originalSubtotal,
-      discountAmount: pricing.discountAmount,
-      shippingAddress: addressDoc.data(),
-      status: "Placed",
-      paymentStatus: "Paid",
-      source: orderData.source || "WEBSITE",
-      createdAt: new Date(),
     };
+    const orderId = await createOrderWithGeneratedId(orderPayload);
     let orderAlertEmail = { status: "unknown" };
     try {
       orderAlertEmail = await withTimeout(
-        sendOrderReceivedAlert({ orderId: docRef.id, orderPayload }),
+        sendOrderReceivedAlert({ orderId, orderPayload }),
         12000,
         "order_alert_email_timeout_paid"
       );
@@ -1574,7 +1613,7 @@ app.post("/api/payments/verify", async (req, res) => {
       console.error("ORDER ALERT EMAIL FAILED (PAID):", err?.message || err);
     }
 
-    res.json({ success: true, orderId: docRef.id, orderAlertEmail });
+    res.json({ success: true, orderId, orderAlertEmail });
   } catch (error) {
     console.error("VERIFY PAYMENT ERROR:", error);
     res.status(500).json({ error: "Payment verification failed" });
@@ -1655,20 +1694,6 @@ app.post("/api/orders", async (req, res) => {
     }
 
     const pricing = calculateOrderPricing(validatedItems);
-    const docRef = await db.collection("orders").add({
-      userId,
-      userEmail,
-      items: validatedItems,
-      totalAmount: pricing.grandTotal,
-      originalSubtotal: pricing.originalSubtotal,
-      discountAmount: pricing.discountAmount,
-      shippingAddress: addressDoc.data(),
-      status: "Placed",
-      paymentStatus: "Unpaid",
-      source: detectSource(source),
-      createdAt: new Date(),
-    });
-
     const orderPayload = {
       userId,
       userEmail,
@@ -1682,10 +1707,11 @@ app.post("/api/orders", async (req, res) => {
       source: detectSource(source),
       createdAt: new Date(),
     };
+    const orderId = await createOrderWithGeneratedId(orderPayload);
     let orderAlertEmail = { status: "unknown" };
     try {
       orderAlertEmail = await withTimeout(
-        sendOrderReceivedAlert({ orderId: docRef.id, orderPayload }),
+        sendOrderReceivedAlert({ orderId, orderPayload }),
         12000,
         "order_alert_email_timeout_cod"
       );
@@ -1695,7 +1721,7 @@ app.post("/api/orders", async (req, res) => {
       console.error("ORDER ALERT EMAIL FAILED (COD):", err?.message || err);
     }
 
-    res.json({ orderId: docRef.id, orderAlertEmail });
+    res.json({ orderId, orderAlertEmail });
   } catch (err) {
     console.error("CREATE ORDER ERROR:", err);
     res.status(500).json({ error: "Failed to place order" });

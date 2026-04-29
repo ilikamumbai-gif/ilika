@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Phone, ShoppingBag, IndianRupee, CheckCircle, Clock } 
 import AdminLayout from "../../components/AdminLayout";
 import { useUsers } from "../../context/UserContext";
 import { useOrders } from "../../context/OrderContext";
+import { formatOrderRef } from "../../../utils/orderId";
 
 const STATUS_STYLES = {
   Placed:    "bg-blue-50 text-blue-700 border border-blue-200",
@@ -125,7 +126,7 @@ const UserDetail = () => {
               <tbody>
                 {userOrders.map(order => (
                   <tr key={order.id} className="hover:bg-gray-50/70 transition-colors" style={{ borderBottom: "1px solid #F5F5F5" }}>
-                    <td className="px-5 py-3.5 font-mono text-xs text-gray-500">#{order.id.slice(-8)}</td>
+                    <td className="px-5 py-3.5 font-mono text-xs text-gray-500">#{formatOrderRef(order.id)}</td>
                     <td className="px-5 py-3.5 text-xs text-gray-500">{order.date}</td>
                     <td className="px-5 py-3.5 text-xs text-gray-500">{order.items?.length || 0}</td>
                     <td className="px-5 py-3.5 font-bold text-gray-900">₹{order.total?.toLocaleString("en-IN")}</td>

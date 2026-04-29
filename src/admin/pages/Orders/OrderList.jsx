@@ -5,6 +5,7 @@ import AdminLayout from "../../components/AdminLayout";
 import { useOrders } from "../../context/OrderContext";
 import { logActivity } from "../../Utils/logActivity";
 import { normalizeSource } from "../../Utils/trafficSource";
+import { formatOrderRef } from "../../../utils/orderId";
 
 const STATUS_STYLES = {
   Placed:    "bg-blue-50 text-blue-700 border border-blue-200",
@@ -181,7 +182,7 @@ const OrderList = () => {
                         {/* Order ID */}
                         <td className="px-5 py-4">
                           <span className="font-mono text-xs font-semibold text-gray-500">
-                            #{order.id.slice(-8)}
+                            #{formatOrderRef(order.id)}
                           </span>
                         </td>
 
@@ -278,7 +279,7 @@ const OrderList = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="font-semibold text-gray-900">{order.shippingAddress?.name || "—"}</p>
-                        <p className="text-xs text-gray-400 font-mono">#{order.id.slice(-8)}</p>
+                        <p className="text-xs text-gray-400 font-mono">#{formatOrderRef(order.id)}</p>
                       </div>
                       <span className="font-bold text-gray-900">₹{order.total?.toLocaleString("en-IN")}</span>
                     </div>

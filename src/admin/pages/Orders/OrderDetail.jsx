@@ -11,6 +11,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { logActivity } from "../../Utils/logActivity";
 import { normalizeSource } from "../../Utils/trafficSource";
+import { formatOrderId, formatOrderRef } from "../../../utils/orderId";
 
 /* ─────────────────── HELPERS ─────────────────── */
 
@@ -120,7 +121,7 @@ const OrderDetail = () => {
       String(date.getMonth() + 1).padStart(2, "0") +
       String(date.getDate()).padStart(2, "0") +
       "-" +
-      order.id.slice(-4).toUpperCase();
+      formatOrderRef(order.id).slice(-4).toUpperCase();
 
     const formatPrice = (v) =>
       `Rs. ${Number(v).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
@@ -183,7 +184,7 @@ const OrderDetail = () => {
       const metaLeft = [
         ["Invoice No",     invoiceNumber],
         ["Invoice Date",   date.toLocaleDateString("en-IN")],
-        ["Order ID",       order.id],
+        ["Order ID",       formatOrderId(order.id)],
         ["Payment Method", order.paymentMethod === "ONLINE" ? "Online (Razorpay)" : "Cash on Delivery"],
         ["Payment Status", order.paymentStatus],
       ];
@@ -428,7 +429,7 @@ const OrderDetail = () => {
           </button>
           <div>
             <div className="flex items-center flex-wrap gap-2">
-              <h1 className="text-xl font-bold text-gray-900">Order #{order.id.slice(-10)}</h1>
+              <h1 className="text-xl font-bold text-gray-900">Order #{formatOrderRef(order.id)}</h1>
               <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold text-white rounded-full ${srcColor}`}>
                 <Globe size={11} /> {srcDisplay}
               </span>

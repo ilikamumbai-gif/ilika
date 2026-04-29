@@ -5,6 +5,7 @@ import ProductCard from "./ProductCard";
 const ProductList = ({
   categoryId,
   limit,
+  offset = 0,
   buttonBg,
   buttonText,
   productNames = [],
@@ -34,6 +35,10 @@ const ProductList = ({
       (item) => !priorityNames.includes(item.name)
     );
     filteredProducts = [...priorityItems, ...restItems];
+  }
+
+  if (offset > 0) {
+    filteredProducts = filteredProducts.slice(offset);
   }
 
   if (limit) {

@@ -16,6 +16,7 @@ import { useCartEvents } from "../context/CartEventContext";
 import { useReviews } from "../context/ReviewContext";
 import { useNavigate } from "react-router-dom";
 import { normalizeSource } from "../Utils/trafficSource";
+import { formatOrderRef } from "../../utils/orderId";
 
 const STATUS_COLORS = {
   Placed:    "bg-blue-100 text-blue-700",
@@ -144,7 +145,7 @@ const Dashboard = () => {
                     <p className="text-sm font-semibold text-gray-800 truncate">
                       {order.shippingAddress?.name || order.userEmail}
                     </p>
-                    <p className="text-xs text-gray-400 truncate">#{order.id.slice(-8)}</p>
+                    <p className="text-xs text-gray-400 truncate">#{formatOrderRef(order.id)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">

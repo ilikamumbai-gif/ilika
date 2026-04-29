@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import Heading from "../components/Heading";
 import CartDrawer from "../components/CartDrawer";
 import { useAuth } from "../context/AuthContext";
+import { formatOrderId, formatOrderRef } from "../utils/orderId";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const CANCEL_SUPPORT_EMAIL = "ilika.mumbai@gamil.com";
@@ -156,7 +157,7 @@ const UserDetail = () => {
   const [cancelBusyOrderId, setCancelBusyOrderId] = useState("");
 
   const buildCancellationMailto = (order = {}) => {
-    const orderIdShort = String(order?.id || "").slice(-8).toUpperCase();
+    const orderIdShort = formatOrderRef(order?.id);
     const subject = `Order Cancellation Request - ${orderIdShort || "Order"}`;
     const body = [
       "Hi Ilika Team,",
@@ -587,7 +588,7 @@ const UserDetail = () => {
                               {/* Top row */}
                               <div className="flex items-start justify-between gap-4 flex-wrap">
                                 <div>
-                                  <p className="text-sm font-semibold text-gray-800">Order #{order.id?.slice(-8)}</p>
+                                  <p className="text-sm font-semibold text-gray-800">Order #{formatOrderRef(order.id)}</p>
                                   <p className="text-xs text-gray-400 mt-1">Placed on {orderDate}</p>
                                 </div>
                                 <div className="flex flex-col items-end gap-1.5">
@@ -640,7 +641,7 @@ const UserDetail = () => {
                                       { label: "Shipping Address", val: buildAddressText(shippingAddr) || "Not available" },
                                       { label: "Payment Status",   val: order.paymentStatus || "Pending" },
                                       { label: "Order Source",     val: order.source || "WEBSITE" },
-                                      { label: "Order ID",         val: order.id || "-" },
+                                      { label: "Order ID",         val: formatOrderId(order.id) },
                                     ].map(({ label, val }) => (
                                       <div key={label} className="rounded-xl border border-gray-100 bg-violet-50/30 p-3">
                                         <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
