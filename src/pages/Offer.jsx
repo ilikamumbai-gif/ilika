@@ -14,7 +14,7 @@ const offers = [
   type: "deal",
   title: "Hydration + Glow Combo",
   description:
-    "Buy any 2 premium gelly face masks for just ₹699 and get a FREE Hydra Gel face moisturizer worth ₹199. Glow, hydrate & save more!",
+    "Buy any 2 premium gelly face masks for just ₹699 and get a FREE Hydra Gel face moisturizer. Glow, hydrate & save more!",
   link: "/combo"
 }
 ];
