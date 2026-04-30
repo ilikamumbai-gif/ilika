@@ -18,16 +18,7 @@ const MaskDuoOffer = () => {
   ];
 
   const FREE_MASK_NAMES = [
-    "collagen sheet mask | firming & anti-aging",
-    "red algae hydrating sheet mask | hydration & radiance",
-    "tea tree face sheet mask | hydration & acne-control",
-    "cucumber sheet mask | acne control",
-    "kakadu plum sheet mask | glowing & youthful skin",
-    "kumkumadi face sheet mask | hydration & rejuvenation",
-    "ginseng anti-aging sheet mask | anti-aging & revitalizing",
-    "alpha arbutin sheet mask | bright & spotless skin",
-    "acai berry face sheet mask | antiwrinkle",
-    // "hydra gel face moisturizer | for dry & dehydrated skin | 50g",
+    "hydra gel face moisturizer | for dry & dehydrated skin | 50g",
   ];
 
   const maskProducts = products.filter(
@@ -70,7 +61,7 @@ const MaskDuoOffer = () => {
     );
 
     if (!freeMaskProducts.length) return;
-    
+
 
     let index = 0;
 
@@ -143,7 +134,7 @@ const MaskDuoOffer = () => {
       const comboItem = {
         id: `mask-duo-custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         baseProductId: "mask-duo-custom",
-        name: "Custom Mask Duo + Free Mask",
+        name: "Premium Mask Duo + Hydra Gel",
         price: COMBO_PRICE,
         quantity: 1,
         isCombo: true,
@@ -184,18 +175,23 @@ const MaskDuoOffer = () => {
       className="max-w-7xl mx-auto px-4 pb-16 pt-4"
       style={{ background: "#fff8fa" }}
     >
-      {/* ── Heading ── */}
+
       <div className="text-center mb-10">
         <span className="inline-block bg-[#FAD4C0] text-[#7A2E3A] text-xs font-semibold px-4 py-1 rounded-full mb-3 tracking-wide uppercase">
-          New Offer
+          Limited Time Offer
         </span>
+
         <h2 className="text-3xl font-semibold text-[#7A2E3A]">
-          ✨ Pick 2 Masks + Get 1 FREE
+          Hydration + Glow Combo
         </h2>
-        <p className="text-sm text-gray-500 mt-2">
-          Choose 2 masks for just{" "}
-          <span className="text-[#E96A6A] font-semibold">₹{COMBO_PRICE}</span>
+
+        <p className="text-sm text-gray-600 mt-2">
+          Buy 2 Premium Gelly Face Masks for
+          <span className="text-[#E96A6A] font-semibold"> ₹699</span>
+          &nbsp;and get <span className="font-semibold text-green-600">Hydra Gel FREE</span>
         </p>
+
+
       </div>
 
       {/* ── Grid + Sidebar ── */}
@@ -289,6 +285,7 @@ const MaskDuoOffer = () => {
             )}
 
             <div className="flex flex-wrap gap-3">
+              {/* Selected Masks */}
               {selectedMasks.map((p) => {
                 const img =
                   p?.variants?.[0]?.images?.[0] ||
@@ -296,23 +293,52 @@ const MaskDuoOffer = () => {
                   p?.image ||
                   p?.imageUrl ||
                   "/placeholder.webp";
+
                 return (
-                  <div key={p._id || p.id} className="relative text-center">
-                    <img loading="lazy"
-                      src={img}
-                      alt={p.name}
-                      className="w-16 h-16 object-contain border border-gray-200 rounded-lg p-1 bg-white shadow-sm"
-                    />
+                  <div key={p._id || p.id} className="relative text-center w-20">
+
+                    {/* Remove */}
                     <button
                       onClick={() => toggleMask(p)}
-                      className="absolute -top-2 -right-2 bg-[#E96A6A] hover:bg-[#D45A5A] text-white w-5 h-5 rounded-full text-xs"
+                      className="absolute -top-2 -right-2 bg-[#E96A6A] text-white w-5 h-5 rounded-full text-xs z-10"
                     >
                       ×
                     </button>
-                    <p className="text-[10px] mt-1 line-clamp-2 w-16">{p.name}</p>
+
+                    <div className="bg-white border rounded-xl p-1 shadow-sm">
+                      <img src={img} className="w-full h-16 object-contain" />
+                    </div>
+
+                    <p className="text-[10px] mt-1 line-clamp-2">{p.name}</p>
                   </div>
                 );
               })}
+
+              {/* ✅ FREE HYDRA GEL */}
+              {selectedMasks.length === 2 && currentFreeMask && (
+                <div className="relative text-center w-20">
+
+                  {/* FREE badge */}
+                  <span className="absolute -top-2 left-0 bg-green-500 text-white text-[9px] px-2 rounded-full z-10">
+                    FREE
+                  </span>
+
+                  <div className="bg-white border border-green-200 rounded-xl p-1 shadow-sm">
+                    <img
+                      src={
+                        currentFreeMask?.variants?.[0]?.images?.[0] ||
+                        currentFreeMask?.images?.[0] ||
+                        currentFreeMask?.image
+                      }
+                      className="w-full h-16 object-contain"
+                    />
+                  </div>
+
+                  <p className="text-[10px] mt-1 line-clamp-2 text-green-700 font-medium">
+                    Hydra Gel
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -331,37 +357,12 @@ const MaskDuoOffer = () => {
                   ✨ Add 1 more mask to unlock ₹{COMBO_PRICE} duo offer!
                 </p>
                 <p className="text-xs text-green-600 mt-1">
-                  🎁 + Free mask on combo!
+                  🎁 + Free Hydra Gel on combo!
                 </p>
               </div>
             )}
 
-            {selectedMasks.length === 2 && (
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  {originalMRP > COMBO_PRICE && (
-                    <p className="text-sm text-gray-400 line-through">₹{originalMRP}</p>
-                  )}
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-[2px] rounded-full font-medium">
-                    Duo Price
-                  </span>
-                </div>
 
-                <p className="text-xl font-bold text-[#7A2E3A]">₹{COMBO_PRICE}</p>
-
-                {savings > 0 && (
-                  <p className="text-xs text-green-600 mt-1">
-                    🎉 You save ₹{savings}!
-                  </p>
-                )}
-
-
-
-                <p className="text-xs text-green-600">
-                  🎁 + Free mask worth ₹199 included!
-                </p>
-              </div>
-            )}
 
             <button
               disabled={selectedMasks.length !== 2 || loading}
@@ -377,7 +378,7 @@ const MaskDuoOffer = () => {
                   Adding...
                 </>
               ) : (
-                "Add Duo To Cart"
+                "Grab Offer @ ₹699"
               )}
             </button>
 

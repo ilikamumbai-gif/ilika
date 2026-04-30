@@ -872,7 +872,7 @@ const Checkout = () => {
                       const freeMaskName =
                         sub?.name && sub.name.trim()
                           ? sub.name
-                          : "Surprise Mask (FREE)";
+                          : "Hydra Gel Face Moisturizer";
 
                       return (
                         <div key={`${item.id}-combo-${index}`} className="flex items-center justify-between text-xs">

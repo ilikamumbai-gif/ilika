@@ -108,13 +108,13 @@ const CartDrawer = () => {
                                   ? sub.image[0]
                                   : sub.image || "/placeholder.webp"
                               }
-                              alt={isSurpriseMask ? "Surprise Mask (FREE)" : sub.name}
+                              alt={isSurpriseMask ? "Hydra Gel Face Moisturizer" : sub.name}
                               className="w-10 h-10 rounded object-cover border"
                             />
 
                             <div className="flex-1">
                               <p className="text-xs font-medium">
-                                {isSurpriseMask ? "Surprise Mask (FREE)" : sub.name}
+                                {isSurpriseMask ? "Hydra Gel Face Moisturizer" : sub.name}
                               </p>
                               {sub.variantLabel && (
                                 <p className="text-[11px] text-gray-500">
