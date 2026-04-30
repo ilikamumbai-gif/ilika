@@ -3,20 +3,21 @@ import OfferCard from "../components/OfferCard";
 
 const offers = [
   {
+  type: "deal",
+  title: "Hydration + Glow Combo",
+  description:
+    "Buy any 2 premium gelly face masks for just ₹699 and get a FREE Hydra Gel face moisturizer. Glow, hydrate & save more!",
+  link: "/combo"
+},
+  {
     type: "coupon",
     title: "Flat 15% OFF on ILIKA Hair Appliances",
     description:
       "Get 15% OFF on Ilika hair styling tools using this coupon.",
     code: "ILIKA15",
     link: "/combo"
-  },
-{
-  type: "deal",
-  title: "Hydration + Glow Combo",
-  description:
-    "Buy any 2 premium gelly face masks for just ₹699 and get a FREE Hydra Gel face moisturizer. Glow, hydrate & save more!",
-  link: "/combo"
-}
+  }
+
 ];
 
 const Offers = () => {
