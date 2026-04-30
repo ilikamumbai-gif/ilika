@@ -12,9 +12,9 @@ const offers = [
   },
 {
   type: "deal",
-  title: "Buy 2 Masks + Get 1 FREE",
+  title: "Hydration + Glow Combo",
   description:
-    "Worth ₹997 in total, now yours for just ₹699! Includes 2 premium masks plus a FREE sheet mask worth ₹199.",
+    "Buy any 2 premium gelly face masks for just ₹699 and get a FREE Hydra Gel face moisturizer worth ₹199. Glow, hydrate & save more!",
   link: "/combo"
 }
 ];
