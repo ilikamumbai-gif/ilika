@@ -17,9 +17,36 @@ const MaskDuoOffer = () => {
     "ilika 4 in 1 collagen face mask glow firm & hydrate",
   ];
 
-  const FREE_MASK_NAMES = [
-    "hydra gel face moisturizer | for dry & dehydrated skin | 50g",
-  ];
+  const normalizeName = (name = "") =>
+    name.toLowerCase().replace(/\s+/g, " ").trim();
+
+  const isHydraFreeMask = (name = "") => {
+    const normalized = normalizeName(name);
+    return (
+      normalized.includes("hydra gel face moisturizer") &&
+      normalized.includes("for dry & dehydrated skin")
+    );
+  };
+
+  const formatHydraName = (name = "") => {
+    if (!isHydraFreeMask(name)) return name;
+    return name.replace(/\|\s*50\s*g\b/i, "| 25 g").replace(/\|\s*25g\b/i, "| 25 g");
+  };
+
+  const getFreeMaskProducts = () =>
+    products
+      .filter(
+        (p) =>
+          p.isActive !== false &&
+          isHydraFreeMask(p.name) &&
+          !/\b50\s*g\b/i.test(normalizeName(p.name))
+      )
+      .sort((a, b) => {
+        const aIs25g = normalizeName(a.name).includes("25 g") || normalizeName(a.name).includes("25g");
+        const bIs25g = normalizeName(b.name).includes("25 g") || normalizeName(b.name).includes("25g");
+        if (aIs25g === bIs25g) return 0;
+        return aIs25g ? -1 : 1;
+      });
 
   const maskProducts = products.filter(
     (p) =>
@@ -54,11 +81,7 @@ const MaskDuoOffer = () => {
   const savings = originalMRP > COMBO_PRICE ? originalMRP - COMBO_PRICE : 0;
 
   useEffect(() => {
-    const freeMaskProducts = products.filter(
-      (p) =>
-        p.isActive !== false &&
-        FREE_MASK_NAMES.includes(p.name?.toLowerCase().trim())
-    );
+    const freeMaskProducts = getFreeMaskProducts();
 
     if (!freeMaskProducts.length) return;
 
@@ -109,11 +132,7 @@ const MaskDuoOffer = () => {
     setTimeout(() => {
       const FREE_MASK_PRICE = 199;
 
-      const freeMaskProducts = products.filter(
-        (p) =>
-          p.isActive !== false &&
-          FREE_MASK_NAMES.includes(p.name?.toLowerCase().trim())
-      );
+      const freeMaskProducts = getFreeMaskProducts();
 
       const freeMask =
         freeMaskProducts[Math.floor(Math.random() * freeMaskProducts.length)];
@@ -141,7 +160,7 @@ const MaskDuoOffer = () => {
         image: getImage(selectedMasks[0]),
         freeMaskOptions: freeMaskProducts.map((mask) => ({
           id: mask._id || mask.id,
-          name: mask.name,
+          name: formatHydraName(mask.name),
           image: getImage(mask),
         })),
         comboItems: [
@@ -152,7 +171,7 @@ const MaskDuoOffer = () => {
           })),
           {
             id: `free-mask-${freeMask._id || freeMask.id || Date.now()}`,
-            name: freeMask.name + " (FREE)",
+            name: formatHydraName(freeMask.name) + " (FREE)",
             image: getImage(freeMask),
             isFree: true,
             price: 0,

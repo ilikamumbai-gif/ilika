@@ -1172,11 +1172,31 @@ const ProductDetail = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        let found = products.find(p => createSlug(p.name) === slug);
+        const slugAliases = {
+          "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-25g": [
+            "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-50g",
+            "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-25-g",
+          ],
+        };
+
+        const candidateSlugs = [slug, ...(slugAliases[slug] || [])];
+
+        let found = products.find((p) =>
+          candidateSlugs.includes(createSlug(p.name))
+        );
         if (!found) {
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/slug/${slug}`);
-          if (!res.ok) throw new Error();
-          found = await res.json();
+          let resolved = null;
+          for (const candidateSlug of candidateSlugs) {
+            const res = await fetch(
+              `${import.meta.env.VITE_API_URL}/api/products/slug/${candidateSlug}`
+            );
+            if (res.ok) {
+              resolved = await res.json();
+              break;
+            }
+          }
+          if (!resolved) throw new Error();
+          found = resolved;
         }
         setProduct(found);
         trackViewContent(found.id || found._id, found.name, found.variants?.[0]?.price ?? found.price ?? 0);
