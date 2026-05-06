@@ -8,11 +8,12 @@ import {
   Youtube,
   MessageCircle
 } from "lucide-react";
-import logo from "../../public/Images/logo2.webp";
-import amazon from "../../public/Images/Amazon.webp";
-import flipcart from "../../public/Images/Flipcart.webp";
-import meesho from "../../public/Images/Meesho.webp";
 import { Link } from "react-router-dom";
+
+const logo = "/Images/logo2.webp";
+const amazon = "/Images/Amazon.webp";
+const flipcart = "/Images/Flipcart.webp";
+const meesho = "/Images/Meesho.webp";
 
 const Footer = () => {
   return (

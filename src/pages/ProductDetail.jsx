@@ -1429,11 +1429,6 @@ const ProductDetail = () => {
     setIsBuying(true);
 
     try {
-      if (!auth.currentUser) {
-        navigate("/user?redirect=checkout");
-        return;
-      }
-
       if (!isInCart) {
         handleAddToCart();
         setTimeout(() => {

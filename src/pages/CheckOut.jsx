@@ -107,6 +107,8 @@ const OtpWidget = ({
 
 const normalizeIndianPhone = (phone = "") =>
   String(phone).replace(/\D/g, "").slice(-10);
+const guestAddressStorageKey = "guest_checkout_addresses";
+const guestVerifiedPhonesStorageKey = "guest_verified_phones";
 
 const getPhoneVerificationAuth = () => {
   const existingApp = getApps().find((appInstance) => appInstance.name === "checkout-phone-verification");
@@ -204,21 +206,20 @@ const Checkout = () => {
 
   // â”€â”€â”€ SEND OTP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const sendOtp = async (phone) => {
-    if (!currentUser) {
-      alert("Please log in before verifying your phone number");
-      return false;
-    }
-
     if (otpSending || resendCooldown > 0) {
       return false;
     }
 
     const sanitizedPhone = normalizeIndianPhone(phone);
-    const verifiedPhoneNumbers = Array.isArray(userData?.verifiedPhoneNumbers)
+    const verifiedPhoneNumbers = currentUser && Array.isArray(userData?.verifiedPhoneNumbers)
       ? userData.verifiedPhoneNumbers.map(normalizeIndianPhone)
+      : [];
+    const guestVerifiedPhoneNumbers = !currentUser
+      ? guestVerifiedPhones.map(normalizeIndianPhone)
       : [];
     const isCurrentNumberVerified =
       verifiedPhoneNumbers.includes(sanitizedPhone) ||
+      guestVerifiedPhoneNumbers.includes(sanitizedPhone) ||
       normalizeIndianPhone(currentUser?.phoneNumber || "") === sanitizedPhone ||
       otpVerified;
 
@@ -295,22 +296,34 @@ const Checkout = () => {
       const phoneVerificationAuth = getPhoneVerificationAuth();
       await confirmationResult.confirm(otp);
 
-      // Persist verification in Firestore via backend
-      const token = await currentUser.getIdToken();
-      const res = await fetch(`${API_URL}/api/users/${currentUser.uid}/verify-phone`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone: normalizeIndianPhone(otpPhone || selectedAddress?.phone || ""),
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to save verification");
-
-      // Refresh userData so userData.phoneVerified becomes true
-      await refreshUserData();
+      if (currentUser) {
+        // Persist verification in Firestore via backend for logged-in users.
+        const token = await currentUser.getIdToken();
+        const res = await fetch(`${API_URL}/api/users/${currentUser.uid}/verify-phone`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            phone: normalizeIndianPhone(otpPhone || selectedAddress?.phone || ""),
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to save verification");
+        await refreshUserData();
+      }
+      if (!currentUser) {
+        const verifiedPhone = normalizeIndianPhone(otpPhone || selectedAddress?.phone || "");
+        if (verifiedPhone) {
+          setGuestVerifiedPhones((prev) => {
+            const normalized = prev.map(normalizeIndianPhone);
+            if (normalized.includes(verifiedPhone)) return prev;
+            const updated = [...normalized, verifiedPhone];
+            localStorage.setItem(guestVerifiedPhonesStorageKey, JSON.stringify(updated));
+            return updated;
+          });
+        }
+      }
 
       setOtpVerified(true);
       setOtpSent(false);
@@ -350,6 +363,7 @@ const Checkout = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [guestVerifiedPhones, setGuestVerifiedPhones] = useState([]);
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
 
@@ -381,6 +395,17 @@ const Checkout = () => {
   useEffect(() => {
     return () => destroyRecaptcha();
   }, []);
+
+  useEffect(() => {
+    if (currentUser) return;
+    try {
+      const stored = localStorage.getItem(guestVerifiedPhonesStorageKey);
+      const parsed = stored ? JSON.parse(stored) : [];
+      setGuestVerifiedPhones(Array.isArray(parsed) ? parsed.map(normalizeIndianPhone) : []);
+    } catch {
+      setGuestVerifiedPhones([]);
+    }
+  }, [currentUser]);
 
   // â”€â”€â”€ Select address handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleSelectAddress = (id) => {
@@ -440,17 +465,37 @@ const Checkout = () => {
 
   // â”€â”€â”€ FETCH ADDRESSES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
-    if (!currentUser) return;
-    (async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/users/${currentUser.uid}/address`);
-        const data = await res.json();
-        setAddresses(data);
-      } catch (err) {
-        console.error("Address fetch failed:", err);
-      }
-    })();
+    if (currentUser) {
+      (async () => {
+        try {
+          const res = await fetch(`${API_URL}/api/users/${currentUser.uid}/address`);
+          const data = await res.json();
+          setAddresses(Array.isArray(data) ? data : []);
+        } catch (err) {
+          console.error("Address fetch failed:", err);
+        }
+      })();
+      return;
+    }
+
+    try {
+      const stored = localStorage.getItem(guestAddressStorageKey);
+      const parsed = stored ? JSON.parse(stored) : [];
+      setAddresses(Array.isArray(parsed) ? parsed : []);
+    } catch {
+      setAddresses([]);
+    }
   }, [currentUser, API_URL]);
+
+  useEffect(() => {
+    if (!addresses.length) {
+      setShowForm(true);
+      return;
+    }
+    if (!selectedAddressId) {
+      setSelectedAddressId(addresses[0].id);
+    }
+  }, [addresses, selectedAddressId]);
 
   // â”€â”€â”€ LOAD RAZORPAY SCRIPT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
@@ -471,8 +516,6 @@ const Checkout = () => {
 
   // â”€â”€â”€ SAVE ADDRESS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const saveAddress = async () => {
-    if (!currentUser) return alert("Login required");
-
     const phoneRegex = /^[6-9]\d{9}$/;
     const pincodeRegex = /^\d{6}$/;
 
@@ -482,6 +525,20 @@ const Checkout = () => {
     if (!address.city.trim()) { alert("Please enter your city"); return; }
     if (!address.state.trim()) { alert("Please enter your state"); return; }
     if (!address.addressLine.trim()) { alert("Please enter your full address"); return; }
+
+    if (!currentUser) {
+      const guestAddress = {
+        id: `guest-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        ...address,
+      };
+      const updated = [...addresses, guestAddress];
+      setAddresses(updated);
+      setSelectedAddressId(guestAddress.id);
+      setShowForm(false);
+      localStorage.setItem(guestAddressStorageKey, JSON.stringify(updated));
+      setAddress({ name: "", phone: "", pincode: "", city: "", state: "", addressLine: "" });
+      return;
+    }
 
     try {
       const res = await fetch(`${API_URL}/api/users/${currentUser.uid}/address`, {
@@ -511,8 +568,11 @@ const Checkout = () => {
 
   // â”€â”€â”€ PHONE VERIFIED CHECK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const selectedPhone = normalizeIndianPhone(selectedAddress?.phone || "");
-  const verifiedPhoneNumbers = Array.isArray(userData?.verifiedPhoneNumbers)
+  const verifiedPhoneNumbers = currentUser && Array.isArray(userData?.verifiedPhoneNumbers)
     ? userData.verifiedPhoneNumbers.map(normalizeIndianPhone)
+    : [];
+  const guestVerifiedPhoneNumbers = !currentUser
+    ? guestVerifiedPhones.map(normalizeIndianPhone)
     : [];
   const isSelectedPhoneLinked = Boolean(
     selectedPhone &&
@@ -520,7 +580,12 @@ const Checkout = () => {
   );
   const isPhoneVerified = Boolean(
     selectedPhone &&
-    (verifiedPhoneNumbers.includes(selectedPhone) || isSelectedPhoneLinked || otpVerified)
+    (
+      verifiedPhoneNumbers.includes(selectedPhone) ||
+      guestVerifiedPhoneNumbers.includes(selectedPhone) ||
+      isSelectedPhoneLinked ||
+      otpVerified
+    )
   );
 
   // Show OTP widget only when an address is selected and phone not yet verified
@@ -533,14 +598,12 @@ const Checkout = () => {
   const handlePlaceOrder = async () => {
     if (loading) return;
 
-    if (!currentUser) {
-      alert("Login required");
-      navigate("/login");
-      return;
-    }
-
     if (!selectedAddressId) {
       alert("Please select an address");
+      return;
+    }
+    if (!selectedAddress) {
+      alert("Selected address is invalid. Please choose another address.");
       return;
     }
 
@@ -576,11 +639,12 @@ const Checkout = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            userId: currentUser.uid,
-            userEmail: currentUser.email,
+            userId: currentUser?.uid || null,
+            userEmail: currentUser?.email || null,
             items: itemsPayload,
             totalAmount: total,
-            shippingAddressId: selectedAddressId,
+            shippingAddressId: currentUser ? selectedAddressId : null,
+            shippingAddress: selectedAddress || null,
             paymentMethod: "COD",
             source,
           }),
@@ -630,11 +694,12 @@ const Checkout = () => {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
                 orderData: {
-                  userId: currentUser.uid,
-                  userEmail: currentUser.email,
+                  userId: currentUser?.uid || null,
+                  userEmail: currentUser?.email || null,
                   items: itemsPayload,
                   totalAmount: total,
-                  shippingAddressId: selectedAddressId,
+                  shippingAddressId: currentUser ? selectedAddressId : null,
+                  shippingAddress: selectedAddress || null,
                   source,
                 },
               }),

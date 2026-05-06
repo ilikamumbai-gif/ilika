@@ -2,7 +2,6 @@
 import { X, Minus, Plus } from "lucide-react";
 import { useCart } from "../context/CartProvider";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 
 const CartDrawer = () => {
   const {
@@ -12,7 +11,6 @@ const CartDrawer = () => {
     incrementQty,
     decrementQty,
   } = useCart();
-  const { currentUser } = useAuth();
 
   const navigate = useNavigate(); // ✔… ADDED
 
@@ -225,13 +223,6 @@ const CartDrawer = () => {
             disabled={cartItems.length === 0}
             onClick={() => {
               if (!cartItems.length) return;
-
-              if (!currentUser) {
-                closeCart();
-                navigate("/user?redirect=checkout");
-                return;
-              }
-
               closeCart();
               navigate("/checkout");
             }}

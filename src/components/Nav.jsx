@@ -154,7 +154,32 @@ export const SearchBar = ({ products = [], onClose, className = "" }) => {
                     </p>
                   )}
                   <p className="text-xs text-gray-500 capitalize">
-                    {product.categoryName}
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const categorySlug = createSlug(product.categoryName || "");
+                        if (!categorySlug) return;
+                        setQuery("");
+                        onClose?.();
+                        navigate(`/category/${categorySlug}`);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key !== "Enter" && e.key !== " ") return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const categorySlug = createSlug(product.categoryName || "");
+                        if (!categorySlug) return;
+                        setQuery("");
+                        onClose?.();
+                        navigate(`/category/${categorySlug}`);
+                      }}
+                      className="underline cursor-pointer"
+                    >
+                      {product.categoryName}
+                    </span>
                   </p>
                   <p className="text-sm font-semibold text-[#1C371C]">
                     ₹{previewPrice}

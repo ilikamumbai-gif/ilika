@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -142,7 +142,6 @@ const buildAddressPayload = (address = {}) => ({
 /* ─── main component ─── */
 const UserDetail = () => {
   const { currentUser, logout } = useAuth();
-  const navigate = useNavigate();
 
   const [profile, setProfile] = useState({ name: "", email: "", phone: "", createdAt: "" });
   const [addresses, setAddresses] = useState([]);
@@ -204,10 +203,11 @@ const UserDetail = () => {
     }
   };
 
-  useEffect(() => { if (!currentUser) navigate("/login"); }, [currentUser, navigate]);
-
   useEffect(() => {
-    if (!currentUser?.uid) return;
+    if (!currentUser?.uid) {
+      setLoading(false);
+      return;
+    }
     const fetchAccountData = async () => {
       setLoading(true);
       try {
@@ -258,7 +258,7 @@ const UserDetail = () => {
     finally { setSavingProfile(false); }
   };
 
-  const handleLogout = async () => { await logout(); navigate("/login"); };
+  const handleLogout = async () => { await logout(); };
 
   const beginEditAddress = (address) => {
     setEditingAddressId(address.id);
@@ -345,6 +345,27 @@ const UserDetail = () => {
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 flex flex-col items-center gap-3">
                 <div className="w-8 h-8 rounded-full border-4 border-gray-100 border-t-[#E7A6A1] animate-spin" />
                 <p className="text-sm text-gray-400">Loading your account…</p>
+              </div>
+            ) : !currentUser ? (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+                <h3 className="text-xl font-semibold text-gray-800">You are browsing as guest</h3>
+                <p className="text-sm text-gray-500 mt-2">
+                  Login or signup to view your account details, saved addresses, and order history.
+                </p>
+                <div className="mt-5 flex items-center justify-center gap-3">
+                  <Link
+                    to="/login"
+                    className="rounded-xl bg-[#2B2A29] hover:bg-[#1a1918] text-white px-5 py-2.5 text-sm font-semibold transition-colors"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="rounded-xl border border-gray-300 text-gray-700 hover:border-gray-400 px-5 py-2.5 text-sm font-semibold transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">

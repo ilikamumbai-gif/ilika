@@ -142,6 +142,25 @@ const formatAddressForEmail = (address = {}) => {
   return [line, [city, state, pincode].filter(Boolean).join(", ")].filter(Boolean).join("\n");
 };
 
+const normalizeShippingAddress = (address = {}) => ({
+  name: String(address?.name || "").trim(),
+  phone: String(address?.phone || "").trim(),
+  addressLine: String(address?.addressLine || address?.address || "").trim(),
+  city: String(address?.city || "").trim(),
+  state: String(address?.state || "").trim(),
+  pincode: String(address?.pincode || "").trim(),
+});
+
+const isValidShippingAddress = (address = {}) =>
+  Boolean(
+    address.name &&
+    address.phone &&
+    address.addressLine &&
+    address.city &&
+    address.state &&
+    address.pincode
+  );
+
 const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
   const transporter = getMailTransporter();
   if (!transporter) {
@@ -1518,14 +1537,22 @@ app.post("/api/payments/verify", async (req, res) => {
     if (expectedSignature !== razorpay_signature)
       return res.status(400).json({ error: "Invalid signature" });
 
-    const addressDoc = await db
-      .collection("users").doc(orderData.userId)
-      .collection("addresses").doc(orderData.shippingAddressId)
-      .get();
-
-    // ✅ Guard: address must belong to this user
-    if (!addressDoc.exists)
-      return res.status(400).json({ error: "Invalid address" });
+    let resolvedShippingAddress = null;
+    if (orderData?.userId && orderData?.shippingAddressId) {
+      const addressDoc = await db
+        .collection("users").doc(orderData.userId)
+        .collection("addresses").doc(orderData.shippingAddressId)
+        .get();
+      if (!addressDoc.exists) {
+        return res.status(400).json({ error: "Invalid address" });
+      }
+      resolvedShippingAddress = normalizeShippingAddress(addressDoc.data());
+    } else {
+      resolvedShippingAddress = normalizeShippingAddress(orderData?.shippingAddress || {});
+      if (!isValidShippingAddress(resolvedShippingAddress)) {
+        return res.status(400).json({ error: "Invalid address" });
+      }
+    }
 
     let totalAmount = 0;
     const validatedItems = [];
@@ -1591,7 +1618,7 @@ app.post("/api/payments/verify", async (req, res) => {
       totalAmount: pricing.grandTotal,
       originalSubtotal: pricing.originalSubtotal,
       discountAmount: pricing.discountAmount,
-      shippingAddress: addressDoc.data(),
+      shippingAddress: resolvedShippingAddress,
       status: "Placed",
       paymentStatus: "Paid",
       source: orderData.source || "WEBSITE",
@@ -1623,18 +1650,26 @@ app.post("/api/payments/verify", async (req, res) => {
 /* ============================== ORDERS ============================== */
 app.post("/api/orders", async (req, res) => {
   try {
-    const { userId, userEmail, items, shippingAddressId, source } = req.body;
-    if (!userId || !items?.length) return res.status(400).json({ error: "Invalid order data" });
+    const { userId, userEmail, items, shippingAddressId, shippingAddress, source } = req.body;
+    if (!items?.length) return res.status(400).json({ error: "Invalid order data" });
 
-    // ✅ Validate address belongs to THIS user
-    const addressDoc = await db
-      .collection("users").doc(userId)
-      .collection("addresses").doc(shippingAddressId)
-      .get();
+    let resolvedShippingAddress = null;
+    if (userId && shippingAddressId) {
+      const addressDoc = await db
+        .collection("users").doc(userId)
+        .collection("addresses").doc(shippingAddressId)
+        .get();
 
-    if (!addressDoc.exists) {
-      console.error(`Address ${shippingAddressId} not found under user ${userId}`);
-      return res.status(400).json({ error: "Invalid address" });
+      if (!addressDoc.exists) {
+        console.error(`Address ${shippingAddressId} not found under user ${userId}`);
+        return res.status(400).json({ error: "Invalid address" });
+      }
+      resolvedShippingAddress = normalizeShippingAddress(addressDoc.data());
+    } else {
+      resolvedShippingAddress = normalizeShippingAddress(shippingAddress || {});
+      if (!isValidShippingAddress(resolvedShippingAddress)) {
+        return res.status(400).json({ error: "Invalid address" });
+      }
     }
 
     let totalAmount = 0;
@@ -1701,7 +1736,7 @@ app.post("/api/orders", async (req, res) => {
       totalAmount: pricing.grandTotal,
       originalSubtotal: pricing.originalSubtotal,
       discountAmount: pricing.discountAmount,
-      shippingAddress: addressDoc.data(),
+      shippingAddress: resolvedShippingAddress,
       status: "Placed",
       paymentStatus: "Unpaid",
       source: detectSource(source),
@@ -1735,8 +1770,40 @@ app.get("/api/orders", async (req, res) => {
 
 app.get("/api/users/:uid/orders", async (req, res) => {
   try {
-    const snapshot = await db.collection("orders").where("userId", "==", req.params.uid).get();
-    let orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const uid = String(req.params.uid || "").trim();
+    const byUserSnapshot = await db.collection("orders").where("userId", "==", uid).get();
+    const userDoc = await db.collection("users").doc(uid).get();
+    const userData = userDoc.exists ? (userDoc.data() || {}) : {};
+
+    const candidatePhones = new Set();
+    const primaryPhone = normalizeIndianPhone(userData.phone || userData.phoneNumber || "");
+    if (primaryPhone) candidatePhones.add(primaryPhone);
+    if (Array.isArray(userData.verifiedPhoneNumbers)) {
+      userData.verifiedPhoneNumbers
+        .map((p) => normalizeIndianPhone(p))
+        .filter(Boolean)
+        .forEach((p) => candidatePhones.add(p));
+    }
+
+    const phoneSnapshots = await Promise.all(
+      Array.from(candidatePhones).map((phone) =>
+        db.collection("orders").where("shippingAddress.phone", "==", phone).get()
+      )
+    );
+
+    const mergedById = new Map();
+    byUserSnapshot.docs.forEach((doc) => {
+      mergedById.set(doc.id, { id: doc.id, ...doc.data() });
+    });
+    phoneSnapshots.forEach((snapshot) => {
+      snapshot.docs.forEach((doc) => {
+        if (!mergedById.has(doc.id)) {
+          mergedById.set(doc.id, { id: doc.id, ...doc.data() });
+        }
+      });
+    });
+
+    let orders = Array.from(mergedById.values());
     orders.sort((a, b) => {
       const aTime = a.createdAt?._seconds || new Date(a.createdAt).getTime() || 0;
       const bTime = b.createdAt?._seconds || new Date(b.createdAt).getTime() || 0;

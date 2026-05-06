@@ -1,7 +1,6 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { trackPageView } from "../utils/pixel";
-import ProtectedRoute from "../components/ProtectedRoute";
 import AdminProtectedRoute from "../admin/components/AdminProtectedRoute";
 import { AdminAuthProvider } from "../admin/context/AdminAuthContext";
 import { useSeo } from "../hooks/useSeo";
@@ -44,6 +43,7 @@ const Combos = lazy(() => import("../pages/Combos"));
 const ComboDetail = lazy(() => import("../pages/ComboDetail"));
 const Feedback = lazy(() => import("../pages/Feedback"));
 const WarrantyRegistration = lazy(() => import("../pages/WarrantyRegistration"));
+const CategoryProducts = lazy(() => import("../pages/CategoryProducts"));
 
 const PixelPageTracker = () => {
   const { pathname } = useLocation();
@@ -76,6 +76,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/blog") return { title: "Blog", description: "Beauty tips, guides, and updates from Ilika." };
   if (pathname.startsWith("/blog/")) return { title: "Blog Details", description: "Read Ilika blog articles and beauty insights." };
   if (pathname.startsWith("/product/")) return { title: "Product Details", description: "Explore product details, benefits, and pricing at Ilika." };
+  if (pathname.startsWith("/category/")) return { title: "Category Products", description: "Browse products by category at Ilika." };
   if (pathname === "/shopall") return { title: "Shop All", description: "Shop the complete Ilika collection." };
   if (pathname === "/user") return { title: "My Account", description: "Manage your Ilika account and orders." };
   if (pathname === "/privacy") return { title: "Privacy Policy", description: "Read Ilika privacy policy." };
@@ -152,15 +153,12 @@ const NavRoutes = () => {
 
         <Route
           path="/user"
-          element={
-            <ProtectedRoute>
-              {renderLazy(UserDetail)}
-            </ProtectedRoute>
-          }
+          element={renderLazy(UserDetail)}
         />
 
         <Route path="/blog/:id" element={renderLazy(BlogDetail)} />
         <Route path="/product/:slug" element={renderLazy(ProductDetail)} />
+        <Route path="/category/:categorySlug" element={renderLazy(CategoryProducts)} />
 
         <Route path="/privacy" element={renderLazy(Privacy)} />
         <Route path="/termsandcondition" element={renderLazy(TermsCondition)} />

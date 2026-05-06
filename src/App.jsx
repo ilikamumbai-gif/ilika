@@ -1,8 +1,8 @@
-import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
-import { useAuth, AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartProvider";
 import { ProductProvider } from "./admin/context/ProductContext";
 import { CategoryProvider } from "./admin/context/CategoryContext";
@@ -16,12 +16,8 @@ import NavRoutes from "./Routes/NavRoutes";
 
 import { captureTrafficSource } from "./utils/tracking";
 
-const LoginPopup = lazy(() => import("./components/LoginPopup"));
-
 const AppContent = () => {
-  const { currentUser } = useAuth();
   const { pathname } = useLocation();
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const isAdminRoute = useMemo(() => pathname.startsWith("/admin"), [pathname]);
   const hideCartToast = useMemo(
@@ -64,18 +60,6 @@ const AppContent = () => {
     };
   }, [isAdminRoute]);
 
-  useEffect(() => {
-    if (currentUser) return;
-    if (sessionStorage.getItem("loginPopupShown")) return;
-
-    const timer = setTimeout(() => {
-      setShowLoginPopup(true);
-      sessionStorage.setItem("loginPopupShown", "true");
-    }, 20000);
-
-    return () => clearTimeout(timer);
-  }, [currentUser]);
-
   return (
     <>
       <Toaster
@@ -106,12 +90,6 @@ const AppContent = () => {
           <CategoryProvider>
             <ProductProvider>
               <ComboProvider>
-                {showLoginPopup && (
-                  <Suspense fallback={null}>
-                    <LoginPopup onClose={() => setShowLoginPopup(false)} />
-                  </Suspense>
-                )}
-
                 <NavRoutes />
 
                 <EnquiryButton />
