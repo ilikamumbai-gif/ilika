@@ -690,37 +690,39 @@ const UserDetail = () => {
                                     ))}
                                   </div>
 
-                                  <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50/60 p-3">
-                                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                                      <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">Shipping Tracking</p>
-                                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${shippingMeta.badgeCls}`}>
-                                        {shippingMeta.label}
-                                      </span>
-                                    </div>
+                                  {trackingId ? (
+                                    <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50/60 p-3">
+                                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                                        <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">Shipping Tracking</p>
+                                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${shippingMeta.badgeCls}`}>
+                                          {shippingMeta.label}
+                                        </span>
+                                      </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-                                      <div className="rounded-lg bg-white border border-blue-100 p-2.5">
-                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest">Tracking ID</p>
-                                        <p className="text-sm font-medium text-gray-800 mt-1 break-all">{trackingId || "Not assigned yet"}</p>
-                                      </div>
-                                      <div className="rounded-lg bg-white border border-blue-100 p-2.5">
-                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest">Courier</p>
-                                        <p className="text-sm font-medium text-gray-800 mt-1">{courierName || "Not assigned yet"}</p>
-                                      </div>
-                                      <div className="rounded-lg bg-white border border-blue-100 p-2.5 flex items-center">
-                                        {trackingUrl ? (
-                                          <Link
-                                            to={`/track-order?order=${encodeURIComponent(order.id || "")}&trackingId=${encodeURIComponent(trackingId)}&courier=${encodeURIComponent(courierName)}&trackingUrl=${encodeURIComponent(trackingUrl)}&shippingStatus=${encodeURIComponent(tracking.shippingStatus || "")}`}
-                                            className="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-xs font-semibold transition-colors"
-                                          >
-                                            Track Order
-                                          </Link>
-                                        ) : (
-                                          <p className="text-xs text-gray-400">Tracking link will appear after shipment.</p>
-                                        )}
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+                                        <div className="rounded-lg bg-white border border-blue-100 p-2.5">
+                                          <p className="text-[10px] text-gray-400 uppercase tracking-widest">Tracking ID</p>
+                                          <p className="text-sm font-medium text-gray-800 mt-1 break-all">{trackingId}</p>
+                                        </div>
+                                        <div className="rounded-lg bg-white border border-blue-100 p-2.5">
+                                          <p className="text-[10px] text-gray-400 uppercase tracking-widest">Courier</p>
+                                          <p className="text-sm font-medium text-gray-800 mt-1">{courierName || "Not assigned yet"}</p>
+                                        </div>
+                                        <div className="rounded-lg bg-white border border-blue-100 p-2.5 flex items-center">
+                                          {trackingUrl ? (
+                                            <Link
+                                              to={`/track-order?order=${encodeURIComponent(order.id || "")}&trackingId=${encodeURIComponent(trackingId)}&courier=${encodeURIComponent(courierName)}&trackingUrl=${encodeURIComponent(trackingUrl)}&shippingStatus=${encodeURIComponent(tracking.shippingStatus || "")}`}
+                                              className="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-xs font-semibold transition-colors"
+                                            >
+                                              Track Order
+                                            </Link>
+                                          ) : (
+                                            <p className="text-xs text-gray-400">Tracking link will appear after shipment.</p>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
+                                  ) : null}
 
                                   <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50/60 p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                     <p className="text-xs text-rose-700">
