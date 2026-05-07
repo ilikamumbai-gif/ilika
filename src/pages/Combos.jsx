@@ -32,6 +32,7 @@ const HydrationGlowCombo = () => {
   const { addToCart } = useCart();
 
   const COMBO_PRICE = 5999;
+  const MASK_MAKER_ORIGINAL_PRICE = 7999;
 
   const PRODUCT_KEYWORDS = [
     "hyaluronic acid serum",
@@ -76,12 +77,13 @@ const HydrationGlowCombo = () => {
       return aIsMaskMaker ? -1 : 1;
     });
 
-  const originalPrice = comboProducts.reduce(
-    (acc, item) => acc + (item.price || item.mrp || 0),
-    0
+  const originalPrice = MASK_MAKER_ORIGINAL_PRICE;
+  const savings = MASK_MAKER_ORIGINAL_PRICE - COMBO_PRICE;
+  const hyaluronicSerumProduct = comboProducts.find((p) =>
+    isHyaluronicSerum(p?.name)
   );
-
-  const savings = originalPrice - COMBO_PRICE;
+  const hyaluronicSerumPrice =
+    hyaluronicSerumProduct?.price || hyaluronicSerumProduct?.mrp || 0;
 
   const handleAddCombo = () => {
     const comboItem = {
@@ -134,6 +136,16 @@ const HydrationGlowCombo = () => {
           <span className="font-semibold text-green-600">
             {" "}₹{savings}
           </span>
+          {hyaluronicSerumPrice > 0 && (
+            <span className="font-semibold text-green-600">
+              {" "}+ ₹{hyaluronicSerumPrice}
+            </span>
+          )}
+          {hyaluronicSerumPrice > 0 && (
+            <span className="text-gray-600">
+              {" "}(Serum Value)
+            </span>
+          )}
         </p>
       </div>
 
@@ -185,9 +197,20 @@ const HydrationGlowCombo = () => {
                     {product.name}
                   </h3>
 
-                  <p className="mt-3 text-[#E96A6A] font-semibold">
-                    ₹{product.price || product.mrp}
-                  </p>
+                  {isNonVoiceMaskMaker(product.name) ? (
+                    <div className="mt-3">
+                      <p className="text-sm text-gray-400 line-through">
+                        ₹{MASK_MAKER_ORIGINAL_PRICE}
+                      </p>
+                      <p className="text-[#E96A6A] font-semibold">
+                        Combo @ ₹{COMBO_PRICE}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-[#E96A6A] font-semibold text-green-700">
+                      FREE in Combo
+                    </p>
+                  )}
                 </div>
               </Link>
             ))}
@@ -251,7 +274,9 @@ const HydrationGlowCombo = () => {
             </div>
 
             <div className="bg-green-100 text-green-700 text-sm font-medium px-3 py-2 rounded-xl">
-              🎉 You save ₹{savings} today
+              🎉 You save ₹{savings}
+              {hyaluronicSerumPrice > 0 ? ` + ₹${hyaluronicSerumPrice}` : ""}
+              {" "}today
             </div>
 
             {/* CTA */}

@@ -45,6 +45,20 @@ const statusMeta = (status = "") => {
   return { label: status || "Placed", dotCls: "bg-amber-400", bgCls: "bg-amber-50", textCls: "text-amber-700" };
 };
 
+const shippingStatusMeta = (status = "") => {
+  const normalized = String(status || "").trim().toLowerCase();
+  if (normalized === "delivered") {
+    return { label: "Delivered", badgeCls: "bg-green-100 text-green-700 border border-green-200" };
+  }
+  if (normalized === "out for delivery") {
+    return { label: "Out for Delivery", badgeCls: "bg-amber-100 text-amber-700 border border-amber-200" };
+  }
+  if (normalized === "shipped") {
+    return { label: "Shipped", badgeCls: "bg-blue-100 text-blue-700 border border-blue-200" };
+  }
+  return { label: "Processing", badgeCls: "bg-gray-100 text-gray-700 border border-gray-200" };
+};
+
 const isCancellationAllowed = (status = "") => {
   const s = String(status || "").toLowerCase();
   if (!s) return true;
@@ -600,6 +614,11 @@ const UserDetail = () => {
                           const isExpanded  = expandedOrderId === order.id;
                           const shippingAddr = normalizeAddress(order.shippingAddress || {});
                           const meta = statusMeta(order.status);
+                          const tracking = order.tracking || {};
+                          const trackingId = String(tracking.trackingId || "").trim();
+                          const courierName = String(tracking.courierName || "").trim();
+                          const trackingUrl = String(tracking.trackingUrl || "").trim();
+                          const shippingMeta = shippingStatusMeta(tracking.shippingStatus || "Processing");
 
                           return (
                             <article
@@ -669,6 +688,40 @@ const UserDetail = () => {
                                         <p className="text-sm font-medium text-gray-700 mt-1 break-all">{val}</p>
                                       </div>
                                     ))}
+                                  </div>
+
+                                  <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50/60 p-3">
+                                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                                      <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">Shipping Tracking</p>
+                                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${shippingMeta.badgeCls}`}>
+                                        {shippingMeta.label}
+                                      </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+                                      <div className="rounded-lg bg-white border border-blue-100 p-2.5">
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest">Tracking ID</p>
+                                        <p className="text-sm font-medium text-gray-800 mt-1 break-all">{trackingId || "Not assigned yet"}</p>
+                                      </div>
+                                      <div className="rounded-lg bg-white border border-blue-100 p-2.5">
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest">Courier</p>
+                                        <p className="text-sm font-medium text-gray-800 mt-1">{courierName || "Not assigned yet"}</p>
+                                      </div>
+                                      <div className="rounded-lg bg-white border border-blue-100 p-2.5 flex items-center">
+                                        {trackingUrl ? (
+                                          <a
+                                            href={trackingUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-xs font-semibold transition-colors"
+                                          >
+                                            Track Order
+                                          </a>
+                                        ) : (
+                                          <p className="text-xs text-gray-400">Tracking link will appear after shipment.</p>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
 
                                   <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50/60 p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

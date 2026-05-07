@@ -1622,6 +1622,12 @@ app.post("/api/payments/verify", async (req, res) => {
       status: "Placed",
       paymentStatus: "Paid",
       source: orderData.source || "WEBSITE",
+      tracking: {
+        trackingId: "",
+        courierName: "",
+        trackingUrl: "",
+        shippingStatus: "Processing",
+      },
       razorpay_payment_id,
       paidAt: new Date(),
       createdAt: new Date(),
@@ -1740,6 +1746,12 @@ app.post("/api/orders", async (req, res) => {
       status: "Placed",
       paymentStatus: "Unpaid",
       source: detectSource(source),
+      tracking: {
+        trackingId: "",
+        courierName: "",
+        trackingUrl: "",
+        shippingStatus: "Processing",
+      },
       createdAt: new Date(),
     };
     const orderId = await createOrderWithGeneratedId(orderPayload);
@@ -1855,6 +1867,53 @@ app.put("/api/orders/:id/status", async (req, res) => {
   } catch (error) {
     console.error("STATUS UPDATE ERROR:", error);
     res.status(500).json({ error: "Failed to update order status" });
+  }
+});
+
+app.put("/api/orders/:id/tracking", async (req, res) => {
+  try {
+    const {
+      trackingId = "",
+      courierName = "",
+      trackingUrl = "",
+      shippingStatus = "Processing",
+    } = req.body || {};
+
+    const nextTrackingId = String(trackingId || "").trim();
+    const nextCourierName = String(courierName || "").trim();
+    const nextShippingStatus = String(shippingStatus || "Processing").trim() || "Processing";
+    const normalizedUrl = String(trackingUrl || "").trim();
+    const generatedUrl = nextTrackingId
+      ? `https://shiprocket.co/tracking/${encodeURIComponent(nextTrackingId)}`
+      : "";
+    const nextTrackingUrl = normalizedUrl || generatedUrl;
+
+    const orderRef = db.collection("orders").doc(req.params.id);
+    const orderSnap = await orderRef.get();
+    if (!orderSnap.exists) return res.status(404).json({ error: "Order not found" });
+
+    await orderRef.update({
+      tracking: {
+        trackingId: nextTrackingId,
+        courierName: nextCourierName,
+        trackingUrl: nextTrackingUrl,
+        shippingStatus: nextShippingStatus,
+      },
+      updatedAt: new Date(),
+    });
+
+    res.json({
+      message: "Tracking updated successfully",
+      tracking: {
+        trackingId: nextTrackingId,
+        courierName: nextCourierName,
+        trackingUrl: nextTrackingUrl,
+        shippingStatus: nextShippingStatus,
+      },
+    });
+  } catch (error) {
+    console.error("TRACKING UPDATE ERROR:", error);
+    res.status(500).json({ error: "Failed to update tracking" });
   }
 });
 

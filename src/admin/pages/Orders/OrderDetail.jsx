@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Printer, Download, Package, User,
@@ -49,6 +49,8 @@ const SOURCE_STYLES = {
   "Website":    "bg-gray-500",
 };
 
+const SHIPPING_STATUS_OPTIONS = ["Processing", "Shipped", "Out for Delivery", "Delivered"];
+
 /* ─────────────────── REUSABLE BITS ─────────────────── */
 
 const SectionCard = ({ icon, title, children }) => (
@@ -73,9 +75,23 @@ const InfoRow = ({ label, value }) => (
 const OrderDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getOrderById, updateOrderStatus } = useOrders();
+  const { getOrderById, updateOrderStatus, saveOrderTracking } = useOrders();
   const order = getOrderById(id);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [trackingSaving, setTrackingSaving] = useState(false);
+  const [trackingForm, setTrackingForm] = useState({
+    trackingId: "",
+    courierName: "",
+    shippingStatus: "Processing",
+  });
+
+  useEffect(() => {
+    setTrackingForm({
+      trackingId: String(order?.tracking?.trackingId || ""),
+      courierName: String(order?.tracking?.courierName || ""),
+      shippingStatus: String(order?.tracking?.shippingStatus || "Processing"),
+    });
+  }, [order?.id, order?.tracking?.trackingId, order?.tracking?.courierName, order?.tracking?.shippingStatus]);
 
   if (!order) {
     return (
@@ -104,6 +120,17 @@ const OrderDetail = () => {
     await updateOrderStatus(order.id, newStatus);
     await logActivity(`Updated order #${order.id.slice(-6)} status → ${newStatus}`);
     setStatusUpdating(false);
+  };
+
+  const handleSaveTracking = async () => {
+    setTrackingSaving(true);
+    const saveResult = await saveOrderTracking(order.id, trackingForm);
+    if (saveResult?.ok) {
+      await logActivity(`Updated tracking for order #${order.id.slice(-6)}`);
+    } else {
+      alert(saveResult?.error || "Failed to save tracking");
+    }
+    setTrackingSaving(false);
   };
 
   /* ─── PDF ─── */
@@ -526,6 +553,53 @@ const OrderDetail = () => {
           {order.paidAt && <InfoRow label="Paid At" value={formatDateTime(order.paidAt)} />}
         </SectionCard>
       </div>
+
+      <SectionCard icon={<Truck size={15} />} title="Shipping Tracking">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <label className="block">
+            <span className="text-xs text-gray-500">Tracking ID</span>
+            <input
+              type="text"
+              value={trackingForm.trackingId}
+              onChange={(e) => setTrackingForm((prev) => ({ ...prev, trackingId: e.target.value }))}
+              placeholder="Shiprocket tracking id"
+              className="mt-1 w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs text-gray-500">Courier Name</span>
+            <input
+              type="text"
+              value={trackingForm.courierName}
+              onChange={(e) => setTrackingForm((prev) => ({ ...prev, courierName: e.target.value }))}
+              placeholder="e.g. Delhivery"
+              className="mt-1 w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs text-gray-500">Shipping Status</span>
+            <select
+              value={trackingForm.shippingStatus}
+              onChange={(e) => setTrackingForm((prev) => ({ ...prev, shippingStatus: e.target.value }))}
+              className="mt-1 w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-black"
+            >
+              {SHIPPING_STATUS_OPTIONS.map((status) => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </label>
+          <div className="flex items-end">
+            <button
+              type="button"
+              onClick={handleSaveTracking}
+              disabled={trackingSaving}
+              className="w-full px-4 py-2.5 rounded-lg bg-black text-white text-sm font-semibold hover:bg-gray-800 disabled:opacity-60"
+            >
+              {trackingSaving ? "Saving..." : "Save Tracking"}
+            </button>
+          </div>
+        </div>
+      </SectionCard>
 
       {/* ══ ORDER ITEMS ══ */}
       <SectionCard icon={<ShoppingBag size={15} />} title={`Order Items — ${itemCount} item${itemCount !== 1 ? "s" : ""}`}>

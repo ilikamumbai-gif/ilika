@@ -45,6 +45,12 @@ export const OrderProvider = ({ children }) => {
         items: o.items || [],
         shippingAddress: o.shippingAddress || {},
         source: o.source || "WEBSITE",
+        tracking: o.tracking || {
+          trackingId: "",
+          courierName: "",
+          trackingUrl: "",
+          shippingStatus: "Processing",
+        },
       }));
 
       setOrders(formatted);
@@ -114,6 +120,34 @@ export const OrderProvider = ({ children }) => {
     }
   };
 
+  const saveOrderTracking = async (id, tracking) => {
+    try {
+      const payload = {
+        trackingId: String(tracking?.trackingId || "").trim(),
+        courierName: String(tracking?.courierName || "").trim(),
+        trackingUrl: String(tracking?.trackingUrl || "").trim(),
+        shippingStatus: String(tracking?.shippingStatus || "Processing").trim() || "Processing",
+      };
+
+      setOrders((prev) =>
+        prev.map((o) => (o.id === id ? { ...o, tracking: payload } : o))
+      );
+
+      const res = await fetch(`${API}/api/orders/${id}/tracking`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Failed to save tracking");
+      fetchOrders();
+      return { ok: true };
+    } catch (err) {
+      console.error("Failed to save tracking", err);
+      return { ok: false, error: err?.message || "Failed to save tracking" };
+    }
+  };
+
   return (
     <OrderContext.Provider
       value={{
@@ -122,6 +156,7 @@ export const OrderProvider = ({ children }) => {
         updateOrderStatus,
         getOrderById,
         refetchOrders: fetchOrders,
+        saveOrderTracking,
         deleteAllOrders,
         deleteOrder,
       }}
