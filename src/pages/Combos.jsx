@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useProducts } from "../admin/context/ProductContext";
 
 import MiniDivider from "../components/MiniDivider";
@@ -8,11 +8,12 @@ import CartDrawer from "../components/CartDrawer";
 import ComboProductCard from "../components/ComboProductCard";
 import { useCart } from "../context/CartProvider";
 import CouponProductBuilder from "../components/CouponProductBuilder";
-import MaskDuoOffer from "../components/MaskDuoOffer"; // ← NEW
+import MaskDuoOffer from "../components/MaskDuoOffer";
 import Banner from "../components/Banner";
+import { createSlug } from "../utils/slugify";
 
+import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { useRef } from "react";
 import { useSeo } from "../hooks/useSeo";
 
 const offBanner = "/Images/Tonner.webp";
@@ -20,6 +21,263 @@ const offBannerMobile = "/Images/TonnerMobile.webp";
 
 const maskBanner = "/Images/24.webp";
 const maskBannerMobile = "/Images/24.webp";
+
+const mothersDayBanner = "/Images/mothers-day-banner.webp";
+const mothersDayBannerMobile = "/Images/mothers-day-banner.webp";
+
+/* ================= NEW OFFER SECTION ================= */
+
+const HydrationGlowCombo = () => {
+  const { products } = useProducts();
+  const { addToCart } = useCart();
+
+  const COMBO_PRICE = 5999;
+
+  const PRODUCT_KEYWORDS = [
+    "hyaluronic acid serum",
+    "nonvoice mask maker machine",
+  ];
+
+  const normalizeName = (name = "") =>
+    name.toLowerCase().replace(/\s+/g, " ").trim();
+
+  const getImage = (p) =>
+    p?.variants?.[0]?.images?.[0] ||
+    p?.images?.[0] ||
+    p?.image ||
+    p?.imageUrl ||
+    "/placeholder.webp";
+
+  const isNonVoiceMaskMaker = (name = "") => {
+    const normalized = normalizeName(name);
+    return (
+      normalized.includes("mask maker") &&
+      (normalized.includes("nonvoice") || normalized.includes("non voice"))
+    );
+  };
+
+  const isHyaluronicSerum = (name = "") => {
+    const normalized = normalizeName(name);
+    return normalized.includes("hyaluronic") && normalized.includes("serum");
+  };
+
+  const comboProducts = PRODUCT_KEYWORDS.map((keyword) =>
+    products.find(
+      (p) =>
+        p.isActive !== false &&
+        normalizeName(p.name).includes(normalizeName(keyword))
+    )
+  )
+    .filter(Boolean)
+    .sort((a, b) => {
+      const aIsMaskMaker = isNonVoiceMaskMaker(a?.name);
+      const bIsMaskMaker = isNonVoiceMaskMaker(b?.name);
+      if (aIsMaskMaker === bIsMaskMaker) return 0;
+      return aIsMaskMaker ? -1 : 1;
+    });
+
+  const originalPrice = comboProducts.reduce(
+    (acc, item) => acc + (item.price || item.mrp || 0),
+    0
+  );
+
+  const savings = originalPrice - COMBO_PRICE;
+
+  const handleAddCombo = () => {
+    const comboItem = {
+      id: `glow-combo-${Date.now()}`,
+      baseProductId: "glow-therapy-combo",
+      name: "Glow Therapy Combo",
+      price: COMBO_PRICE,
+      quantity: 1,
+      isCombo: true,
+
+      image: getImage(comboProducts[0]),
+
+      comboItems: comboProducts.map((p) => ({
+        id: p._id || p.id,
+        name: p.name,
+        image: getImage(p),
+      })),
+    };
+
+    addToCart(comboItem);
+  };
+
+  if (!comboProducts.length) return null;
+
+  return (
+    <section
+      className="max-w-7xl mx-auto px-4 pb-16 pt-4"
+      style={{ background: "#fff8fa" }}
+    >
+      {/* Heading */}
+      <div className="text-center mb-10">
+        <span className="inline-block bg-[#FAD4C0] text-[#7A2E3A] text-xs font-semibold px-4 py-1 rounded-full mb-3 tracking-wide uppercase">
+          New Beauty Offer
+        </span>
+
+        <h2 className="text-3xl font-semibold text-[#7A2E3A]">
+          Glow Therapy Combo
+        </h2>
+
+        <p className="text-sm text-gray-600 mt-2">
+          Get the perfect skincare duo for
+          <span className="text-[#E96A6A] font-semibold">
+            {" "}₹{COMBO_PRICE}
+          </span>
+          , with
+          <span className="font-semibold text-green-600">
+            {" "}FREE Hyaluronic Serum
+          </span>
+          &nbsp;and save
+          <span className="font-semibold text-green-600">
+            {" "}₹{savings}
+          </span>
+        </p>
+      </div>
+
+      {/* Grid */}
+      <div className="grid lg:grid-cols-4 gap-12 items-start">
+
+        {/* Product Cards */}
+        <div className="lg:col-span-3">
+          <h3 className="text-xl font-semibold mb-6 text-[#7A2E3A]">
+            ✨ Combo Includes
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {comboProducts.map((product, index) => (
+              <Link
+                key={product._id || product.id}
+                to={`/product/${createSlug(product.name || "")}`}
+                className="
+                  transition-all duration-300 hover:scale-[1.03]
+                  rounded-2xl p-4
+                  bg-white hover:bg-[#FFF4EA]
+                  border border-[#FAD4C0]
+                  shadow-sm hover:shadow-lg
+                  group
+                "
+              >
+                {/* Tag */}
+                <span className="inline-block bg-[#FFF1EB] text-[#D45A5A] text-[10px] font-bold uppercase tracking-wide px-3 py-1 rounded-full mb-4">
+                  Combo Item {index + 1}
+                </span>
+                {isHyaluronicSerum(product.name) && (
+                  <span className="inline-block ml-2 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide px-3 py-1 rounded-full mb-4">
+                    Free Hyaluronic Serum
+                  </span>
+                )}
+
+                {/* Image */}
+                <div className="h-[240px] flex items-center justify-center">
+                  <img
+                    src={getImage(product)}
+                    alt={product.name}
+                    className="max-h-[220px] object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+
+                {/* Content */}
+                <div className="mt-5 text-center">
+                  <h3 className="text-lg md:text-xl font-bold text-[#7A2E3A] leading-snug">
+                    {product.name}
+                  </h3>
+
+                  <p className="mt-3 text-[#E96A6A] font-semibold">
+                    ₹{product.price || product.mrp}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div
+          className="rounded-2xl p-6 shadow-md h-fit sticky top-24"
+          style={{
+            background: "linear-gradient(to bottom, #FFF4EA, #FAD4C0)",
+          }}
+        >
+          <h3 className="font-semibold text-xl mb-6 text-[#7A2E3A]">
+            💛 Your Combo
+          </h3>
+
+          {/* Preview */}
+          <div className="flex flex-wrap gap-3 mb-6">
+            {comboProducts.map((product) => (
+              <div
+                key={product._id || product.id}
+                className="text-center w-24"
+              >
+                <div className="bg-white border rounded-xl p-2 shadow-sm">
+                  <img
+                    src={getImage(product)}
+                    alt={product.name}
+                    className="w-full h-20 object-contain"
+                  />
+                </div>
+
+                <p className="text-[10px] mt-2 line-clamp-2">
+                  {product.name}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Pricing */}
+          <div className="border-t pt-4">
+
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-500">
+                Original Price
+              </span>
+
+              <span className="line-through text-gray-400">
+                ₹{originalPrice}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-600">
+                Combo Price
+              </span>
+
+              <span className="text-2xl font-bold text-[#7A2E3A]">
+                ₹{COMBO_PRICE}
+              </span>
+            </div>
+
+            <div className="bg-green-100 text-green-700 text-sm font-medium px-3 py-2 rounded-xl">
+              🎉 You save ₹{savings} today
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={handleAddCombo}
+              className="
+                w-full mt-5 py-3 rounded-xl font-semibold tracking-wide
+                transition-all text-white flex items-center justify-center
+                hover:scale-[1.02]
+              "
+              style={{
+                background:
+                  "linear-gradient(to right, #E96A6A, #D45A5A)",
+              }}
+            >
+              Grab Combo @ ₹5999
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+};
+
+
 
 const Combos = () => {
 
@@ -30,6 +288,7 @@ const Combos = () => {
   const [selectedMasks, setSelectedMasks] = useState([]);
   const [showMaskPopup, setShowMaskPopup] = useState(false);
   const [loadingCombo, setLoadingCombo] = useState(false);
+
   const location = useLocation();
   const couponRef = useRef(null);
 
@@ -74,100 +333,6 @@ const Combos = () => {
     },
   });
 
-  /* ================= TONER SELECT ================= */
-
-  const toggleToner = (product) => {
-    const id = product._id || product.id;
-
-    if (selectedToners.find(p => p.id === id)) {
-      setSelectedToners(selectedToners.filter(p => p.id !== id));
-    } else if (selectedToners.length < 2) {
-      setSelectedToners([...selectedToners, { ...product, id }]);
-    }
-  };
-
-  /* ================= MASK SELECT ================= */
-
-  const toggleMask = (product) => {
-    const id = product._id || product.id;
-
-    if (selectedMasks.find(p => p.id === id)) {
-      setSelectedMasks(selectedMasks.filter(p => p.id !== id));
-    } else if (selectedMasks.length < 1) {
-      setSelectedMasks([...selectedMasks, { ...product, id }]);
-    }
-  };
-
-  /* ================= PRICE ================= */
-
-  const singleTonerPrice =
-    selectedToners.length === 1
-      ? selectedToners[0]?.price || selectedToners[0]?.mrp || 0
-      : 0;
-
-  const originalTonerMRP =
-    selectedToners.length === 2
-      ? (selectedToners[0]?.price || selectedToners[0]?.mrp || 0) +
-      (selectedToners[1]?.price || selectedToners[1]?.mrp || 0)
-      : 0;
-
-  /* ================= BUILD & ADD COMBO ================= */
-
-  const buildAndAddCombo = (includeMask) => {
-    const comboProducts = [
-      ...selectedToners,
-      ...(includeMask ? selectedMasks : [])
-    ];
-
-    const comboItem = {
-      id: "toner-mask-combo",
-      name: includeMask ? "Custom Toner Mask Combo" : "Custom Toner Duo Combo",
-      price: 699,
-      quantity: 1,
-      isCombo: true,
-      image:
-        selectedToners[0]?.images?.[0] ||
-        selectedToners[0]?.image ||
-        selectedToners[0]?.imageUrl ||
-        "/placeholder.webp",
-      comboItems: comboProducts.map(p => ({
-        id: p.id,
-        name: p.name,
-        image:
-          p.images?.[0] ||
-          p.image ||
-          p.imageUrl ||
-          "/placeholder.webp"
-      }))
-    };
-
-    addToCart(comboItem);
-    setShowMaskPopup(false);
-  };
-
-  /* ================= ADD COMBO (with mask check) ================= */
-
-  const addComboToCart = () => {
-    if (selectedToners.length !== 2) {
-      alert("Please select 2 toners");
-      return;
-    }
-
-    setLoadingCombo(true); // ✅ start loading
-
-    setTimeout(() => {
-      if (selectedMasks.length === 0) {
-        setShowMaskPopup(true);
-        setLoadingCombo(false); // stop if popup
-        return;
-      }
-
-      buildAndAddCombo(true);
-
-      setLoadingCombo(false); // ✅ stop loading
-    }, 500); // small delay for UX
-  };
-
   return (
     <>
       <MiniDivider />
@@ -177,317 +342,39 @@ const Combos = () => {
         <Header />
         <CartDrawer />
 
+        {/* TOP BANNER */}
+        <Banner
+          className="mt-0 mb-10"
+          src={mothersDayBanner}
+          mobileSrc={mothersDayBannerMobile}
+        />
+
+        {/* NEW OFFER */}
+        <HydrationGlowCombo />
+
+        {/* OLD BANNER */}
         <Banner
           className="mt-0 mb-10"
           src={maskBanner}
           mobileSrc={maskBannerMobile}
         />
 
-        {/* ================= 24K MASK DUO OFFER ================= */}
-
+        {/* OLD COMBO */}
         <MaskDuoOffer />
 
-
+        {/* TONER BANNER */}
         <Banner
           className="md:h-[50vh] mt-0 mb-10"
           src={offBanner}
           mobileSrc={offBannerMobile}
         />
 
-
-
-
-        {/* ================= MASK POPUP ================= */}
-        {showMaskPopup && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
-            onClick={() => setShowMaskPopup(false)}
-          >
-            <div
-              className="relative bg-white rounded-3xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden"
-              onClick={e => e.stopPropagation()}
-            >
-              <div
-                className="h-2 w-full"
-                style={{ background: "linear-gradient(to right, #FAD4C0, #E96A6A, #D45A5A)" }}
-              />
-
-              <div className="px-6 pt-5 pb-6">
-                <button
-                  onClick={() => setShowMaskPopup(false)}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl leading-none"
-                >
-                  ×
-                </button>
-
-                <div className="text-4xl mb-3 text-center">💆‍♀️</div>
-
-                <h3 className="text-lg font-bold text-center text-[#7A2E3A] mb-1">
-                  Don't forget your Sheet Mask!
-                </h3>
-                <p className="text-sm text-center text-gray-500 mb-5">
-                  A sheet mask completes your glow routine. Would you like to add one?
-                </p>
-
-                <button
-                  onClick={() => setShowMaskPopup(false)}
-                  className="w-full py-3 rounded-xl font-semibold text-white mb-3 transition-all hover:scale-[1.02]"
-                  style={{ background: "linear-gradient(to right, #FAD4C0, #E96A6A, #D45A5A)" }}
-                >
-                  ✨ Yes, let me pick a mask
-                </button>
-
-                <button
-                  onClick={() => buildAndAddCombo(false)}
-                  className="w-full py-3 rounded-xl font-semibold text-[#D45A5A] border border-[#FAD4C0] bg-[#FFF4EA] hover:bg-[#FAD4C0] transition-all"
-                >
-                  Continue without mask
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ================= TONER + MASK COMBO ================= */}
-        <section className="max-w-7xl mx-auto px-4 pb-12 lg:pb-16">
-
-          <div className="grid lg:grid-cols-4 gap-12 mt-12">
-
-            <div className="lg:col-span-3 space-y-10">
-
-              {/* TONERS */}
-              <div>
-                <h2 className="text-xl font-semibold mb-6 text-[#7A2E3A]">
-                  🌸 Step 1 • Choose Any 2 Toners
-                </h2>
-
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 lg:gap-8">
-                  {tonerProducts.map(product => {
-                    const id = product._id || product.id;
-                    const selected = selectedToners.find(p => p.id === id);
-
-                    return (
-                      <div
-                        key={id}
-                        className={`
-                          transition-all duration-300 hover:scale-[1.03]
-                          rounded-2xl p-3
-                          ${selected
-                            ? "bg-gradient-to-br from-[#FAD4C0] via-[#FFF4EA] to-white shadow-lg ring-2 ring-[#E96A6A]"
-                            : "bg-white hover:bg-[#FFF4EA] border border-[#FAD4C0]"}
-                        `}
-                      >
-                        <ComboProductCard
-                          product={product}
-                          selected={selected}
-                          onSelect={toggleToner}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* MASKS */}
-              <div>
-                <h2 className="text-xl font-semibold mb-1 text-[#7A2E3A]">
-                  💖 Step 2 • Choose Your Sheet Mask{" "}
-                  <span className="text-sm font-normal text-gray-400">(Optional)</span>
-                </h2>
-
-                <p className="text-sm content-text mb-6">
-                  Select 1 sheet mask to complete your combo kit
-                </p>
-
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
-                  {maskProducts.map(product => {
-                    const id = product._id || product.id;
-                    const selected = selectedMasks.find(p => p.id === id);
-
-                    return (
-                      <div
-                        key={id}
-                        className={`
-                          scale-90 origin-top transition-all duration-300 hover:scale-[0.97]
-                          rounded-2xl p-[6px]
-                          ${selected
-                            ? "bg-gradient-to-br from-[#FAD4C0] via-[#FFF4EA] to-white shadow-lg ring-2 ring-[#E96A6A]"
-                            : "bg-white hover:bg-[#FFF4EA] border border-[#FAD4C0]"}
-                        `}
-                      >
-                        <ComboProductCard
-                          product={product}
-                          selected={selected}
-                          onSelect={toggleMask}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-            </div>
-
-            {/* ── SIDEBAR ── */}
-            <div
-              className="rounded-2xl p-6 shadow-md h-fit sticky top-24"
-              style={{ background: "linear-gradient(to bottom, #FFF4EA, #FAD4C0)" }}
-            >
-              <h3 className="font-semibold text-xl mb-6 text-[#7A2E3A]">
-                💝 Your Festive Day Combo Kit
-              </h3>
-
-              {/* TONERS */}
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-[#E96A6A] text-white text-[10px] px-2 py-[2px] rounded-full">
-                    Step 1
-                  </span>
-                  <p className="font-medium text-sm">Toners</p>
-                </div>
-
-                {selectedToners.length === 0 && (
-                  <p className="text-xs text-gray-500">No toner selected</p>
-                )}
-
-                <div className="flex flex-wrap gap-3">
-                  {selectedToners.map((p) => {
-                    const img = p.images?.[0] || p.image || p.imageUrl || "/placeholder.webp";
-                    return (
-                      <div key={p.id} className="relative text-center">
-                        <img loading="lazy"
-                          src={img}
-                          alt={p.name}
-                          className="w-16 h-16 object-contain border border-gray-200 rounded-lg p-1 bg-white shadow-sm"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <button
-                          onClick={() => toggleToner(p)}
-                          className="absolute -top-2 -right-2 bg-[#E96A6A] hover:bg-[#D45A5A] text-white w-5 h-5 rounded-full text-xs hover:bg-[#132813]"
-                        >
-                          ×
-                        </button>
-                        <p className="text-[10px] mt-1 line-clamp-2 w-16">{p.name}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* MASKS */}
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-[#E96A6A] text-white text-[10px] px-2 py-[2px] rounded-full">
-                    Step 2
-                  </span>
-                  <p className="font-medium text-sm">
-                    Mask{" "}
-                    <span className="text-gray-400 font-normal text-[10px]">(optional)</span>
-                  </p>
-                </div>
-
-                {selectedMasks.length === 0 && (
-                  <p className="text-xs text-gray-500">No mask selected</p>
-                )}
-
-                <div className="flex flex-wrap gap-3">
-                  {selectedMasks.map((p) => {
-                    const img = p.images?.[0] || p.image || p.imageUrl || "/placeholder.webp";
-                    return (
-                      <div key={p.id} className="relative text-center">
-                        <img loading="lazy"
-                          src={img}
-                          alt={p.name}
-                          className="w-16 h-16 object-contain border rounded-lg p-1 bg-white"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <button
-                          onClick={() => toggleMask(p)}
-                          className="absolute -top-2 -right-2 bg-[#1C371C] text-white w-5 h-5 rounded-full text-xs hover:bg-[#132813]"
-                        >
-                          ×
-                        </button>
-                        <p className="text-[10px] mt-1 line-clamp-2 w-16">{p.name}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* PRICE */}
-              <div className="border-t pt-4 mt-4">
-                {selectedToners.length === 0 && (
-                  <p className="text-sm text-gray-400 italic">Select toners to see price</p>
-                )}
-
-                {selectedToners.length === 1 && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">1 toner selected</p>
-                    <p className="text-xl font-bold text-[#7A2E3A]">₹{singleTonerPrice}</p>
-                    <p className="text-xs text-[#E96A6A] mt-1">
-                      ✨ Add 1 more toner to unlock ₹699 combo offer!
-                    </p>
-                  </div>
-                )}
-
-                {selectedToners.length === 2 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      {originalTonerMRP > 699 && (
-                        <p className="text-sm text-gray-400 line-through">₹{originalTonerMRP}</p>
-                      )}
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-[2px] rounded-full font-medium">
-                        Combo Price
-                      </span>
-                    </div>
-                    <p className="text-xl font-bold text-[#7A2E3A]">₹699</p>
-                    {originalTonerMRP > 699 && (
-                      <p className="text-xs text-green-600 mt-1">
-                        🎉 You save ₹{originalTonerMRP - 699}!
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <button
-                  disabled={selectedToners.length !== 2 || loadingCombo}
-                  onClick={addComboToCart}
-                  className="w-full mt-5 py-3 rounded-xl font-semibold tracking-wide transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{
-                    background: "linear-gradient(to right, #E96A6A, #D45A5A)"
-                  }}
-                >
-                  {loadingCombo ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                      Adding...
-                    </>
-                  ) : (
-                    "Add Combo To Cart"
-                  )}
-                </button>
-
-              </div>
-            </div>
-
-          </div>
-
-        </section>
-
-
-
-
-        {/* ================= DIVIDER ================= */}
+        {/* DIVIDER */}
         <div className="max-w-7xl mx-auto px-4">
           <div className="border-t border-[#FAD4C0] my-4" />
         </div>
 
-
-
-        {/* ================= COUPON SECTION ================= */}
+        {/* COUPON SECTION */}
         <div className="pt-18" ref={couponRef}>
           <CouponProductBuilder />
         </div>

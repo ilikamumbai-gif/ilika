@@ -219,7 +219,7 @@ const MaskDuoOffer = () => {
         {/* ── Product Cards ── */}
         <div className="lg:col-span-3">
           <h3 className="text-xl font-semibold mb-6 text-[#7A2E3A]">
-            💖 Choose 2 Masks
+            💖 2 Premium Masks
           </h3>
 
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8">
