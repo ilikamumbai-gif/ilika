@@ -1,16 +1,13 @@
 import React from "react";
 import {
   Package, Users, ShoppingCart, IndianRupee,
-  BookOpen, Layers, Boxes, Eye, Star, Shield,
-  TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight
+  Boxes, Eye, Star, TrendingUp, Clock, CheckCircle, ArrowRight
 } from "lucide-react";
 import StatCard from "../components/StatCard";
 import AdminLayout from "../components/AdminLayout";
 import { useOrders } from "../context/OrderContext";
 import { useProducts } from "../context/ProductContext";
 import { useUsers } from "../context/UserContext";
-import { useBlog } from "../context/BlogProvider";
-import { useCategories } from "../context/CategoryContext";
 import { useCombos } from "../context/ComboContext";
 import { useCartEvents } from "../context/CartEventContext";
 import { useReviews } from "../context/ReviewContext";
@@ -19,8 +16,8 @@ import { normalizeSource } from "../Utils/trafficSource";
 import { formatOrderRef } from "../../utils/orderId";
 
 const STATUS_COLORS = {
-  Placed:    "bg-blue-100 text-blue-700",
-  Shipped:   "bg-purple-100 text-purple-700",
+  Placed: "bg-blue-100 text-blue-700",
+  Shipped: "bg-purple-100 text-purple-700",
   Delivered: "bg-green-100 text-green-700",
   Cancelled: "bg-red-100 text-red-700",
 };
@@ -43,18 +40,18 @@ const Dashboard = () => {
   const { orders } = useOrders();
   const { products } = useProducts();
   const { users } = useUsers();
-  const { blogs } = useBlog();
-  const { categories } = useCategories();
   const { combos } = useCombos();
   const { events } = useCartEvents();
   const { reviews } = useReviews();
   const navigate = useNavigate();
 
   const totalRevenue = orders.reduce((a, o) => a + (o.total || 0), 0);
-  const paidOrders   = orders.filter(o => o.paymentStatus === "Paid").length;
-  const pendingOrders = orders.filter(o => o.status === "Placed").length;
+  const actualRevenue = orders
+    .filter((o) => !String(o.status || "").toLowerCase().includes("cancel"))
+    .reduce((a, o) => a + (o.total || 0), 0);
+  const paidOrders = orders.filter((o) => o.paymentStatus === "Paid").length;
+  const pendingOrders = orders.filter((o) => o.status === "Placed").length;
 
-  // Source breakdown
   const sourceCounts = orders.reduce((acc, o) => {
     const src = normalizeSource(o.source);
     acc[src] = (acc[src] || 0) + 1;
@@ -63,19 +60,17 @@ const Dashboard = () => {
   const sourceTotal = orders.length || 1;
 
   const SOURCE_BAR_COLORS = {
-    "Facebook":    "#1877F2",
-    "FB Ads":      "#0D5DBF",
-    "Instagram":   "#E1306C",
-    "Insta Ads":   "#A8174A",
-    "Google":      "#FBBC04",
-    "Google Ads":  "#EA8600",
-    "Website":     "#6B7280",
+    Facebook: "#1877F2",
+    "FB Ads": "#0D5DBF",
+    Instagram: "#E1306C",
+    "Insta Ads": "#A8174A",
+    Google: "#FBBC04",
+    "Google Ads": "#EA8600",
+    Website: "#6B7280",
   };
 
-  // Recent 5 orders
   const recentOrders = [...orders].slice(0, 5);
 
-  // Status breakdown
   const statusCounts = orders.reduce((acc, o) => {
     acc[o.status] = (acc[o.status] || 0) + 1;
     return acc;
@@ -83,14 +78,15 @@ const Dashboard = () => {
 
   return (
     <AdminLayout>
-      {/* Page title */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-sm text-gray-400 mt-0.5">Your store overview at a glance</p>
       </div>
 
-      {/* ── STAT CARDS ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+        <div onClick={() => navigate("/admin/orders")} className="cursor-pointer">
+          <StatCard title="Actual Revenue" value={actualRevenue} icon={TrendingUp} color="bg-emerald-100" textColor="text-emerald-600" />
+        </div>
         <div onClick={() => navigate("/admin/orders")} className="cursor-pointer">
           <StatCard title="Total Revenue" value={totalRevenue} icon={IndianRupee} color="bg-pink-100" textColor="text-pink-600" />
         </div>
@@ -100,12 +96,13 @@ const Dashboard = () => {
         <div onClick={() => navigate("/admin/users")} className="cursor-pointer">
           <StatCard title="Total Users" value={users.length} icon={Users} color="bg-blue-100" textColor="text-blue-600" />
         </div>
+        <div onClick={() => navigate("/admin/orders")} className="cursor-pointer">
+          <StatCard title="Paid Orders" value={paidOrders} icon={CheckCircle} color="bg-green-100" textColor="text-green-600" />
+        </div>
+
         <div onClick={() => navigate("/admin/products")} className="cursor-pointer">
           <StatCard title="Products" value={products.length} icon={Package} color="bg-orange-100" textColor="text-orange-600" />
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div onClick={() => navigate("/admin/orders")} className="cursor-pointer">
           <StatCard title="Pending Orders" value={pendingOrders} icon={Clock} color="bg-yellow-100" textColor="text-yellow-600" />
         </div>
@@ -120,10 +117,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── BOTTOM GRID ── */}
       <div className="grid lg:grid-cols-3 gap-5">
-
-        {/* Recent Orders */}
         <div className="lg:col-span-2 bg-white rounded-2xl p-5" style={{ border: "1px solid #EBEBEB" }}>
           <SectionHeader title="Recent Orders" linkTo="/admin/orders" navigate={navigate} />
           <div className="space-y-0">
@@ -152,41 +146,35 @@ const Dashboard = () => {
                   <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[order.status] || "bg-gray-100 text-gray-600"}`}>
                     {order.status}
                   </span>
-                  <span className="text-sm font-bold text-gray-800">₹{order.total?.toLocaleString("en-IN")}</span>
+                  <span className="text-sm font-bold text-gray-800">Rs {order.total?.toLocaleString("en-IN")}</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Right column */}
         <div className="space-y-5">
-
-          {/* Order Status Breakdown */}
           <div className="bg-white rounded-2xl p-5" style={{ border: "1px solid #EBEBEB" }}>
             <SectionHeader title="Order Status" navigate={navigate} />
             <div className="space-y-3">
               {[
-                { label: "Placed",    color: "#3B82F6", bg: "bg-blue-50"   },
-                { label: "Shipped",   color: "#8B5CF6", bg: "bg-purple-50" },
-                { label: "Delivered", color: "#10B981", bg: "bg-green-50"  },
-                { label: "Cancelled", color: "#EF4444", bg: "bg-red-50"    },
-              ].map(({ label, color, bg }) => {
+                { label: "Placed", color: "#3B82F6" },
+                { label: "Shipped", color: "#8B5CF6" },
+                { label: "Delivered", color: "#10B981" },
+                { label: "Cancelled", color: "#EF4444" },
+              ].map(({ label, color }) => {
                 const count = statusCounts[label] || 0;
                 const pct = orders.length ? Math.round((count / orders.length) * 100) : 0;
                 return (
                   <div key={label} className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full shrink-0`} style={{ background: color }} />
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-xs font-medium text-gray-600">{label}</span>
                         <span className="text-xs font-bold text-gray-800">{count}</span>
                       </div>
                       <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%`, background: color }}
-                        />
+                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
                       </div>
                     </div>
                   </div>
@@ -195,7 +183,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Traffic Sources */}
           <div className="bg-white rounded-2xl p-5" style={{ border: "1px solid #EBEBEB" }}>
             <SectionHeader title="Traffic Sources" navigate={navigate} />
             <div className="space-y-2.5">
