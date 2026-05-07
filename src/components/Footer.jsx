@@ -65,6 +65,10 @@ const Footer = () => {
             <Link to="/contact" className="flex items-center justify-center sm:justify-start gap-2 hover:opacity-80">
               <Phone size={16} /> Contact Us
             </Link>
+
+            <Link to="/track-order" className="flex items-center justify-center sm:justify-start gap-2 hover:opacity-80">
+              <MapPin size={16} /> Track Order
+            </Link>
           </div>
 
           {/* ADDRESS */}

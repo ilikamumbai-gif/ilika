@@ -314,6 +314,81 @@ const withTimeout = async (promise, timeoutMs = 12000, timeoutLabel = "operation
   }
 };
 
+/* ============================== SHIPROCKET ============================== */
+const SHIPROCKET_EMAIL = process.env.SHIPROCKET_EMAIL || "";
+const SHIPROCKET_PASSWORD = process.env.SHIPROCKET_PASSWORD || "";
+const SHIPROCKET_BASE_URL =
+  (process.env.SHIPROCKET_BASE_URL || "https://apiv2.shiprocket.in").replace(/\/+$/, "");
+let shiprocketTokenCache = {
+  token: "",
+  expiresAt: 0,
+};
+
+const isShiprocketConfigured = () => Boolean(SHIPROCKET_EMAIL && SHIPROCKET_PASSWORD);
+
+const getShiprocketToken = async () => {
+  const now = Date.now();
+  if (shiprocketTokenCache.token && shiprocketTokenCache.expiresAt > now + 60_000) {
+    return shiprocketTokenCache.token;
+  }
+
+  const loginRes = await fetch(`${SHIPROCKET_BASE_URL}/v1/external/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: SHIPROCKET_EMAIL,
+      password: SHIPROCKET_PASSWORD,
+    }),
+  });
+
+  if (!loginRes.ok) {
+    const message = await loginRes.text().catch(() => "");
+    throw new Error(`shiprocket_login_failed:${loginRes.status}:${message}`);
+  }
+
+  const loginData = await loginRes.json();
+  const token = String(loginData?.token || "").trim();
+  if (!token) throw new Error("shiprocket_token_missing");
+
+  shiprocketTokenCache = {
+    token,
+    expiresAt: now + 9 * 60 * 1000,
+  };
+  return token;
+};
+
+const normalizeShiprocketTracking = (payload = {}, awb = "") => {
+  const trackingData = payload?.tracking_data || {};
+  const shipmentTrack = Array.isArray(trackingData?.shipment_track)
+    ? trackingData.shipment_track
+    : [];
+  const activities = Array.isArray(trackingData?.shipment_track_activities)
+    ? trackingData.shipment_track_activities
+    : [];
+  const summary = shipmentTrack[0] || {};
+  const currentStatus =
+    String(summary?.current_status || summary?.shipment_status || payload?.status || "").trim() ||
+    "Processing";
+
+  return {
+    awb: String(awb || "").trim(),
+    status: currentStatus,
+    courier: String(summary?.courier_name || summary?.courier || "").trim(),
+    etd: summary?.etd || "",
+    deliveredDate: summary?.delivered_date || "",
+    destination: String(summary?.destination || "").trim(),
+    origin: String(summary?.origin || "").trim(),
+    activities: activities.map((activity, idx) => ({
+      id: `${idx + 1}`,
+      date: activity?.date || activity?.activity_date || "",
+      status: String(activity?.status || activity?.activity || "").trim(),
+      location: String(activity?.location || activity?.sr_status_label || "").trim(),
+      details: String(activity?.activity || activity?.sr_status || "").trim(),
+    })),
+    raw: payload,
+  };
+};
+
 /* ============================== GOOGLE MERCHANT ============================== */
 const MERCHANT_CENTER_ACCOUNT_ID =
   process.env.GOOGLE_MERCHANT_ID ||
@@ -1914,6 +1989,41 @@ app.put("/api/orders/:id/tracking", async (req, res) => {
   } catch (error) {
     console.error("TRACKING UPDATE ERROR:", error);
     res.status(500).json({ error: "Failed to update tracking" });
+  }
+});
+
+app.get("/api/shipping/track/:awb", async (req, res) => {
+  try {
+    if (!isShiprocketConfigured()) {
+      return res.status(503).json({ error: "Shiprocket is not configured on server" });
+    }
+
+    const awb = String(req.params.awb || "").trim();
+    if (!awb) return res.status(400).json({ error: "AWB ID is required" });
+
+    const token = await getShiprocketToken();
+    const trackUrl = `${SHIPROCKET_BASE_URL}/v1/external/courier/track/awb/${encodeURIComponent(awb)}`;
+    const trackRes = await fetch(trackUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!trackRes.ok) {
+      const bodyText = await trackRes.text().catch(() => "");
+      return res.status(trackRes.status).json({
+        error: "Shiprocket tracking request failed",
+        details: bodyText,
+      });
+    }
+
+    const trackingPayload = await trackRes.json();
+    const normalized = normalizeShiprocketTracking(trackingPayload, awb);
+    return res.json(normalized);
+  } catch (error) {
+    console.error("SHIPROCKET TRACK ERROR:", error);
+    return res.status(500).json({ error: "Failed to fetch Shiprocket tracking data" });
   }
 });
 

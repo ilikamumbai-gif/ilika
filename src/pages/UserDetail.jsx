@@ -709,14 +709,12 @@ const UserDetail = () => {
                                       </div>
                                       <div className="rounded-lg bg-white border border-blue-100 p-2.5 flex items-center">
                                         {trackingUrl ? (
-                                          <a
-                                            href={trackingUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                          <Link
+                                            to={`/track-order?order=${encodeURIComponent(order.id || "")}&trackingId=${encodeURIComponent(trackingId)}&courier=${encodeURIComponent(courierName)}&trackingUrl=${encodeURIComponent(trackingUrl)}&shippingStatus=${encodeURIComponent(tracking.shippingStatus || "")}`}
                                             className="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-xs font-semibold transition-colors"
                                           >
                                             Track Order
-                                          </a>
+                                          </Link>
                                         ) : (
                                           <p className="text-xs text-gray-400">Tracking link will appear after shipment.</p>
                                         )}
