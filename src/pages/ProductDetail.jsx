@@ -242,9 +242,28 @@ const normalizeColorKey = (value = "") =>
 const normalizeCouponCode = (value = "") =>
   String(value || "");
 
+const formatIngredientTitle = (src = "", index = 0) => {
+  try {
+    const pathPart = decodeURIComponent(String(src).split("?")[0] || "");
+    const fileName = pathPart.split("/").pop() || "";
+    const clean = fileName
+      .replace(/\.[a-z0-9]+$/i, "")
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!clean) return `Ingredient ${index + 1}`;
+    return clean.toUpperCase().slice(0, 36);
+  } catch {
+    return `Ingredient ${index + 1}`;
+  }
+};
+
 const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe }) => {
   const [current, setCurrent] = useState(initialIndex);
+  const [zoomActive, setZoomActive] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const thumbsRef = useRef(null);
+  const imageZoomRef = useRef(null);
   // Track whether user manually navigated (pauses auto-scroll briefly)
   const userInteractedRef = useRef(false);
 
@@ -279,6 +298,18 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
     return () => clearInterval(timer);
   }, [images.length]);
 
+  const handleZoomMove = (e) => {
+    if (!imageZoomRef.current) return;
+    const rect = imageZoomRef.current.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomPos({
+      x: Math.max(0, Math.min(100, x)),
+      y: Math.max(0, Math.min(100, y)),
+    });
+  };
+
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-stretch"
@@ -301,7 +332,13 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
       >
 
         {/* â•â• LEFT - main image + nav â•â• */}
-        <div className="relative flex-1 bg-[#fafafa] flex items-center justify-center min-w-0">
+        <div
+          ref={imageZoomRef}
+          className="relative flex-1 bg-[#fafafa] flex items-center justify-center min-w-0 overflow-hidden"
+          onMouseEnter={() => setZoomActive(true)}
+          onMouseLeave={() => setZoomActive(false)}
+          onMouseMove={handleZoomMove}
+        >
           {/* Prev */}
           {images.length > 1 && (
             <button
@@ -318,7 +355,14 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
             width="1080"
             height="1080"
             className="w-full h-full object-contain"
-            style={{ maxHeight: "90vh", userSelect: "none" }}
+            style={{
+              maxHeight: "90vh",
+              userSelect: "none",
+              transform: zoomActive ? "scale(1.8)" : "scale(1)",
+              transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+              transition: zoomActive ? "transform 80ms ease-out" : "transform 220ms ease-out",
+              cursor: zoomActive ? "zoom-out" : "zoom-in",
+            }}
             draggable={false}
           />
 
@@ -985,7 +1029,6 @@ const ProductDetail = () => {
   const [activeVariant, setActiveVariant] = useState(null);
   const [touchStartX, setTouchStartX] = useState(null);
   const [touchEndX, setTouchEndX] = useState(null);
-  const [ingredientIndex, setIngredientIndex] = useState(0);
   const [expandedDesc, setExpandedDesc] = useState(false);
   const [expandedInfo, setExpandedInfo] = useState(false);
   const [activeInfoTab, setActiveInfoTab] = useState("details");
@@ -1018,7 +1061,7 @@ const ProductDetail = () => {
   const ingredientDragStateRef = useRef({
     isDragging: false,
     startX: 0,
-    deltaX: 0,
+    startScrollLeft: 0,
   });
 
 
@@ -1309,7 +1352,7 @@ const ProductDetail = () => {
   const isOutOfStock = product?.inStock === false;
 
   useEffect(() => {
-    setIngredientIndex(0);
+    ingredientDragStateRef.current.isDragging = false;
   }, [productId, ingredients.length]);
 
   useEffect(() => {
@@ -1461,53 +1504,88 @@ const ProductDetail = () => {
     if (d < -50) setSelectedImage(images[(ci - 1 + images.length) % images.length]);
   };
 
+  const loopedIngredients = useMemo(() => {
+    if (!ingredients.length) return [];
+    return [...ingredients, ...ingredients, ...ingredients].map((src, idx) => ({
+      src,
+      originalIndex: idx % ingredients.length,
+      key: `${idx}-${src}`,
+    }));
+  }, [ingredients]);
+
+  const normalizeIngredientLoopScroll = useCallback(() => {
+    const track = ingredientTrackRef.current;
+    if (!track || ingredients.length <= ingredientCardsPerView) return;
+    const oneLoopWidth = track.scrollWidth / 3;
+    const min = oneLoopWidth * 0.5;
+    const max = oneLoopWidth * 2.5;
+    if (track.scrollLeft < min) {
+      track.scrollLeft += oneLoopWidth;
+    } else if (track.scrollLeft > max) {
+      track.scrollLeft -= oneLoopWidth;
+    }
+  }, [ingredients.length, ingredientCardsPerView]);
+
+  useEffect(() => {
+    const track = ingredientTrackRef.current;
+    if (!track) return;
+    const raf = window.requestAnimationFrame(() => {
+      if (ingredients.length > ingredientCardsPerView) {
+        track.scrollLeft = track.scrollWidth / 3;
+      } else {
+        track.scrollLeft = 0;
+      }
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [ingredients, ingredientCardsPerView]);
+
+  useEffect(() => {
+    const onResize = () => normalizeIngredientLoopScroll();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [normalizeIngredientLoopScroll]);
+
   const handleIngredientPointerDown = (e) => {
     if (ingredients.length <= ingredientCardsPerView) return;
     if (e.target?.closest?.("button")) return;
     const track = ingredientTrackRef.current;
-    if (track) track.style.transition = "none";
+    if (!track) return;
     ingredientDragStateRef.current.isDragging = true;
     ingredientDragStateRef.current.startX = e.clientX;
-    ingredientDragStateRef.current.deltaX = 0;
+    ingredientDragStateRef.current.startScrollLeft = track.scrollLeft;
     e.currentTarget.style.cursor = "grabbing";
     e.currentTarget.setPointerCapture?.(e.pointerId);
   };
 
   const handleIngredientPointerMove = (e) => {
     if (!ingredientDragStateRef.current.isDragging) return;
-    const deltaX = e.clientX - ingredientDragStateRef.current.startX;
-    ingredientDragStateRef.current.deltaX = deltaX;
     const track = ingredientTrackRef.current;
-    if (track) {
-      const clamped = Math.max(-180, Math.min(180, deltaX));
-      track.style.transform = `translateX(${clamped}px)`;
-    }
+    if (!track) return;
+    const deltaX = e.clientX - ingredientDragStateRef.current.startX;
+    track.scrollLeft = ingredientDragStateRef.current.startScrollLeft - deltaX;
+    normalizeIngredientLoopScroll();
   };
 
   const handleIngredientPointerEnd = (e) => {
     if (!ingredientDragStateRef.current.isDragging) return;
-
-    const dragDelta = ingredientDragStateRef.current.deltaX;
     ingredientDragStateRef.current.isDragging = false;
     ingredientDragStateRef.current.startX = 0;
-    ingredientDragStateRef.current.deltaX = 0;
-    if (ingredients.length > ingredientCardsPerView) {
-      e.currentTarget.style.cursor = "grab";
-    }
-    const track = ingredientTrackRef.current;
-    if (track) {
-      track.style.transition = "transform 260ms ease";
-      track.style.transform = "translateX(0px)";
-    }
-
-    if (Math.abs(dragDelta) < 40) return;
-
-    if (dragDelta < 0) {
-      setIngredientIndex((prev) => (prev + 1) % ingredients.length);
-    } else {
-      setIngredientIndex((prev) => (prev - 1 + ingredients.length) % ingredients.length);
-    }
+    ingredientDragStateRef.current.startScrollLeft = 0;
+    if (ingredients.length > ingredientCardsPerView) e.currentTarget.style.cursor = "grab";
+    normalizeIngredientLoopScroll();
   };
+
+  const scrollIngredientTrackByCards = useCallback((direction) => {
+    const track = ingredientTrackRef.current;
+    if (!track) return;
+    const cardsPerView = window.innerWidth >= 1024 ? 4 : 2;
+    const cardDistance = track.clientWidth / cardsPerView;
+    track.scrollBy({
+      left: direction * cardDistance,
+      behavior: "smooth",
+    });
+    window.setTimeout(() => normalizeIngredientLoopScroll(), 260);
+  }, [normalizeIngredientLoopScroll]);
 
   const openLightbox = (index) => { stopAuto(); setLightboxIndex(index); setLightboxOpen(true); };
 
@@ -1621,17 +1699,6 @@ const ProductDetail = () => {
   );
 
   const hasIngredients = ingredients.length > 0;
-  const visibleIngredients = useMemo(() => {
-    if (!hasIngredients) return [];
-    const cardsToShow = Math.min(ingredientCardsPerView, ingredients.length);
-    return Array.from({ length: cardsToShow }, (_, offset) => {
-      const sourceIndex = (ingredientIndex + offset) % ingredients.length;
-      return {
-        sourceIndex,
-        src: ingredients[sourceIndex],
-      };
-    });
-  }, [hasIngredients, ingredientIndex, ingredients]);
 
   useEffect(() => {
     if (!ingredients.length) return;
@@ -2152,7 +2219,7 @@ const ProductDetail = () => {
                   <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                     <div className={idx % 2 === 1 ? "lg:order-2" : ""}>
                       <BeforeAfterSlider beforeImage={pair.before} afterImage={pair.after} beforeLabel={pair.beforeLabel || "Before"} afterLabel={pair.afterLabel || "After"} />
-                      <p className="text-center text-xs text-gray-400 mt-2">â† Drag slider to compare â†’</p>
+                      <p className="text-center text-xs text-gray-400 mt-2"> ← Drag slider to compare → </p>
                     </div>
                     <div className={`flex flex-col justify-center space-y-4 ${idx % 2 === 1 ? "lg:order-1" : ""}`}>
                       {pair.duration && (<span className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold border rounded-full px-3.5 py-1.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentSoft, color: detailTheme.accent }}><Sparkles className="w-3 h-3" /> {pair.duration}</span>)}
@@ -2178,7 +2245,7 @@ const ProductDetail = () => {
 
         {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
         <DeferredSection minHeight={360}>
-          <section ref={detailsTabsRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
+          <section ref={detailsTabsRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-10">
             <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
               {[
                 { id: "details", label: "Product Detail" },
@@ -2257,20 +2324,23 @@ const ProductDetail = () => {
         {activeInfoTab !== "reviews" && hasIngredients && (
           <DeferredSection minHeight={420}>
             <section
-              className="max-w-7xl mx-auto px-4 sm:px-6 mb-12 rounded-3xl py-8 sm:py-10"
+              className="max-w-7xl mx-auto px-4 sm:px-4 mb-6 py-6 sm:py-6"
               style={{
-                backgroundColor: mixHex(detailTheme.pageBg, "#000000", 0.06),
-                border: `1px solid ${detailTheme.borderSoft}`,
+                
+                borderRadius: "20px",
+                border: detailTheme.isDefaultWhite
+                    ? "linear-gradient(135deg,#e91e8c 0%,#ff6b35 100%)"
+                    : detailTheme.benefitGradient,
               }}
             >
-              <div className="flex items-center justify-center mb-7">
-                <h2 className="text-3xl sm:text-4xl font-semibold" style={{ color: detailTheme.heading }}>
-                  Ingredients
+              <div className="text-center mb-7 sm:mb-8 px-2">
+                <h2 className="text-4xl sm:text-5xl font-light tracking-tight" >
+                  Key Ingredients
                 </h2>
               </div>
 
               <div
-                className="relative px-2 sm:px-8 select-none"
+                className="relative px-2 sm:px-7 select-none"
                 onPointerDown={handleIngredientPointerDown}
                 onPointerMove={handleIngredientPointerMove}
                 onPointerUp={handleIngredientPointerEnd}
@@ -2283,28 +2353,18 @@ const ProductDetail = () => {
                 {ingredients.length > ingredientCardsPerView && (
                   <>
                     <button
-                      onClick={() => setIngredientIndex((prev) => (prev - 1 + ingredients.length) % ingredients.length)}
-                      className="absolute left-0 sm:left-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition"
-                      style={{
-                        backgroundColor: detailTheme.accentSoftAlt,
-                        color: detailTheme.accent,
-                        border: `1px solid ${detailTheme.accentLine}`,
-                      }}
+                      onClick={() => scrollIngredientTrackByCards(-1)}
+                      className="absolute left-0 sm:left-1 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center transition bg-white/90 text-black border border-black/15 shadow-sm hover:bg-white"
                       aria-label="Previous ingredient cards"
                     >
-                      <ChevronLeft className="w-5 h-5" />
+                      <ChevronLeft className="w-7 h-7" />
                     </button>
                     <button
-                      onClick={() => setIngredientIndex((prev) => (prev + 1) % ingredients.length)}
-                      className="absolute right-0 sm:right-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition"
-                      style={{
-                        backgroundColor: detailTheme.accentSoftAlt,
-                        color: detailTheme.accent,
-                        border: `1px solid ${detailTheme.accentLine}`,
-                      }}
+                      onClick={() => scrollIngredientTrackByCards(1)}
+                      className="absolute right-0 sm:right-1 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center transition bg-white/90 text-black border border-black/15 shadow-sm hover:bg-white"
                       aria-label="Next ingredient cards"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <ChevronRight className="w-7 h-7" />
                     </button>
                   </>
                 )}
@@ -2312,28 +2372,26 @@ const ProductDetail = () => {
                 <div className="overflow-hidden rounded-[28px]">
                   <div
                     ref={ingredientTrackRef}
-                    className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
-                    style={{
-                      transform: "translateX(0px)",
-                      transition: "transform 260ms ease",
-                      willChange: "transform",
-                    }}
+                    onScroll={normalizeIngredientLoopScroll}
+                    className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 [&::-webkit-scrollbar]:hidden"
+                    style={{ scrollbarWidth: "none" }}
                   >
-                    {visibleIngredients.map((item, idx) => (
+                    {(ingredients.length > ingredientCardsPerView ? loopedIngredients : loopedIngredients.slice(0, ingredients.length)).map((item, idx) => (
                       <div
-                        key={`ingredient-${item.sourceIndex}-${item.src}`}
-                        className="rounded-[24px] overflow-hidden shadow-sm"
-                        style={{ border: `1px solid ${detailTheme.borderSoft}` }}
+                        key={`ingredient-${item.key}`}
+                        className="relative rounded-[28px] overflow-hidden group snap-start shrink-0 basis-[calc(50%-8px)] lg:basis-[calc(25%-18px)] bg-white"
+                        style={{ aspectRatio: "1 / 1" }}
                       >
                         <img
-                          loading={idx === 0 ? "eager" : "lazy"}
+                          loading={idx < 2 ? "eager" : "lazy"}
                           src={item.src}
-                          alt={`Ingredient ${item.sourceIndex + 1}`}
+                          alt={`Ingredient ${item.originalIndex + 1}`}
                           width="600"
                           height="600"
-                          className="w-full aspect-square object-cover"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           draggable={false}
                         />
+                       
                       </div>
                     ))}
                   </div>
