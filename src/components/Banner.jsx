@@ -4,7 +4,8 @@ import bannerImg from "../assets/Images/Banner 2.webp";
 const Banner = ({
   className = "",
   src,
-  mobileSrc
+  mobileSrc,
+  imageFit = "cover",
 }) => {
   const desktopSrc = src || bannerImg;
   const mobileImageSrc = mobileSrc || desktopSrc;
@@ -16,7 +17,7 @@ const Banner = ({
         <img loading="lazy"
           src={desktopSrc}
           alt="Banner"
-          className="w-full h-full object-cover"
+          className={`w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
           decoding="async"
         />
       </picture>

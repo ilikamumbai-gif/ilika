@@ -1,6 +1,7 @@
 import React from "react";
 import { useProducts } from "../admin/context/ProductContext";
 import ProductCard from "./ProductCard";
+import { createSlug } from "../utils/slugify";
 
 const ProductList = ({
   categoryId,
@@ -9,8 +10,10 @@ const ProductList = ({
   buttonBg,
   buttonText,
   productNames = [],
-  priorityNames = [],   // ← NEW: products to show first (by name)
+  priorityNames = [],
   mobileScroll = false,
+  couponByProductName = {},
+  couponByProductSlug = {},
 }) => {
   const { products } = useProducts();
 
@@ -26,7 +29,6 @@ const ProductList = ({
     );
   }
 
-  // ── Pin priority products first, in the exact order of priorityNames ──
   if (priorityNames.length > 0) {
     const priorityItems = priorityNames
       .map((name) => filteredProducts.find((item) => item.name === name))
@@ -45,11 +47,14 @@ const ProductList = ({
     filteredProducts = filteredProducts.slice(0, limit);
   }
 
+  const getCouponText = (item) =>
+    couponByProductName[item.name] ||
+    couponByProductSlug[createSlug(item.name)] ||
+    "";
+
   return (
     <section className="w-full py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4">
-
-        {/* ── MOBILE: horizontal scroll (Home only) ── */}
         {mobileScroll && (
           <div className="flex gap-4 overflow-x-auto pb-2 sm:hidden scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {filteredProducts.length ? (
@@ -63,6 +68,7 @@ const ProductList = ({
                       product={item}
                       buttonBg={buttonBg}
                       buttonText={buttonText}
+                      couponText={getCouponText(item)}
                     />
                   </div>
                 </div>
@@ -73,7 +79,6 @@ const ProductList = ({
           </div>
         )}
 
-        {/* ── MOBILE: normal 2-col grid (all other pages) ── */}
         {!mobileScroll && (
           <div className="grid grid-cols-2 gap-4 sm:hidden">
             {filteredProducts.length ? (
@@ -83,6 +88,7 @@ const ProductList = ({
                   product={item}
                   buttonBg={buttonBg}
                   buttonText={buttonText}
+                  couponText={getCouponText(item)}
                 />
               ))
             ) : (
@@ -91,7 +97,6 @@ const ProductList = ({
           </div>
         )}
 
-        {/* ── DESKTOP: grid (always) ── */}
         <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.length ? (
             filteredProducts.map((item) => (
@@ -100,13 +105,13 @@ const ProductList = ({
                 product={item}
                 buttonBg={buttonBg}
                 buttonText={buttonText}
+                couponText={getCouponText(item)}
               />
             ))
           ) : (
             <p className="col-span-full text-sm text-gray-500">No products found</p>
           )}
         </div>
-
       </div>
     </section>
   );

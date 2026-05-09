@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
@@ -20,7 +20,6 @@ import PromoCardGrid from "../components/PromoCardGrid";
 import bannerSkincare from "../assets/Images/FacecareBanner.webp";
 import bannerHair from "../assets/Images/HairBanner.webp";
 
-const Offers = lazy(() => import("./Offer"));
 const Menifesto = lazy(() => import("../components/Menifesto"));
 const TestimonialList = lazy(() => import("../components/TestimonialList"));
 
@@ -29,6 +28,8 @@ const skinMobile = "/Images/skinMobile.webp";
 
 const hairMobile = "/Images/hairMobile.webp";
 const BannerStyle = "/Images/Banner.webp";
+const mothersDayBanner = "/Images/womens-day-banner.webp";
+const mothersDayBannerMobile = "/Images/womens-day-banner.webp";
 
 const LazyMountSection = ({
   children,
@@ -159,15 +160,17 @@ const Home = () => {
         <Header />
         <CartDrawer />
         <main>
+
+          <Link to="/combo" aria-label="View combo offers">
+            <Banner
+              className="mt-0 mb-6"
+              src={mothersDayBanner}
+              mobileSrc={mothersDayBannerMobile}
+              imageFit="contain"
+            />
+          </Link>
+
           <PromoCardGrid />
-
-
-          <LazyMountSection minHeight={380}>
-            <Suspense fallback={<div className="h-36" />}>
-              <Offers />
-            </Suspense>
-          </LazyMountSection>
-
 
           <LazyMountSection minHeight={220}>
             <Suspense fallback={<div className="h-40" />}>
@@ -196,10 +199,12 @@ const Home = () => {
                   "Ilika Automatic Voice Version Face Mask Maker Machine",
                 ]}
                 limit={8}
+                couponByProductName={{
+                  "Ilika Automatic Voice Version Face Mask Maker Machine": "Coupon: ilikaDIY",
+                }}
               />
             </Suspense>
           </LazyMountSection>
-
 
           <LazyMountSection minHeight={620}>
             <Suspense fallback={<div className="h-40" />}>
@@ -247,6 +252,9 @@ const Home = () => {
                     categoryId={skincareCategory.id}
                     offset={isMobile ? 0 : skinStart}
                     limit={isMobile ? undefined : getVisibleCount(skinTotal)}
+                    couponByProductName={{
+                      "Ilika Automatic Voice Version Face Mask Maker Machine": "Coupon: ilikaDIY",
+                    }}
                   />
                 </div>
               ) : (
@@ -325,11 +333,13 @@ const Home = () => {
 
 
               {/* HAIR CARE */}
-              <Banner
-                className="md:h-[60vh] mt-0 mb-10"
-                src={bannerHair}
-                mobileSrc={hairMobile}
-              />
+              <Link to="/product/black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth">
+                <Banner
+                  className="md:h-[60vh] mt-0 mb-10"
+                  src={bannerHair}
+                  mobileSrc={hairMobile}
+                />
+              </Link>
 
               <Heading heading="OUR TOP HAIR CARE" />
               <div className="max-w-7xl mx-auto px-4 flex items-center justify-end gap-3 ">
@@ -366,6 +376,9 @@ const Home = () => {
                     categoryId={haircareCategory.id}
                     offset={isMobile ? 0 : hairStart}
                     limit={isMobile ? undefined : getVisibleCount(hairTotal)}
+                    couponByProductSlug={{
+                      "black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth": "Coupon Available",
+                    }}
                   />
                 </div>
               ) : (
@@ -405,3 +418,5 @@ const Home = () => {
 };
 
 export default Home;
+
+

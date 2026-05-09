@@ -25,7 +25,7 @@ const OfferCard = ({
       block relative
       rounded-2xl
       p-[1px]
-bg-gradient-to-r from-[#FAD4C0] via-[#E96A6A] to-[#D45A5A]
+bg-gradient-to-r from-[#e7b4b4] via-[#c55f5f] to-[#801f1f]
       hover:scale-[1.02]
       transition duration-300
       group
@@ -34,9 +34,9 @@ bg-gradient-to-r from-[#FAD4C0] via-[#E96A6A] to-[#D45A5A]
       {/* CARD */}
       <div
         className="
-        bg-[#FFF4EA]/90 backdrop-blur-md
+        secondary-bg-color
         rounded-2xl
-p-3 sm:p-6
+p-4 sm:p-6
         h-full
         shadow-md
         group-hover:shadow-xl
@@ -48,24 +48,24 @@ p-3 sm:p-6
         <div>
 
           {/* TITLE */}
-          <h3 className="text-sm sm:text-lg font-semibold text-[#7A2E3A] mb-1 sm:mb-2">            
+          <h3 className="text-base sm:text-lg font-semibold heading-color mb-2 sm:mb-2">
             {title}
           </h3>
 
           {/* DESCRIPTION */}
-          <p className="text-[11px] sm:text-sm text-gray-600 mb-2 sm:mb-4 leading-snug sm:leading-relaxed">           
+          <p className="text-sm sm:text-sm content-text mb-3 sm:mb-4 leading-relaxed">
              {description}
           </p>
 
           {/* COUPON */}
           {type === "coupon" && (
-            <div className="flex items-center justify-between flex-wrap gap-2 mb-2 sm:mb-4">
+            <div className="flex items-start sm:items-center justify-between flex-wrap gap-2 mb-3 sm:mb-4">
               <span
                 className="
                 border border-dashed 
                 px-3 py-1 rounded-md
                 text-xs sm:text-sm font-semibold
-                bg-[#E96A6A] border-[#D45A5A] text-white
+                bg-[#801f1f] border-[#801f1f] text-white
                 "
               >
                 {code}
@@ -76,7 +76,8 @@ p-3 sm:p-6
                 className="
                 flex items-center gap-1
                 text-xs sm:text-sm font-medium
-                text-[#D45A5A] hover:text-[#E96A6A]
+                text-[#801f1f] hover:text-[#c55f5f]
+                self-start
                 "
               >
                 <Copy size={16} />
@@ -91,15 +92,15 @@ p-3 sm:p-6
         <div
           className="
           flex items-center justify-between
-          flex-wrap gap-2
-text-[#7A2E3A]
+          gap-2
+heading-color
           font-semibold
-          mt-1 sm:mt-2
+          mt-2 sm:mt-2
           "
         >
 
-          <div className="flex items-center gap-2 text-sm sm:text-base">
-<Gift size={18} className="text-[#E96A6A] shrink-0" />
+          <div className="flex items-center gap-1.5 text-[15px] sm:text-base">
+            <Gift size={16} className="text-[#801f1f] shrink-0" />
             <span>
               {type === "coupon" ? "Special Deal" : "Special Deal"}
             </span>
@@ -108,21 +109,22 @@ text-[#7A2E3A]
           <div
             className="
               flex items-center gap-1
-              text-sm sm:text-base
+              text-[15px] sm:text-base
               group-hover:translate-x-1
               transition
+              whitespace-nowrap
             "
           >
             <span className="relative">
 
-              {type === "coupon" ? "View Deal" : "Grab Your Masks"}
+              {type === "coupon" ? "View Deal" : "Grab Your Gift"}
 
               <span
                 className="
                 absolute left-0 -bottom-1
                 h-[2px]
                 w-0
-                bg-[#E96A6A]
+                bg-[#801f1f]
                 group-hover:w-full
                 transition-all duration-300
                 "

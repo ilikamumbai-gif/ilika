@@ -3,19 +3,19 @@ import OfferCard from "../components/OfferCard";
 
 const offers = [
   {
-  type: "deal",
-  title: "Hydration + Glow Combo",
-  description:
-    "Buy any 2 premium gelly face masks for just ₹699 and get a FREE Hydra Gel face moisturizer. Glow, hydrate & save more!",
-  link: "/combo"
-},
+    type: "deal",
+    title: "Mother’s Day Glow Therapy Combo",
+    description:
+      "Gift her radiant skin this Mother’s Day with the Ilika Nonvoice Mask Maker Machine + FREE Hyaluronic Acid Serum. Save ₹2000 + get extra serum value!",
+    link: "/combo"
+  },
   {
     type: "coupon",
-    title: "Flat 15% OFF on ILIKA Hair Appliances",
+    title: "15% OFF on Ilika Voice Mask Maker",
     description:
-      "Get 15% OFF on Ilika hair styling tools using this coupon.",
-    code: "ILIKA15",
-    link: "/combo"
+      "Use this coupon to get 15% OFF on the Ilika Voice Face Mask Maker Machine.",
+    code: "ilikaDIY",
+    link: "/product/ilika-automatic-voice-version-face-mask-maker-machine"
   }
 
 ];
@@ -27,19 +27,18 @@ const Offers = () => {
         relative
         py-5 md:py-20
         px-4
-        bg-cover
-        bg-[#f4d6b6]
-        bg-center
-        bg-no-repeat
-        
+       
       "
-      // style={{ backgroundImage: "url('/Images/Offerbg.webp')" }}
+      style={
+         {
+           background: "linear-gradient(160deg, #FFF1EE 0%, #FFE4DE 45%, #F8E6E0 100%)",
+         }
+      }
     >
       {/* overlay */}
-      <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
+      <div className="absolute inset-0" />
 
       <div className="relative max-w-7xl mx-auto">
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-8">
           {offers.map((offer, index) => (
             <OfferCard key={index} {...offer} />
@@ -52,3 +51,4 @@ const Offers = () => {
 };
 
 export default Offers;
+

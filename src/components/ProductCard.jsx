@@ -6,7 +6,13 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { createSlug } from "../utils/slugify";
 
-const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-white", productNames = [] }) => {
+const ProductCard = ({
+  product,
+  buttonBg = "bg-[#2b2a29]",
+  buttonText = "text-white",
+  productNames = [],
+  couponText = "",
+}) => {
   const { addToCart } = useCart();
   const slug = createSlug(product.name);
   const productId = product._id || product.id;
@@ -140,6 +146,12 @@ const ProductCard = ({ product, buttonBg = "bg-[#2b2a29]", buttonText = "text-wh
           <h4 className="text-[13px] font-semibold text-[#172917] leading-snug tracking-wide line-clamp-2 ">           
              {product.name}
           </h4>
+
+          {couponText && (
+            <div className="inline-flex w-fit items-center rounded-full bg-[#fff2d7] text-[#7a1f1f] text-[11px] font-semibold px-2.5 py-1 border border-[#f1d8a8]">
+              Limited Time Offer - {couponText}
+            </div>
+          )}
 
           {/* TAGLINE */}
           {product.tagline && (

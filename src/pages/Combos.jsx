@@ -17,13 +17,9 @@ import { useLocation } from "react-router-dom";
 import { useSeo } from "../hooks/useSeo";
 
 const offBanner = "/Images/Tonner.webp";
-const offBannerMobile = "/Images/TonnerMobile.webp";
 
-const maskBanner = "/Images/24.webp";
-const maskBannerMobile = "/Images/24.webp";
-
-const mothersDayBanner = "/Images/mothers-day-banner.webp";
-const mothersDayBannerMobile = "/Images/mothers-day-banner.webp";
+const mothersDayBanner = "/Images/womens-day-banner.webp";
+const mothersDayBannerMobile = "/Images/womens-day-banner.webp";
 
 /* ================= NEW OFFER SECTION ================= */
 
@@ -367,30 +363,17 @@ const Combos = () => {
 
         {/* TOP BANNER */}
         <Banner
-          className="mt-0 mb-10"
+          className="mt-0 mb-6"
           src={mothersDayBanner}
           mobileSrc={mothersDayBannerMobile}
+          imageFit="contain"
         />
 
         {/* NEW OFFER */}
         <HydrationGlowCombo />
 
-        {/* OLD BANNER */}
-        <Banner
-          className="mt-0 mb-10"
-          src={maskBanner}
-          mobileSrc={maskBannerMobile}
-        />
-
         {/* OLD COMBO */}
         <MaskDuoOffer />
-
-        {/* TONER BANNER */}
-        <Banner
-          className="md:h-[50vh] mt-0 mb-10"
-          src={offBanner}
-          mobileSrc={offBannerMobile}
-        />
 
         {/* DIVIDER */}
         <div className="max-w-7xl mx-auto px-4">
@@ -410,3 +393,4 @@ const Combos = () => {
 };
 
 export default Combos;
+
