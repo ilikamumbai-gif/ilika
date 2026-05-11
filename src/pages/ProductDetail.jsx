@@ -1319,7 +1319,13 @@ const ProductDetail = () => {
       })
       .filter(Boolean);
   }, [product?.ingredients]);
-  const ingredientCardsPerView = 4;
+  const getIngredientCardsPerView = useCallback(() => {
+    if (typeof window === "undefined") return 4;
+    if (window.innerWidth >= 1024) return 4;
+    if (window.innerWidth >= 640) return 2;
+    return 1;
+  }, []);
+  const shouldLoopIngredients = ingredients.length > 1;
 
   /* â”€â”€ Auto-scroll thumbnails on product page â”€â”€ */
   useEffect(() => {
@@ -1515,7 +1521,7 @@ const ProductDetail = () => {
 
   const normalizeIngredientLoopScroll = useCallback(() => {
     const track = ingredientTrackRef.current;
-    if (!track || ingredients.length <= ingredientCardsPerView) return;
+    if (!track || !shouldLoopIngredients) return;
     const oneLoopWidth = track.scrollWidth / 3;
     const min = oneLoopWidth * 0.5;
     const max = oneLoopWidth * 2.5;
@@ -1524,20 +1530,20 @@ const ProductDetail = () => {
     } else if (track.scrollLeft > max) {
       track.scrollLeft -= oneLoopWidth;
     }
-  }, [ingredients.length, ingredientCardsPerView]);
+  }, [shouldLoopIngredients]);
 
   useEffect(() => {
     const track = ingredientTrackRef.current;
     if (!track) return;
     const raf = window.requestAnimationFrame(() => {
-      if (ingredients.length > ingredientCardsPerView) {
+      if (shouldLoopIngredients) {
         track.scrollLeft = track.scrollWidth / 3;
       } else {
         track.scrollLeft = 0;
       }
     });
     return () => window.cancelAnimationFrame(raf);
-  }, [ingredients, ingredientCardsPerView]);
+  }, [ingredients, shouldLoopIngredients]);
 
   useEffect(() => {
     const onResize = () => normalizeIngredientLoopScroll();
@@ -1546,7 +1552,7 @@ const ProductDetail = () => {
   }, [normalizeIngredientLoopScroll]);
 
   const handleIngredientPointerDown = (e) => {
-    if (ingredients.length <= ingredientCardsPerView) return;
+    if (!shouldLoopIngredients) return;
     if (e.target?.closest?.("button")) return;
     const track = ingredientTrackRef.current;
     if (!track) return;
@@ -1571,14 +1577,14 @@ const ProductDetail = () => {
     ingredientDragStateRef.current.isDragging = false;
     ingredientDragStateRef.current.startX = 0;
     ingredientDragStateRef.current.startScrollLeft = 0;
-    if (ingredients.length > ingredientCardsPerView) e.currentTarget.style.cursor = "grab";
+    if (shouldLoopIngredients) e.currentTarget.style.cursor = "grab";
     normalizeIngredientLoopScroll();
   };
 
   const scrollIngredientTrackByCards = useCallback((direction) => {
     const track = ingredientTrackRef.current;
     if (!track) return;
-    const cardsPerView = window.innerWidth >= 1024 ? 4 : 2;
+    const cardsPerView = getIngredientCardsPerView();
     const cardDistance = track.clientWidth / cardsPerView;
     track.scrollBy({
       left: direction * cardDistance,
@@ -2347,10 +2353,10 @@ const ProductDetail = () => {
                 onPointerCancel={handleIngredientPointerEnd}
                 style={{
                   touchAction: "pan-y",
-                  cursor: ingredients.length > ingredientCardsPerView ? "grab" : "default",
+                  cursor: shouldLoopIngredients ? "grab" : "default",
                 }}
               >
-                {ingredients.length > ingredientCardsPerView && (
+                {shouldLoopIngredients && (
                   <>
                     <button
                       onClick={() => scrollIngredientTrackByCards(-1)}
@@ -2376,10 +2382,10 @@ const ProductDetail = () => {
                     className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 [&::-webkit-scrollbar]:hidden"
                     style={{ scrollbarWidth: "none" }}
                   >
-                    {(ingredients.length > ingredientCardsPerView ? loopedIngredients : loopedIngredients.slice(0, ingredients.length)).map((item, idx) => (
+                    {(shouldLoopIngredients ? loopedIngredients : loopedIngredients.slice(0, ingredients.length)).map((item, idx) => (
                       <div
                         key={`ingredient-${item.key}`}
-                        className="relative rounded-[28px] overflow-hidden group snap-start shrink-0 basis-[calc(50%-8px)] lg:basis-[calc(25%-18px)] bg-white"
+                        className="relative rounded-[28px] overflow-hidden group snap-start shrink-0 basis-full sm:basis-[calc(50%-8px)] lg:basis-[calc(25%-18px)] bg-white"
                         style={{ aspectRatio: "1 / 1" }}
                       >
                         <img

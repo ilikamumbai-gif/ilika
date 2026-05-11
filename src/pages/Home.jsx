@@ -261,8 +261,6 @@ const Home = () => {
             </Suspense>
           </LazyMountSection>
 
-
-
           <LazyMountSection minHeight={620}>
             <Suspense fallback={<div className="h-40" />}>
 
