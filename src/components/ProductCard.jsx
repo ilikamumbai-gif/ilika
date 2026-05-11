@@ -46,6 +46,18 @@ const ProductCard = ({
   const rating = product.rating || 4;
   const reviews = product.reviews || 80;
   const isTall = productImage?.includes("bottle") || productImage?.includes("tube");
+  const assignedCoupon = product?.couponSnapshot || product?.coupon || null;
+  const couponCode = String(assignedCoupon?.code || "").trim().toUpperCase();
+  const couponName = String(assignedCoupon?.name || "").trim();
+  const couponPercent = Number(assignedCoupon?.discountPercent || 0);
+  const hasActiveCoupon =
+    assignedCoupon &&
+    assignedCoupon?.isActive !== false &&
+    couponCode &&
+    couponPercent > 0;
+  const couponBadgeText = hasActiveCoupon
+    ? `${couponName ? `${couponName} - ` : ""}${couponCode}`
+    : couponText;
 
 
   const showNotifyToast = (message, type = "success") => {
@@ -137,6 +149,8 @@ const ProductCard = ({
               {calculatedDiscount}% OFF
             </div>
           )}
+
+         
         </div>
 
         {/* CONTENT */}
@@ -147,9 +161,9 @@ const ProductCard = ({
              {product.name}
           </h4>
 
-          {couponText && (
+          {couponBadgeText && (
             <div className="inline-flex w-fit items-center rounded-full bg-[#fff2d7] text-[#7a1f1f] text-[11px] font-semibold px-2.5 py-1 border border-[#f1d8a8]">
-              Limited Time Offer - {couponText}
+              {couponBadgeText}
             </div>
           )}
 
