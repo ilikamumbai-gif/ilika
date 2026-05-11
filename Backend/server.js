@@ -2258,6 +2258,90 @@ app.delete("/api/categories/:id", async (req, res) => {
   res.json({ message: "Category deleted successfully" });
 });
 
+/* ============================== BANNERS ============================== */
+app.post("/api/banners", async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const key = String(payload.key || "").trim();
+    const desktopSrc = String(payload.desktopSrc || "").trim();
+    const mobileSrc = String(payload.mobileSrc || "").trim();
+
+    if (!key || !desktopSrc) {
+      return res.status(400).json({ error: "Banner key and desktop image are required" });
+    }
+
+    const bannerData = {
+      key,
+      title: String(payload.title || "").trim(),
+      desktopSrc,
+      mobileSrc: mobileSrc || desktopSrc,
+      linkUrl: String(payload.linkUrl || "").trim(),
+      alt: String(payload.alt || "").trim() || "Banner",
+      isActive: payload.isActive !== false,
+      sortOrder: Number(payload.sortOrder || 0),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const docRef = await db.collection("banners").add(bannerData);
+    res.json({ id: docRef.id, ...bannerData });
+  } catch (error) {
+    console.error("ADD BANNER ERROR:", error);
+    res.status(500).json({ error: "Failed to add banner" });
+  }
+});
+
+app.get("/api/banners", async (req, res) => {
+  try {
+    const snapshot = await db.collection("banners").orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    console.error("FETCH BANNERS ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch banners" });
+  }
+});
+
+app.put("/api/banners/:id", async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const key = String(payload.key || "").trim();
+    const desktopSrc = String(payload.desktopSrc || "").trim();
+    const mobileSrc = String(payload.mobileSrc || "").trim();
+
+    if (!key || !desktopSrc) {
+      return res.status(400).json({ error: "Banner key and desktop image are required" });
+    }
+
+    const update = {
+      key,
+      title: String(payload.title || "").trim(),
+      desktopSrc,
+      mobileSrc: mobileSrc || desktopSrc,
+      linkUrl: String(payload.linkUrl || "").trim(),
+      alt: String(payload.alt || "").trim() || "Banner",
+      isActive: payload.isActive !== false,
+      sortOrder: Number(payload.sortOrder || 0),
+      updatedAt: new Date(),
+    };
+
+    await db.collection("banners").doc(req.params.id).update(update);
+    res.json({ message: "Banner updated successfully" });
+  } catch (error) {
+    console.error("UPDATE BANNER ERROR:", error);
+    res.status(500).json({ error: "Failed to update banner" });
+  }
+});
+
+app.delete("/api/banners/:id", async (req, res) => {
+  try {
+    await db.collection("banners").doc(req.params.id).delete();
+    res.json({ message: "Banner deleted successfully" });
+  } catch (error) {
+    console.error("DELETE BANNER ERROR:", error);
+    res.status(500).json({ error: "Failed to delete banner" });
+  }
+});
+
 /* ============================== ADMIN ============================== */
 const getRequesterAdmin = async (req) => {
   try {

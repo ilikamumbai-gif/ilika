@@ -33,6 +33,7 @@ const NewArrival = () => {
           className="mt-0 mb-10"
           src={holimainbanner}
           mobileSrc={holiMobile}
+          bannerKey="new-arrival-top"
         />
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
 

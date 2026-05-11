@@ -33,9 +33,6 @@ const Face = () => {
           {hairCategory ? (
             <ProductList
               categoryId={hairCategory.id}
-              couponByProductName={{
-                "Ilika Automatic Voice Version Face Mask Maker Machine": "Coupon: ilikaDIY",
-              }}
             />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>

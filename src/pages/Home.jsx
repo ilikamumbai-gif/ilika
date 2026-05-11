@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
@@ -161,14 +161,14 @@ const Home = () => {
         <CartDrawer />
         <main>
 
-          <Link to="/combo" aria-label="View combo offers">
-            <Banner
-              className="mt-0 mb-6"
-              src={mothersDayBanner}
-              mobileSrc={mothersDayBannerMobile}
-              imageFit="contain"
-            />
-          </Link>
+          <Banner
+            className="mt-0 mb-6"
+            src={mothersDayBanner}
+            mobileSrc={mothersDayBannerMobile}
+            linkUrl="/combo"
+            bannerKey="home-top"
+            imageFit="contain"
+          />
 
           <PromoCardGrid />
 
@@ -199,9 +199,6 @@ const Home = () => {
                   "Ilika Automatic Voice Version Face Mask Maker Machine",
                 ]}
                 limit={8}
-                couponByProductName={{
-                  "Ilika Automatic Voice Version Face Mask Maker Machine": "Coupon: ilikaDIY",
-                }}
               />
             </Suspense>
           </LazyMountSection>
@@ -214,6 +211,7 @@ const Home = () => {
                 className="md:h-[60vh] mt-0 mb-10"
                 src={bannerSkincare}
                 mobileSrc={skinMobile}
+                bannerKey="home-skincare"
               />
 
               <Heading heading="OUR SKIN CARE" />
@@ -252,9 +250,6 @@ const Home = () => {
                     categoryId={skincareCategory.id}
                     offset={isMobile ? 0 : skinStart}
                     limit={isMobile ? undefined : getVisibleCount(skinTotal)}
-                    couponByProductName={{
-                      "Ilika Automatic Voice Version Face Mask Maker Machine": "Coupon: ilikaDIY",
-                    }}
                   />
                 </div>
               ) : (
@@ -275,6 +270,7 @@ const Home = () => {
                 className="md:h-[auto] mt-0 mb-10"
                 src={BannerStyle}
                 mobileSrc={BannerStyle}
+                bannerKey="home-appliances"
               />
 
               <Heading heading="TOP APPLIANCES" />
@@ -333,13 +329,13 @@ const Home = () => {
 
 
               {/* HAIR CARE */}
-              <Link to="/product/black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth">
-                <Banner
-                  className="md:h-[60vh] mt-0 mb-10"
-                  src={bannerHair}
-                  mobileSrc={hairMobile}
-                />
-              </Link>
+              <Banner
+                className="md:h-[60vh] mt-0 mb-10"
+                src={bannerHair}
+                mobileSrc={hairMobile}
+                linkUrl="/product/black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth"
+                bannerKey="home-haircare"
+              />
 
               <Heading heading="OUR TOP HAIR CARE" />
               <div className="max-w-7xl mx-auto px-4 flex items-center justify-end gap-3 ">
@@ -376,9 +372,6 @@ const Home = () => {
                     categoryId={haircareCategory.id}
                     offset={isMobile ? 0 : hairStart}
                     limit={isMobile ? undefined : getVisibleCount(hairTotal)}
-                    couponByProductSlug={{
-                      "black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth": "Coupon Available",
-                    }}
                   />
                 </div>
               ) : (

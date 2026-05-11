@@ -7,6 +7,7 @@ import { CartProvider } from "./context/CartProvider";
 import { ProductProvider } from "./admin/context/ProductContext";
 import { CategoryProvider } from "./admin/context/CategoryContext";
 import { ComboProvider } from "./admin/context/ComboContext";
+import { BannerProvider } from "./admin/context/BannerContext";
 
 import CartStatusToast from "./components/CartStatusToast";
 import ScrollToTopButton from "./components/ScrollToTopButton";
@@ -90,11 +91,13 @@ const AppContent = () => {
           <CategoryProvider>
             <ProductProvider>
               <ComboProvider>
-                <NavRoutes />
+                <BannerProvider>
+                  <NavRoutes />
 
-                <EnquiryButton />
-                <ScrollToTopButton />
-                <ScrollToTop />
+                  <EnquiryButton />
+                  <ScrollToTopButton />
+                  <ScrollToTop />
+                </BannerProvider>
               </ComboProvider>
             </ProductProvider>
           </CategoryProvider>

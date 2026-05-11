@@ -12,6 +12,7 @@ const ACCESS_LABELS = {
   coupons: "Coupons",
   combos: "Combos",
   categories: "Categories",
+  banners: "Banners",
   orders: "Orders",
   "cart-products": "Cart Interest",
   notifications: "Notifications",

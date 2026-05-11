@@ -253,6 +253,7 @@ const CouponProductBuilder = () => {
         className="md:h-[50vh] mt-0 mb-10"
         src={offBanner}
         mobileSrc={offBannerMobile}
+        bannerKey="coupon-builder-top"
       />
 
       <section

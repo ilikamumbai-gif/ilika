@@ -26,6 +26,7 @@ import AdminLog from "../pages/AdminLog/AdminLog";
 import BlogComments from "../pages/Blogs/BlogComments";
 import AdminList from "../pages/Admins/AdminList";
 import CouponList from "../pages/Coupons/CouponList";
+import BannerList from "../pages/Banners/BannerList";
 
 import { ProductProvider } from "../context/ProductContext";
 import { CategoryProvider } from "../context/CategoryContext";
@@ -37,6 +38,7 @@ import { ComboProvider } from "../context/ComboContext";
 import { CartEventProvider } from "../context/CartEventContext";
 import { ReviewProvider } from "../context/ReviewContext";
 import { CouponProvider } from "../context/CouponContext";
+import { BannerProvider } from "../context/BannerContext";
 import NotificationList from "../pages/Notification/NotificationList";
 import NotificationDetail from "../pages/Notification/NotificationDetail";
 import FeedbackList from "../pages/Feedback/FeedbackList";
@@ -53,15 +55,16 @@ const AdminRoutes = () => {
   return (
     <CategoryProvider>
       <CouponProvider>
-        <ProductProvider>
-          <ComboProvider>
-            <OrderProvider>
-              <AdminStatsProvider>
-                <UserProvider>
-                  <BlogProvider>
-                    <CartEventProvider>
-                      <ReviewProvider>
-                      <Routes>
+        <BannerProvider>
+          <ProductProvider>
+            <ComboProvider>
+              <OrderProvider>
+                <AdminStatsProvider>
+                  <UserProvider>
+                    <BlogProvider>
+                      <CartEventProvider>
+                        <ReviewProvider>
+                        <Routes>
                         <Route index element={<Dashboard />} />
 
                         <Route path="admins" element={withPermission("admins", <AdminList />)} />
@@ -77,6 +80,7 @@ const AdminRoutes = () => {
 
                         <Route path="categories" element={withPermission("categories", <CategoryList />)} />
                         <Route path="categories/add" element={withPermission("categories", <AddCategory />)} />
+                        <Route path="banners" element={withPermission("banners", <BannerList />)} />
 
                         <Route path="orders" element={withPermission("orders", <OrderList />)} />
                         <Route path="orders/:id" element={withPermission("orders", <OrderDetail />)} />
@@ -104,15 +108,16 @@ const AdminRoutes = () => {
                         <Route path="feedback/:id" element={withPermission("feedback", <FeedbackDetail />)} />
                         <Route path="warranty" element={withPermission("warranty", <WarrantyList />)} />
                         <Route path="warranty/:id" element={withPermission("warranty", <WarrantyDetail />)} />
-                      </Routes>
-                    </ReviewProvider>
-                  </CartEventProvider>
-                </BlogProvider>
-              </UserProvider>
-            </AdminStatsProvider>
-          </OrderProvider>
-        </ComboProvider>
-      </ProductProvider>
+                        </Routes>
+                      </ReviewProvider>
+                    </CartEventProvider>
+                  </BlogProvider>
+                </UserProvider>
+              </AdminStatsProvider>
+            </OrderProvider>
+          </ComboProvider>
+        </ProductProvider>
+      </BannerProvider>
       </CouponProvider>
     </CategoryProvider>
   );

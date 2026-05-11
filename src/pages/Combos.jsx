@@ -366,6 +366,7 @@ const Combos = () => {
           className="mt-0 mb-6"
           src={mothersDayBanner}
           mobileSrc={mothersDayBannerMobile}
+          bannerKey="combos-top"
           imageFit="contain"
         />
 

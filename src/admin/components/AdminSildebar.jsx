@@ -23,6 +23,7 @@ const NAV_GROUPS = [
       { to: "/admin/coupons",     icon: TicketPercent,   label: "Coupons", permission: "coupons"        },
       { to: "/admin/combos",      icon: Gift,            label: "Combos", permission: "combos"         },
       { to: "/admin/categories",  icon: Layers,          label: "Categories", permission: "categories"     },
+      { to: "/admin/banners",     icon: Layers,          label: "Banners", permission: "banners"     },
     ]
   },
   {

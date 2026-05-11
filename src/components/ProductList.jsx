@@ -1,7 +1,6 @@
 import React from "react";
 import { useProducts } from "../admin/context/ProductContext";
 import ProductCard from "./ProductCard";
-import { createSlug } from "../utils/slugify";
 
 const ProductList = ({
   categoryId,
@@ -12,8 +11,6 @@ const ProductList = ({
   productNames = [],
   priorityNames = [],
   mobileScroll = false,
-  couponByProductName = {},
-  couponByProductSlug = {},
 }) => {
   const { products } = useProducts();
 
@@ -47,11 +44,6 @@ const ProductList = ({
     filteredProducts = filteredProducts.slice(0, limit);
   }
 
-  const getCouponText = (item) =>
-    couponByProductName[item.name] ||
-    couponByProductSlug[createSlug(item.name)] ||
-    "";
-
   return (
     <section className="w-full py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -68,7 +60,6 @@ const ProductList = ({
                       product={item}
                       buttonBg={buttonBg}
                       buttonText={buttonText}
-                      couponText={getCouponText(item)}
                     />
                   </div>
                 </div>
@@ -88,7 +79,6 @@ const ProductList = ({
                   product={item}
                   buttonBg={buttonBg}
                   buttonText={buttonText}
-                  couponText={getCouponText(item)}
                 />
               ))
             ) : (
@@ -105,7 +95,6 @@ const ProductList = ({
                 product={item}
                 buttonBg={buttonBg}
                 buttonText={buttonText}
-                couponText={getCouponText(item)}
               />
             ))
           ) : (

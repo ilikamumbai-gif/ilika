@@ -33,9 +33,6 @@ const HairCare = () => {
           {hairCategory ? (
             <ProductList
               categoryId={hairCategory.id}
-              couponByProductSlug={{
-                "black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth": "Coupon Available",
-              }}
             />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>
