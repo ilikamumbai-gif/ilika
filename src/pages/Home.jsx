@@ -211,6 +211,7 @@ const Home = () => {
                 className="md:h-[60vh] mt-0 mb-10"
                 src={bannerSkincare}
                 mobileSrc={skinMobile}
+                linkUrl="/skin"
                 bannerKey="home-skincare"
               />
 
@@ -270,6 +271,7 @@ const Home = () => {
                 className="md:h-[auto] mt-0 mb-10"
                 src={BannerStyle}
                 mobileSrc={BannerStyle}
+                linkUrl="/hair/styling"
                 bannerKey="home-appliances"
               />
 
