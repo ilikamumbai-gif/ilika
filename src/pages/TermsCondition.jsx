@@ -9,11 +9,11 @@ const TermsCondition = () => {
   return (
     <>
       <MiniDivider />
-      
+
 
       <section className="w-full primary-bg-color">
         <Header />
-      <CartDrawer />
+        <CartDrawer />
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
 
           <Heading heading="Our Terms And Conditions" />
@@ -43,8 +43,11 @@ const TermsCondition = () => {
             </p>
 
             <p>
-              Our store is hosted on Shopify Inc. They provide us with the online
-              e-commerce platform that allows us to sell our products and services.
+              Our website is independently developed and operated using modern web
+              technologies including <strong>React.js</strong>, <strong>Node.js</strong>,
+              <strong>Express.js</strong>, and <strong>Firebase</strong>. The frontend is
+              deployed on <strong>Vercel</strong>, while backend services may be hosted on
+              <strong> Render</strong> or other trusted hosting providers.
             </p>
 
             <p>
@@ -107,8 +110,10 @@ const TermsCondition = () => {
 
             <p>
               <strong>SECTION 10 – PERSONAL INFORMATION</strong><br />
-              Your submission of personal information through the store is governed by
-              our Privacy Policy.
+              Any personal information submitted through our website, including name,
+              phone number, email address, shipping address, and order details, may be
+              securely processed through Firebase and our authorized service providers.
+              Your personal information is handled as per our Privacy Policy.
             </p>
 
             <p>
@@ -168,9 +173,11 @@ const TermsCondition = () => {
 
             <p>
               <strong>SECTION 20 – CONTACT INFORMATION</strong><br />
-              Questions about the Terms of Service should be sent to:
+              Questions about these Terms and Conditions should be sent to:
               <br />
               <strong>ilika.official4vs@gmail.com</strong>
+              <br />
+              Phone: <strong>+91 91208 79879</strong>
             </p>
 
           </div>

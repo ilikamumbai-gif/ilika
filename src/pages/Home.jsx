@@ -283,7 +283,7 @@ const Home = () => {
                 </button>
               </div>
 
-              {hairstylingCategory ? (
+              {hairstylingCategory ? (  
                 <div className="relative max-w-7xl mx-auto">
                   {canSlide(applianceTotal) && (
                     <>
