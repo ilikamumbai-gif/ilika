@@ -340,6 +340,67 @@ export default function PromoCardGrid() {
         padding: "48px 24px",
         fontFamily: "'Lato', sans-serif",
       }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            gap: 8,
+            marginBottom: 26,
+            width: "100%",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'Lato', sans-serif",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "#9B1D5F",
+              background: "rgba(155,29,95,0.08)",
+              border: "1px solid rgba(155,29,95,0.18)",
+              borderRadius: 999,
+              padding: "4px 12px",
+            }}
+          >
+            Featured Collection
+          </span>
+          <h3
+            style={{
+              margin: 0,
+              fontFamily: "'Playfair Display', Georgia, serif",
+
+              // Big on mobile, slightly smaller on desktop
+              fontSize: "clamp(28px, 5vw, 44px)",
+
+              lineHeight: 1.1,
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              color: "#5A1111",
+              textTransform: "none",
+              textShadow: "0 2px 10px rgba(155,29,95,0.06)",
+
+              maxWidth: "90%",
+              textWrap: "balance",
+              textAlign: "center",
+              padding: "0 12px",
+            }}
+          >
+            Top Selling Products of the Year 2026
+          </h3>
+
+          <div
+            style={{
+              width: 120,
+              height: 5,
+              borderRadius: 999,
+              background: "linear-gradient(90deg, #8B1A1A 0%, #C0392B 55%, #EB4497 100%)",
+            }}
+          />
+        </div>
         {/* Cards Grid */}
         <div
           className="promo-grid"

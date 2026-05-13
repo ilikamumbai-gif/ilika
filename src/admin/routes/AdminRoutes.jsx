@@ -27,6 +27,7 @@ import BlogComments from "../pages/Blogs/BlogComments";
 import AdminList from "../pages/Admins/AdminList";
 import CouponList from "../pages/Coupons/CouponList";
 import BannerList from "../pages/Banners/BannerList";
+import SocialFeedList from "../pages/SocialFeed/SocialFeedList";
 
 import { ProductProvider } from "../context/ProductContext";
 import { CategoryProvider } from "../context/CategoryContext";
@@ -81,6 +82,7 @@ const AdminRoutes = () => {
                         <Route path="categories" element={withPermission("categories", <CategoryList />)} />
                         <Route path="categories/add" element={withPermission("categories", <AddCategory />)} />
                         <Route path="banners" element={withPermission("banners", <BannerList />)} />
+                        <Route path="social-feed" element={withPermission("blogs", <SocialFeedList />)} />
 
                         <Route path="orders" element={withPermission("orders", <OrderList />)} />
                         <Route path="orders/:id" element={withPermission("orders", <OrderDetail />)} />

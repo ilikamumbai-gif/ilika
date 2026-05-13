@@ -19,19 +19,19 @@ const Header = () => {
 
         {/* Logo — always on the left */}
         <div
-          className="h-12 md:h-14 flex items-center cursor-pointer shrink-0"
+          className="h-12 lg:h-14 flex items-center cursor-pointer shrink-0"
           onClick={() => navigate("/")}
         >
           <img  fetchPriority="high"   src={logo} alt="Ilika" className="h-14 w-auto object-contain" />
         </div>
 
         {/* Desktop Nav — pushed to the right via ml-auto */}
-        <div className="hidden md:flex items-center h-14 ml-auto">
+        <div className="hidden lg:flex items-center h-14 flex-1 min-w-0">
           <Nav />
         </div>
 
         {/* Mobile controls — only visible on mobile */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex lg:hidden items-center gap-2">
 
           {/* Search toggle */}
           <button
@@ -83,7 +83,7 @@ const Header = () => {
 
       {/* Mobile expanding search bar */}
       {searchOpen && (
-        <div className="md:hidden px-4 pb-3">
+        <div className="lg:hidden px-4 pb-3">
           <SearchBar
             products={products}
             onClose={() => {
@@ -97,7 +97,7 @@ const Header = () => {
 
       {/* Mobile drawer */}
       {open && (
-        <div className="md:hidden px-4 pb-4 border-t border-gray-100">
+        <div className="lg:hidden px-4 pb-4 border-t border-gray-100">
           <Nav mobile onClose={() => setOpen(false)} />
         </div>
       )}
@@ -107,3 +107,4 @@ const Header = () => {
 };
 
 export default Header;
+

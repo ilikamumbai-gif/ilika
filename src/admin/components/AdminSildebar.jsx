@@ -43,6 +43,7 @@ const NAV_GROUPS = [
       { to: "/admin/warranty",    icon: ShieldIcon,      label: "Warranty", permission: "warranty"       },
       { to: "/admin/blogs",       icon: BookOpen,        label: "Blogs", permission: "blogs"          },
       { to: "/admin/blog-comments",icon: MessageSquare,  label: "Blog Comments", permission: "blogs"  },
+      { to: "/admin/social-feed", icon: BookOpen,        label: "Social Feed", permission: "blogs"     },
     ]
   },
   {

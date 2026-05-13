@@ -219,8 +219,10 @@ export const SearchBar = ({ products = [], onClose, className = "" }) => {
 const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
   const { openCart } = useCart();
   const menuRef = useRef();
+  const searchWrapRef = useRef();
   const location = useLocation();
   const [openMenu, setOpenMenu] = useState(() => getMenuFromPath(location.pathname));
+  const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
   const { products = [] } = useProducts();
   const { categories = [] } = useCategories();
   const timerRef = useRef(null);
@@ -269,6 +271,10 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
     const handleOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpenMenu(null);
+        setDesktopSearchOpen(false);
+      }
+      if (searchWrapRef.current && !searchWrapRef.current.contains(e.target)) {
+        setDesktopSearchOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutside);
@@ -280,14 +286,16 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
       ref={menuRef}
       className={`${mobile
         ? "w-full flex flex-col gap-4 py-3 px-3"
-        : "flex items-center justify-between gap-6 xl:gap-10 w-full"
+        : "grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full"
         } heading-2-color`}
     >
+      {!mobile ? <div aria-hidden="true" /> : null}
+
       {/* LINKS */}
       <nav
         className={`${mobile
           ? "flex flex-col gap-4 text-base w-full"
-          : "flex items-center gap-5 lg:gap-7 text-sm lg:text-base whitespace-nowrap flex-1 min-w-0"
+          : "flex items-center justify-center gap-5 lg:gap-7 text-sm lg:text-base whitespace-nowrap min-w-0"
           }`}
       >
         <Link to="/" onClick={onClose} className="whitespace-nowrap">
@@ -321,7 +329,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
         </div>
 
         {/* NEW ARRIVALS */}
-        <div className="relative w-full group">
+        <div className={`${mobile ? "relative w-full group" : "relative group"}`}>
           {mobile ? (
             <Link
               to="/newarrival"
@@ -392,7 +400,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
         </div>
 
         {/* SKIN */}
-        <div className="relative w-full group">
+        <div className={`${mobile ? "relative w-full group" : "relative group"}`}>
           {mobile ? (
             <Link
               to="/skin"
@@ -451,7 +459,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
         </div>
 
         {/* HAIR */}
-        <div className="relative w-full group">
+        <div className={`${mobile ? "relative w-full group" : "relative group"}`}>
           {mobile ? (
             <Link
               to="/hair"
@@ -510,7 +518,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
         </div>
 
         {/* GROOMING */}
-        <div className="relative w-full group">
+        <div className={`${mobile ? "relative w-full group" : "relative group"}`}>
           {mobile ? (
             <Link
               to="/grooming"
@@ -585,6 +593,10 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           Explore CTM
         </Link>
 
+        {/* <Link to="/social-feed" onClick={onClose} className="whitespace-nowrap">
+          Social Feed
+        </Link> */}
+
         <Link to="/blog" onClick={onClose} className="whitespace-nowrap">
           Blog
         </Link>
@@ -605,12 +617,30 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
         </div>
       ) : (
         /* Desktop: search + cart + profile */
-        <div className="flex items-center gap-4 shrink-0 ">
-          <SearchBar
-            products={products}
-            onClose={onClose}
-            className="w-44 lg:w-44 xl:w-44"
-          />
+        <div className="flex items-center gap-8 shrink-0 justify-self-end">
+          <div ref={searchWrapRef} className="relative">
+            <button
+              type="button"
+              aria-label="Toggle search"
+              onClick={() => setDesktopSearchOpen((v) => !v)}
+              className="p-1.5 rounded-md hover:bg-black/5 transition"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
+            {desktopSearchOpen && (
+              <div className="absolute right-0 top-full mt-2 z-50 w-[260px]">
+                <SearchBar
+                  products={products}
+                  onClose={() => {
+                    setDesktopSearchOpen(false);
+                    onClose?.();
+                  }}
+                  className="w-full"
+                />
+              </div>
+            )}
+          </div>
           <ShoppingBag
             className="w-6 h-6 shrink-0 cursor-pointer"
             onClick={openCart}
