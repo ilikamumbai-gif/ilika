@@ -286,16 +286,16 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
       ref={menuRef}
       className={`${mobile
         ? "w-full flex flex-col gap-4 py-3 px-3"
-        : "grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full"
+       : "grid grid-cols-[auto_1fr_auto] items-center w-full"
         } heading-2-color`}
     >
-      {!mobile ? <div aria-hidden="true" /> : null}
+
 
       {/* LINKS */}
       <nav
         className={`${mobile
           ? "flex flex-col gap-4 text-base w-full"
-          : "flex items-center justify-center gap-5 lg:gap-7 text-sm lg:text-base whitespace-nowrap min-w-0"
+          : "flex items-center justify-center gap-3 lg:gap-4 xl:gap-6 text-[13px] lg:text-sm xl:text-base whitespace-nowrap min-w-0 w-full"
           }`}
       >
         <Link to="/" onClick={onClose} className="whitespace-nowrap">
@@ -593,9 +593,9 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           Explore CTM
         </Link>
 
-        {/* <Link to="/social-feed" onClick={onClose} className="whitespace-nowrap">
+        <Link to="/social-feed" onClick={onClose} className="hidden xl:inline whitespace-nowrap">
           Social Feed
-        </Link> */}
+        </Link>
 
         <Link to="/blog" onClick={onClose} className="whitespace-nowrap">
           Blog
@@ -617,7 +617,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
         </div>
       ) : (
         /* Desktop: search + cart + profile */
-        <div className="flex items-center gap-8 shrink-0 justify-self-end">
+        <div className="flex items-center gap-10 shrink-0 justify-self-end">
           <div ref={searchWrapRef} className="relative">
             <button
               type="button"
@@ -655,4 +655,5 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
 };
 
 export default Nav;
+
 

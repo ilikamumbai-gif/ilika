@@ -58,7 +58,7 @@ const PixelPageTracker = () => {
 };
 
 const getRouteSeo = (pathname = "") => {
-  if (pathname === "/") return { title: "Home", description: "Elegant beauty, skincare, haircare, and grooming tools from Ilika." };
+  if (pathname === "/") return { title: "Ilika - Elegant. Bright. You", description: "Elegant beauty, skincare, haircare, and grooming tools from Ilika." };
   if (pathname === "/offer") return { title: "Offers", description: "Discover latest Ilika offers and beauty deals." };
   if (pathname === "/checkout") return { title: "Checkout", description: "Secure checkout for your Ilika order." };
   if (pathname === "/skin") return { title: "Skin Care", description: "Explore Ilika skin care products and routines." };
@@ -108,7 +108,7 @@ const RouteSeo = () => {
   const isAdminPath = pathname.startsWith("/admin");
 
   useSeo({
-    title: `${seo.title} | Ilika`,
+    title: pathname === "/" ? seo.title : `${seo.title} | Ilika`,
     description: seo.description,
     path: pathname,
     robots: isAdminPath ? "noindex, nofollow" : "index, follow",
