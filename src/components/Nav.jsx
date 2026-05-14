@@ -286,16 +286,17 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
       ref={menuRef}
       className={`${mobile
         ? "w-full flex flex-col gap-4 py-3 px-3"
-       : "grid grid-cols-[auto_1fr_auto] items-center w-full"
+       : "grid grid-cols-[180px_1fr_180px] items-center w-full"
         } heading-2-color`}
     >
+      {!mobile && <div aria-hidden="true" className="w-[180px]" />}
 
 
       {/* LINKS */}
       <nav
         className={`${mobile
           ? "flex flex-col gap-4 text-base w-full"
-          : "flex items-center justify-center gap-3 lg:gap-4 xl:gap-6 text-[13px] lg:text-sm xl:text-base whitespace-nowrap min-w-0 w-full"
+          : "flex items-center justify-center justify-self-center gap-3 lg:gap-4 xl:gap-6 text-[13px] lg:text-sm xl:text-base whitespace-nowrap w-max"
           }`}
       >
         <Link to="/" onClick={onClose} className="whitespace-nowrap">
@@ -593,9 +594,9 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           Explore CTM
         </Link>
 
-        {/* <Link to="/social-feed" onClick={onClose} className="hidden xl:inline whitespace-nowrap">
+        <Link to="/social-feed" onClick={onClose} className="hidden xl:inline whitespace-nowrap">
           Social Feed
-        </Link> */}
+        </Link>
 
         <Link to="/blog" onClick={onClose} className="whitespace-nowrap">
           Blog
@@ -616,8 +617,15 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           </Link>
         </div>
       ) : (
-        /* Desktop: search + cart + profile */
-        <div className="flex items-center gap-10 shrink-0 justify-self-end">
+        /* Desktop: profile + cart + search */
+        <div className="flex items-center justify-end gap-6 shrink-0 justify-self-end w-[180px]">
+          <Link to="/user" className="shrink-0">
+            <User />
+          </Link>
+          <ShoppingBag
+            className="w-6 h-6 shrink-0 cursor-pointer"
+            onClick={openCart}
+          />
           <div ref={searchWrapRef} className="relative">
             <button
               type="button"
@@ -641,13 +649,6 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               </div>
             )}
           </div>
-          <ShoppingBag
-            className="w-6 h-6 shrink-0 cursor-pointer"
-            onClick={openCart}
-          />
-          <Link to="/user" className="shrink-0">
-            <User />
-          </Link>
         </div>
       )}
     </div>

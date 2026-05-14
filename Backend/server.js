@@ -2342,6 +2342,90 @@ app.delete("/api/banners/:id", async (req, res) => {
   }
 });
 
+/* ============================== SOCIAL FEED ============================== */
+app.get("/api/social-feed", async (req, res) => {
+  try {
+    const snapshot = await db.collection("socialFeed").orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    console.error("FETCH SOCIAL FEED ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch social feed" });
+  }
+});
+
+app.post("/api/social-feed", async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const mediaType = payload.mediaType === "video" ? "video" : "image";
+    const mediaUrl = String(payload.mediaUrl || "").trim();
+    const content = String(payload.content || "").trim();
+
+    if (!mediaUrl || !content) {
+      return res.status(400).json({ error: "mediaUrl and content are required" });
+    }
+
+    const socialData = {
+      title: String(payload.title || "").trim(),
+      mediaType,
+      mediaUrl,
+      thumbnailUrl: String(payload.thumbnailUrl || "").trim(),
+      content,
+      postLink: String(payload.postLink || "").trim(),
+      sortOrder: Number(payload.sortOrder || 0),
+      isActive: payload.isActive !== false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const docRef = await db.collection("socialFeed").add(socialData);
+    res.json({ id: docRef.id, ...socialData });
+  } catch (error) {
+    console.error("ADD SOCIAL FEED ERROR:", error);
+    res.status(500).json({ error: "Failed to add social feed item" });
+  }
+});
+
+app.put("/api/social-feed/:id", async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const mediaType = payload.mediaType === "video" ? "video" : "image";
+    const mediaUrl = String(payload.mediaUrl || "").trim();
+    const content = String(payload.content || "").trim();
+
+    if (!mediaUrl || !content) {
+      return res.status(400).json({ error: "mediaUrl and content are required" });
+    }
+
+    const update = {
+      title: String(payload.title || "").trim(),
+      mediaType,
+      mediaUrl,
+      thumbnailUrl: String(payload.thumbnailUrl || "").trim(),
+      content,
+      postLink: String(payload.postLink || "").trim(),
+      sortOrder: Number(payload.sortOrder || 0),
+      isActive: payload.isActive !== false,
+      updatedAt: new Date(),
+    };
+
+    await db.collection("socialFeed").doc(req.params.id).update(update);
+    res.json({ message: "Social feed item updated successfully" });
+  } catch (error) {
+    console.error("UPDATE SOCIAL FEED ERROR:", error);
+    res.status(500).json({ error: "Failed to update social feed item" });
+  }
+});
+
+app.delete("/api/social-feed/:id", async (req, res) => {
+  try {
+    await db.collection("socialFeed").doc(req.params.id).delete();
+    res.json({ message: "Social feed item deleted successfully" });
+  } catch (error) {
+    console.error("DELETE SOCIAL FEED ERROR:", error);
+    res.status(500).json({ error: "Failed to delete social feed item" });
+  }
+});
+
 /* ============================== ADMIN ============================== */
 const getRequesterAdmin = async (req) => {
   try {
