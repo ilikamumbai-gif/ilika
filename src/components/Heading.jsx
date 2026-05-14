@@ -1,28 +1,32 @@
 import React from 'react'
 
-const Heading = ({heading}) => {
-    return (
-        <>
-            <div>
-                <div className="w-full pimary-bg-color py-3 sm:py-6">
-                    <div className="max-w-7xl mx-auto px-3 sm:px-4 flex items-center gap-2 sm:gap-4">
+const Heading = ({ heading, sub }) => {
+  return (
+    <div className="w-full flex flex-col items-center text-center gap-1.5 py-2 px-4">
 
-                        {/* Left line */}
-                        <div className="flex-1 h-px divider-bg-color"></div>
+     
 
-                        {/* Text */}
-                        <h1 className="heading-color text-sm sm:text-lg md:text-2xl font-semibold tracking-wide whitespace-nowrap">
-                            {heading}
-                        </h1>
+      {/* Main heading */}
+      <h2
+        className="m-0 font-semibold leading-tight tracking-tight text-neutral-900
+                   text-2xl sm:text-2xl md:text-3xl lg:text-4xl"
+        style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+      >
+        {heading}
+      </h2>
 
-                        {/* Right line */}
-                        <div className="flex-1 h-px divider-bg-color"></div>
+       {/* Sub-label — optional */}
+      {sub && (
+        <span
+          className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-neutral-400"
+          style={{ fontFamily: "'Lato', sans-serif" }}
+        >
+          {sub}
+        </span>
+      )}
 
-                    </div>
-                </div>
-            </div >
-        </>
-    )
+    </div>
+  )
 }
 
-export default Heading 
+export default Heading

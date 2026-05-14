@@ -45,7 +45,7 @@ const ProductList = ({
   }
 
   return (
-    <section className="w-full py-6 sm:py-8">
+    <section className="w-full py-6 sm:py-6">
       <div className="max-w-7xl mx-auto px-4">
         {mobileScroll && (
           <div className="flex gap-4 overflow-x-auto pb-2 sm:hidden scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

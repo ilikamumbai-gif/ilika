@@ -1,22 +1,28 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import Heading from "./Heading";
 
 const CategoryNav = ({ categories = [] }) => {
   return (
-    <section className="w-full primary-bg-color py-6 sm:py-8">
+    <section className="w-full py-8 sm:py-10">
       <div className="max-w-7xl mx-auto px-4">
+        
+        <Heading heading={"Shop By Categories"} sub={"What You are Loking For ?"} />
 
         <div
           className="
             grid
-            grid-cols-[repeat(auto-fit,minmax(100px,1fr))]
-            sm:grid-cols-[repeat(auto-fit,minmax(130px,1fr))]
-            gap-6 sm:gap-8
+            grid-cols-2
+            sm:grid-cols-2
+            lg:grid-cols-6
+            gap-3 sm:gap-4
+            mt-6
             place-items-center
           "
         >
           {categories.map((cat, index) => (
-            <Link to={cat.link} key={index}>
+            <Link to={cat.link} key={index} className="w-full max-w-[168px]">
 
               <div className="group flex flex-col items-center cursor-pointer relative">
 
@@ -24,16 +30,15 @@ const CategoryNav = ({ categories = [] }) => {
                 {cat.name?.toLowerCase() === "offers" && (
                   <span
                     className="
-                    absolute -top-4 -right-4
-                    text-sm
-                    px-4 py-1.5
-                    bg-gradient-to-r from-[#FAD4C0] via-[#E96A6A] to-[#D45A5A]
+                    absolute -top-3 right-1
+                    text-[10px] sm:text-xs
+                    px-3 py-1
+                    bg-gradient-to-r from-[#f59b90] via-[#e86d6b] to-[#db5f63]
                     text-white
                     rounded-full
                     shadow-lg
-                    animate-bounce
                     z-10
-                    font-semibold
+                    font-bold tracking-wide
                     "
                   >
                     FREE
@@ -43,45 +48,46 @@ const CategoryNav = ({ categories = [] }) => {
                 {/* Image */}
                 <div
                   className="
-                    w-26 h-26
-                    sm:w-24 sm:h-24
-                    md:w-28 md:h-28
-                    rounded-xl
+                    w-full
+                    aspect-[4/4]
+                    rounded-2xl
                     overflow-hidden
                     bg-white
-                    flex items-center justify-center
+                    border border-[#dfdfdf]
+                    relative
                     transition-all duration-300
-                    group-hover:scale-105
-                    group-hover:shadow-lg
+                    group-hover:-translate-y-0.5
+                    group-hover:shadow-md
                   "
                 >
                   <img loading="lazy"
                     src={cat.icon}
                     alt={cat.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
+                  <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/75 to-transparent">
+                    <div className="flex items-end justify-between gap-2">
+                      <p className="text-white font-semibold text-[12px] sm:text-[13px] leading-tight">
+                        {cat.name}
+                      </p>
+                      
+                    </div>
+                  </div>
                 </div>
-
-                {/* Text */}
-                <p
-                  className="
-                    mt-2 sm:mt-3
-                    text-sm sm:text-base
-                    font-semibold
-                    text-center
-                    heading-2-color
-                    transition-all duration-300
-                    group-hover:tracking-wide
-                  "
-                >
-                  {cat.name}
-                </p>
 
               </div>
 
             </Link>
           ))}
         </div>
+
+        <Link
+          to="/products"
+          className="mt-5 sm:mt-6 w-full h-11 rounded-md bg-black text-white font-semibold text-base inline-flex items-center justify-center gap-2 hover:opacity-95 transition"
+        >
+          View all products
+          <ArrowRight className="w-4 h-4" />
+        </Link>
 
       </div>
     </section>

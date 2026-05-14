@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
@@ -12,13 +12,14 @@ import { useProducts } from "../admin/context/ProductContext";
 
 const ProductList = lazy(() => import("../components/ProductList"));
 const Banner = lazy(() => import("../components/Banner"));
-const CategoryNav = lazy(() => import("../components/CategoryNav"));
 const Footer = lazy(() => import("../components/Footer"));
 import PromoCardGrid from "../components/PromoCardGrid";
+import CategoryNav from "../components/CategoryNav";
 
 /* assets (correct import) */
 import bannerSkincare from "../assets/Images/FacecareBanner.webp";
 import bannerHair from "../assets/Images/HairBanner.webp";
+import Carousel from "../components/Carousel";
 
 const Menifesto = lazy(() => import("../components/Menifesto"));
 const TestimonialList = lazy(() => import("../components/TestimonialList"));
@@ -29,7 +30,7 @@ const skinMobile = "/Images/skinMobile.webp";
 const hairMobile = "/Images/hairMobile.webp";
 const BannerStyle = "/Images/Banner.webp";
 const mothersDayBanner = "/Images/womens-day-banner.webp";
-const mothersDayBannerMobile = "/Images/womens-day-banner.webp";
+const mothersDayBannerMobile = "/Images/womens-day-banner1.webp";
 
 const LazyMountSection = ({
   children,
@@ -151,6 +152,17 @@ const Home = () => {
     return prev < 0 ? Math.max(total - step, 0) : prev;
   };
 
+  const categoryCarouselItems = useMemo(
+    () =>
+      categoriesData.map((item) => ({
+        title: item.name,
+        image: item.icon,
+        link: item.link?.startsWith("/") ? item.link : `/${item.link || ""}`,
+        badge: item.name?.toLowerCase() === "offers" ? "FREE" : "",
+      })),
+    []
+  );
+
   return (
     <>
       <MiniDivider />
@@ -162,7 +174,7 @@ const Home = () => {
         <main>
 
           <Banner
-            className="mt-0 mb-6"
+            className="mt-0"
             src={mothersDayBanner}
             mobileSrc={mothersDayBannerMobile}
             linkUrl="/combo"
@@ -172,24 +184,27 @@ const Home = () => {
 
           <PromoCardGrid />
 
-          <LazyMountSection minHeight={220}>
-            <Suspense fallback={<div className="h-40" />}>
-              {/* CATEGORY NAV */}
-              <CategoryNav categories={categoriesData} />
-            </Suspense>
-          </LazyMountSection>
 
-          <LazyMountSection minHeight={600}>
+
+          <LazyMountSection
+            minHeight={360}
+            className="bg-[#c0392b12] py-6"
+          >
             <Suspense fallback={<div className="h-40" />}>
-              <Heading heading="OUR TOP PRODUCTS" />
-              <div className="max-w-7xl mx-auto px-4 flex items-center justify-end gap-3 ">
-                <button
-                  onClick={() => navigate("/newarrival")}
-                  className="text-sm font-medium px-4 py-2 rounded-full border border-[#d7c0c0] text-[#7a1f1f] bg-white hover:bg-[#fff6f6] transition"
+              <Heading
+                heading="Trending Picks"
+                sub={"Trending beauty tools curated for you"}
+              />
+
+              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
+                <Link
+                  to="/newarrival"
+                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
                 >
                   View All
-                </button>
+                </Link>
               </div>
+
               <ProductList
                 mobileScroll
                 productNames={[
@@ -203,26 +218,231 @@ const Home = () => {
             </Suspense>
           </LazyMountSection>
 
+
+          <LazyMountSection minHeight={220}>
+            <Suspense fallback={<div className="h-40" />}>
+              {/* CATEGORY NAV */}
+              <CategoryNav categories={categoriesData} />
+            </Suspense>
+          </LazyMountSection>
+
+
+          <LazyMountSection
+            minHeight={360}
+            className=" py-6"
+          >
+            <Suspense fallback={<div className="h-40" />}>
+              <Heading
+                heading="The Anti-Aging Ritual"
+                sub={"Curated skincare for visibly younger-looking skin"}
+              />
+
+              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
+                <Link
+                  to="/skin"
+                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
+                >
+                  View All
+                </Link>
+              </div>
+
+              <ProductList
+                mobileScroll
+
+                priorityNames={["24k Gold Collagen Face Mask is Anti-aging",
+                  "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate",
+                  "Collagen Serum | Firming & Anti-aging | 30 ML",
+                  "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML",
+                  ]}
+                limit={4}
+              />
+            </Suspense>
+          </LazyMountSection>
+
+
+          <LazyMountSection minHeight={620}>
+            <Suspense fallback={<div className="h-40" />}>
+
+
+              {/* HAIR CARE */}
+              <Banner
+                className="md:h-[60vh] mt-0 "
+                src={bannerHair}
+                mobileSrc={hairMobile}
+                linkUrl="/product/black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth"
+                bannerKey="home-haircare"
+              />
+
+
+
+              <Carousel heading={"What’s Your Hair Craving Today?"} subheading={"Healthy, shiny hair begins with the Right Care."}
+                items={[
+                     {
+                    title: "Healthy Hair Growth",
+                    image: "/Images/hairc5.png",
+                    bgColor: "",
+                    link: "/hair/care",
+                  },
+                  {
+                    title: "Hair Fall Control",
+                    image: "/Images/hairc1.png",
+                    bgColor: "",
+                    link: "/hair/care",
+                  },
+                  {
+                    title: "Dandruff-Free Scalp",
+                    image: "/Images/hairc2.png",
+                    bgColor: "",
+                    link: "/hair/care",
+                  },
+                  {
+                    title: "Dry & Damaged Hair",
+                    image: "/Images/hairc3.png",
+                    bgColor: "",
+                    link: "/hair/care",
+                  },
+                  {
+                    title: "Frizz-Free Smoothness",
+                    image: "/Images/hairc4.png",
+                    bgColor: "",
+                    link: "/hair/care",
+                  },
+               
+                  {
+                    title: "Deep Hair Repair",
+                    image: "/Images/hairc6.png",
+                    bgColor: "",
+                    link: "/hair/care",
+                  },
+                  {
+                    title: "Soft & Shiny Hair",
+                    image: "/Images/hairc2.png",
+                    bgColor: "",
+                    link: "/hair/care",
+                  },
+                  {
+                    title: "Scalp Hydration",
+                    image: "/Images/hairc4.png",
+                    bgColor: "",
+                    link: "/hair/care",
+                  },
+                ]}
+              />
+              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
+                <Link
+                  to="/hair/care"
+                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
+                >
+                  View All
+                </Link>
+              </div>
+
+              {haircareCategory ? (
+                <div className="relative max-w-7xl mx-auto">
+                  {canSlide(hairTotal) && (
+                    <>
+                      <button
+                        onClick={() => setHairStart((prev) => prevPageStart(prev, hairTotal))}
+                        className="hidden md:flex absolute left-0 lg:-left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
+                        aria-label="Show previous hair care products"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => setHairStart((prev) => nextPageStart(prev, hairTotal))}
+                        className="hidden md:flex absolute right-0 lg:-right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
+                        aria-label="Show next hair care products"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </>
+                  )}
+                  <ProductList
+                    mobileScroll
+                    categoryId={haircareCategory.id}
+                    priorityNames={["Black Seed Hair Oil | Prevents Premature Graying | Boosts Hair Growth", "Herbal Hair Oil | Prevents Dandruff | Strengthens Hair Roots", "Frizz Control Hair Serum | Control Frizz & Detangle Hair | 50 ML ", "Keratin Rich Conditioner | For Normal to Damaged Hair | 200 ML"]}
+                    offset={isMobile ? 0 : hairStart}
+                    limit={isMobile ? undefined : getVisibleCount(hairTotal)}
+                  />
+                </div>
+              ) : (
+                <p className="text-center text-white">
+                  Loading products...
+                </p>
+              )}
+            </Suspense>
+          </LazyMountSection>
+
           <LazyMountSection minHeight={620}>
             <Suspense fallback={<div className="h-40" />}>
 
               {/* SKIN CARE */}
               <Banner
-                className="md:h-[60vh] mt-0 mb-10"
+                className="md:h-[60vh] mt-0"
                 src={bannerSkincare}
                 mobileSrc={skinMobile}
                 linkUrl="/skin"
                 bannerKey="home-skincare"
               />
 
-              <Heading heading="OUR SKIN CARE" />
-              <div className="max-w-7xl mx-auto px-4 flex items-center justify-end gap-3 ">
-                <button
-                  onClick={() => navigate("/skin")}
-                  className="text-sm font-medium px-4 py-2 rounded-full border border-[#d7c0c0] text-[#7a1f1f] bg-white hover:bg-[#fff6f6] transition"
+             <Carousel heading={"What Does Your Skin Need Today?"} subheading={"Target every skin concern with personalized skincare"}
+                items={[
+  {
+    title: "Bright & Glowing Skin",
+    image: "/Images/skinc1.png",
+    bgColor: "",
+    link: "/skin",
+  },
+  {
+    title: "Acne & Pimple Care",
+    image: "/Images/skinc2.png",
+    bgColor: "",
+    link: "/skin",
+  },
+  {
+    title: "Deep Hydration",
+    image: "/Images/skinc3.png",
+    bgColor: "",
+    link: "/skin",
+  },
+  {
+    title: "Dark Spot Reduction",
+    image: "/Images/skinc4.png",
+    bgColor: "",
+    link: "/skin",
+  },
+  {
+    title: "Anti-Aging Care",
+    image: "/Images/skinc5.png",
+    bgColor: "",
+    link: "/skin",
+  },
+  {
+    title: "Skin Barrier Repair",
+    image: "/Images/skinc6.png",
+    bgColor: "",
+    link: "/skin",
+  },
+  {
+    title: "Soft & Smooth Skin",
+    image: "/Images/skinc7.png",
+    bgColor: "",
+    link: "/skin",
+  },
+  {
+    title: "Oil Control Care",
+    image: "/Images/skinc8.png",
+    bgColor: "",
+    link: "/skin",
+  },
+]}/>
+              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
+                <Link
+                  to="/skin"
+                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
                 >
                   View All
-                </button>
+                </Link>
               </div>
 
               {skincareCategory ? (
@@ -266,24 +486,24 @@ const Home = () => {
 
               {/* APPLIANCES */}
               <Banner
-                className="md:h-[auto] mt-0 mb-10"
+                className="md:h-[auto] mt-0 mb-6"
                 src={BannerStyle}
                 mobileSrc={BannerStyle}
                 linkUrl="/hair/styling"
                 bannerKey="home-appliances"
               />
 
-              <Heading heading="TOP APPLIANCES" />
-              <div className="max-w-7xl mx-auto px-4 flex items-center justify-end gap-3 ">
-                <button
-                  onClick={() => navigate("/hair/styling")}
-                  className="text-sm font-medium px-4 py-2 rounded-full border border-[#d7c0c0] text-[#7a1f1f] bg-white hover:bg-[#fff6f6] transition"
+              <Heading heading="Style Your Hair, Your Way" sub="Smart hair appliances for salon-like results at home" />
+              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
+                <Link
+                  to="/hair/styling"
+                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
                 >
                   View All
-                </button>
+                </Link>
               </div>
 
-              {hairstylingCategory ? (  
+              {hairstylingCategory ? (
                 <div className="relative max-w-7xl mx-auto">
                   {canSlide(applianceTotal) && (
                     <>
@@ -324,63 +544,7 @@ const Home = () => {
 
 
 
-          <LazyMountSection minHeight={620}>
-            <Suspense fallback={<div className="h-40" />}>
 
-
-              {/* HAIR CARE */}
-              <Banner
-                className="md:h-[60vh] mt-0 mb-10"
-                src={bannerHair}
-                mobileSrc={hairMobile}
-                linkUrl="/product/black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth"
-                bannerKey="home-haircare"
-              />
-
-              <Heading heading="OUR TOP HAIR CARE" />
-              <div className="max-w-7xl mx-auto px-4 flex items-center justify-end gap-3 ">
-                <button
-                  onClick={() => navigate("/hair/care")}
-                  className="text-sm font-medium px-4 py-2 rounded-full border border-[#d7c0c0] text-[#7a1f1f] bg-white hover:bg-[#fff6f6] transition"
-                >
-                  View All
-                </button>
-              </div>
-
-              {haircareCategory ? (
-                <div className="relative max-w-7xl mx-auto">
-                  {canSlide(hairTotal) && (
-                    <>
-                      <button
-                        onClick={() => setHairStart((prev) => prevPageStart(prev, hairTotal))}
-                        className="hidden md:flex absolute left-0 lg:-left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
-                        aria-label="Show previous hair care products"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => setHairStart((prev) => nextPageStart(prev, hairTotal))}
-                        className="hidden md:flex absolute right-0 lg:-right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
-                        aria-label="Show next hair care products"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </>
-                  )}
-                  <ProductList
-                    mobileScroll
-                    categoryId={haircareCategory.id}
-                    offset={isMobile ? 0 : hairStart}
-                    limit={isMobile ? undefined : getVisibleCount(hairTotal)}
-                  />
-                </div>
-              ) : (
-                <p className="text-center text-white">
-                  Loading products...
-                </p>
-              )}
-            </Suspense>
-          </LazyMountSection>
 
 
           {/* MANIFESTO */}
@@ -411,5 +575,3 @@ const Home = () => {
 };
 
 export default Home;
-
-

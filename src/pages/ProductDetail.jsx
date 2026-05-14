@@ -13,7 +13,8 @@ import { getDownloadURL, ref as storageRef, uploadString } from "firebase/storag
 import {
   Truck, ShieldCheck, BadgeCheck, Package,
   X, ChevronLeft, ChevronRight, Star, Sparkles, Leaf,
-  ZoomIn, ShoppingCart, Lock
+  ZoomIn, ShoppingCart, Lock,
+  Wallet
 } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { toast } from "react-hot-toast";
@@ -2158,12 +2159,19 @@ const ProductDetail = () => {
                 className="rounded-2xl p-[1.5px]"
                 style={{
                   background: detailTheme.isDefaultWhite
-                    ? "linear-gradient(135deg,#e91e8c 0%,#ff6b35 100%)"
+                    ? "#000000"
                     : detailTheme.benefitGradient,
                 }}
               >
 
-                <div className="rounded-2xl bg-white/10 backdrop-blur-md p-6 space-y-4 border border-white/20">
+                <div
+                  className="rounded-2xl p-6 space-y-4 border"
+                  style={{
+                    backgroundColor: detailTheme.isDefaultWhite ? "#FFFFFF" : "rgba(255,255,255,0.10)",
+                    borderColor: detailTheme.isDefaultWhite ? "#000000" : "rgba(255,255,255,0.20)",
+                    backdropFilter: detailTheme.isDefaultWhite ? "none" : "blur(12px)",
+                  }}
+                >
 
                   <div className="flex items-center gap-2 font-extrabold text-xl" style={{ color: detailTheme.benefitTitle }}>
                     <Sparkles className="w-4 h-4 font-extrabold" style={{ color: detailTheme.benefitTitle }} />
@@ -2173,13 +2181,22 @@ const ProductDetail = () => {
                   <ul className="space-y-2">
                     {(product.benefits || [
                       "Instant Lip Plumping Effect â€“ Visible volume in 1â€“2 minutes.",
-                      "Soft Silicone Material â€“ Comfortable & skin-safe.",
-                      "Non-Invasive & Needle-Free â€“ No fillers required.",
-                      "Enhances Lip Shape â€“ Defines natural lip contour.",
-                      "Reusable & Easy to Clean â€“ Durable design."
+                      "Soft Silicone Material  Comfortable & skin-safe.",
+                      "Non-Invasive & Needle-Free  No fillers required.",
+                      "Enhances Lip Shape  Defines natural lip contour.",
+                      "Reusable & Easy to Clean  Durable design."
                     ]).map((b, i) => (
-                      <li key={i} className="flex gap-2 items-start text-sm font-semibold text-white/90">
-                        <span className="text-white font-bold mt-0.5">✔</span>
+                      <li
+                        key={i}
+                        className="flex gap-2 items-start text-sm font-semibold"
+                        style={{ color: detailTheme.isDefaultWhite ? detailTheme.benefitTitle : "rgba(255,255,255,0.90)" }}
+                      >
+                        <span
+                          className="font-bold mt-0.5"
+                          style={{ color: detailTheme.isDefaultWhite ? "#16A34A" : "#FFFFFF" }}
+                        >
+                          ✔
+                        </span>
                         {b}
                       </li>
                     ))}
@@ -2191,7 +2208,7 @@ const ProductDetail = () => {
               {/* Trust badges */}
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { icon: <Truck className="w-4 h-4" />, label: "Fast Shipping" },
+                  { icon: <Wallet className="w-4 h-4" />, label: "COD Available" },
                   { icon: <ShieldCheck className="w-4 h-4" />, label: "Secure Payment" },
                   { icon: <Package className="w-4 h-4" />, label: "Free Delivery" },
                   ...(product.warranty ? [{
