@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, Upload } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, Upload, Image as ImageIcon } from "lucide-react";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { app } from "../../../firebase/firebaseConfig";
 import AdminLayout from "../../components/AdminLayout";
@@ -7,6 +7,31 @@ import { logActivity } from "../../Utils/logActivity";
 
 const API = import.meta.env.VITE_API_URL;
 const storage = getStorage(app);
+
+const normalizeExternalLink = (url = "") => {
+  const value = String(url || "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+  return `https://${value}`;
+};
+
+const FilterSelect = ({ value, onChange, children }) => (
+  <div className="relative">
+    <select
+      value={value}
+      onChange={onChange}
+      className="h-9 pl-3 pr-8 text-sm border rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
+      style={{ border: "1px solid #E0E0E0", color: "#444" }}
+    >
+      {children}
+    </select>
+    <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+      <svg width="10" height="6" viewBox="0 0 10 6">
+        <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      </svg>
+    </div>
+  </div>
+);
 
 const defaultForm = {
   title: "",
@@ -24,6 +49,9 @@ const SocialFeedList = () => {
   const [form, setForm] = useState(defaultForm);
   const [editingId, setEditingId] = useState("");
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [mediaFilter, setMediaFilter] = useState("");
 
   const fetchItems = async () => {
     const res = await fetch(`${API}/api/social-feed`);
@@ -44,6 +72,22 @@ const SocialFeedList = () => {
         return String(a?.title || "").localeCompare(String(b?.title || ""));
       }),
     [items]
+  );
+
+  const filteredItems = useMemo(
+    () =>
+      sortedItems.filter((item) => {
+        const title = String(item?.title || "").toLowerCase();
+        const caption = String(item?.content || "").toLowerCase();
+        const q = search.trim().toLowerCase();
+        const matchesSearch = !q || title.includes(q) || caption.includes(q);
+        const matchesStatus =
+          !statusFilter ||
+          (statusFilter === "active" ? item?.isActive !== false : item?.isActive === false);
+        const matchesMedia = !mediaFilter || item?.mediaType === mediaFilter;
+        return matchesSearch && matchesStatus && matchesMedia;
+      }),
+    [sortedItems, search, statusFilter, mediaFilter]
   );
 
   const resetForm = () => {
@@ -68,7 +112,7 @@ const SocialFeedList = () => {
         mediaUrl: form.mediaUrl.trim(),
         thumbnailUrl: form.thumbnailUrl.trim(),
         content: form.content.trim(),
-        postLink: form.postLink.trim(),
+        postLink: normalizeExternalLink(form.postLink),
         sortOrder: Number(form.sortOrder || 0),
         isActive: Boolean(form.isActive),
       };
@@ -130,12 +174,29 @@ const SocialFeedList = () => {
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold">Social Feed</h1>
-        <span className="text-sm text-gray-500">{sortedItems.length} total</span>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Social Feed</h1>
+          <p className="text-sm text-gray-400 mt-0.5">{sortedItems.length} posts in feed</p>
+        </div>
+        <button
+          type="submit"
+          form="social-feed-form"
+          disabled={saving}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition hover:opacity-90 disabled:opacity-70"
+          style={{ background: "linear-gradient(135deg,#E91E8C,#FF6B35)" }}
+        >
+          <Plus size={16} />
+          {saving ? "Saving..." : editingId ? "Update Post" : "Add Post"}
+        </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+      <form
+        id="social-feed-form"
+        onSubmit={handleSubmit}
+        className="bg-white rounded-2xl p-4 mb-4"
+        style={{ border: "1px solid #EBEBEB" }}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <input
             value={form.title}
@@ -218,14 +279,6 @@ const SocialFeedList = () => {
         </div>
 
         <div className="flex gap-2 mt-4">
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black text-white text-sm"
-          >
-            <Plus size={14} />
-            {saving ? "Saving..." : editingId ? "Update Post" : "Add Post"}
-          </button>
           {editingId && (
             <button type="button" onClick={resetForm} className="px-4 py-2 rounded-lg border text-sm">
               Cancel Edit
@@ -234,47 +287,147 @@ const SocialFeedList = () => {
         </div>
       </form>
 
-      <div className="grid gap-3">
-        {sortedItems.map((item) => {
-          const id = item.id || item._id;
-          const isVideo = item.mediaType === "video";
-          return (
-            <div key={id} className="bg-white border border-gray-200 rounded-xl p-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="font-medium">{item.title || "Untitled"}</p>
-                  <p className="text-xs text-gray-500">
-                    {isVideo ? "Video" : "Image"} | {item.isActive !== false ? "Active" : "Inactive"} | Order {Number(item.sortOrder || 0)}
-                  </p>
-                  {item.postLink ? <p className="text-xs text-blue-600 break-all">{item.postLink}</p> : null}
+      <div className="bg-white rounded-2xl p-4 mb-4 flex flex-wrap gap-3 items-center" style={{ border: "1px solid #EBEBEB" }}>
+        <div className="relative flex-1 min-w-[180px] max-w-xs">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search posts..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full h-9 pl-8 pr-3 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
+            style={{ border: "1px solid #E0E0E0" }}
+          />
+        </div>
+        <FilterSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </FilterSelect>
+        <FilterSelect value={mediaFilter} onChange={(e) => setMediaFilter(e.target.value)}>
+          <option value="">All Media</option>
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+        </FilterSelect>
+      </div>
+
+      <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #EBEBEB" }}>
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F0F0F0" }}>
+                {["Post", "Type", "Status", "Order", "Preview", "Actions"].map((h) => (
+                  <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "#888" }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredItems.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2 text-gray-300">
+                      <ImageIcon size={36} />
+                      <p className="text-sm">No social posts found</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredItems.map((item) => {
+                const id = item.id || item._id;
+                const isVideo = item.mediaType === "video";
+                return (
+                  <tr key={id} className="hover:bg-gray-50/70 transition-colors" style={{ borderBottom: "1px solid #F5F5F5" }}>
+                    <td className="px-5 py-4">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-800 truncate">{item.title || "Untitled"}</p>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{item.content || "No caption"}</p>
+                        {item.postLink ? (
+                          <a href={normalizeExternalLink(item.postLink)} target="_blank" rel="noreferrer" className="text-xs text-blue-600 truncate block mt-0.5">
+                            {item.postLink}
+                          </a>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-gray-600">{isVideo ? "Video" : "Image"}</td>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${item.isActive === false ? "bg-red-50 text-red-600 border-red-200" : "bg-green-50 text-green-700 border-green-200"}`}>
+                        {item.isActive === false ? "Inactive" : "Active"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-gray-700 font-medium">{Number(item.sortOrder || 0)}</td>
+                    <td className="px-5 py-4">
+                      {isVideo ? (
+                        <video src={item.mediaUrl} controls className="w-16 h-16 rounded-lg object-cover border border-gray-200 bg-black" />
+                      ) : (
+                        <img src={item.mediaUrl} alt={item.title || "social-feed"} className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => startEdit(item)}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item)}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition"
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="md:hidden divide-y divide-gray-100">
+          {filteredItems.map((item) => {
+            const id = item.id || item._id;
+            const isVideo = item.mediaType === "video";
+            return (
+              <div key={id} className="p-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  {isVideo ? (
+                    <video src={item.mediaUrl} className="w-12 h-12 rounded-xl object-cover border shrink-0 bg-black" />
+                  ) : (
+                    <img src={item.mediaUrl} alt={item.title || "social-feed"} className="w-12 h-12 rounded-xl object-cover border shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-800 truncate">{item.title || "Untitled"}</p>
+                    <p className="text-xs text-gray-500 truncate mt-0.5">{isVideo ? "Video" : "Image"} | Order {Number(item.sortOrder || 0)}</p>
+                    <span className={`inline-flex mt-1 text-xs px-2 py-0.5 rounded-full ${item.isActive === false ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>
+                      {item.isActive === false ? "Inactive" : "Active"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => startEdit(item)} className="px-3 py-1.5 rounded-md border text-sm">
-                    Edit
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => startEdit(item)}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600"
+                  >
+                    <Pencil size={14} />
                   </button>
                   <button
                     onClick={() => handleDelete(item)}
-                    className="p-2 rounded-md bg-red-50 text-red-600 hover:bg-red-100"
-                    title="Delete"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500"
                   >
-                    <Trash2 size={15} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
-              <div className="mt-3">
-                {isVideo ? (
-                  <video src={item.mediaUrl} controls className="w-full h-48 object-cover rounded-lg border bg-black" />
-                ) : (
-                  <img src={item.mediaUrl} alt={item.title || "social-feed"} className="w-full h-48 object-cover rounded-lg border" />
-                )}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </AdminLayout>
   );
 };
 
 export default SocialFeedList;
-

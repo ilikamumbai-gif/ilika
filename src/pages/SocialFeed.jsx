@@ -1,11 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ExternalLink, Play, X } from "lucide-react";
+import { ExternalLink, Facebook, Instagram, Play, X, Youtube } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import Heading from "../components/Heading";
 
 const API = import.meta.env.VITE_API_URL;
+
+const normalizeExternalLink = (url = "") => {
+  const value = String(url || "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+  return `https://${value}`;
+};
 
 const SocialFeed = () => {
   const [items, setItems] = useState([]);
@@ -43,17 +51,42 @@ const SocialFeed = () => {
         <Header />
         <CartDrawer />
 
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-          <div className="text-center mb-8 sm:mb-10">
-            <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-[#8B1A1A]">Community Moments</p>
-            <h1 className="mt-2 text-3xl sm:text-4xl font-semibold text-[#2B1A1A]">Social Feed</h1>
-            <p className="mt-2 text-sm sm:text-base text-[#634a4a]">See our latest images and videos shared from admin.</p>
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
+          <Heading heading={"Social Feed"}></Heading>
+          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-5 flex-wrap">
+            <a
+              href="https://www.instagram.com/ilikamumbai/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#e2d2d2] bg-white text-[#2B1A1A] text-sm hover:bg-[#f8efef] transition"
+            >
+              <Instagram size={16} />
+              Instagram
+            </a>
+            <a
+              href="https://www.facebook.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#e2d2d2] bg-white text-[#2B1A1A] text-sm hover:bg-[#f8efef] transition"
+            >
+              <Facebook size={16} />
+              Facebook
+            </a>
+            <a
+              href="https://www.youtube.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#e2d2d2] bg-white text-[#2B1A1A] text-sm hover:bg-[#f8efef] transition"
+            >
+              <Youtube size={16} />
+              YouTube
+            </a>
           </div>
 
           {activeItems.length === 0 ? (
             <p className="text-center text-[#634a4a]">No social posts available yet.</p>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-1.5">
               {activeItems.map((item, index) => {
                 const id = item.id || item._id || index;
                 const isVideo = item.mediaType === "video";
@@ -63,26 +96,22 @@ const SocialFeed = () => {
                     key={id}
                     type="button"
                     onClick={() => setSelected(item)}
-                    className="group relative overflow-hidden rounded-2xl bg-white border border-[#ecdede] aspect-square text-left"
+                    className="group relative overflow-hidden rounded-none bg-white aspect-square text-left"
                   >
                     {previewSrc ? (
                       <img
                         src={previewSrc}
                         alt={item.title || "social post"}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                       />
                     ) : (
                       <div className="h-full w-full bg-[#f4ecec]" />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
                     {isVideo ? (
                       <span className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/55 text-white inline-flex items-center justify-center">
                         <Play size={16} />
                       </span>
                     ) : null}
-                    <div className="absolute left-3 right-3 bottom-3">
-                      <p className="text-white text-sm font-medium line-clamp-2">{item.title || "Social Post"}</p>
-                    </div>
                   </button>
                 );
               })}
@@ -118,7 +147,7 @@ const SocialFeed = () => {
               <p className="mt-4 text-[#3e2d2d] leading-relaxed whitespace-pre-wrap">{selected.content || "No content available."}</p>
               {selected.postLink ? (
                 <a
-                  href={selected.postLink}
+                  href={normalizeExternalLink(selected.postLink)}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-6 inline-flex items-center gap-2 text-[#8B1A1A] font-medium hover:underline"
@@ -135,4 +164,3 @@ const SocialFeed = () => {
 };
 
 export default SocialFeed;
-
