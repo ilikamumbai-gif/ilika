@@ -13,7 +13,7 @@ import { useProducts } from "../admin/context/ProductContext";
 const ProductList = lazy(() => import("../components/ProductList"));
 const Banner = lazy(() => import("../components/Banner"));
 const Footer = lazy(() => import("../components/Footer"));
-import PromoCardGrid from "../components/PromoCardGrid";
+const PromoCardGrid = lazy(() => import("../components/PromoCardGrid"));
 import CategoryNav from "../components/CategoryNav";
 
 /* assets (correct import) */
@@ -180,9 +180,12 @@ const Home = () => {
             linkUrl="/combo"
             bannerKey="home-top"
             imageFit="contain"
+            priority
           />
 
-          <PromoCardGrid />
+          <Suspense fallback={<div className="min-h-[620px]" />}>
+            <PromoCardGrid />
+          </Suspense>
 
 
 
@@ -279,50 +282,50 @@ const Home = () => {
                 items={[
                      {
                     title: "Healthy Hair Growth",
-                    image: "/Images/hairc5.png",
+                    image: "/Images/hairc5.webp",
                     bgColor: "",
                     link: "/hair/care",
                   },
                   {
                     title: "Hair Fall Control",
-                    image: "/Images/hairc1.png",
+                    image: "/Images/hairc1.webp",
                     bgColor: "",
                     link: "/hair/care",
                   },
                   {
                     title: "Dandruff-Free Scalp",
-                    image: "/Images/hairc2.png",
+                    image: "/Images/hairc2.webp",
                     bgColor: "",
                     link: "/hair/care",
                   },
                   {
                     title: "Dry & Damaged Hair",
-                    image: "/Images/hairc3.png",
+                    image: "/Images/hairc3.webp",
                     bgColor: "",
                     link: "/hair/care",
                   },
                   {
                     title: "Frizz-Free Smoothness",
-                    image: "/Images/hairc4.png",
+                    image: "/Images/hairc4.webp",
                     bgColor: "",
                     link: "/hair/care",
                   },
                
                   {
                     title: "Deep Hair Repair",
-                    image: "/Images/hairc6.png",
+                    image: "/Images/hairc6.webp",
                     bgColor: "",
                     link: "/hair/care",
                   },
                   {
                     title: "Soft & Shiny Hair",
-                    image: "/Images/hairc2.png",
+                    image: "/Images/hairc2.webp",
                     bgColor: "",
                     link: "/hair/care",
                   },
                   {
                     title: "Scalp Hydration",
-                    image: "/Images/hairc4.png",
+                    image: "/Images/hairc4.webp",
                     bgColor: "",
                     link: "/hair/care",
                   },
@@ -389,49 +392,49 @@ const Home = () => {
                 items={[
   {
     title: "Bright & Glowing Skin",
-    image: "/Images/skinc1.png",
+    image: "/Images/skinc1.webp",
     bgColor: "",
     link: "/skin",
   },
   {
     title: "Acne & Pimple Care",
-    image: "/Images/skinc2.png",
+    image: "/Images/skinc2.webp",
     bgColor: "",
     link: "/skin",
   },
   {
     title: "Deep Hydration",
-    image: "/Images/skinc3.png",
+    image: "/Images/skinc3.webp",
     bgColor: "",
     link: "/skin",
   },
   {
     title: "Dark Spot Reduction",
-    image: "/Images/skinc4.png",
+    image: "/Images/skinc4.webp",
     bgColor: "",
     link: "/skin",
   },
   {
     title: "Anti-Aging Care",
-    image: "/Images/skinc5.png",
+    image: "/Images/skinc5.webp",
     bgColor: "",
     link: "/skin",
   },
   {
     title: "Skin Barrier Repair",
-    image: "/Images/skinc6.png",
+    image: "/Images/skinc6.webp",
     bgColor: "",
     link: "/skin",
   },
   {
     title: "Soft & Smooth Skin",
-    image: "/Images/skinc7.png",
+    image: "/Images/skinc7.webp",
     bgColor: "",
     link: "/skin",
   },
   {
     title: "Oil Control Care",
-    image: "/Images/skinc8.png",
+    image: "/Images/skinc8.webp",
     bgColor: "",
     link: "/skin",
   },

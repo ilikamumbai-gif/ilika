@@ -23,6 +23,9 @@ const Banner = ({
   bannerKey = "",
   alt = "Banner",
   imageFit = "cover",
+  priority = false,
+  width = 1920,
+  height = 760,
 }) => {
   const bannerCtx = useOptionalBanners();
   const matchedBanner = bannerKey && bannerCtx?.activeBanners?.length
@@ -40,11 +43,14 @@ const Banner = ({
     <picture>
       <source media="(max-width: 639px)" srcSet={mobileImageSrc} />
       <img
-        loading="lazy"
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
         src={desktopSrc}
         alt={resolvedAlt}
         className={`w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
-        decoding="async"
+        decoding={priority ? "sync" : "async"}
+        width={width}
+        height={height}
       />
     </picture>
   );

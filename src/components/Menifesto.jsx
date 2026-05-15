@@ -5,29 +5,39 @@ import {
   Recycle,
   Globe,
 } from "lucide-react";
+import Heading from "./Heading";
 
 const manifestoItems = [
   { label: "Natural Ingredients", icon: Leaf },
   { label: "Made In India", icon: Flag },
-  { label: "Environment Friendly", icon: Recycle },
+  { label: "Cruelty Free", icon: Recycle },
+  { label: "Clean Compatible", icon: Leaf },
+  { label: "Eco Conscious", icon: Recycle },
   { label: "Earth Safe", icon: Globe },
 ];
 
+
+
+// Natural Ingredients: Pure botanical-powered formulas crafted for healthy skin & hair.
+// Made In India : Proudly developed and crafted in India with trusted quality standards.
+// Cruelty Free : Never tested on animals — ethical beauty you can trust.
+// Clean Compatible : Free from harmful chemicals while supporting effective formulations.
+// Eco Conscious : Thoughtfully created with environmentally responsible practices.
+// Earth Safe : Gentle on you and mindful of the planet.
+
 const Menifesto = () => {
   return (
-    <section className="w-full primary-bg-color py-4 sm:py-6">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="secondary-bg-color rounded-2xl p-6 sm:p-8">
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-
+    <section className="w-full py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="rounded-2xl  border p-6 sm:p-10 lg:p-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* LEFT */}
-            <div>
-              <h2 className="text-xl sm:text-2xl text-center heading-color mb-6">
-                The Ilika Manifesto
-              </h2>
+            <div className="w-full">
+              <div className="text-center lg:text-left">
+                <Heading heading={"The Ilika Manifesto"} />
+              </div>
 
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 mt-6 sm:mt-8">
                 {manifestoItems.map((item, index) => {
                   const Icon = item.icon;
                   return (
@@ -35,11 +45,11 @@ const Menifesto = () => {
                       key={index}
                       className="flex flex-col items-center text-center gap-2"
                     >
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full primary-bg-color flex items-center justify-center">
-                        <Icon className="w-6 h-6 heading-color" />
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#f8f8f8] flex items-center justify-center">
+                        <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-[#8b1f23]" />
                       </div>
 
-                      <p className="text-xs sm:text-sm font-semibold heading-2-color">
+                      <p className="text-xs sm:text-sm font-semibold leading-tight text-[#143b2f]">
                         {item.label}
                       </p>
                     </div>
@@ -49,16 +59,15 @@ const Menifesto = () => {
             </div>
 
             {/* RIGHT */}
-            <div>
-              <h3 className="text-lg sm:text-xl text-center heading-color mb-3">
+            <div className="w-full">
+              <h3 className="text-2xl sm:text-3xl font-semibold text-center heading-color mb-4 sm:mb-5">
                 Our Assurance
               </h3>
 
-              <p className="text-xs sm:text-sm text-center leading-relaxed content-text">
+              <p className="text-lg sm:text-xl md:text-base text-center leading-relaxed content-text max-w-xl mx-auto">
                 Ilika is <strong>"Clean Compatible"</strong> Not just free of harmful and toxic chemicals but uses only those ingredients that either enhance the health of our hair, skin or support the effectiveness of formulations.
               </p>
             </div>
-
           </div>
         </div>
       </div>
