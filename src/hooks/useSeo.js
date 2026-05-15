@@ -67,8 +67,8 @@ export const useSeo = ({
     }
 
     return () => {
-      if (schemaEl?.parentNode) {
-        schemaEl.parentNode.removeChild(schemaEl);
+      if (schemaEl?.isConnected) {
+        schemaEl.remove();
       }
     };
   }, [description, image, jsonLd, path, robots, title, type]);
