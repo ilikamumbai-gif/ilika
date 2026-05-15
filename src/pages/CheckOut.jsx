@@ -488,12 +488,8 @@ const Checkout = () => {
   }, [currentUser, API_URL]);
 
   useEffect(() => {
-    if (!addresses.length) {
-      setShowForm(true);
-      return;
-    }
     if (!selectedAddressId) {
-      setSelectedAddressId(addresses[0].id);
+      setSelectedAddressId(addresses[0]?.id || null);
     }
   }, [addresses, selectedAddressId]);
 
