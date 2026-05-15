@@ -183,9 +183,11 @@ const Home = () => {
             priority
           />
 
-          <Suspense fallback={<div className="min-h-[620px]" />}>
-            <PromoCardGrid />
-          </Suspense>
+          <LazyMountSection minHeight={220} rootMargin="120px 0px">
+            <Suspense fallback={<div className="min-h-[220px]" />}>
+              <PromoCardGrid />
+            </Suspense>
+          </LazyMountSection>
 
 
 

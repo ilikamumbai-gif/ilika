@@ -1,5 +1,4 @@
 import React from "react";
-import bannerImg from "../assets/Images/Banner 2.webp";
 import { useOptionalBanners } from "../admin/context/BannerContext";
 
 
@@ -34,7 +33,7 @@ const Banner = ({
         .sort((a, b) => Number(a?.sortOrder || 0) - Number(b?.sortOrder || 0))[0]
     : null;
 
-  const desktopSrc = matchedBanner?.desktopSrc || src || bannerImg;
+  const desktopSrc = matchedBanner?.desktopSrc || src || "/Images/Banner.webp";
   const mobileImageSrc = matchedBanner?.mobileSrc || mobileSrc || desktopSrc;
   const resolvedLink = matchedBanner?.linkUrl || linkUrl || "";
   const resolvedAlt = matchedBanner?.alt || alt || "Banner";
@@ -48,7 +47,7 @@ const Banner = ({
         src={desktopSrc}
         alt={resolvedAlt}
         className={`w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
-        decoding={priority ? "sync" : "async"}
+        decoding="async"
         width={width}
         height={height}
       />

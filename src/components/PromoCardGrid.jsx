@@ -89,7 +89,7 @@ function CircleGlow({ accent }) {
   );
 }
 
-function PromoCard({ card, priority = false }) {
+function PromoCard({ card }) {
   const [hovered, setHovered] = useState(false);
   const accent = card.accent || "#C0392B";
 
@@ -144,9 +144,11 @@ function PromoCard({ card, priority = false }) {
             <img
               src={card.image}
               alt={card.title}
-              loading={priority ? "eager" : "lazy"}
-              fetchPriority={priority ? "high" : "auto"}
+              loading="lazy"
+              fetchPriority="low"
               decoding="async"
+              width={370}
+              height={370}
               style={{
                 width: "100%",
                 height: "100%",
@@ -283,7 +285,7 @@ export default function PromoCardGrid() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 w-full max-w-7xl mx-auto">
 
         <div className="lg:col-span-7" style={{ minHeight: 240 }}>
-          <PromoCard card={promoCards[0]} priority />
+          <PromoCard card={promoCards[0]} />
         </div>
 
         <div className="lg:col-span-5" style={{ minHeight: 240 }}>

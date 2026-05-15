@@ -20,11 +20,30 @@ const EnquiryButton = () => {
   useEffect(() => {
     if (pathname !== "/") return undefined;
 
-    const timer = window.setTimeout(() => {
-      setIsPopupOpen(true);
-    }, 5000);
+    let timer;
+    let engaged = false;
 
-    return () => window.clearTimeout(timer);
+    const openAfterEngagement = () => {
+      if (engaged) return;
+      engaged = true;
+      timer = window.setTimeout(() => {
+        setIsPopupOpen(true);
+      }, 6000);
+      window.removeEventListener("pointerdown", openAfterEngagement);
+      window.removeEventListener("keydown", openAfterEngagement);
+      window.removeEventListener("scroll", openAfterEngagement);
+    };
+
+    window.addEventListener("pointerdown", openAfterEngagement, { once: true, passive: true });
+    window.addEventListener("keydown", openAfterEngagement, { once: true });
+    window.addEventListener("scroll", openAfterEngagement, { once: true, passive: true });
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("pointerdown", openAfterEngagement);
+      window.removeEventListener("keydown", openAfterEngagement);
+      window.removeEventListener("scroll", openAfterEngagement);
+    };
   }, [pathname]);
 
   const openWhatsApp = () => {
