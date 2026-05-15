@@ -1,23 +1,14 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import Heading from "./Heading";
 
-const clamp = (value, min, max) => Math.max(min, Math.min(value, max));
-
 const Carousel = ({
   heading = "What Are You Looking For Today?",
-  subheading ="this is demo",
+  subheading = "this is demo",
   items = [],
 }) => {
   const trackRef = useRef(null);
-  const dragRef = useRef({
-    active: false,
-    startX: 0,
-    startScrollLeft: 0,
-    moved: false,
-  });
-  const [isDragging, setIsDragging] = useState(false);
 
   const normalizedItems = useMemo(
     () =>
@@ -39,42 +30,11 @@ const Carousel = ({
     node.scrollBy({ left: amount, behavior: "smooth" });
   };
 
-  const onPointerDown = (e) => {
-    const node = trackRef.current;
-    if (!node) return;
-    dragRef.current.active = true;
-    dragRef.current.startX = e.clientX;
-    dragRef.current.startScrollLeft = node.scrollLeft;
-    dragRef.current.moved = false;
-    setIsDragging(true);
-    node.setPointerCapture?.(e.pointerId);
-  };
-
-  const onPointerMove = (e) => {
-    const node = trackRef.current;
-    if (!node || !dragRef.current.active) return;
-    const deltaX = e.clientX - dragRef.current.startX;
-    if (Math.abs(deltaX) > 4) dragRef.current.moved = true;
-    node.scrollLeft = clamp(
-      dragRef.current.startScrollLeft - deltaX,
-      0,
-      node.scrollWidth - node.clientWidth
-    );
-  };
-
-  const endDrag = (e) => {
-    const node = trackRef.current;
-    if (!node) return;
-    dragRef.current.active = false;
-    setIsDragging(false);
-    if (e?.pointerId !== undefined) node.releasePointerCapture?.(e.pointerId);
-  };
-
   return (
     <section className="w-full bg-white pt-10 sm:py-10">
       <div className="max-w-7xl mx-auto px-6">
         {/* Heading */}
-        <Heading heading={heading} sub={subheading}/>
+        <Heading heading={heading} sub={subheading} />
 
         <div className="relative">
           {/* Left Arrow */}
@@ -90,23 +50,14 @@ const Carousel = ({
           {/* Track */}
           <div
             ref={trackRef}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={endDrag}
-            onPointerLeave={endDrag}
-            className={`flex gap-6 sm:gap-8 overflow-x-auto pb-2 scrollbar-hide ${
-              isDragging ? "cursor-grabbing" : "cursor-grab"
-            }`}
-            style={{ touchAction: "pan-y" }}
+            className="flex gap-6 sm:gap-8 overflow-x-auto pb-2 scrollbar-hide"
+            style={{ touchAction: "auto" }}
           >
             {normalizedItems.map((item) => (
               <Link
                 key={item.id}
                 to={item.link}
                 draggable={false}
-                onClick={(e) => {
-                  if (dragRef.current.moved) e.preventDefault();
-                }}
                 className="relative shrink-0 flex flex-col items-center group"
                 style={{ width: "140px" }}
               >
