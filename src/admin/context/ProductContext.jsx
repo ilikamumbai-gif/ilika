@@ -1,7 +1,7 @@
 import React from "react";
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
 
-const ProductContext = createContext(null);
+export const ProductContext = createContext(null);
 const PRODUCT_CACHE_KEY = "ilika.products.v1";
 
 export const ProductProvider = ({ children }) => {

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-const CategoryContext = createContext(null);
+export const CategoryContext = createContext(null);
 const CATEGORY_CACHE_KEY = "ilika.categories.v1";
 
 export const CategoryProvider = ({ children }) => {

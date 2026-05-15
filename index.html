@@ -1,6 +1,13 @@
 <!doctype html>
 <html lang="en" translate="no" class="notranslate">
 <head>
+  <script>
+    (function () {
+      if (window.location.hostname !== "www.ilika.in") return;
+      var target = "https://ilika.in" + window.location.pathname + window.location.search + window.location.hash;
+      window.location.replace(target);
+    })();
+  </script>
   <!-- ===== Meta In-App Browser Redirect ===== -->
   <!-- Forces Instagram / Facebook in-app browser to open in Chrome or Safari -->
   <script>

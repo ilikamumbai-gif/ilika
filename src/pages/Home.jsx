@@ -1,5 +1,5 @@
-import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { Suspense, lazy, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
@@ -7,8 +7,8 @@ import Heading from "../components/Heading";
 import { categoriesData } from "../Dummy/categoriesData";
 import CartDrawer from "../components/CartDrawer";
 
-import { useCategories } from "../admin/context/CategoryContext";
-import { useProducts } from "../admin/context/ProductContext";
+import { CategoryContext } from "../admin/context/CategoryContext";
+import { ProductContext } from "../admin/context/ProductContext";
 
 const ProductList = lazy(() => import("../components/ProductList"));
 const Banner = lazy(() => import("../components/Banner"));
@@ -74,9 +74,10 @@ const LazyMountSection = ({
 };
 
 const Home = () => {
-  const navigate = useNavigate();
-  const { categories } = useCategories();
-  const { products } = useProducts();
+  const categoryCtx = useContext(CategoryContext);
+  const productCtx = useContext(ProductContext);
+  const categories = categoryCtx?.categories || [];
+  const products = productCtx?.products || [];
   const [skinStart, setSkinStart] = useState(0);
   const [applianceStart, setApplianceStart] = useState(0);
   const [hairStart, setHairStart] = useState(0);
