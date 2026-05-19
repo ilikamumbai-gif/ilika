@@ -94,9 +94,9 @@ const Footer = () => {
             </h4>
 
             <div className="flex justify-center sm:justify-start gap-4">
-              <a href="https://www.facebook.com/share/p/17Wgq3ytcj/"><Facebook className="w-8 h-8 hover:scale-110 transition" /></a>
-              <a href="https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg"><Youtube className="w-8 h-8 hover:scale-110 transition" /></a>
-              <a href="https://www.instagram.com/ilikamumbai/"><Instagram className="w-8 h-8 hover:scale-110 transition" /></a>
+              <a href="https://www.facebook.com/share/p/17Wgq3ytcj/" target="_blank"><Facebook className="w-8 h-8 hover:scale-110 transition" /></a>
+              <a href="https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg" target="_blank"><Youtube className="w-8 h-8 hover:scale-110 transition" /></a>
+              <a href="https://www.instagram.com/ilikamumbai/" target="_blank"><Instagram className="w-8 h-8 hover:scale-110 transition" /></a>
             </div>
           </div>
 

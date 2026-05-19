@@ -53,7 +53,7 @@ const SocialFeed = () => {
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
           <Heading heading={"Social Feed"}></Heading>
-          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-5 flex-wrap">
+          <div className="flex items-center justify-center gap-3 sm:gap-4 mt-5 sm:mt-6 mb-8 sm:mb-10 flex-wrap">
             <a
               href="https://www.instagram.com/ilikamumbai/"
               target="_blank"
@@ -64,7 +64,7 @@ const SocialFeed = () => {
               Instagram
             </a>
             <a
-              href="https://www.facebook.com/"
+              href="https://www.facebook.com/share/p/17Wgq3ytcj/"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#e2d2d2] bg-white text-[#2B1A1A] text-sm hover:bg-[#f8efef] transition"
@@ -73,7 +73,7 @@ const SocialFeed = () => {
               Facebook
             </a>
             <a
-              href="https://www.youtube.com/"
+              href="https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#e2d2d2] bg-white text-[#2B1A1A] text-sm hover:bg-[#f8efef] transition"
@@ -96,13 +96,13 @@ const SocialFeed = () => {
                     key={id}
                     type="button"
                     onClick={() => setSelected(item)}
-                    className="group relative overflow-hidden rounded-none bg-white aspect-square text-left"
+                    className="group relative overflow-hidden rounded-none bg-white aspect-[4/5] text-left cursor-pointer"
                   >
                     {previewSrc ? (
                       <img
                         src={previewSrc}
                         alt={item.title || "social post"}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                        className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
                       <div className="h-full w-full bg-[#f4ecec]" />
