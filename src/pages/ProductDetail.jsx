@@ -1064,6 +1064,7 @@ const ProductDetail = () => {
     startX: 0,
     startScrollLeft: 0,
   });
+  const ingredientNormalizeTimerRef = useRef(null);
 
 
   // =======================================================
@@ -1533,6 +1534,16 @@ const ProductDetail = () => {
     }
   }, [shouldLoopIngredients]);
 
+  const scheduleIngredientLoopNormalize = useCallback((delay = 110) => {
+    if (ingredientNormalizeTimerRef.current) {
+      window.clearTimeout(ingredientNormalizeTimerRef.current);
+    }
+    ingredientNormalizeTimerRef.current = window.setTimeout(() => {
+      normalizeIngredientLoopScroll();
+      ingredientNormalizeTimerRef.current = null;
+    }, delay);
+  }, [normalizeIngredientLoopScroll]);
+
   useEffect(() => {
     const track = ingredientTrackRef.current;
     if (!track) return;
@@ -1551,6 +1562,14 @@ const ProductDetail = () => {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [normalizeIngredientLoopScroll]);
+
+  useEffect(() => {
+    return () => {
+      if (ingredientNormalizeTimerRef.current) {
+        window.clearTimeout(ingredientNormalizeTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleIngredientPointerDown = (e) => {
     if (!shouldLoopIngredients) return;
@@ -1579,7 +1598,7 @@ const ProductDetail = () => {
     ingredientDragStateRef.current.startX = 0;
     ingredientDragStateRef.current.startScrollLeft = 0;
     if (shouldLoopIngredients) e.currentTarget.style.cursor = "grab";
-    normalizeIngredientLoopScroll();
+    scheduleIngredientLoopNormalize(90);
   };
 
   const scrollIngredientTrackByCards = useCallback((direction) => {
@@ -1591,8 +1610,8 @@ const ProductDetail = () => {
       left: direction * cardDistance,
       behavior: "smooth",
     });
-    window.setTimeout(() => normalizeIngredientLoopScroll(), 260);
-  }, [normalizeIngredientLoopScroll]);
+    scheduleIngredientLoopNormalize(280);
+  }, [scheduleIngredientLoopNormalize]);
 
   const openLightbox = (index) => { stopAuto(); setLightboxIndex(index); setLightboxOpen(true); };
 
@@ -2395,8 +2414,8 @@ const ProductDetail = () => {
                 <div className="overflow-hidden rounded-[28px]">
                   <div
                     ref={ingredientTrackRef}
-                    onScroll={normalizeIngredientLoopScroll}
-                    className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 [&::-webkit-scrollbar]:hidden"
+                    onScroll={() => scheduleIngredientLoopNormalize(120)}
+                    className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-proximity pb-2 [&::-webkit-scrollbar]:hidden"
                     style={{ scrollbarWidth: "none" }}
                   >
                     {(shouldLoopIngredients ? loopedIngredients : loopedIngredients.slice(0, ingredients.length)).map((item, idx) => (
