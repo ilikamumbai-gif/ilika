@@ -591,7 +591,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           Explore CTM
         </Link>
 
-        <Link to="/social-feed" onClick={onClose} className="hidden xl:inline whitespace-nowrap">
+        <Link to="/social-feed" onClick={onClose} className="whitespace-nowrap">
           Social Feed
         </Link>
 
