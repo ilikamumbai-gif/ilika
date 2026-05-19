@@ -286,17 +286,14 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
       ref={menuRef}
       className={`${mobile
         ? "w-full flex flex-col gap-4 py-3 px-3"
-       : "grid grid-cols-[180px_1fr_180px] items-center w-full"
+       : "grid grid-cols-[minmax(0,1fr)_auto] items-center w-full min-w-0 gap-4"
         } heading-2-color`}
     >
-      {!mobile && <div aria-hidden="true" className="w-[180px]" />}
-
-
       {/* LINKS */}
       <nav
         className={`${mobile
           ? "flex flex-col gap-4 text-base w-full"
-          : "flex items-center justify-center justify-self-center gap-3 lg:gap-4 xl:gap-6 text-[13px] lg:text-sm xl:text-base whitespace-nowrap w-max"
+          : "order-1 flex items-center justify-center justify-self-center gap-3 lg:gap-5 xl:gap-6 text-[14px] lg:text-[15px] xl:text-[16px] whitespace-nowrap min-w-0 w-full"
           }`}
       >
         <Link to="/" onClick={onClose} className="whitespace-nowrap">
@@ -602,13 +599,6 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           Blog
         </Link>
 
-        <Link to="/about" onClick={onClose} className="whitespace-nowrap">
-          About Us
-        </Link>
-
-        <Link to="/contact" onClick={onClose} className="whitespace-nowrap">
-          Contact Us
-        </Link>
       </nav>
 
       {/* ICONS — desktop only (mobile icons live in the Header) */}
@@ -626,7 +616,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
         </div>
       ) : (
         /* Desktop: profile + cart + search */
-        <div className="flex items-center justify-end gap-6 shrink-0 justify-self-end w-[180px]">
+        <div className="order-2 flex items-center justify-end gap-3 xl:gap-4 shrink-0 justify-self-end">
           <Link to="/user" className="shrink-0">
             <User />
           </Link>

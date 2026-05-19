@@ -12,14 +12,14 @@ const Header = () => {
   const { products = [] } = useProducts();
 
   return (
-    <header className="w-full sticky top-0 z-50 bg-[#e8adad60]/20 backdrop-blur-md">
+    <header className="w-full sticky top-0 z-50 bg-[#e8adad60]/20 backdrop-blur-md overflow-x-clip">
 
       {/* ── Main header row ── */}
       <div className="flex items-center justify-between px-4 py-3 w-full">
 
         {/* Logo — always on the left */}
         <div
-          className="h-12 lg:h-14 flex items-center cursor-pointer shrink-0"
+          className="h-12 lg:h-14 flex items-center cursor-pointer shrink-0 lg:order-1"
           onClick={() => navigate("/")}
         >
           <img
@@ -28,12 +28,12 @@ const Header = () => {
             alt="Ilika"
             width={220}
             height={56}
-            className="h-14 w-auto object-contain"
+            className="h-12 xl:h-14 w-auto object-contain"
           />
         </div>
 
         {/* Desktop Nav — pushed to the right via ml-auto */}
-        <div className="hidden lg:flex items-center h-14 flex-1 min-w-0">
+        <div className="hidden lg:flex items-center h-14 flex-1 min-w-0 lg:order-2">
           <Nav />
         </div>
 
