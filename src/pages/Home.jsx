@@ -420,7 +420,11 @@ const Home = () => {
 
           <LazyMountSection minHeight={220}>
             <Suspense fallback={<div className="h-40" />}>
-              {/* <SkinTypeBanner  title="Know Your Skin Type"  subtitle="Get your personalized cleanser, toner, moisturizer and treatment kit in under 2 minutes." ctaText="Start Skin Analysis"  to="/knowskintype"/> */}
+            
+              {/* <SkinTypeBanner  title="Know Your Skin Type"  
+              subtitle="Get your personalized cleanser, toner, moisturizer and treatment kit in under 2 minutes." 
+              ctaText="Start Skin Analysis"  
+              to="/knowskintype"/> */}
 
               {/* CATEGORY NAV */}
               <CategoryNav categories={categoriesData} />

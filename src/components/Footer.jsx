@@ -66,9 +66,7 @@ const Footer = () => {
               <Phone size={16} /> Contact Us
             </Link>
 
-            <Link to="/track-order" className="flex items-center justify-center sm:justify-start gap-2 hover:opacity-80">
-              <MapPin size={16} /> Track Order
-            </Link>
+           
           </div>
 
           {/* ADDRESS */}
@@ -96,9 +94,9 @@ const Footer = () => {
             </h4>
 
             <div className="flex justify-center sm:justify-start gap-4">
-              <a href="https://www.facebook.com/share/p/17Wgq3ytcj/"><Facebook className="w-5 h-5 hover:scale-110 transition" /></a>
-              <a href="https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg"><Youtube className="w-5 h-5 hover:scale-110 transition" /></a>
-              <a href="https://www.instagram.com/ilikamumbai/"><Instagram className="w-5 h-5 hover:scale-110 transition" /></a>
+              <a href="https://www.facebook.com/share/p/17Wgq3ytcj/"><Facebook className="w-8 h-8 hover:scale-110 transition" /></a>
+              <a href="https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg"><Youtube className="w-8 h-8 hover:scale-110 transition" /></a>
+              <a href="https://www.instagram.com/ilikamumbai/"><Instagram className="w-8 h-8 hover:scale-110 transition" /></a>
             </div>
           </div>
 
@@ -112,9 +110,15 @@ const Footer = () => {
             </h4>
 
             <div className="flex justify-center sm:justify-start gap-5 items-center">
-              <img src={amazon} alt="Amazon" className="h-7 w-7 hover:scale-110 transition" />
-              <img src={flipcart} alt="Flipkart" className="h-7 w-7 hover:scale-110 transition" />
-              <img src={meesho} alt="Meesho" className="h-7 w-7 hover:scale-110 transition" />
+              <a href="https://www.amazon.in/stores/Ilik%C3%A4/page/4BEEF7C7-AFF6-4530-B62B-3A07943B7277?lp_asin=B0CLLG8RKP&ref_=ast_bln" target="_blank" rel="noopener noreferrer" aria-label="Amazon">
+                <img src={amazon} alt="Amazon" className="h-8 w-8 hover:scale-110 transition" />
+              </a>
+              <a href="https://www.flipkart.com/ilika-black-seed-hair-oil-prevents-premature-greying-soft-nourished/p/itmd21f91c22dfab?pid=HOLHFPX4WETW7YPK&lid=LSTHOLHFPX4WETW7YPKGOLVRA&hl_lid=&marketplace=FLIPKART&fm=eyJ3dHAiOiJyZWNvIiwicHJwdCI6InBwIiwibWlkIjoiZmFjdEJhc2VkUmVjb21tZW5kYXRpb24vcmVjZW50bHlWaWV3ZWQifQ%3D%3D&pageUID=1779183762586" target="_blank" rel="noopener noreferrer" aria-label="Flipkart">
+                <img src={flipcart} alt="Flipkart" className="h-8 w-8 hover:scale-110 transition" />
+              </a>
+              <a href="https://www.meesho.com/ILIKASKINCARE" target="_blank" rel="noopener noreferrer" aria-label="Meesho">
+                <img src={meesho} alt="Meesho" className="h-8 w-8 hover:scale-110 transition" />
+              </a>
             </div>
           </div>
 
