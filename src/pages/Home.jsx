@@ -1,11 +1,14 @@
 import React, { Suspense, lazy, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Heading from "../components/Heading";
 import { categoriesData } from "../Dummy/categoriesData";
 import CartDrawer from "../components/CartDrawer";
+import SkinTypeBanner from "../components/SkinTypeBanner";
+import { createSlug } from "../utils/slugify";
+import { useCart } from "../context/CartProvider";
 
 import { CategoryContext } from "../admin/context/CategoryContext";
 import { ProductContext } from "../admin/context/ProductContext";
@@ -74,14 +77,208 @@ const LazyMountSection = ({
 };
 
 const Home = () => {
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
   const categoryCtx = useContext(CategoryContext);
   const productCtx = useContext(ProductContext);
   const categories = categoryCtx?.categories || [];
   const products = productCtx?.products || [];
+  const activeProducts = useMemo(
+    () => products.filter((item) => item.isActive !== false),
+    [products]
+  );
   const [skinStart, setSkinStart] = useState(0);
   const [applianceStart, setApplianceStart] = useState(0);
   const [hairStart, setHairStart] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [isBuyingKit, setIsBuyingKit] = useState(false);
+  const [skinProfile, setSkinProfile] = useState({
+    name: "",
+    age: "",
+    skinType: "",
+    concerns: [],
+    goal: "",
+  });
+  const [recommendedKit, setRecommendedKit] = useState([]);
+
+  const productRules = useMemo(() => ({
+    skinType: {
+      oily: ["Anti Scar Facial Oil", "24K Gold Beauty Oil", "Retinal Anti-Aging Facial Oil", "Foaming Face Wash", "Hyaluronic Acid Serum", "Hydra Gel Moisturizer"],
+      dry: ["24K Gold Beauty Oil", "Revitalizing Facial Oil", "Kumkumadi Tailam", "Tea Tree & Avocado Face Oil", "White Lotus Face Oil", "Ceramide Gel Moisturizer"],
+      combination: ["Dazzling Fair Serum", "Retinal Anti-Aging Facial Oil", "Peeling Solution", "Hyaluronic Acid Serum", "Collagen Serum", "24K Gold Beauty Oil"],
+      normal: ["Revitalizing Facial Oil", "Kumkumadi Tailam", "Hyaluronic Acid Serum", "Collagen Serum", "White Lotus Face Oil", "Peach & Jojoba Face Oil"],
+      sensitive: ["White Lotus Face Oil", "Ceramide Gel Moisturizer", "Hydra Gel Moisturizer", "Peach & Jojoba Face Oil", "Tea Tree & Avocado Face Oil"],
+    },
+    concerns: {
+      acne: ["Retinal Anti-Aging Facial Oil", "Tea Tree & Avocado Face Oil", "Foaming Face Wash", "Peeling Solution"],
+      dehydrated: ["Hyaluronic Acid Serum", "Hydra Gel Moisturizer", "Ceramide Gel Moisturizer", "24K Gold Beauty Oil"],
+      antiaging: ["Retinal Anti-Aging Facial Oil", "Collagen Serum", "White Lotus Face Oil", "24K Gold Beauty Oil"],
+      enlargedPores: ["Retinal Anti-Aging Facial Oil", "Peeling Solution", "Foaming Face Wash"],
+      darkCircles: ["Under Eye Serum", "Kumkumadi Tailam"],
+      unevenTexture: ["Peeling Solution", "Dazzling Fair Serum", "Retinal Anti-Aging Facial Oil"],
+      darkSpots: ["Dazzling Fair Serum", "Kumkumadi Tailam", "Revitalizing Facial Oil"],
+      scars: ["Anti Scar Facial Oil", "Collagen Serum", "Peeling Solution"],
+    },
+    goal: {
+      skinLightening: ["Dazzling Fair Serum", "Kumkumadi Tailam", "Revitalizing Facial Oil", "Foaming Face Wash"],
+      antiAging: ["Retinal Anti-Aging Facial Oil", "Collagen Serum", "24K Gold Beauty Oil", "White Lotus Face Oil"],
+    },
+    age: {
+      "15-20": ["Foaming Face Wash", "Hydra Gel Moisturizer", "Tea Tree & Avocado Face Oil"],
+      "21-30": ["Hyaluronic Acid Serum", "Dazzling Fair Serum", "Peeling Solution"],
+      "31-45": ["Retinal Anti-Aging Facial Oil", "Collagen Serum", "24K Gold Beauty Oil"],
+      "46-55": ["Retinal Anti-Aging Facial Oil", "Collagen Serum", "White Lotus Face Oil"],
+      above55: ["24K Gold Beauty Oil", "Collagen Serum", "Ceramide Gel Moisturizer"],
+    },
+  }), []);
+
+  const normalizeName = (value = "") =>
+    String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+
+  const productNameIndex = useMemo(() => {
+    const map = new Map();
+    activeProducts.forEach((p) => {
+      const nameKey = normalizeName(p?.name || "");
+      if (nameKey && !map.has(nameKey)) map.set(nameKey, p);
+    });
+    return map;
+  }, [activeProducts]);
+
+  const findProductByRuleName = (ruleName = "") => {
+    const key = normalizeName(ruleName);
+    if (productNameIndex.has(key)) return productNameIndex.get(key);
+    const partial = activeProducts.find((p) => normalizeName(p?.name || "").includes(key) || key.includes(normalizeName(p?.name || "")));
+    return partial || null;
+  };
+
+  const getRoutineType = (name = "") => {
+    const n = String(name || "").toLowerCase();
+    if (n.includes("toner")) return "toner";
+    if (n.includes("moisturizer") || n.includes("moisturiser")) return "moisturizer";
+    if (
+      n.includes("cleanser") ||
+      n.includes("face wash") ||
+      n.includes("facewash") ||
+      n.includes("cleansing")
+    ) {
+      return "cleanser";
+    }
+    return null;
+  };
+
+  const updateSkinField = (field, value) => {
+    setSkinProfile((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const toggleConcern = (concern) => {
+    setSkinProfile((prev) => ({
+      ...prev,
+      concerns: prev.concerns.includes(concern)
+        ? prev.concerns.filter((c) => c !== concern)
+        : [...prev.concerns, concern],
+    }));
+  };
+
+  const recommendProducts = (user) => {
+    const scores = {};
+    const addScore = (items, points) => {
+      items.forEach((name) => {
+        scores[name] = (scores[name] || 0) + points;
+      });
+    };
+
+    user.concerns.forEach((concern) => {
+      if (productRules.concerns[concern]) addScore(productRules.concerns[concern], 4);
+    });
+    if (productRules.skinType[user.skinType]) addScore(productRules.skinType[user.skinType], 3);
+    if (productRules.goal[user.goal]) addScore(productRules.goal[user.goal], 3);
+    if (productRules.age[user.age]) addScore(productRules.age[user.age], 2);
+
+    return Object.entries(scores)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([product, score]) => ({ product, score }));
+  };
+
+  const handleSkinTypeSubmit = (e) => {
+    e.preventDefault();
+    const scored = recommendProducts(skinProfile)
+      .map((entry) => ({
+        ...entry,
+        matchedProduct: findProductByRuleName(entry.product),
+      }))
+      .filter((entry) => entry.matchedProduct);
+
+    const scoredById = new Map();
+    scored.forEach((entry) => {
+      const id = entry.matchedProduct?._id || entry.matchedProduct?.id;
+      if (!id) return;
+      const existing = scoredById.get(id);
+      if (!existing || entry.score > existing.score) scoredById.set(id, entry);
+    });
+
+    const selectMandatory = (type) => {
+      const fromScored = [...scoredById.values()].find(
+        (entry) => getRoutineType(entry.matchedProduct?.name) === type
+      );
+      if (fromScored) return fromScored;
+
+      const fallbackProduct = activeProducts.find(
+        (p) => getRoutineType(p?.name) === type
+      );
+      if (!fallbackProduct) return null;
+
+      return {
+        product: fallbackProduct.name,
+        score: 1,
+        matchedProduct: fallbackProduct,
+      };
+    };
+
+    const mandatoryTypes = ["cleanser", "toner", "moisturizer"];
+    const mandatoryItems = mandatoryTypes
+      .map((type) => selectMandatory(type))
+      .filter(Boolean);
+
+    const selectedIds = new Set(
+      mandatoryItems.map((item) => item.matchedProduct?._id || item.matchedProduct?.id)
+    );
+
+    const remaining = scored
+      .filter((entry) => {
+        const id = entry.matchedProduct?._id || entry.matchedProduct?.id;
+        return id && !selectedIds.has(id);
+      })
+      .sort((a, b) => b.score - a.score);
+
+    const finalKit = [...mandatoryItems, ...remaining].slice(0, 4);
+    setRecommendedKit(finalKit);
+  };
+
+  const handleAddRecommendedToCart = async (matchedProduct) => {
+    if (!matchedProduct) return;
+    await addToCart({
+      ...matchedProduct,
+      id: matchedProduct._id || matchedProduct.id,
+      image: matchedProduct?.image || matchedProduct?.images?.[0] || matchedProduct?.imageUrl || matchedProduct?.variants?.[0]?.images?.[0] || "/placeholder.webp",
+      price: Number(matchedProduct?.price || 0),
+      name: matchedProduct?.name || "Product",
+    });
+  };
+
+  const handleBuyWholeKit = async () => {
+    if (!recommendedKit.length || isBuyingKit) return;
+    setIsBuyingKit(true);
+    try {
+      for (const item of recommendedKit) {
+        // eslint-disable-next-line no-await-in-loop
+        await handleAddRecommendedToCart(item.matchedProduct);
+      }
+      navigate("/checkout");
+    } finally {
+      setIsBuyingKit(false);
+    }
+  };
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 640);
@@ -103,10 +300,6 @@ const Home = () => {
       ),
     };
   }, [categories]);
-  const activeProducts = useMemo(
-    () => products.filter((item) => item.isActive !== false),
-    [products]
-  );
   const skinTotal = useMemo(
     () =>
       skincareCategory
@@ -227,6 +420,8 @@ const Home = () => {
 
           <LazyMountSection minHeight={220}>
             <Suspense fallback={<div className="h-40" />}>
+              {/* <SkinTypeBanner  title="Know Your Skin Type"  subtitle="Get your personalized cleanser, toner, moisturizer and treatment kit in under 2 minutes." ctaText="Start Skin Analysis"  to="/knowskintype"/> */}
+
               {/* CATEGORY NAV */}
               <CategoryNav categories={categoriesData} />
             </Suspense>
@@ -581,3 +776,4 @@ const Home = () => {
 };
 
 export default Home;
+
