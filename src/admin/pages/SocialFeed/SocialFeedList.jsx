@@ -341,7 +341,7 @@ const SocialFeedList = () => {
                     <td className="px-5 py-4">
                       <div className="min-w-0">
                         <p className="font-semibold text-gray-800 truncate">{item.title || "Untitled"}</p>
-                        <p className="text-xs text-gray-500 truncate mt-0.5">{item.content || "No caption"}</p>
+                      
                         {item.postLink ? (
                           <a href={normalizeExternalLink(item.postLink)} target="_blank" rel="noreferrer" className="text-xs text-blue-600 truncate block mt-0.5">
                             {item.postLink}
