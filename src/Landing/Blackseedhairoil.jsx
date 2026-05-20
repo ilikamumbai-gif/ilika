@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+﻿import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Leaf, Sparkles, ShieldCheck, Droplets, Snowflake, Feather, Truck, BadgeCheck, Star, Lightbulb } from "lucide-react";
 import Header from "../components/Header";
@@ -14,31 +14,31 @@ const HERBS = [
     name: "Nigella Sativa",
     sub: "Black Seed Oil",
     icon: Leaf,
-    desc: "The 'miracle herb' - rich in thymoquinone, it fights free radicals that cause grey hair and nourishes follicles at the root.",
+    desc: "The 'miracle herb' rich in thymoquinone helps support scalp health and reduce early greying.",
   },
   {
     name: "Cocus Nucifera",
     sub: "Coconut Oil",
     icon: Droplets,
-    desc: "Deep penetrating moisture that coats every strand, prevents protein loss, and leaves hair silky smooth.",
+    desc: "Deep penetrating moisture helps reduce dryness, split ends, and rough texture.",
   },
   {
     name: "Amla Oil",
     sub: "Indian Gooseberry",
     icon: Leaf,
-    desc: "Packed with Vitamin C and antioxidants - the traditional Ayurvedic secret for dark, long, lustrous hair.",
+    desc: "Packed with Vitamin C and antioxidants to improve resilience and natural shine.",
   },
   {
     name: "Shikakai Oil",
     sub: "Acacia Concinna",
     icon: Leaf,
-    desc: "Natural cleanser that strengthens follicles, conditions the scalp, and promotes thick, healthy growth.",
+    desc: "A traditional cleanser that supports stronger follicles and cleaner scalp comfort.",
   },
   {
     name: "Sesamum Indicum",
     sub: "Sesame Oil",
     icon: Sparkles,
-    desc: "UV protection plus deep nourishment. Keeps hair moisturised, reduces breakage, adds natural shine.",
+    desc: "Nourishes deeply and helps maintain moisture balance for softer strands.",
   },
 ];
 
@@ -136,15 +136,15 @@ const Blackseedhairoil = () => {
   const cartItem = product
     ? defaultVariant
       ? {
-          ...product,
-          id: `${productId}_${defaultVariant.id}`,
-          baseProductId: productId,
-          variantId: defaultVariant.id,
-          variantLabel: defaultVariant.label,
-          price: defaultVariant.price,
-          mrp: defaultVariant.mrp,
-          image: defaultVariant.images?.[0],
-        }
+        ...product,
+        id: `${productId}_${defaultVariant.id}`,
+        baseProductId: productId,
+        variantId: defaultVariant.id,
+        variantLabel: defaultVariant.label,
+        price: defaultVariant.price,
+        mrp: defaultVariant.mrp,
+        image: defaultVariant.images?.[0],
+      }
       : { ...product, id: productId }
     : null;
 
@@ -159,56 +159,64 @@ const Blackseedhairoil = () => {
     navigate("/checkout");
   };
 
-  const scrollToLearn = () => {
-    const el = document.getElementById("learn");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
     <>
       <MiniDivider />
       <Header />
       <CartDrawer />
       <main className="min-h-screen overflow-x-hidden bg-[#FAFAF7] text-[#1a1a1a]">
-        <section className="relative flex min-h-[78vh] items-center px-4 py-10 sm:min-h-[84vh] sm:px-6 lg:min-h-[90vh] lg:px-[5%]">
+        <section className="relative flex min-h-[78vh] items-center px-4 py-8 sm:min-h-[84vh] sm:px-6 lg:min-h-[90vh] lg:px-[5%] lg:py-10">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_70%_50%,#F5EDD8_0%,transparent_70%),radial-gradient(ellipse_50%_80%_at_90%_80%,#E8F0E4_0%,transparent_60%)]" />
-          <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-10 lg:grid-cols-2 lg:gap-20">
-            <div>
-              <div className="mb-6 inline-block rounded-full border border-[#DFD0B0] bg-[#F0E8D5] px-4 py-1.5">
+          <div className="relative mx-auto grid w-full max-w-[1320px] items-center gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:gap-14 xl:gap-20">
+            <div className="order-3 max-w-[620px] lg:order-1">
+              <div className="mb-6 hidden rounded-full border border-[#DFD0B0] bg-[#F0E8D5] px-4 py-1.5 lg:inline-block">
                 <span className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-[#8B6914]">Ayurvedic - 100% Natural</span>
               </div>
-              <h1 className="text-[clamp(32px,7vw,58px)] font-bold leading-[1.1] tracking-[-1px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>
+              <h1 className="hidden text-[clamp(32px,7vw,58px)] font-bold leading-[1.1] tracking-[-1px] lg:block" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>
                 Stop Grey Hair.
                 <br />
                 <span className="text-[#C8953A]">Start Growing.</span>
               </h1>
-              <p className="mt-4 max-w-2xl font-sans text-[15px] leading-7 text-[#5c5245] sm:text-base sm:leading-8 lg:text-lg">
+              <p className="order-2 mt-4 max-w-2xl font-sans text-[15px] leading-7 text-[#5c5245] sm:text-base sm:leading-8 lg:order-1 lg:text-lg">
                 The ancient power of <strong className="text-[#1a1a1a]">Nigella Sativa (Black Seed)</strong> - blended with Amla, Shikakai and Coconut - to restore your hair's natural colour, strength, and vitality.
               </p>
-              <p className="mt-2 font-sans text-sm text-[#8a7f6e]">200ml - All hair types - Free from harmful chemicals</p>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+              <p className="order-3 mt-2 font-sans text-sm text-[#8a7f6e] lg:order-1">200ml - All hair types - Free from harmful chemicals</p>
+              <div className="order-4 mt-8 flex flex-wrap items-center gap-3 lg:order-1">
                 <span className="font-sans text-3xl font-bold">Rs.{price}</span>
                 <span className="font-sans text-base text-[#aaa] line-through">Rs.{mrp}</span>
-                <span className="rounded bg-[#E8F5E9] px-2 py-1 font-sans text-xs font-semibold text-[#2E7D32]">{discount}% OFF</span>
               </div>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <button onClick={handleBuyNow} disabled={!product} className="w-full rounded-full bg-[#1a1a1a] px-7 py-3.5 font-sans text-base font-semibold text-white shadow-[0_8px_32px_rgba(26,26,26,0.2)] disabled:opacity-60 sm:w-auto sm:px-9">Buy Now - Rs.{price}</button>
-                <button onClick={scrollToLearn} className="w-full rounded-full border-2 border-[#C8953A] px-7 py-3.5 font-sans text-base font-semibold text-[#C8953A] sm:w-auto sm:px-8">Know More</button>
+              <div className="order-1 mt-6 hidden flex-wrap gap-3 lg:order-2 lg:mt-8 lg:flex">
+                <button onClick={handleBuyNow} disabled={!product} className="w-full border border-[#1a1a1a] bg-[#df573f] px-7 py-3.5 font-sans text-base font-bold text-white transition hover:bg-[#cf4f39] disabled:opacity-60 sm:w-auto sm:min-w-[290px]">Buy Now &nbsp;&nbsp; &gt;&gt; Save {discount}%</button>
               </div>
-              <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div><p className="flex items-center gap-1 font-sans text-[15px] font-bold"><Star size={14} className="fill-current" /> 4.9/5</p><p className="font-sans text-xs text-[#8a7f6e]">Customer Rating</p></div>
-                <div><p className="flex items-center gap-1 font-sans text-[15px] font-bold"><Leaf size={14} /> 5</p><p className="font-sans text-xs text-[#8a7f6e]">Pure Botanicals</p></div>
-                <div><p className="flex items-center gap-1 font-sans text-[15px] font-bold"><BadgeCheck size={14} /> 200ml</p><p className="font-sans text-xs text-[#8a7f6e]">Full Size Bottle</p></div>
+              <button onClick={handleKnowMore} disabled={!product} className="order-5 mt-3 font-sans text-sm font-semibold text-[#8a7f6e] underline underline-offset-4 disabled:opacity-60">Know More</button>
+            </div>
+            
+            <div className="order-2 flex flex-col justify-center lg:order-2 lg:justify-end">
+              <div className="mb-4 lg:hidden">
+                <div className="mb-3 inline-block rounded-full border border-[#DFD0B0] bg-[#F0E8D5] px-4 py-1.5">
+                  <span className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-[#8B6914]">Ayurvedic - 100% Natural</span>
+                </div>
+                <h2 className="text-[clamp(32px,7vw,58px)] font-bold leading-[1.1] tracking-[-1px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>
+                  Stop Grey Hair.
+                  <br />
+                  <span className="text-[#C8953A]">Start Growing.</span>
+                </h2>
+              </div>
+              <div className="relative h-[380px] w-full max-w-[520px] rounded-lg bg-white/70 p-3 shadow-[0_30px_70px_rgba(190,154,92,0.28)] sm:h-[470px] sm:max-w-[620px] sm:p-4 lg:h-[560px] lg:max-w-[660px]">
+                <div className="pointer-events-none absolute left-1/2 top-1/2 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,#F5EDD8_30%,transparent_70%)]" />
+                <img src={heroImage} alt={product?.name || "Black Seed Hair Oil"} className="relative z-10 h-full w-full rounded-md object-cover" />
+              </div>
+              <div className="mt-4 lg:hidden">
+                <button
+                  onClick={handleBuyNow}
+                  disabled={!product}
+                  className="w-full border border-[#1a1a1a] bg-[#df573f] px-7 py-3.5 font-sans text-base font-bold text-white transition hover:bg-[#cf4f39] disabled:opacity-60"
+                >
+                  Buy Now &nbsp;&nbsp; &gt;&gt; Save {discount}%
+                </button>
               </div>
             </div>
-            <div className="flex justify-center">
-              <div className="relative h-[360px] w-full max-w-[320px] sm:h-[430px] sm:max-w-[360px] lg:h-[500px] lg:max-w-[400px]">
-                <div className="pointer-events-none absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,#F5EDD8_30%,transparent_70%)]" />
-                <img src={heroImage} alt={product?.name || "Black Seed Hair Oil"} className="relative z-10 mx-auto mt-3 block h-[320px] w-[240px] object-contain drop-shadow-[0_20px_40px_rgba(200,149,58,0.25)] sm:h-[390px] sm:w-[290px] lg:mt-6 lg:h-[440px] lg:w-[320px]" />
-                <div className="absolute right-0 top-8 hidden rounded-xl bg-white px-3 py-2 font-sans shadow-[0_4px_20px_rgba(0,0,0,0.1)] sm:block lg:right-[-10px] lg:top-[50px]"><p className="text-[11px] text-[#8a7f6e]">Price</p><p className="text-[15px] font-bold">Rs.{price} <span className="text-[11px] text-[#aaa] line-through">Rs.{mrp}</span></p></div>
-                <div className="absolute bottom-8 left-0 hidden rounded-xl bg-white px-3 py-2 font-sans shadow-[0_4px_20px_rgba(0,0,0,0.1)] sm:block lg:bottom-[70px] lg:left-[-20px]"><p className="text-[11px] text-[#8a7f6e]">Formula</p><p className="text-[13px] font-semibold text-[#2E7D32]">Chemical Free</p></div>
-              </div>
-            </div>
+
           </div>
         </section>
 
@@ -225,11 +233,44 @@ const Blackseedhairoil = () => {
         </section>
 
         <section className="bg-[#F5F0E8] px-4 py-16 sm:px-6 lg:px-[5%] lg:py-24">
-          <div className="mx-auto max-w-[1200px]">
-            <div className="mb-12 text-center"><span className="font-sans text-xs font-semibold uppercase tracking-[0.18em] text-[#C8953A]">What's Inside</span><h2 className="mt-3 text-[clamp(28px,4vw,44px)] font-bold tracking-[-0.5px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>Pure Botanical Ingredients</h2></div>
-            <div className="grid gap-8 lg:grid-cols-[1fr_1.6fr] lg:gap-10">
-              <div className="flex flex-col gap-2.5">{HERBS.map((h, i) => { const Icon = h.icon; return <button key={h.name} onClick={() => setActiveIngredient(i)} className={`rounded-[14px] border px-5 py-4 text-left transition ${activeIngredient === i ? "border-[#C8953A] bg-white shadow-[0_4px_20px_rgba(200,149,58,0.15)]" : "border-[#DFD0B0] bg-transparent"}`}><span className="mr-2.5 inline-flex align-middle text-[#C8953A]"><Icon size={18} /></span><span className="font-sans text-sm font-semibold">{h.name}</span><span className="ml-2 font-sans text-xs text-[#8a7f6e]">- {h.sub}</span></button>; })}</div>
-              <div className="min-h-[240px] rounded-3xl border border-[#EAE4D8] bg-white px-8 py-10 sm:px-11">{(() => { const Icon = HERBS[activeIngredient].icon; return <><div className="mb-5 text-[#C8953A]"><Icon size={44} /></div><h3 className="text-[26px] font-bold tracking-[-0.5px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>{HERBS[activeIngredient].name}</h3><p className="mb-5 mt-1 font-sans text-[13px] font-semibold uppercase tracking-[0.08em] text-[#C8953A]">{HERBS[activeIngredient].sub}</p><p className="font-sans text-base leading-8 text-[#5c5245]">{HERBS[activeIngredient].desc}</p></>; })()}</div>
+          <div className="mx-auto max-w-[1220px]">
+            <div className="mb-8 text-center">
+              <span className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-[#C8953A]">What's Inside</span>
+              <h2 className="mt-3 text-[clamp(28px,4vw,48px)] font-bold tracking-[-0.5px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>
+                Pure Botanical Ingredients
+              </h2>
+            </div>
+            <p className="mb-12 text-center font-sans text-base font-semibold text-[#1a1a1a]">1 oil, 5 herbs, multiple hair benefits</p>
+            <div className="grid gap-5 md:grid-cols-2 md:gap-6">
+              {HERBS.map((h, i) => (
+                <button
+                  key={h.name}
+                  onClick={() => setActiveIngredient(i)}
+                  className={`flex items-start gap-4 rounded-2xl border bg-white p-4 text-left shadow-sm transition md:gap-5 md:p-5 ${activeIngredient === i
+                      ? "border-[#C8953A] shadow-[0_8px_20px_rgba(200,149,58,0.14)]"
+                      : "border-[#E6DCC8] hover:border-[#d7c29a]"
+                    }`}
+                >
+                  <img
+                    src={heroImage}
+                    alt={h.name}
+                    className={`mt-0.5 h-[62px] w-[62px] shrink-0 rounded-full object-cover ring-2 ${activeIngredient === i ? "ring-[#C8953A]" : "ring-[#dfd0b0]"
+                      }`}
+                  />
+                  <p className="max-w-[46ch] font-sans text-[16px] leading-8 text-[#111]">
+                    <span className="font-bold">{h.sub}</span> {h.desc}
+                  </p>
+                </button>
+              ))}
+            </div>
+            <div className="mt-14 flex justify-center">
+              <button
+                onClick={handleBuyNow}
+                disabled={!product}
+                className="w-full max-w-[420px] border border-[#1a1a1a] bg-[#df573f] px-8 py-3.5 font-sans text-base font-bold text-white transition hover:bg-[#cf4f39] disabled:opacity-60"
+              >
+                Buy Now &nbsp;&nbsp; &gt;&gt; Save {discount}%
+              </button>
             </div>
           </div>
         </section>
@@ -251,11 +292,12 @@ const Blackseedhairoil = () => {
           <div className="flex justify-center text-[#C8953A]"><Leaf size={44} /></div>
           <h2 className="mt-4 text-[clamp(28px,4vw,48px)] font-bold leading-[1.15] tracking-[-1px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>Your Best Hair Starts<br /><span className="text-[#C8953A]">Today.</span></h2>
           <p className="mx-auto mb-10 mt-5 max-w-[520px] font-sans text-base leading-8 text-[#ccc] lg:text-lg">Join thousands of happy customers who've reclaimed their natural hair colour and vitality with Ilika Black Seed Hair Oil.</p>
-          <div className="mb-7 flex w-full flex-wrap justify-center gap-4"><button onClick={handleBuyNow} disabled={!product} className="w-full rounded-full bg-[#C8953A] px-8 py-4 font-sans text-[17px] font-bold text-white shadow-[0_8px_32px_rgba(200,149,58,0.4)] disabled:opacity-60 sm:w-auto sm:px-11">Buy Now - Rs.{price} ({discount}% Off)</button><button onClick={scrollToLearn} className="w-full rounded-full border-2 border-white/30 px-8 py-4 font-sans text-[17px] font-semibold text-white sm:w-auto sm:px-9">Know More</button></div>
+          <div className="mb-2 flex w-full flex-wrap justify-center gap-4"><button onClick={handleBuyNow} disabled={!product} className="w-full border border-white bg-[#df573f] px-8 py-4 font-sans text-[17px] font-bold text-white transition hover:bg-[#cf4f39] disabled:opacity-60 sm:w-auto sm:min-w-[320px]">Buy Now &nbsp;&nbsp; &gt;&gt; Save {discount}%</button></div>
+          <button onClick={handleKnowMore} disabled={!product} className="mb-7 font-sans text-sm font-semibold text-white/85 underline underline-offset-4 disabled:opacity-60">Know More</button>
           <p className="font-sans text-[13px] tracking-[0.05em] text-[#888]">Free shipping - Original price Rs.{mrp} - Limited time offer</p>
         </section>
 
-        <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between border-t border-slate-300 bg-white px-4 py-3 md:hidden"><p className="text-sm font-semibold text-slate-900">Rs.{price} <span className="text-xs font-normal text-slate-500 line-through">Rs.{mrp}</span></p><button onClick={handleBuyNow} disabled={!product} className="rounded-md bg-[#1a1a1a] px-4 py-2 text-sm font-medium text-white disabled:opacity-60">Buy Now</button></div>
+        <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between border-t border-slate-300 bg-white px-4 py-3 md:hidden"><p className="text-sm font-semibold text-slate-900">Rs.{price} <span className="text-xs font-normal text-slate-500 line-through">Rs.{mrp}</span></p><button onClick={handleBuyNow} disabled={!product} className="border border-[#1a1a1a] bg-[#df573f] px-4 py-2 text-sm font-bold text-white disabled:opacity-60">Buy Now</button></div>
       </main>
       <Footer />
     </>
