@@ -1745,6 +1745,19 @@ const ProductDetail = () => {
     return [];
   }, [product?.additionalInfo]);
 
+  const warrantyTermsArray = useMemo(() => {
+    if (Array.isArray(product?.warrantyTerms)) {
+      return product.warrantyTerms.map((item) => String(item || "").trim()).filter(Boolean);
+    }
+    if (typeof product?.warrantyTerms === "string" && product.warrantyTerms.trim()) {
+      return product.warrantyTerms
+        .split(/\r?\n|,/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+    return [];
+  }, [product?.warrantyTerms]);
+
   const rating = product?.rating || 4;
   const beforeAfterPairs = product?.beforeAfter || [];
   const hasBeforeAfter = Array.isArray(beforeAfterPairs) && beforeAfterPairs.length > 0;
@@ -2292,6 +2305,7 @@ const ProductDetail = () => {
               {[
                 { id: "details", label: "Product Detail" },
                 { id: "additional", label: "Additional Information" },
+                ...(product?.warranty === "import" ? [{ id: "warranty", label: "Warranty Terms" }] : []),
                 { id: "reviews", label: `Reviews${product.reviews?.length ? ` (${product.reviews.length})` : ""}` },
               ].map((tab) => {
                 const isActive = activeInfoTab === tab.id;
@@ -2358,6 +2372,42 @@ const ProductDetail = () => {
                   <p className="text-sm text-gray-400">No additional information available.</p>
                 )}
               </div>
+
+              {product?.warranty === "import" && (
+                <div className={`bg-white rounded-3xl border border-gray-100 p-7 shadow-sm ${activeInfoTab === "warranty" ? "" : "hidden"}`}>
+                  <div className="flex items-center gap-2 mb-5">
+                    <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
+                    <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Warranty Terms</h2>
+                  </div>
+                  {warrantyTermsArray.length > 0 ? (
+                    <ul className="space-y-1 text-sm text-gray-700">
+                      {warrantyTermsArray.map((term, idx) => (
+                        <li key={`warranty-term-${idx}`} className="flex gap-3 items-start">
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: detailTheme.price }} />
+                          {term}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-400">No warranty terms added yet.</p>
+                  )}
+                  {warrantyRegistrationUrl && (
+                    <div className="mt-4">
+                      <Link
+                        to={warrantyRegistrationUrl}
+                        className="inline-flex items-center rounded-full border px-4 py-2 text-xs font-semibold transition"
+                        style={{
+                          color: detailTheme.accent,
+                          borderColor: detailTheme.accentSoft,
+                          backgroundColor: detailTheme.reviewSurface,
+                        }}
+                      >
+                        Register Warranty
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </section>
         </DeferredSection>

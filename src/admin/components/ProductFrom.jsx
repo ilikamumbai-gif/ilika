@@ -168,6 +168,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     hasVideo: false,
     videos: [],
     warranty: "",   // ✅ NEW
+    warrantyTerms: "",
     banners: [],
     detailPageBgPalette: [],
     detailPageDefaultBg: DEFAULT_DETAIL_BG,
@@ -209,6 +210,9 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     videos: (d.videos || []).map(v => ({ ...v })),
     hasVideo: !!(d.videos?.length),
     warranty: d.warranty || "",   // ✅ NEW
+    warrantyTerms: Array.isArray(d.warrantyTerms)
+      ? d.warrantyTerms.join("\n")
+      : (d.warrantyTerms || ""),
     banners: Array.isArray(d.banners) ? d.banners : (d.bannerImage ? [{ url: d.bannerImage, alt: d.bannerAlt || "" }] : []),
     detailPageBgPalette: detailBg.palette,
     detailPageDefaultBg: detailBg.defaultColor,
@@ -491,6 +495,12 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         ingredients: ingredientsData,
         videos: videoData,
         warranty: form.warranty || "",   // ✅ NEW
+        warrantyTerms: form.warranty === "import"
+          ? String(form.warrantyTerms || "")
+              .split("\n")
+              .map((line) => line.trim())
+              .filter(Boolean)
+          : [],
         banners: form.banners || [],
         detailPageBgPalette: sanitizePalette(form.detailPageBgPalette),
         detailPageDefaultBg: normalizeHexColor(form.detailPageDefaultBg) || DEFAULT_DETAIL_BG,
@@ -1136,13 +1146,34 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                 name="warranty"
                 value={opt.value}
                 checked={form.warranty === opt.value}
-                onChange={() => setForm(prev => ({ ...prev, warranty: opt.value }))}
+                onChange={() => setForm(prev => ({
+                  ...prev,
+                  warranty: opt.value,
+                  warrantyTerms: opt.value === "import" ? prev.warrantyTerms : "",
+                }))}
                 className="accent-[#1C371C]"
               />
               <span className="text-sm text-gray-700">{opt.label}</span>
             </label>
           ))}
         </div>
+        {form.warranty === "import" && (
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-600 block">
+              Warranty Terms (for import products)
+            </label>
+            <textarea
+              rows={5}
+              placeholder={"Enter one term per line\nExample: 1 Year import warranty is applicable from the date of delivery."}
+              value={form.warrantyTerms || ""}
+              onChange={(e) => setForm((prev) => ({ ...prev, warrantyTerms: e.target.value }))}
+              className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            />
+            <p className="text-xs text-gray-400">
+              These terms will appear in the public product detail tab: Warranty Terms.
+            </p>
+          </div>
+        )}
         {form.warranty && (
           <div className="mt-1 flex items-start gap-2 bg-[#f0faf0] border border-[#1C371C]/20 rounded-lg px-3 py-2.5">
             <span className="text-[#1C371C] font-bold mt-0.5">✓</span>
