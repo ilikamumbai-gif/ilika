@@ -8,37 +8,81 @@ import MiniDivider from "../components/MiniDivider";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
 import { createSlug } from "../utils/slugify";
+import { useSeo } from "../hooks/useSeo";
+import blackseedImage from "./assets/Blackseed1.png";
+import blackseedIngredient from "./assets/Blackseed.png";
+import amlaIngredient from "./assets/amla.png";
+import mustardIngredient from "./assets/mustard.png";
+import coconutIngredient from "./assets/coconut.png";
+import shikakaiIngredient from "./assets/shikakai.png";
+import sesameIngredient from "./assets/sesame.png";
+import walnutIngredient from "./assets/walnut.png";
+import sheaButterIngredient from "./assets/sheabutter.png";
+import almondIngredient from "./assets/almand.png";
 
 const HERBS = [
   {
     name: "Nigella Sativa",
-    sub: "Black Seed Oil",
+    sub: "Black Seed Oil (Main)",
     icon: Leaf,
+    image: blackseedIngredient,
     desc: "The 'miracle herb' rich in thymoquinone helps support scalp health and reduce early greying.",
+  },
+  {
+    name: "Brassica Juncea",
+    sub: "Mustard Oil (Main)",
+    icon: Sparkles,
+    image: mustardIngredient,
+    desc: "Traditionally used to nourish roots and support thicker-looking, healthier hair.",
+  },
+  {
+    name: "Amla Oil",
+    sub: "Amla (Main)",
+    icon: Leaf,
+    image: amlaIngredient,
+    desc: "Packed with Vitamin C and antioxidants to improve resilience and natural shine.",
   },
   {
     name: "Cocus Nucifera",
     sub: "Coconut Oil",
     icon: Droplets,
+    image: coconutIngredient,
     desc: "Deep penetrating moisture helps reduce dryness, split ends, and rough texture.",
   },
   {
-    name: "Amla Oil",
-    sub: "Indian Gooseberry",
-    icon: Leaf,
-    desc: "Packed with Vitamin C and antioxidants to improve resilience and natural shine.",
-  },
-  {
     name: "Shikakai Oil",
-    sub: "Acacia Concinna",
+    sub: "Shikakai",
     icon: Leaf,
+    image: shikakaiIngredient,
     desc: "A traditional cleanser that supports stronger follicles and cleaner scalp comfort.",
   },
   {
     name: "Sesamum Indicum",
     sub: "Sesame Oil",
     icon: Sparkles,
+    image: sesameIngredient,
     desc: "Nourishes deeply and helps maintain moisture balance for softer strands.",
+  },
+  {
+    name: "Juglans Regia",
+    sub: "Walnut",
+    icon: Leaf,
+    image: walnutIngredient,
+    desc: "Rich in nutrients that help condition hair texture and support natural sheen.",
+  },
+  {
+    name: "Butyrospermum Parkii",
+    sub: "Shea Butter",
+    icon: Droplets,
+    image: sheaButterIngredient,
+    desc: "Locks in moisture and helps reduce dryness for smoother, more manageable hair.",
+  },
+  {
+    name: "Prunus Amygdalus Dulcis",
+    sub: "Almond",
+    icon: Droplets,
+    image: almondIngredient,
+    desc: "Helps soften strands and supports a healthy-looking scalp and hair finish.",
   },
 ];
 
@@ -46,32 +90,32 @@ const BENEFITS = [
   {
     icon: ShieldCheck,
     title: "Prevents Premature Greying",
-    desc: "Black seed oil's thymoquinone protects melanin-producing cells, keeping your natural colour vibrant longer.",
+    desc: "Black seed and amla help preserve your natural hair color and reduce early greying with regular use.",
+  },
+  {
+    icon: Leaf,
+    title: "Healthy Scalp Maintenance",
+    desc: "Mustard oil and botanical actives support a balanced, healthy scalp by deeply nourishing from the roots.",
+  },
+  {
+    icon: Droplets,
+    title: "Soft & Nourished Hair",
+    desc: "The rich oil blend conditions each strand to leave hair softer, smoother, and deeply nourished.",
   },
   {
     icon: Leaf,
     title: "Boosts Hair Growth",
-    desc: "Stimulates dormant follicles and improves scalp circulation for visibly thicker, longer hair.",
-  },
-  {
-    icon: Droplets,
-    title: "Deep Nourishment",
-    desc: "Penetrates the hair shaft to repair dryness, split ends, and brittleness from root to tip.",
-  },
-  {
-    icon: Snowflake,
-    title: "Cooling Scalp Effect",
-    desc: "Provides a refreshing, calming sensation that soothes itchiness and scalp inflammation.",
+    desc: "Improves scalp circulation and supports stronger follicles for healthy-looking hair growth over time.",
   },
   {
     icon: Feather,
-    title: "Non-Sticky Formula",
-    desc: "Lightweight, fast-absorbing oil that styles without grease - wear it confidently all day.",
+    title: "Controls Dryness & Frizz",
+    desc: "Helps reduce roughness and frizz while improving manageability for a smoother finish.",
   },
   {
-    icon: Leaf,
-    title: "100% Natural",
-    desc: "Zero harmful chemicals, parabens or sulphates. Pure botanical goodness for all hair types.",
+    icon: Snowflake,
+    title: "Lightweight, Non-Sticky Feel",
+    desc: "Absorbs well into scalp and hair without heavy residue, making it comfortable for regular use.",
   },
 ];
 
@@ -99,6 +143,7 @@ function StarRating({ n }) {
 }
 
 const Blackseedhairoil = () => {
+  useSeo({ title: "Ilika | Blackseed Hair OIl" });
   const navigate = useNavigate();
   const { activeProducts } = useProducts();
   const { addToCart } = useCart();
@@ -124,14 +169,7 @@ const Blackseedhairoil = () => {
   const discount =
     Number(product?.discount) || (mrp > price && mrp > 0 ? Math.round(((mrp - price) / mrp) * 100) : 0);
 
-  const productImages = [
-    ...(Array.isArray(defaultVariant?.images) ? defaultVariant.images : []),
-    ...(Array.isArray(product?.images) ? product.images : []),
-    product?.image,
-    product?.imageUrl,
-  ].filter(Boolean);
-
-  const heroImage = productImages[0] || "/placeholder.webp";
+  const heroImage = blackseedImage;
 
   const cartItem = product
     ? defaultVariant
@@ -193,8 +231,8 @@ const Blackseedhairoil = () => {
             
             <div className="order-2 flex flex-col justify-center lg:order-2 lg:justify-end">
               <div className="mb-4 lg:hidden">
-                <div className="mb-3 inline-block rounded-full border border-[#DFD0B0] bg-[#F0E8D5] px-4 py-1.5">
-                  <span className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-[#8B6914]">Ayurvedic - 100% Natural</span>
+                <div className="mb-3 inline-block max-w-full rounded-full border border-[#DFD0B0] bg-[#F0E8D5] px-3 py-1 sm:px-4 sm:py-1.5">
+                  <span className="block truncate font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8B6914] sm:text-xs sm:tracking-[0.12em]">Ayurvedic - 100% Natural</span>
                 </div>
                 <h2 className="text-[clamp(32px,7vw,58px)] font-bold leading-[1.1] tracking-[-1px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>
                   Stop Grey Hair.
@@ -202,9 +240,8 @@ const Blackseedhairoil = () => {
                   <span className="text-[#C8953A]">Start Growing.</span>
                 </h2>
               </div>
-              <div className="relative h-[380px] w-full max-w-[520px] rounded-lg bg-white/70 p-3 shadow-[0_30px_70px_rgba(190,154,92,0.28)] sm:h-[470px] sm:max-w-[620px] sm:p-4 lg:h-[560px] lg:max-w-[660px]">
-                <div className="pointer-events-none absolute left-1/2 top-1/2 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,#F5EDD8_30%,transparent_70%)]" />
-                <img src={heroImage} alt={product?.name || "Black Seed Hair Oil"} className="relative z-10 h-full w-full rounded-md object-cover" />
+              <div className="relative w-full max-w-[520px] sm:h-[470px] sm:max-w-[620px] lg:h-[560px] lg:max-w-[660px]">
+                <img src={heroImage} alt={product?.name || "Black Seed Hair Oil"} className="h-auto w-full object-cover object-center sm:h-full sm:object-contain" />
               </div>
               <div className="mt-4 lg:hidden">
                 <button
@@ -227,11 +264,6 @@ const Blackseedhairoil = () => {
           <span className="flex items-center gap-1 font-sans opacity-90"><Star size={14} className="fill-current" /> 4.9 Star Rated</span>
         </div>
 
-        <section id="learn" className="mx-auto max-w-[1200px] px-4 py-16 sm:px-6 lg:px-[5%] lg:py-24">
-          <div className="mb-12 text-center"><span className="font-sans text-xs font-semibold uppercase tracking-[0.18em] text-[#C8953A]">Why It Works</span><h2 className="mt-3 text-[clamp(28px,4vw,44px)] font-bold tracking-[-0.5px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>6 Reasons Your Hair<br />Will Thank You</h2></div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{BENEFITS.map((b) => { const Icon = b.icon; return <div key={b.title} className="rounded-[20px] border border-[#EAE4D8] bg-white px-7 pb-6 pt-7 transition hover:border-[#C8953A] hover:shadow-[0_8px_32px_rgba(200,149,58,0.12)]"><div className="mb-4 text-[32px] text-[#C8953A]"><Icon size={30} /></div><h3 className="font-sans text-base font-bold tracking-[-0.2px]">{b.title}</h3><p className="mt-2 font-sans text-sm leading-7 text-[#6b6256]">{b.desc}</p></div>; })}</div>
-        </section>
-
         <section className="bg-[#F5F0E8] px-4 py-16 sm:px-6 lg:px-[5%] lg:py-24">
           <div className="mx-auto max-w-[1220px]">
             <div className="mb-8 text-center">
@@ -240,26 +272,24 @@ const Blackseedhairoil = () => {
                 Pure Botanical Ingredients
               </h2>
             </div>
-            <p className="mb-12 text-center font-sans text-base font-semibold text-[#1a1a1a]">1 oil, 5 herbs, multiple hair benefits</p>
+            <p className="mb-12 text-center font-sans text-sm font-semibold text-[#1a1a1a] sm:text-base">1 oil, 9 herbs, multiple hair benefits</p>
             <div className="grid gap-5 md:grid-cols-2 md:gap-6">
               {HERBS.map((h, i) => (
                 <button
                   key={h.name}
                   onClick={() => setActiveIngredient(i)}
-                  className={`flex items-start gap-4 rounded-2xl border bg-white p-4 text-left shadow-sm transition md:gap-5 md:p-5 ${activeIngredient === i
-                      ? "border-[#C8953A] shadow-[0_8px_20px_rgba(200,149,58,0.14)]"
-                      : "border-[#E6DCC8] hover:border-[#d7c29a]"
-                    }`}
+                  className="flex min-h-[104px] items-stretch gap-0 overflow-hidden rounded-[18px] border border-[#C8953A] bg-[#f9f9f9] text-left transition sm:min-h-[108px] sm:rounded-[24px]"
                 >
                   <img
-                    src={heroImage}
+                    src={h.image}
                     alt={h.name}
-                    className={`mt-0.5 h-[62px] w-[62px] shrink-0 rounded-full object-cover ring-2 ${activeIngredient === i ? "ring-[#C8953A]" : "ring-[#dfd0b0]"
-                      }`}
+                    className="h-full w-[84px] shrink-0 object-cover sm:w-[108px]"
                   />
-                  <p className="max-w-[46ch] font-sans text-[16px] leading-8 text-[#111]">
-                    <span className="font-bold">{h.sub}</span> {h.desc}
-                  </p>
+                  <div className="flex min-h-[104px] items-center px-3 py-2.5 sm:min-h-[108px] sm:px-4 sm:py-3 md:px-5">
+                    <p className="max-w-[46ch] font-sans text-[14px] leading-6 text-[#111] sm:text-[16px] sm:leading-7">
+                      <span className="font-bold">{h.sub}</span> {h.desc}
+                    </p>
+                  </div>
                 </button>
               ))}
             </div>
@@ -275,10 +305,24 @@ const Blackseedhairoil = () => {
           </div>
         </section>
 
+        <section id="learn" className="mx-auto max-w-[1200px] px-4 py-16 sm:px-6 lg:px-[5%] lg:py-24">
+          <div className="mb-12 text-center"><span className="font-sans text-xs font-semibold uppercase tracking-[0.18em] text-[#C8953A]">Why It Works</span><h2 className="mt-3 text-[clamp(28px,4vw,44px)] font-bold tracking-[-0.5px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>6 Reasons Your Hair<br />Will Thank You</h2></div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{BENEFITS.map((b) => { const Icon = b.icon; return <div key={b.title} className="rounded-[20px] border border-[#EAE4D8] bg-white px-7 pb-6 pt-7 transition hover:border-[#C8953A] hover:shadow-[0_8px_32px_rgba(200,149,58,0.12)]"><div className="mb-4 text-[32px] text-[#C8953A]"><Icon size={30} /></div><h3 className="font-sans text-base font-bold tracking-[-0.2px]">{b.title}</h3><p className="mt-2 font-sans text-sm leading-7 text-[#6b6256]">{b.desc}</p></div>; })}</div>
+        </section>
+
         <section className="mx-auto max-w-[1200px] px-4 py-16 sm:px-6 lg:px-[5%] lg:py-24">
           <div className="mb-12 text-center"><span className="font-sans text-xs font-semibold uppercase tracking-[0.18em] text-[#C8953A]">Simple Routine</span><h2 className="mt-3 text-[clamp(28px,4vw,44px)] font-bold tracking-[-0.5px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>How to Use It</h2></div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">{STEPS.map((s) => <div key={s.step} className="rounded-[20px] border border-[#EAE4D8] bg-white px-6 pb-6 pt-7"><div className="font-sans text-4xl font-extrabold leading-none text-[#F0E8D5]">{s.step}</div><h4 className="mt-3 font-sans text-[17px] font-bold">{s.title}</h4><p className="mt-2 font-sans text-[13.5px] leading-7 text-[#6b6256]">{s.desc}</p><div className="mt-4 font-sans text-xs font-semibold text-[#C8953A]">{s.time}</div></div>)}</div>
           <p className="mt-8 flex items-center justify-center gap-1 text-center font-sans text-sm text-[#8a7f6e]"><Lightbulb size={14} /> <span><strong>Pro tip:</strong> For best results, leave overnight before washing. Consistency is key - use 2-3 times a week.</span></p>
+          <div className="mt-10 flex justify-center">
+            <button
+              onClick={handleBuyNow}
+              disabled={!product}
+              className="w-full max-w-[420px] border border-[#1a1a1a] bg-[#df573f] px-8 py-3.5 font-sans text-base font-bold text-white transition hover:bg-[#cf4f39] disabled:opacity-60"
+            >
+              Buy Now &nbsp;&nbsp; &gt;&gt; Save {discount}%
+            </button>
+          </div>
         </section>
 
         <section className="bg-[#F5F0E8] px-4 py-16 sm:px-6 lg:px-[5%] lg:py-24">
