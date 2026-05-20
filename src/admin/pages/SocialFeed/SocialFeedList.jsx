@@ -40,7 +40,7 @@ const defaultForm = {
   thumbnailUrl: "",
   content: "",
   postLink: "",
-  sortOrder: 0,
+  sortOrder: 1,
   isActive: true,
 };
 
@@ -264,7 +264,8 @@ const SocialFeedList = () => {
             type="number"
             value={form.sortOrder}
             onChange={(e) => setForm((prev) => ({ ...prev, sortOrder: e.target.value }))}
-            placeholder="Sort order"
+            placeholder="Priority (starts from 1)"
+            min={1}
             className="h-10 px-3 border rounded-lg"
           />
 

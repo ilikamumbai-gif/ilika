@@ -40,7 +40,13 @@ const SocialFeed = () => {
     () =>
       items
         .filter((item) => item?.isActive !== false)
-        .sort((a, b) => Number(a?.sortOrder || 0) - Number(b?.sortOrder || 0)),
+        .sort((a, b) => {
+          const aOrder = Number(a?.sortOrder || 0);
+          const bOrder = Number(b?.sortOrder || 0);
+          const normalizedA = aOrder <= 0 ? Number.MAX_SAFE_INTEGER : aOrder;
+          const normalizedB = bOrder <= 0 ? Number.MAX_SAFE_INTEGER : bOrder;
+          return normalizedA - normalizedB;
+        }),
     [items]
   );
 
@@ -122,29 +128,29 @@ const SocialFeed = () => {
       <Footer />
 
       {selected ? (
-        <div className="fixed inset-0 z-[1300] bg-black/70 p-3 sm:p-6" onClick={() => setSelected(null)}>
+        <div className="fixed inset-0 z-[1300] bg-black/70 p-2 sm:p-6" onClick={() => setSelected(null)}>
           <div
-            className="mx-auto h-full max-w-6xl bg-white rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2"
+            className="mx-auto h-[96vh] sm:h-full max-w-6xl bg-white rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-black h-[42vh] lg:h-full">
+            <div className="bg-black h-[38vh] sm:h-[42vh] lg:h-full">
               {selected.mediaType === "video" ? (
                 <video src={selected.mediaUrl} controls autoPlay className="w-full h-full object-contain bg-black" />
               ) : (
                 <img src={selected.mediaUrl} alt={selected.title || "social post"} className="w-full h-full object-contain bg-black" />
               )}
             </div>
-            <div className="relative p-5 sm:p-7 overflow-y-auto">
+            <div className="relative p-4 sm:p-7 overflow-y-auto">
               <button
                 type="button"
                 onClick={() => setSelected(null)}
-                className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100"
+                className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 rounded-full hover:bg-gray-100"
                 aria-label="Close social post"
               >
                 <X size={18} />
               </button>
-              <h2 className="text-2xl font-semibold text-[#2B1A1A] pr-10">{selected.title || "Social Post"}</h2>
-              <p className="mt-4 text-[#3e2d2d] leading-relaxed whitespace-pre-wrap">{selected.content || "No content available."}</p>
+              <h2 className="text-xl sm:text-2xl font-semibold text-[#2B1A1A] pr-10">{selected.title || "Social Post"}</h2>
+              <p className="mt-3 sm:mt-4 text-[17px] sm:text-base text-[#3e2d2d] leading-relaxed whitespace-pre-wrap">{selected.content || "No content available."}</p>
               {selected.postLink ? (
                 <a
                   href={normalizeExternalLink(selected.postLink)}

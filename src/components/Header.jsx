@@ -58,10 +58,13 @@ const Header = () => {
                 onClick={() => navigate("/combo")}
                 className="
                   relative
-                  bg-black
+                  bg-gradient-to-r from-[#2a2a2a] to-black
                   text-white text-[11px] px-3 py-[5px]
-                  rounded-lg border border-[#E96A6A] shadow-md
-                  animate-[pulse_2s_infinite] cursor-pointer whitespace-nowrap
+                  rounded-lg border border-[#E96A6A] shadow-[0_6px_16px_rgba(233,106,106,0.35)]
+                  cursor-pointer whitespace-nowrap
+                  transition-transform duration-200 ease-out
+                  animate-[bounce_1.8s_infinite]
+                  hover:scale-105 active:scale-95
                 "
               >
                 🌼 Offer
