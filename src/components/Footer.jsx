@@ -1,11 +1,8 @@
 import React from "react";
 import {
-  Facebook,
-  Instagram,
   MapPin,
   Info,
   Phone,
-  Youtube,
   MessageCircle
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -14,6 +11,9 @@ const logo = "/Images/logo2.webp";
 const amazon = "/Images/Amazon.webp";
 const flipcart = "/Images/Flipcart.webp";
 const meesho = "/Images/Meesho.webp";
+const facebook = "/Images/facebook.png";
+const youtube = "/Images/Youtube.png";
+const instagram = "/Images/instagram.png";
 
 const Footer = () => {
   return (
@@ -94,9 +94,15 @@ const Footer = () => {
             </h4>
 
             <div className="flex justify-center sm:justify-start gap-4">
-              <a href="https://www.facebook.com/share/p/17Wgq3ytcj/" target="_blank"><Facebook className="w-8 h-8 hover:scale-110 transition" /></a>
-              <a href="https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg" target="_blank"><Youtube className="w-8 h-8 hover:scale-110 transition" /></a>
-              <a href="https://www.instagram.com/ilikamumbai/" target="_blank"><Instagram className="w-8 h-8 hover:scale-110 transition" /></a>
+              <a href="https://www.facebook.com/share/p/17Wgq3ytcj/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <img src={facebook} alt="Facebook" className="h-8 w-8 hover:scale-110 transition" />
+              </a>
+              <a href="https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                <img src={youtube} alt="YouTube" className="h-8 w-8 hover:scale-110 transition" />
+              </a>
+              <a href="https://www.instagram.com/ilikamumbai/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <img src={instagram} alt="Instagram" className="h-8 w-8 hover:scale-110 transition" />
+              </a>
             </div>
           </div>
 

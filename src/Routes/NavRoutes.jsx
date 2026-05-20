@@ -47,6 +47,7 @@ const CategoryProducts = lazy(() => import("../pages/CategoryProducts"));
 const TrackOrder = lazy(() => import("../pages/TrackOrder"));
 const SocialFeed = lazy(() => import("../pages/SocialFeed"));
 const KnowSkinType = lazy(() => import("../pages/KnowSkinType"));
+const BlackseedHairOilLanding = lazy(() => import("../Landing/Blackseedhairoil"));
 
 const PixelPageTracker = () => {
   const { pathname } = useLocation();
@@ -178,6 +179,7 @@ const NavRoutes = () => {
         <Route path="/track-order" element={renderLazy(TrackOrder)} />
         <Route path="/social-feed" element={renderLazy(SocialFeed)} />
         <Route path="/knowskintype" element={renderLazy(KnowSkinType)} />
+        <Route path="/blackseed-hair-oil" element={renderLazy(BlackseedHairOilLanding)} />
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />
         <Route path="/combo" element={renderLazy(Combos)} />
         <Route path="/combo/:id" element={renderLazy(ComboDetail)} />
