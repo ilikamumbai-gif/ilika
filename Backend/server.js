@@ -151,6 +151,32 @@ const normalizeShippingAddress = (address = {}) => ({
   pincode: String(address?.pincode || "").trim(),
 });
 
+const getItemDiscountMeta = (item = {}) => {
+  const raw = item?.discountApplied;
+  if (!raw) return null;
+
+  if (typeof raw === "number") {
+    const percent = Number(raw);
+    if (!Number.isFinite(percent) || percent <= 0) return null;
+    return { percent, amount: null, code: "" };
+  }
+
+  if (typeof raw === "object") {
+    const percent = Number(raw?.percent || 0);
+    const amount = Number(raw?.amount || 0);
+    const code = String(raw?.code || "").trim();
+    if (percent > 0 || amount > 0 || code) {
+      return {
+        percent: Number.isFinite(percent) && percent > 0 ? percent : null,
+        amount: Number.isFinite(amount) && amount > 0 ? amount : null,
+        code,
+      };
+    }
+  }
+
+  return null;
+};
+
 const isValidShippingAddress = (address = {}) =>
   Boolean(
     address.name &&
@@ -184,7 +210,19 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
           const qty = Number(item?.quantity || 1);
           const name = String(item?.name || "Product").trim();
           const price = Number(item?.price || 0);
-          return `${idx + 1}. ${name} | Qty: ${qty} | Unit Price: Rs ${price.toFixed(2)}`;
+          const originalPrice = Number(item?.originalPrice || 0);
+          const discountMeta = getItemDiscountMeta(item);
+          const discountParts = [
+            discountMeta?.code || "",
+            discountMeta?.percent ? `${discountMeta.percent}%` : "",
+            discountMeta?.amount ? `Rs ${discountMeta.amount.toFixed(2)}` : "",
+          ].filter(Boolean);
+          const lineTotal = price * qty;
+          const unitText = originalPrice > price
+            ? `Unit Price: Rs ${originalPrice.toFixed(2)} -> Rs ${price.toFixed(2)}`
+            : `Unit Price: Rs ${price.toFixed(2)}`;
+          const discountText = discountParts.length ? ` | Coupon: ${discountParts.join(" / ")}` : "";
+          return `${idx + 1}. ${name} | Qty: ${qty} | ${unitText}${discountText} | Line Total: Rs ${lineTotal.toFixed(2)}`;
         })
         .join("\n")
     : "No items found";
@@ -261,7 +299,19 @@ const sendOrderCancelledAlert = async ({ orderId, orderPayload = {}, previousSta
           const qty = Number(item?.quantity || 1);
           const name = String(item?.name || "Product").trim();
           const price = Number(item?.price || 0);
-          return `${idx + 1}. ${name} | Qty: ${qty} | Unit Price: Rs ${price.toFixed(2)}`;
+          const originalPrice = Number(item?.originalPrice || 0);
+          const discountMeta = getItemDiscountMeta(item);
+          const discountParts = [
+            discountMeta?.code || "",
+            discountMeta?.percent ? `${discountMeta.percent}%` : "",
+            discountMeta?.amount ? `Rs ${discountMeta.amount.toFixed(2)}` : "",
+          ].filter(Boolean);
+          const lineTotal = price * qty;
+          const unitText = originalPrice > price
+            ? `Unit Price: Rs ${originalPrice.toFixed(2)} -> Rs ${price.toFixed(2)}`
+            : `Unit Price: Rs ${price.toFixed(2)}`;
+          const discountText = discountParts.length ? ` | Coupon: ${discountParts.join(" / ")}` : "";
+          return `${idx + 1}. ${name} | Qty: ${qty} | ${unitText}${discountText} | Line Total: Rs ${lineTotal.toFixed(2)}`;
         })
         .join("\n")
     : "No items found";

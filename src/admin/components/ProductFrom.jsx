@@ -496,11 +496,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         videos: videoData,
         warranty: form.warranty || "",   // ✅ NEW
         warrantyTerms: form.warranty === "import"
-          ? String(form.warrantyTerms || "")
-              .split("\n")
-              .map((line) => line.trim())
-              .filter(Boolean)
-          : [],
+          ? String(form.warrantyTerms || "").trim()
+          : "",
         banners: form.banners || [],
         detailPageBgPalette: sanitizePalette(form.detailPageBgPalette),
         detailPageDefaultBg: normalizeHexColor(form.detailPageDefaultBg) || DEFAULT_DETAIL_BG,
@@ -1163,14 +1160,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               Warranty Terms (for import products)
             </label>
             <textarea
-              rows={5}
-              placeholder={"Enter one term per line\nExample: 1 Year import warranty is applicable from the date of delivery."}
+              rows={10}
+              placeholder={"Example:\n1. Warranty Period :\nThe product comes with a 1-year warranty from the date the customer receives the delivery.\n\n2. Warranty Coverage :\nIf the product is used properly as per the user manual and still has any technical or quality problem, the company will provide repair or exchange, after checking the warranty claim eligibility."}
               value={form.warrantyTerms || ""}
               onChange={(e) => setForm((prev) => ({ ...prev, warrantyTerms: e.target.value }))}
               className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
             <p className="text-xs text-gray-400">
-              These terms will appear in the public product detail tab: Warranty Terms.
+              Paste full numbered warranty content here. It will be shown on the product page in the same section format.
             </p>
           </div>
         )}

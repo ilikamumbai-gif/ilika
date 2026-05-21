@@ -1745,17 +1745,33 @@ const ProductDetail = () => {
     return [];
   }, [product?.additionalInfo]);
 
-  const warrantyTermsArray = useMemo(() => {
-    if (Array.isArray(product?.warrantyTerms)) {
-      return product.warrantyTerms.map((item) => String(item || "").trim()).filter(Boolean);
+  const warrantySections = useMemo(() => {
+    const raw = Array.isArray(product?.warrantyTerms)
+      ? product.warrantyTerms.join("\n")
+      : (typeof product?.warrantyTerms === "string" ? product.warrantyTerms : "");
+    const text = String(raw || "").trim();
+    if (!text) return [];
+
+    const lines = text.split(/\r?\n/).map((line) => line.trim());
+    const sections = [];
+    const headingRegex = /^\s*(\d+)\.\s*(.+)$/;
+    let current = null;
+
+    for (const line of lines) {
+      if (!line) continue;
+      const match = line.match(headingRegex);
+      if (match) {
+        if (current) sections.push(current);
+        current = { title: `${match[1]}. ${match[2]}`, body: [] };
+      } else if (current) {
+        current.body.push(line);
+      } else {
+        current = { title: line, body: [] };
+      }
     }
-    if (typeof product?.warrantyTerms === "string" && product.warrantyTerms.trim()) {
-      return product.warrantyTerms
-        .split(/\r?\n|,/)
-        .map((item) => item.trim())
-        .filter(Boolean);
-    }
-    return [];
+
+    if (current) sections.push(current);
+    return sections;
   }, [product?.warrantyTerms]);
 
   const rating = product?.rating || 4;
@@ -2379,15 +2395,23 @@ const ProductDetail = () => {
                     <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
                     <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Warranty Terms</h2>
                   </div>
-                  {warrantyTermsArray.length > 0 ? (
-                    <ul className="space-y-1 text-sm text-gray-700">
-                      {warrantyTermsArray.map((term, idx) => (
-                        <li key={`warranty-term-${idx}`} className="flex gap-3 items-start">
-                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: detailTheme.price }} />
-                          {term}
-                        </li>
+                  {warrantySections.length > 0 ? (
+                    <div className="space-y-5 text-sm text-gray-700">
+                      {warrantySections.map((section, idx) => (
+                        <div key={`warranty-section-${idx}`} className="space-y-2">
+                          <h3 className="font-semibold text-[15px]" style={{ color: detailTheme.heading }}>
+                            {section.title}
+                          </h3>
+                          {section.body.length > 0 ? (
+                            <div className="space-y-1.5 text-gray-700">
+                              {section.body.map((line, lineIdx) => (
+                                <p key={`warranty-section-${idx}-line-${lineIdx}`}>{line}</p>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   ) : (
                     <p className="text-sm text-gray-400">No warranty terms added yet.</p>
                   )}

@@ -48,6 +48,7 @@ const TrackOrder = lazy(() => import("../pages/TrackOrder"));
 const SocialFeed = lazy(() => import("../pages/SocialFeed"));
 const KnowSkinType = lazy(() => import("../pages/KnowSkinType"));
 const BlackseedHairOilLanding = lazy(() => import("../Landing/Blackseedhairoil"));
+const HerbalHairOilLanding = lazy(() => import("../Landing/Herbalhairoil"));
 
 const PixelPageTracker = () => {
   const { pathname } = useLocation();
@@ -95,6 +96,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/track-order") return { title: "Track Order", description: "Track your Ilika shipment with live courier updates." };
   if (pathname === "/social-feed") return { title: "Social Feed", description: "Explore Ilika social media images and videos." };
   if (pathname === "/knowskintype") return { title: "Know Your Skin Type", description: "Get personalized skincare recommendations from Ilika." };
+  if (pathname === "/herbal-hair-oil") return { title: "Herbal Hair Oil", description: "Explore Ilika Herbal Hair Oil benefits, ingredients, and offers." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
   if (pathname === "/combo") return { title: "Combo Deals", description: "Explore combo packs and bundle offers from Ilika." };
   if (pathname.startsWith("/combo/")) return { title: "Combo Details", description: "View combo pack details and savings at Ilika." };
@@ -180,6 +182,7 @@ const NavRoutes = () => {
         <Route path="/social-feed" element={renderLazy(SocialFeed)} />
         <Route path="/knowskintype" element={renderLazy(KnowSkinType)} />
         <Route path="/blackseed-hair-oil" element={renderLazy(BlackseedHairOilLanding)} />
+        <Route path="/herbal-hair-oil" element={renderLazy(HerbalHairOilLanding)} />
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />
         <Route path="/combo" element={renderLazy(Combos)} />
         <Route path="/combo/:id" element={renderLazy(ComboDetail)} />

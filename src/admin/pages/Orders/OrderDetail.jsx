@@ -30,6 +30,32 @@ const formatDateTime = (timestamp) => {
 const getImage = (item) =>
   item?.image || item?.images?.[0] || item?.imageUrl || "/placeholder.webp";
 
+const getItemDiscountMeta = (item = {}) => {
+  const raw = item?.discountApplied;
+  if (!raw) return null;
+
+  if (typeof raw === "number") {
+    const percent = Number(raw);
+    if (!Number.isFinite(percent) || percent <= 0) return null;
+    return { percent, amount: null, code: "" };
+  }
+
+  if (typeof raw === "object") {
+    const percent = Number(raw?.percent || 0);
+    const amount = Number(raw?.amount || 0);
+    const code = String(raw?.code || "").trim();
+    if (percent > 0 || amount > 0 || code) {
+      return {
+        percent: Number.isFinite(percent) && percent > 0 ? percent : null,
+        amount: Number.isFinite(amount) && amount > 0 ? amount : null,
+        code,
+      };
+    }
+  }
+
+  return null;
+};
+
 /* ─────────────────── STATUS / SOURCE CONFIG ─────────────────── */
 
 const STATUS_CONFIG = {
@@ -322,13 +348,17 @@ const OrderDetail = () => {
           const qty       = item.quantity || 1;
           const price     = item.price    || 0;
           const itemTotal = qty * price;
+          const discountMeta = getItemDiscountMeta(item);
+          const discountText = discountMeta
+            ? [discountMeta.code || "", discountMeta.percent ? `${discountMeta.percent}%` : ""].filter(Boolean).join(" ")
+            : "—";
           return [
             i + 1,
             item.name,
             item.hsn || "85163200",
             qty,
             formatPrice(price),
-            item.discountApplied ? `${item.discountApplied}%` : "—",
+            discountText || "—",
             formatPrice(itemTotal),
             "0%",
             formatPrice(itemTotal),
@@ -618,6 +648,7 @@ const OrderDetail = () => {
             <tbody className="divide-y divide-gray-100">
               {order.items?.map((item, i) => {
                 const comboList = item.comboItems || item.items || [];
+                const discountMeta = getItemDiscountMeta(item);
                 return (
                   <tr key={i} className="hover:bg-gray-50 transition-colors">
                     <td className="py-4 text-xs text-gray-400">{i + 1}</td>
@@ -665,10 +696,17 @@ const OrderDetail = () => {
                       )}
                     </td>
                     <td className="py-4 text-right">
-                      {item.discountApplied ? (
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">
-                          -{item.discountApplied}%
-                        </span>
+                      {discountMeta ? (
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">
+                            {discountMeta.code ? `${discountMeta.code} ` : ""}{discountMeta.percent ? `-${discountMeta.percent}%` : "Coupon Applied"}
+                          </span>
+                          {discountMeta.amount ? (
+                            <span className="text-[11px] text-green-700">
+                              -₹{discountMeta.amount.toLocaleString("en-IN")}
+                            </span>
+                          ) : null}
+                        </div>
                       ) : (
                         <span className="text-gray-300 text-xs">—</span>
                       )}
