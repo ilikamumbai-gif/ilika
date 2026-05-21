@@ -94,7 +94,7 @@ const Footer = () => {
             </h4>
 
             <div className="flex justify-center sm:justify-start gap-4">
-              <a href="https://www.facebook.com/share/p/17Wgq3ytcj/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <a href="https://www.facebook.com/profile.php?id=100075034603295" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                 <img src={facebook} alt="Facebook" className="h-8 w-8 hover:scale-110 transition" />
               </a>
               <a href="https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg" target="_blank" rel="noopener noreferrer" aria-label="YouTube">

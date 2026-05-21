@@ -70,7 +70,7 @@ const SocialFeed = () => {
               Instagram
             </a>
             <a
-              href="https://www.facebook.com/share/p/17Wgq3ytcj/"
+              href="https://www.facebook.com/profile.php?id=100075034603295"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#e2d2d2] bg-white text-[#2B1A1A] text-sm hover:bg-[#f8efef] transition"
