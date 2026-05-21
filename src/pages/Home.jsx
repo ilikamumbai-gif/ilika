@@ -410,7 +410,7 @@ const Home = () => {
                   "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
                   "Hot & Cold Facial Pore Blackhead Remover For Men & Women ",
                   "Ilika High-Speed Leafless Hair Dryer For Men & Women",
-                  "Ilika Automatic Voice Version Face Mask Maker Machine",
+                  "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
                 ]}
                 limit={8}
               />
@@ -672,7 +672,7 @@ const Home = () => {
                   )}
                   <ProductList
                     mobileScroll
-                    priorityNames={["24k Gold Collagen Face Mask is Anti-aging", "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate", "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin | 25 g", "Ilika Automatic Voice Version Face Mask Maker Machine"]}
+                    priorityNames={["24k Gold Collagen Face Mask is Anti-aging", "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate", "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin | 25 g", "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide"]}
                     categoryId={skincareCategory.id}
                     offset={isMobile ? 0 : skinStart}
                     limit={isMobile ? undefined : getVisibleCount(skinTotal)}
