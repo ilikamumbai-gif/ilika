@@ -354,7 +354,7 @@ const OrderDetail = () => {
             : "—";
           return [
             i + 1,
-            item.name,
+            item?.selectedAddOn?.label ? `${item.name}\nAdd-on: ${item.selectedAddOn.label}` : item.name,
             item.hsn || "85163200",
             qty,
             formatPrice(price),
@@ -666,6 +666,11 @@ const OrderDetail = () => {
                             <span className="inline-flex items-center gap-1 mt-1 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
                               <Tag size={10} /> {item.variantLabel}
                             </span>
+                          )}
+                          {item.selectedAddOn?.label && (
+                            <p className="text-xs text-emerald-700 mt-1">
+                              Add-on: {item.selectedAddOn.label}
+                            </p>
                           )}
                           {item.isCombo && comboList.length > 0 && (
                             <div className="mt-2 space-y-1">

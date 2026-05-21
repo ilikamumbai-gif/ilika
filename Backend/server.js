@@ -217,12 +217,14 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
             discountMeta?.percent ? `${discountMeta.percent}%` : "",
             discountMeta?.amount ? `Rs ${discountMeta.amount.toFixed(2)}` : "",
           ].filter(Boolean);
+          const addOnText = String(item?.selectedAddOn?.label || "").trim();
           const lineTotal = price * qty;
           const unitText = originalPrice > price
             ? `Unit Price: Rs ${originalPrice.toFixed(2)} -> Rs ${price.toFixed(2)}`
             : `Unit Price: Rs ${price.toFixed(2)}`;
           const discountText = discountParts.length ? ` | Coupon: ${discountParts.join(" / ")}` : "";
-          return `${idx + 1}. ${name} | Qty: ${qty} | ${unitText}${discountText} | Line Total: Rs ${lineTotal.toFixed(2)}`;
+          const addOnSegment = addOnText ? ` | Add-on: ${addOnText}` : "";
+          return `${idx + 1}. ${name} | Qty: ${qty} | ${unitText}${discountText}${addOnSegment} | Line Total: Rs ${lineTotal.toFixed(2)}`;
         })
         .join("\n")
     : "No items found";
@@ -306,12 +308,14 @@ const sendOrderCancelledAlert = async ({ orderId, orderPayload = {}, previousSta
             discountMeta?.percent ? `${discountMeta.percent}%` : "",
             discountMeta?.amount ? `Rs ${discountMeta.amount.toFixed(2)}` : "",
           ].filter(Boolean);
+          const addOnText = String(item?.selectedAddOn?.label || "").trim();
           const lineTotal = price * qty;
           const unitText = originalPrice > price
             ? `Unit Price: Rs ${originalPrice.toFixed(2)} -> Rs ${price.toFixed(2)}`
             : `Unit Price: Rs ${price.toFixed(2)}`;
           const discountText = discountParts.length ? ` | Coupon: ${discountParts.join(" / ")}` : "";
-          return `${idx + 1}. ${name} | Qty: ${qty} | ${unitText}${discountText} | Line Total: Rs ${lineTotal.toFixed(2)}`;
+          const addOnSegment = addOnText ? ` | Add-on: ${addOnText}` : "";
+          return `${idx + 1}. ${name} | Qty: ${qty} | ${unitText}${discountText}${addOnSegment} | Line Total: Rs ${lineTotal.toFixed(2)}`;
         })
         .join("\n")
     : "No items found";
@@ -1703,6 +1707,7 @@ app.post("/api/payments/verify", async (req, res) => {
             name: p.name,
             image: p.image || p.images?.[0] || p.imageUrl || "",
           })),
+          selectedAddOn: item.selectedAddOn || null,
         });
         continue;
       }
@@ -1729,6 +1734,7 @@ app.post("/api/payments/verify", async (req, res) => {
         image: item.image || item.images?.[0] || item.imageUrl || "",
         variantId: item.variantId || null,
         variantLabel: item.variantLabel || null,
+        selectedAddOn: item.selectedAddOn || null,
         originalPrice: item.originalPrice || null,
         discountApplied: item.discountApplied || null,
         isCombo: false,
@@ -1827,6 +1833,7 @@ app.post("/api/orders", async (req, res) => {
             name: p.name,
             image: p.image || p.images?.[0] || p.imageUrl || "",
           })),
+          selectedAddOn: item.selectedAddOn || null,
         });
         continue;
       }
@@ -1853,6 +1860,7 @@ app.post("/api/orders", async (req, res) => {
         image: item.image || item.images?.[0] || item.imageUrl || "",
         variantId: item.variantId || null,
         variantLabel: item.variantLabel || null,
+        selectedAddOn: item.selectedAddOn || null,
         originalPrice: item.originalPrice || null,
         discountApplied: item.discountApplied || null,
         isCombo: false,

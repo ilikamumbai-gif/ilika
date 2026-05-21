@@ -669,6 +669,9 @@ const UserDetail = () => {
                                           <p className="text-xs text-gray-400 mt-0.5">
                                             Qty {item.quantity || 1}{item.variantLabel ? ` · ${item.variantLabel}` : ""}
                                           </p>
+                                          {item.selectedAddOn?.label ? (
+                                            <p className="text-xs text-emerald-700 mt-0.5">Add-on: {item.selectedAddOn.label}</p>
+                                          ) : null}
                                         </div>
                                         <p className="text-sm font-bold text-gray-800 ml-auto flex-shrink-0">{formatCurrency(item.price)}</p>
                                       </div>

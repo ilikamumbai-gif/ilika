@@ -21,6 +21,11 @@ import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 
 const DEFAULT_DETAIL_BG = "#FFFFFF";
+const COLLAGEN_ADDON_OPTIONS = [
+  { id: "none", label: "No extra collagen tablet pack", tablets: 0, price: 0 },
+  { id: "pack8", label: "1 Collagen Tablet Pack (8)", tablets: 8, price: 799 },
+  { id: "pack16", label: "2 Collagen Tablet Packs (16)", tablets: 16, price: 1499 },
+];
 
 const stripHtml = (value = "") =>
   String(value || "")
@@ -1037,6 +1042,7 @@ const ProductDetail = () => {
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponMessage, setCouponMessage] = useState({ type: "", text: "" });
+  const [selectedCollagenAddonId, setSelectedCollagenAddonId] = useState("none");
   // const [footerHeight, setFooterHeight] = useState(0);
 
   // Lightbox state
@@ -1308,9 +1314,21 @@ const ProductDetail = () => {
   const couponDiscountAmount = appliedCoupon && basePrice > 0
     ? Number(((basePrice * appliedCoupon.discountPercent) / 100).toFixed(2))
     : 0;
-  const price = appliedCoupon && basePrice > 0
+  const baseSellingPrice = appliedCoupon && basePrice > 0
     ? Number(Math.max(0, basePrice - couponDiscountAmount).toFixed(2))
     : basePrice;
+  const eligibleForCollagenAddon = useMemo(() => {
+    const name = String(product?.name || "").toLowerCase();
+    if (!name.includes("mask maker machine")) return false;
+    const isVoiceModel = name.includes("automatic voice version face mask maker machine");
+    const isNonVoiceModel = name.includes("nonvoice mask maker machine") && name.includes("collagen tablet");
+    return isVoiceModel || isNonVoiceModel;
+  }, [product?.name]);
+  const selectedCollagenAddon = useMemo(() => {
+    return COLLAGEN_ADDON_OPTIONS.find((opt) => opt.id === selectedCollagenAddonId) || COLLAGEN_ADDON_OPTIONS[0];
+  }, [selectedCollagenAddonId]);
+  const addonPrice = eligibleForCollagenAddon ? Number(selectedCollagenAddon?.price || 0) : 0;
+  const price = Number(baseSellingPrice + addonPrice);
 
   const ingredients = useMemo(() => {
     const raw = Array.isArray(product?.ingredients) ? product.ingredients : [];
@@ -1354,8 +1372,10 @@ const ProductDetail = () => {
 
   const stopAuto = () => clearInterval(autoScrollRef.current);
 
-  const discount = mrp ? Math.max(0, Math.round(((mrp - price) / mrp) * 100)) : 0;
-  const cartId = activeVariant ? `${productId}_${activeVariant.id}` : productId;
+  const effectiveMrp = Number(mrp) + addonPrice;
+  const discount = effectiveMrp ? Math.max(0, Math.round(((effectiveMrp - price) / effectiveMrp) * 100)) : 0;
+  const addonCartSuffix = eligibleForCollagenAddon ? `__addon_${selectedCollagenAddon.id}` : "";
+  const cartId = activeVariant ? `${productId}_${activeVariant.id}${addonCartSuffix}` : `${productId}${addonCartSuffix}`;
   const isInCart = cartItems.some(i => i.id === cartId);
   const isOutOfStock = product?.inStock === false;
 
@@ -1367,6 +1387,7 @@ const ProductDetail = () => {
     setCouponCodeInput("");
     setAppliedCoupon(null);
     setCouponMessage({ type: "", text: "" });
+    setSelectedCollagenAddonId("none");
     setExpandedDesc(false);
     setExpandedInfo(false);
     setActiveInfoTab("details");
@@ -1432,6 +1453,16 @@ const ProductDetail = () => {
             price,
             mrp: activeVariant.mrp,
             image: activeVariant.images?.[0],
+            selectedAddOn:
+              eligibleForCollagenAddon && selectedCollagenAddon.id !== "none"
+                ? {
+                  type: "collagen_tablet_pack",
+                  id: selectedCollagenAddon.id,
+                  label: selectedCollagenAddon.label,
+                  tablets: selectedCollagenAddon.tablets,
+                  price: selectedCollagenAddon.price,
+                }
+                : null,
             originalPrice: appliedCoupon ? basePrice : null,
             discountApplied: appliedCoupon
               ? {
@@ -1446,6 +1477,16 @@ const ProductDetail = () => {
             ...product,
             id: productId,
             price,
+            selectedAddOn:
+              eligibleForCollagenAddon && selectedCollagenAddon.id !== "none"
+                ? {
+                  type: "collagen_tablet_pack",
+                  id: selectedCollagenAddon.id,
+                  label: selectedCollagenAddon.label,
+                  tablets: selectedCollagenAddon.tablets,
+                  price: selectedCollagenAddon.price,
+                }
+                : null,
             originalPrice: appliedCoupon ? basePrice : null,
             discountApplied: appliedCoupon
               ? {
@@ -1472,7 +1513,9 @@ const ProductDetail = () => {
     basePrice,
     appliedCoupon,
     couponDiscountAmount,
-    addToCart]);
+    addToCart,
+    eligibleForCollagenAddon,
+    selectedCollagenAddon]);
 
   const handleBuyNow = useCallback(async () => {
     if (isBuying || isOutOfStock) return;
@@ -1889,7 +1932,7 @@ const ProductDetail = () => {
           onClose={() => setLightboxOpen(false)}
           product={product}
           price={price}
-          mrp={mrp}
+          mrp={effectiveMrp}
           discount={discount}
           isOutOfStock={isOutOfStock}
           onAddToCart={handleAddToCart}
@@ -1905,7 +1948,7 @@ const ProductDetail = () => {
         product={product}
         theme={detailTheme}
         price={price}
-        mrp={mrp}
+        mrp={effectiveMrp}
         discount={discount}
         isOutOfStock={isOutOfStock}
         isInCart={isInCart}
@@ -2145,8 +2188,8 @@ const ProductDetail = () => {
                   <div>
                     <div className="flex items-baseline flex-wrap gap-3">
                       <span className="text-3xl font-bold" style={{ color: detailTheme.price }}>₹{price}</span>
-                      {mrp > 0 && <span className="text-sm text-gray-400 line-through">MRP ₹{mrp}</span>}
-                      {mrp > 0 && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ backgroundColor: detailTheme.price, color: detailTheme.onPrice }}>{discount}% OFF</span>}
+                      {effectiveMrp > 0 && <span className="text-sm text-gray-400 line-through">MRP ₹{effectiveMrp}</span>}
+                      {effectiveMrp > 0 && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ backgroundColor: detailTheme.price, color: detailTheme.onPrice }}>{discount}% OFF</span>}
                     </div>
                     <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes</p>
                   </div>
@@ -2167,6 +2210,37 @@ const ProductDetail = () => {
                   )}
                 </div>
               </div>
+
+              {eligibleForCollagenAddon && (
+                <div className="rounded-2xl border p-4" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
+                  <p className="text-sm font-semibold mb-3" style={{ color: detailTheme.heading }}>
+                    Add Extra Collagen Tablet Packs
+                  </p>
+                  <div className="space-y-2">
+                    {COLLAGEN_ADDON_OPTIONS.map((option) => {
+                      const active = selectedCollagenAddonId === option.id;
+                      return (
+                        <label
+                          key={option.id}
+                          className={`flex items-center justify-between rounded-xl border px-3 py-2.5 cursor-pointer transition ${active ? "border-black bg-white" : "border-gray-200 bg-white/70"}`}
+                        >
+                          <span className="text-sm text-gray-800">{option.label}</span>
+                          <span className="flex items-center gap-2">
+                            <span className="text-sm font-semibold">{option.price > 0 ? `+₹${option.price}` : "Included"}</span>
+                            <input
+                              type="radio"
+                              name="collagen-addon-pack"
+                              value={option.id}
+                              checked={active}
+                              onChange={() => setSelectedCollagenAddonId(option.id)}
+                            />
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* ATC + Buy Now — observed by IntersectionObserver for sticky bar */}
               <div ref={atcButtonsRef} className="flex flex-col sm:flex-row gap-3">

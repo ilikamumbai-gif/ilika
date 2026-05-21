@@ -10,15 +10,15 @@ import { useCart } from "../context/CartProvider";
 import { createSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
 import blackseedImage from "./assets/Herbal1.png";
-import blackseedIngredient from "./assets/Blackseed.png";
+import bringrajIngredient from "./assets/bringraj.png";
 import amlaIngredient from "./assets/amla.png";
-import mustardIngredient from "./assets/mustard.png";
-import coconutIngredient from "./assets/coconut.png";
+import neemIngredient from "./assets/neem.png";
+import castorIngredient from "./assets/castor.png";
 import shikakaiIngredient from "./assets/shikakai.png";
-import sesameIngredient from "./assets/sesame.png";
-import walnutIngredient from "./assets/walnut.png";
-import sheaButterIngredient from "./assets/sheabutter.png";
-import almondIngredient from "./assets/almand.png";
+import brahmiIngredient from "./assets/bramini.png";
+import fenugreekIngredient from "./assets/fenugreek.png";
+import vetiverIngredient from "./assets/Vetiver.png";
+import curryLeavesIngredient from "./assets/curryleaves.png";
 import womenReviewImage from "./assets/women1.png";
 import boyReviewImage from "./assets/boy2.jpeg";
 import girlReviewImage from "./assets/girl3.jpeg";
@@ -28,14 +28,14 @@ const HERBS = [
     name: "Eclipta Alba",
     sub: "Bhringraj (Main)",
     icon: Leaf,
-    image: blackseedIngredient,
+    image: bringrajIngredient,
     desc: "The 'King of Hair' in Ayurveda - stimulates follicles, combats hair fall, and promotes thick, lustrous regrowth.",
   },
   {
     name: "Azadirachta Indica",
     sub: "Neem (Main)",
     icon: ShieldCheck,
-    image: mustardIngredient,
+    image: neemIngredient,
     desc: "Powerful antibacterial and antifungal action targets the root cause of dandruff and keeps your scalp clean and itch-free.",
   },
   {
@@ -49,7 +49,7 @@ const HERBS = [
     name: "Ricinus Communis",
     sub: "Castor Oil",
     icon: Droplets,
-    image: coconutIngredient,
+    image: castorIngredient,
     desc: "Deep conditioning properties lock in moisture, prevent dryness and split ends, and promote thicker, fuller-looking hair.",
   },
   {
@@ -63,28 +63,28 @@ const HERBS = [
     name: "Bacopa Monnieri",
     sub: "Brahmi",
     icon: Sparkles,
-    image: sesameIngredient,
+    image: brahmiIngredient,
     desc: "Calms the scalp, improves circulation to hair roots, and reduces stress-induced hair fall with every massage.",
   },
   {
     name: "Trigonella Foenum-Graecum",
     sub: "Fenugreek (Methi)",
     icon: Leaf,
-    image: walnutIngredient,
+    image: fenugreekIngredient,
     desc: "Rich in proteins and nicotinic acid - stimulates hair growth, reduces dandruff, and conditions dry, brittle strands.",
   },
   {
     name: "Chrysopogon Zizanioides",
     sub: "Vetiver (Khus)",
     icon: Droplets,
-    image: sheaButterIngredient,
+    image: vetiverIngredient,
     desc: "Natural cooling properties soothe an irritated scalp, improve blood circulation, and carry a calming, stress-relieving aroma.",
   },
   {
     name: "Murraya Koenigii",
     sub: "Curry Leaves",
     icon: Droplets,
-    image: almondIngredient,
+    image: curryLeavesIngredient,
     desc: "Strengthens hair roots with beta-carotene and amino acids, helps retain natural colour, and reduces thinning over time.",
   },
 ];
@@ -154,8 +154,16 @@ const Herbalhairoil = () => {
 
   const product = useMemo(() => {
     const list = Array.isArray(activeProducts) ? activeProducts : [];
+    const normalize = (value) => String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
     return (
-      list.find((item) => String(item?.name || "").toLowerCase().includes("black seed")) ||
+      list.find((item) => {
+        const n = normalize(item?.name);
+        return n.includes("herbalhairoil") || n.includes("herbaloil");
+      }) ||
+      list.find((item) => {
+        const n = normalize(item?.name);
+        return n.includes("hairoil") && n.includes("herbal");
+      }) ||
       list.find((item) => String(item?.name || "").toLowerCase().includes("hair oil")) ||
       null
     );

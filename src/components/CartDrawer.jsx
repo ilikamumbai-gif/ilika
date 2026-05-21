@@ -87,6 +87,11 @@ const CartDrawer = () => {
                       {item.variantLabel}
                     </p>
                   )}
+                  {item.selectedAddOn?.label && (
+                    <p className="text-xs text-emerald-700 mt-[2px]">
+                      Add-on: {item.selectedAddOn.label}
+                    </p>
+                  )}
 
                   {/* ✔… SHOW KIT PRODUCTS */}
                   {item.isCombo && item.comboItems && (

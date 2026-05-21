@@ -634,6 +634,7 @@ const Checkout = () => {
         variantLabel: item.variantLabel || null,
         originalPrice: item.originalPrice || null,
         discountApplied: item.discountApplied || null,
+        selectedAddOn: item.selectedAddOn || null,
         isCombo: item.isCombo || false,
         comboItems: item.comboItems || item.items || [],
       }));
@@ -928,6 +929,9 @@ const Checkout = () => {
                   <div className="flex-1 text-sm">
                     <p className="font-medium">{item.name}</p>
                     <p className="text-gray-500">Qty: {item.quantity}</p>
+                    {item.selectedAddOn?.label ? (
+                      <p className="text-emerald-700 text-xs mt-0.5">Add-on: {item.selectedAddOn.label}</p>
+                    ) : null}
                   </div>
                   <div className="font-medium text-sm">
                     {Number(item.price) * Number(item.quantity)}
