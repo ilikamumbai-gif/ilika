@@ -19,6 +19,9 @@ import sesameIngredient from "./assets/sesame.png";
 import walnutIngredient from "./assets/walnut.png";
 import sheaButterIngredient from "./assets/sheabutter.png";
 import almondIngredient from "./assets/almand.png";
+import womenReviewImage from "./assets/women1.png";
+import boyReviewImage from "./assets/boy2.jpeg";
+import girlReviewImage from "./assets/girl3.jpeg";
 
 const HERBS = [
   {
@@ -127,9 +130,9 @@ const STEPS = [
 ];
 
 const REVIEWS = [
-  { name: "Priya S.", loc: "Mumbai", stars: 5, text: "Just few days of using and it's truly amazing. Gives a coolant effect to my scalp, non-sticky, reduces split ends and makes hair smooth and soft. Worth every rupee!" },
-  { name: "Aanya R.", loc: "Delhi", stars: 5, text: "I use this 30 min before head wash and post bath. Keeps me nourished all day. Have never felt softer the entire day. Absolutely love it!" },
-  { name: "Meera K.", loc: "Bangalore", stars: 5, text: "The greys on my temples have noticeably slowed down after a month. My hair feels so healthy and thick. This is now a permanent part of my routine." },
+  { name: "Priya S.", loc: "Mumbai", stars: 5, image: womenReviewImage, text: "Just few days of using and it's truly amazing. Gives a coolant effect to my scalp, non-sticky, reduces split ends and makes hair smooth and soft. Worth every rupee!" },
+  { name: "Aayan R.", loc: "Delhi", stars: 5, image: boyReviewImage, text: "I use this 30 min before head wash and post bath. Keeps me nourished all day. Have never felt softer the entire day. Absolutely love it!" },
+  { name: "Meera K.", loc: "Bangalore", stars: 5, image: girlReviewImage, text: "The greys on my temples have noticeably slowed down after a month. My hair feels so healthy and thick. This is now a permanent part of my routine." },
 ];
 
 function StarRating({ n }) {
@@ -157,6 +160,22 @@ const Blackseedhairoil = () => {
       null
     );
   }, [activeProducts]);
+
+  const landingReviews = useMemo(() => {
+    const dynamic = Array.isArray(product?.reviews) ? product.reviews : [];
+    if (!dynamic.length) return REVIEWS;
+
+    return dynamic.slice(0, 6).map((rev, idx) => ({
+      id: `${rev?._id || rev?.id || idx}`,
+      name: rev?.name || "Verified Buyer",
+      loc: rev?.location || rev?.city || "Verified Buyer",
+      stars: Number(rev?.rating) > 0 ? Number(rev.rating) : 5,
+      text: rev?.comment || rev?.text || "",
+      image:
+        (Array.isArray(rev?.images) && rev.images.length ? rev.images[0] : "") ||
+        (typeof rev?.image === "string" ? rev.image : ""),
+    }));
+  }, [product]);
 
   const defaultVariant =
     product?.hasVariants && Array.isArray(product?.variants) && product.variants.length
@@ -278,15 +297,22 @@ const Blackseedhairoil = () => {
                 <button
                   key={h.name}
                   onClick={() => setActiveIngredient(i)}
-                  className="flex min-h-[104px] items-stretch gap-0 overflow-hidden rounded-[18px] border border-[#C8953A] bg-[#f9f9f9] text-left transition sm:min-h-[108px] sm:rounded-[24px]"
+                  className="relative flex min-h-[104px] items-stretch gap-0 overflow-hidden rounded-[18px] border border-[#C8953A] bg-[#f9f9f9] text-left transition sm:min-h-[108px] sm:rounded-[24px]"
                 >
                   <img
                     src={h.image}
                     alt={h.name}
                     className="h-full w-[84px] shrink-0 object-cover sm:w-[108px]"
                   />
-                  <div className="flex min-h-[104px] items-center px-3 py-2.5 sm:min-h-[108px] sm:px-4 sm:py-3 md:px-5">
-                    <p className="max-w-[46ch] font-sans text-[14px] leading-6 text-[#111] sm:text-[16px] sm:leading-7">
+                  <div className="relative isolate flex min-h-[104px] flex-1 items-center overflow-hidden bg-[#f9f9f9] px-3 py-2.5 sm:min-h-[108px] sm:px-4 sm:py-3 md:px-5">
+                    <img
+                      src={h.image}
+                      alt=""
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 h-full w-full scale-[1.1] object-cover object-center opacity-30 blur-[1px]"
+                    />
+                    <div aria-hidden="true" className="absolute inset-0 bg-[#f9f9f9]/78" />
+                    <p className="relative z-10 max-w-[46ch] font-sans text-[14px] leading-6 text-[#111] sm:text-[16px] sm:leading-7">
                       <span className="font-bold">{h.sub}</span> {h.desc}
                     </p>
                   </div>
@@ -328,7 +354,7 @@ const Blackseedhairoil = () => {
         <section className="bg-[#F5F0E8] px-4 py-16 sm:px-6 lg:px-[5%] lg:py-24">
           <div className="mx-auto max-w-[1100px]">
             <div className="mb-12 text-center"><span className="font-sans text-xs font-semibold uppercase tracking-[0.18em] text-[#C8953A]">Real Customers</span><h2 className="mt-3 text-[clamp(28px,4vw,44px)] font-bold tracking-[-0.5px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>They Loved It. You Will Too.</h2><div className="mt-3 inline-flex items-center gap-1 font-sans text-base text-[#6b6256]"><Star size={15} className="fill-current" /> 4.9 average from verified buyers</div></div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">{REVIEWS.map((r) => <div key={r.name} className="rounded-[20px] border border-[#EAE4D8] bg-white px-7 pb-6 pt-7"><StarRating n={r.stars} /><p className="my-4 font-sans text-[14.5px] italic leading-7 text-[#3c3830]">"{r.text}"</p><div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F0E8D5] font-sans text-[13px] font-bold text-[#C8953A]">{r.name[0]}</div><div><div className="font-sans text-sm font-semibold">{r.name}</div><div className="font-sans text-xs text-[#8a7f6e]">{r.loc} - Verified</div></div></div></div>)}</div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">{landingReviews.map((r, idx) => <div key={r.id || `${r.name}_${idx}`} className="rounded-[20px] border border-[#EAE4D8] bg-white px-7 pb-6 pt-7"><StarRating n={r.stars} />{r.image ? <img src={r.image} alt={`${r.name} review`} className="mt-4 h-40 w-full rounded-xl object-cover" /> : null}<p className="my-4 font-sans text-[14.5px] italic leading-7 text-[#3c3830]">"{r.text}"</p><div><div className="font-sans text-sm font-semibold">{r.name}</div><div className="font-sans text-xs text-[#8a7f6e]">{r.loc} - Verified</div></div></div>)}</div>
           </div>
         </section>
 

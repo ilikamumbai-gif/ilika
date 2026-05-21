@@ -856,7 +856,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
               onChange={handleImageChange}
             />
             <p className="text-[11px] text-gray-400 mt-1">
-              Upload 1â€“2 images (Max 2MB each)
+              Upload 1-2 images (Max 2MB each)
             </p>
             {reviewImages.length > 0 && (
               <div className="flex gap-2 mt-2">
@@ -2212,7 +2212,7 @@ const ProductDetail = () => {
 
                   <ul className="space-y-2">
                     {(product.benefits || [
-                      "Instant Lip Plumping Effect â€“ Visible volume in 1â€“2 minutes.",
+                      "Instant Lip Plumping Effect - Visible volume in 1-2 minutes.",
                       "Soft Silicone Material  Comfortable & skin-safe.",
                       "Non-Invasive & Needle-Free  No fillers required.",
                       "Enhances Lip Shape  Defines natural lip contour.",
@@ -2628,7 +2628,7 @@ const ProductDetail = () => {
                   </div>
                   <p className="text-gray-500 text-sm mb-1">No reviews yet</p>
                   <p className="text-gray-400 text-xs mb-4">Be the first to share your experience!</p>
-                  <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold hover:underline" style={{ color: detailTheme.accent }}>Write a Review â†’</button>
+                  <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold hover:underline" style={{ color: detailTheme.accent }}>Write a Review</button>
                 </div>
               )}
             </section>
