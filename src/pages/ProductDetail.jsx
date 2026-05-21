@@ -22,9 +22,10 @@ import { FiBell } from "react-icons/fi";
 
 const DEFAULT_DETAIL_BG = "#FFFFFF";
 const COLLAGEN_ADDON_OPTIONS = [
-  { id: "pack0", count: 0, label: "No extra collagen tablet pack", tablets: 0, price: 0 },
-  { id: "pack1", count: 1, label: "1 Collagen Tablet Pack (8)", tablets: 8, price: 799 },
-  { id: "pack2", count: 2, label: "2 Collagen Tablet Packs (16)", tablets: 16, price: 1499 },
+  { id: "pack0", count: 0, label: "No extra collagen Peptide pack", tablets: 0, price: 0 },
+  { id: "pack2", count: 2, label: "2 Collagen Peptide Packs (16)", tablets: 16, price: 799 },
+  { id: "pack4", count: 4, label: "4 Collagen Peptide Packs (32)", tablets: 32, price: 1499 },
+  { id: "pack6", count: 6, label: "6 Collagen Peptide Packs (48)", tablets: 48, price: 2299 },
 ];
 
 const stripHtml = (value = "") =>
@@ -2217,18 +2218,18 @@ const ProductDetail = () => {
               {eligibleForCollagenAddon && (
                 <div className="rounded-2xl border p-4" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
                   <p className="text-sm font-semibold mb-3" style={{ color: detailTheme.heading }}>
-                    Add Extra Collagen Tablet Packs
+                    Add Extra Collagen Peptide Packs
                   </p>
                   <div className="rounded-xl border border-gray-200 bg-white p-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-gray-800">Extra Peptide Pack Count</p>
-                        <p className="text-xs text-gray-500 mt-0.5">0 to 2 packs</p>
+                        <p className="text-xs text-gray-500 mt-0.5">0 to 6 packs (step of 2)</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => setCollagenAddonCount((prev) => Math.max(0, prev - 1))}
+                          onClick={() => setCollagenAddonCount((prev) => Math.max(0, prev - 2))}
                           className="h-9 w-9 rounded-lg border border-gray-300 text-lg font-semibold leading-none hover:bg-gray-50"
                           aria-label="Decrease peptide pack count"
                         >
@@ -2239,7 +2240,7 @@ const ProductDetail = () => {
                         </span>
                         <button
                           type="button"
-                          onClick={() => setCollagenAddonCount((prev) => Math.min(2, prev + 1))}
+                          onClick={() => setCollagenAddonCount((prev) => Math.min(6, prev + 2))}
                           className="h-9 w-9 rounded-lg border border-gray-300 text-lg font-semibold leading-none hover:bg-gray-50"
                           aria-label="Increase peptide pack count"
                         >

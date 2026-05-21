@@ -123,7 +123,7 @@ const ProductCard = ({
   return (
     <div className="primary-bg-color rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 w-full flex flex-col">
 
-      <Link to={`/product/${slug}`} state={{ id: productId }} className="flex flex-col h-full">
+      <Link to={`/product/${slug}`} state={{ id: productId }} className="group flex h-full flex-col">
 
         {/* IMAGE AREA */}
         <div className="relative aspect-square overflow-hidden flex items-center justify-center ">
@@ -136,7 +136,8 @@ const ProductCard = ({
               absolute inset-0
               w-full h-full
               object-contain
-              ${isTall ? "scale-[1.18]" : "scale-[1.08]"}
+              ${isTall ? "scale-[1.18] group-hover:scale-[1.22]" : "scale-[1.08] group-hover:scale-[1.12]"}
+              transition-transform duration-500 ease-out
               p-2
             `}
           />

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useBlog } from "../../context/BlogProvider";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../../firebase/firebaseConfig";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -164,7 +164,12 @@ const AddBlog = () => {
     image: "",
     author: "",
     shortDesc: "",
-    content: ""
+    content: "",
+    contentSections: [
+      { id: Date.now(), type: "content-image", content: "", image: "" },
+      { id: Date.now() + 1, type: "content-full", content: "", image: "" },
+      { id: Date.now() + 2, type: "image-content", content: "", image: "" },
+    ],
   });
 
   const [preview, setPreview] = useState(null);
@@ -176,6 +181,47 @@ const AddBlog = () => {
       ...blog,
       [e.target.name]: e.target.value
     });
+
+  const addSection = (type) => {
+    setBlog((prev) => ({
+      ...prev,
+      contentSections: [
+        ...prev.contentSections,
+        { id: Date.now() + Math.random(), type, content: "", image: "" },
+      ],
+    }));
+  };
+
+  const removeSection = (sectionId) => {
+    setBlog((prev) => ({
+      ...prev,
+      contentSections: prev.contentSections.filter((s) => s.id !== sectionId),
+    }));
+  };
+
+  const updateSection = (sectionId, patch) => {
+    setBlog((prev) => ({
+      ...prev,
+      contentSections: prev.contentSections.map((section) =>
+        section.id === sectionId ? { ...section, ...patch } : section
+      ),
+    }));
+  };
+
+  const moveSection = (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0) return;
+    if (targetIndex >= blog.contentSections.length) return;
+
+    const next = [...blog.contentSections];
+    const [picked] = next.splice(index, 1);
+    next.splice(targetIndex, 0, picked);
+
+    setBlog((prev) => ({
+      ...prev,
+      contentSections: next,
+    }));
+  };
 
 
 
@@ -219,6 +265,22 @@ const AddBlog = () => {
 
   };
 
+  const handleSectionImageUpload = async (sectionId, file) => {
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const storageRef = ref(storage, `blogs/sections/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      updateSection(sectionId, { image: url });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
 
 
   /* ================= SUBMIT ================= */
@@ -227,7 +289,15 @@ const AddBlog = () => {
 
     e.preventDefault();
 
-    await addBlog(blog);
+    const payload = {
+      ...blog,
+      excerpt: blog.shortDesc,
+      contentSections: blog.contentSections.filter(
+        (section) => section.content?.trim() || section.image
+      ),
+    };
+
+    await addBlog(payload);
 
     await logActivity(`Created blog: ${blog.title}`);
 
@@ -311,6 +381,103 @@ const AddBlog = () => {
               })
             }
           />
+
+          <div className="rounded-xl border border-gray-200 p-4 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-lg font-semibold">Structured Sections</h2>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="border px-3 py-1.5 rounded text-sm"
+                  onClick={() => addSection("content-image")}
+                >
+                  + Content + Image
+                </button>
+                <button
+                  type="button"
+                  className="border px-3 py-1.5 rounded text-sm"
+                  onClick={() => addSection("content-full")}
+                >
+                  + Full Content
+                </button>
+                <button
+                  type="button"
+                  className="border px-3 py-1.5 rounded text-sm"
+                  onClick={() => addSection("image-content")}
+                >
+                  + Image + Content
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-500">
+              This controls the exact blog detail page format (alternating content and image blocks).
+            </p>
+
+            <div className="space-y-4">
+              {blog.contentSections.map((section, index) => (
+                <div key={section.id} className="rounded-lg border border-gray-200 p-4 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-medium">
+                      Block {index + 1} - {section.type}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className="border px-2 py-1 rounded text-xs"
+                        onClick={() => moveSection(index, -1)}
+                      >
+                        Up
+                      </button>
+                      <button
+                        type="button"
+                        className="border px-2 py-1 rounded text-xs"
+                        onClick={() => moveSection(index, 1)}
+                      >
+                        Down
+                      </button>
+                      <button
+                        type="button"
+                        className="border border-red-300 text-red-600 px-2 py-1 rounded text-xs"
+                        onClick={() => removeSection(section.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+
+                  {section.type !== "content-full" && (
+                    <div>
+                      <label className="text-sm block mb-1">Block Image</label>
+                      <input
+                        type="file"
+                        className="w-full border p-2 rounded"
+                        onChange={(e) =>
+                          handleSectionImageUpload(section.id, e.target.files?.[0])
+                        }
+                      />
+                      {section.image && (
+                        <img
+                          loading="lazy"
+                          src={section.image}
+                          alt="section preview"
+                          className="w-full h-52 object-cover rounded mt-2"
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="text-sm block mb-1">Block Content</label>
+                    <RichTextEditor
+                      value={section.content}
+                      onChange={(html) => updateSection(section.id, { content: html })}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
 
           <button
