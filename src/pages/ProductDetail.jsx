@@ -23,9 +23,9 @@ import { FiBell } from "react-icons/fi";
 const DEFAULT_DETAIL_BG = "#FFFFFF";
 const COLLAGEN_ADDON_OPTIONS = [
   { id: "pack0", count: 0, label: "No extra collagen Peptide pack", tablets: 0, price: 0 },
-  { id: "pack2", count: 2, label: "2 Collagen Peptide Packs (16)", tablets: 16, price: 799 },
-  { id: "pack4", count: 4, label: "4 Collagen Peptide Packs (32)", tablets: 32, price: 1499 },
-  { id: "pack6", count: 6, label: "6 Collagen Peptide Packs (48)", tablets: 48, price: 2299 },
+  { id: "pack1", count: 1, label: "1 Collagen Peptide Pack (16 no.s)", tablets: 16, price: 799 },
+  { id: "pack2", count: 2, label: "2 Collagen Peptide Packs (32 no.s)", tablets: 32, price: 1499 },
+  { id: "pack3", count: 3, label: "3 Collagen Peptide Packs (48 no.s)", tablets: 48, price: 2299 },
 ];
 
 const stripHtml = (value = "") =>
@@ -1322,7 +1322,7 @@ const ProductDetail = () => {
     const name = String(product?.name || "").toLowerCase();
     if (!name.includes("mask maker machine")) return false;
     const isVoiceModel = name.includes("automatic voice version face mask maker machine");
-    const isNonVoiceModel = name.includes("nonvoice mask maker machine") && name.includes("collagen tablet");
+    const isNonVoiceModel = name.includes("nonvoice mask maker machine") && name.includes("collagen peptide");
     return isVoiceModel || isNonVoiceModel;
   }, [product?.name]);
   const selectedCollagenAddon = useMemo(() => {
@@ -2216,44 +2216,61 @@ const ProductDetail = () => {
               </div>
 
               {eligibleForCollagenAddon && (
-                <div className="rounded-2xl border p-4" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
-                  <p className="text-sm font-semibold mb-3" style={{ color: detailTheme.heading }}>
+                <div className="rounded-2xl border p-3" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
+                  <p className="text-sm font-semibold mb-2" style={{ color: detailTheme.heading }}>
                     Add Extra Collagen Peptide Packs
                   </p>
-                  <div className="rounded-xl border border-gray-200 bg-white p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-800">Extra Peptide Pack Count</p>
-                        <p className="text-xs text-gray-500 mt-0.5">0 to 6 packs (step of 2)</p>
+                  <div className="rounded-xl border border-gray-200 bg-white p-2.5 sm:p-3">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                      <div className="w-full sm:w-[96px] sm:min-w-[96px] h-[84px] rounded-xl overflow-hidden bg-[#f8f6f5]">
+                        <img
+                          loading="lazy"
+                          src="/Images/Peptide.jpeg"
+                          alt="Collagen peptide pack"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setCollagenAddonCount((prev) => Math.max(0, prev - 2))}
-                          className="h-9 w-9 rounded-lg border border-gray-300 text-lg font-semibold leading-none hover:bg-gray-50"
-                          aria-label="Decrease peptide pack count"
-                        >
-                          -
-                        </button>
-                        <span className="inline-flex min-w-[44px] justify-center rounded-lg border border-gray-300 px-2 py-1.5 text-sm font-semibold">
-                          {collagenAddonCount}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setCollagenAddonCount((prev) => Math.min(6, prev + 2))}
-                          className="h-9 w-9 rounded-lg border border-gray-300 text-lg font-semibold leading-none hover:bg-gray-50"
-                          aria-label="Increase peptide pack count"
-                        >
-                          +
-                        </button>
+                      <div className="flex-1 min-w-0 space-y-2.5">
+                        <div className="h-9 rounded-lg bg-[#f7f4f4] flex items-center justify-center px-3">
+                          <p className="text-lg sm:text-xl font-semibold text-[#2B2A29] text-center truncate">
+                            Collagen Peptide Pack
+                          </p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+                          <div className="min-h-9 rounded-lg px-3 py-1.5 inline-flex items-center font-semibold leading-snug text-[#2B2A29]">
+                            <span className="text-sm">
+                              {collagenAddonCount > 0
+                                ? selectedCollagenAddon.label
+                                : "No extra pack (Included)"}
+                            </span>
+                          </div>
+                          <div className="inline-flex items-center rounded-lg border border-gray-200 overflow-hidden self-start sm:self-auto">
+                            <button
+                              type="button"
+                              onClick={() => setCollagenAddonCount((prev) => Math.max(0, Number(prev || 0) - 1))}
+                              className="h-8 w-8 text-base font-semibold leading-none text-[#111827] hover:bg-white/70 transition border-r border-gray-300"
+                              aria-label="Decrease peptide pack count"
+                            >
+                              -
+                            </button>
+                            <span className="h-8 min-w-[34px] inline-flex items-center justify-center text-sm font-semibold text-[#111827] border-r border-gray-300">
+                              {collagenAddonCount}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setCollagenAddonCount((prev) => Math.min(3, Number(prev || 0) + 1))}
+                              className="h-8 w-8 text-base font-semibold leading-none text-[#111827] hover:bg-white/70 transition"
+                              aria-label="Increase peptide pack count"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-sm font-medium text-[#3F4E63]">
+                          {selectedCollagenAddon.price > 0 ? `Add-on price: +₹${selectedCollagenAddon.price}` : "Included with product"}
+                        </p>
                       </div>
                     </div>
-                    <p className="mt-3 text-sm text-gray-700">
-                      {selectedCollagenAddon.label}{" "}
-                      <span className="font-semibold">
-                        {selectedCollagenAddon.price > 0 ? `(+₹${selectedCollagenAddon.price})` : "(Included)"}
-                      </span>
-                    </p>
                   </div>
                 </div>
               )}
