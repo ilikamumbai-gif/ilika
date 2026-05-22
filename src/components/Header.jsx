@@ -12,7 +12,7 @@ const Header = () => {
   const { products = [] } = useProducts();
 
   return (
-    <header className="w-full sticky top-0 z-50 bg-[#e8adad60]/20 backdrop-blur-md overflow-x-clip">
+    <header className="w-full sticky top-0 z-50 bg-[#fffaf9] md:bg-[#e8adad60]/20 md:backdrop-blur-md overflow-x-clip">
 
       {/* ── Main header row ── */}
       <div className="flex items-center justify-between px-4 py-3 w-full">
