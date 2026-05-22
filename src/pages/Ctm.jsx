@@ -4,7 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import CtmCard from "../components/CtmCard";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { FaLeaf } from "react-icons/fa";
 import { IoWaterOutline } from "react-icons/io5";
@@ -32,6 +32,8 @@ const steps = [
 ];
 
 const Ctm = () => {
+  const navigate = useNavigate();
+
   return (
     <>
       <MiniDivider />
@@ -41,7 +43,10 @@ const Ctm = () => {
         <CartDrawer />
 
         {/* ── HERO ─────────────────────────────────────────────── */}
-        <section className="bg-[#1C371C] relative overflow-hidden">
+        <section
+          className="bg-[#1C371C] relative overflow-hidden cursor-pointer"
+          onClick={() => navigate("/ctmkit")}
+        >
           <div className="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-red-200 opacity-[0.1] pointer-events-none" />
           <div className="absolute right-32 -bottom-16 w-48 h-48 rounded-full bg-red-300 opacity-[0.2] pointer-events-none" />
 
@@ -63,7 +68,7 @@ const Ctm = () => {
                 choose your perfect trio at a special bundled price.
               </p>
 
-              <Link to="/ctmkit">
+              <Link to="/ctmkit" onClick={(e) => e.stopPropagation()}>
                 <button className="bg-white text-[#1C371C] px-8 sm:px-9 py-3 sm:py-3.5 rounded-full text-sm font-sans font-semibold tracking-wide hover:bg-green-100 transition-colors duration-200">
                   Build My Kit →
                 </button>

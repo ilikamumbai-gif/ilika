@@ -2458,9 +2458,9 @@ const ProductDetail = () => {
                   <p className="text-sm font-semibold mb-2" style={{ color: detailTheme.heading }}>
                     Add Extra Collagen Peptide Packs
                   </p>
-                  <div className="rounded-xl border border-gray-200 bg-white p-2.5 sm:p-3">
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                      <div className="w-full sm:w-[96px] sm:min-w-[96px] h-[84px] rounded-xl overflow-hidden bg-[#f8f6f5]">
+                  <div className="rounded-xl border border-gray-200 bg-white p-2 sm:p-3">
+                    <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4">
+                      <div className="w-full sm:w-[96px] sm:min-w-[96px] h-[72px] sm:h-[84px] rounded-xl overflow-hidden bg-[#f8f6f5]">
                         <img
                           loading="lazy"
                           src="/Images/Peptide.jpeg"
@@ -2468,9 +2468,9 @@ const ProductDetail = () => {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="flex-1 min-w-0 space-y-2.5">
-                        <div className="h-9 rounded-lg bg-[#f7f4f4] flex items-center justify-center px-3">
-                          <p className="text-lg sm:text-xl font-semibold text-[#2B2A29] text-center truncate">
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="min-h-9 rounded-lg bg-[#f7f4f4] flex items-center justify-center px-2 py-1.5">
+                          <p className="text-base sm:text-xl font-semibold text-[#2B2A29] text-center leading-tight">
                             Collagen Peptide Pack
                           </p>
                         </div>
@@ -2482,22 +2482,22 @@ const ProductDetail = () => {
                                 : "No extra pack (Included)"}
                             </span>
                           </div>
-                          <div className="inline-flex items-center rounded-lg border border-gray-200 overflow-hidden self-start sm:self-auto">
+                          <div className="inline-flex items-center rounded-lg border border-gray-200 overflow-hidden self-start sm:self-auto w-full sm:w-auto justify-between">
                             <button
                               type="button"
                               onClick={() => setCollagenAddonCount((prev) => Math.max(0, Number(prev || 0) - 1))}
-                              className="h-8 w-8 text-base font-semibold leading-none text-[#111827] hover:bg-white/70 transition border-r border-gray-300"
+                              className="h-9 w-10 sm:h-8 sm:w-8 text-base font-semibold leading-none text-[#111827] hover:bg-white/70 transition border-r border-gray-300"
                               aria-label="Decrease peptide pack count"
                             >
                               -
                             </button>
-                            <span className="h-8 min-w-[34px] inline-flex items-center justify-center text-sm font-semibold text-[#111827] border-r border-gray-300">
+                            <span className="h-9 sm:h-8 min-w-[34px] inline-flex items-center justify-center text-sm font-semibold text-[#111827] border-r border-gray-300 flex-1 sm:flex-none">
                               {collagenAddonCount}
                             </span>
                             <button
                               type="button"
                               onClick={() => setCollagenAddonCount((prev) => Math.min(3, Number(prev || 0) + 1))}
-                              className="h-8 w-8 text-base font-semibold leading-none text-[#111827] hover:bg-white/70 transition"
+                              className="h-9 w-10 sm:h-8 sm:w-8 text-base font-semibold leading-none text-[#111827] hover:bg-white/70 transition"
                               aria-label="Increase peptide pack count"
                             >
                               +
