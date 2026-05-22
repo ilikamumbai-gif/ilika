@@ -39,24 +39,41 @@ const AppContent = () => {
 
     let cleanup;
     let cancelled = false;
+    let fallbackTimer;
+
     const startTracking = () => {
+      if (cancelled) return;
       import("./utils/autoTrack").then((mod) => {
         if (cancelled) return;
         cleanup = mod.initAutoTrack();
       });
     };
 
-    const timer = window.setTimeout(() => {
+    const runOnce = () => {
+      if (cancelled) return;
+      window.removeEventListener("pointerdown", runOnce);
+      window.removeEventListener("keydown", runOnce);
+      window.removeEventListener("scroll", runOnce);
+
       if ("requestIdleCallback" in window) {
-        window.requestIdleCallback(startTracking, { timeout: 2500 });
+        window.requestIdleCallback(startTracking, { timeout: 3000 });
       } else {
-        startTracking();
+        window.setTimeout(startTracking, 300);
       }
-    }, 2500);
+    };
+
+    window.addEventListener("pointerdown", runOnce, { once: true, passive: true });
+    window.addEventListener("keydown", runOnce, { once: true });
+    window.addEventListener("scroll", runOnce, { once: true, passive: true });
+
+    fallbackTimer = window.setTimeout(runOnce, 12000);
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timer);
+      window.clearTimeout(fallbackTimer);
+      window.removeEventListener("pointerdown", runOnce);
+      window.removeEventListener("keydown", runOnce);
+      window.removeEventListener("scroll", runOnce);
       if (typeof cleanup === "function") cleanup();
     };
   }, [isAdminRoute]);

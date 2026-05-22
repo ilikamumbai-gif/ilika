@@ -93,9 +93,6 @@ const Home = () => {
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 640 : false
   );
-  const [showPromoGrid, setShowPromoGrid] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth >= 640 : true
-  );
   const [isBuyingKit, setIsBuyingKit] = useState(false);
   const [skinProfile, setSkinProfile] = useState({
     name: "",
@@ -292,28 +289,6 @@ const Home = () => {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  useEffect(() => {
-    if (!isMobile) {
-      setShowPromoGrid(true);
-      return undefined;
-    }
-
-    let idleId;
-    let timerId;
-    const reveal = () => setShowPromoGrid(true);
-
-    if ("requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(reveal, { timeout: 3500 });
-    } else {
-      timerId = window.setTimeout(reveal, 1800);
-    }
-
-    return () => {
-      if (idleId) window.cancelIdleCallback?.(idleId);
-      if (timerId) window.clearTimeout(timerId);
-    };
-  }, [isMobile]);
-
   const { hairstylingCategory, skincareCategory, haircareCategory } = useMemo(() => {
     return {
       hairstylingCategory: categories.find(
@@ -405,13 +380,9 @@ const Home = () => {
           />
 
           <LazyMountSection minHeight={220} rootMargin="120px 0px">
-            {showPromoGrid ? (
-              <Suspense fallback={<div className="min-h-[220px]" />}>
-                <PromoCardGrid />
-              </Suspense>
-            ) : (
-              <div className="min-h-0" />
-            )}
+            <Suspense fallback={<div className="min-h-[220px]" />}>
+              <PromoCardGrid />
+            </Suspense>
           </LazyMountSection>
 
 

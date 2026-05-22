@@ -5,7 +5,6 @@ import {
   Recycle,
   Globe,
 } from "lucide-react";
-import Heading from "./Heading";
 
 const manifestoItems = [
   { label: "Natural Ingredients", icon: Leaf },
@@ -27,29 +26,31 @@ const manifestoItems = [
 
 const Menifesto = () => {
   return (
-    <section className="w-full py-2 sm:py-4">
+    <section className="w-full py-1 sm:py-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="rounded-2xl border p-4 sm:p-6 lg:p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
+        <div className="rounded-2xl border p-3 sm:p-4 lg:p-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-center">
             {/* LEFT */}
             <div className="w-full">
-              <div className="text-center lg:text-left">
-                <Heading heading={"The Ilika Manifesto"} />
+              <div className="text-center">
+                <h2 className="text-[34px] sm:text-[38px] leading-none tracking-[-0.02em] font-luxury heading-color">
+                  The Ilika Manifesto
+                </h2>
               </div>
 
-              <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:gap-x-4 sm:gap-y-6 mt-4 sm:mt-5">
+              <div className="grid grid-cols-3 gap-x-2 gap-y-3 sm:gap-x-3 sm:gap-y-4 mt-3 sm:mt-4">
                 {manifestoItems.map((item, index) => {
                   const Icon = item.icon;
                   return (
                     <div
                       key={index}
-                      className="flex flex-col items-center text-center gap-2"
+                      className="flex flex-col items-center text-center gap-1.5"
                     >
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#f8f8f8] flex items-center justify-center">
-                        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#8b1f23]" />
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#f8f8f8] flex items-center justify-center">
+                        <Icon className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#8b1f23]" />
                       </div>
 
-                      <p className="text-xs sm:text-sm font-semibold leading-tight text-[#143b2f]">
+                      <p className="text-[11px] sm:text-xs font-semibold leading-tight text-[#143b2f]">
                         {item.label}
                       </p>
                     </div>
@@ -60,11 +61,11 @@ const Menifesto = () => {
 
             {/* RIGHT */}
             <div className="w-full">
-              <h3 className="text-xl sm:text-2xl font-semibold text-center heading-color mb-3 sm:mb-4">
+              <h3 className="text-lg sm:text-xl font-semibold text-center heading-color mb-2 sm:mb-3">
                 Our Assurance
               </h3>
 
-              <p className="text-base sm:text-lg md:text-base text-center leading-relaxed content-text max-w-xl mx-auto">
+              <p className="text-sm sm:text-base text-center leading-relaxed content-text max-w-[540px] mx-auto">
                 Ilika is <strong>"Clean Compatible"</strong> Not just free of harmful and toxic chemicals but uses only those ingredients that either enhance the health of our hair, skin or support the effectiveness of formulations.
               </p>
             </div>
