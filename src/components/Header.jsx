@@ -23,7 +23,7 @@ const Header = () => {
           onClick={() => navigate("/")}
         >
           <img
-            fetchPriority="high"
+            fetchPriority="auto"
             src={logo}
             alt="Ilika"
             width={220}

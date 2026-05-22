@@ -14,7 +14,7 @@ import { CategoryContext } from "../admin/context/CategoryContext";
 import { ProductContext } from "../admin/context/ProductContext";
 
 const ProductList = lazy(() => import("../components/ProductList"));
-const Banner = lazy(() => import("../components/Banner"));
+import Banner from "../components/Banner";
 const Footer = lazy(() => import("../components/Footer"));
 const PromoCardGrid = lazy(() => import("../components/PromoCardGrid"));
 import CategoryNav from "../components/CategoryNav";
@@ -368,7 +368,7 @@ const Home = () => {
         <main>
 
           <Banner
-            className="mt-0"
+            className="mt-0 aspect-[4/5] sm:aspect-[16/7]"
             src={mothersDayBanner}
             mobileSrc={mothersDayBannerMobile}
             linkUrl="/combo"
@@ -471,7 +471,7 @@ const Home = () => {
 
               {/* HAIR CARE */}
               <Banner
-                className="md:h-[60vh] mt-0 "
+                className="mt-0 aspect-[5/4] md:aspect-auto md:h-[60vh]"
                 src={bannerHair}
                 mobileSrc={hairMobile}
                 linkUrl="/product/black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth"
@@ -583,7 +583,7 @@ const Home = () => {
 
               {/* SKIN CARE */}
               <Banner
-                className="md:h-[60vh] mt-0"
+                className="mt-0 aspect-[5/4] md:aspect-auto md:h-[60vh]"
                 src={bannerSkincare}
                 mobileSrc={skinMobile}
                 linkUrl="/skin"
@@ -691,7 +691,7 @@ const Home = () => {
 
               {/* APPLIANCES */}
               <Banner
-                className="md:h-[auto] mt-0 mb-6"
+                className="mt-0 mb-6 aspect-[16/10] md:aspect-auto md:h-auto"
                 src={BannerStyle}
                 mobileSrc={BannerStyle}
                 linkUrl="/hair/styling"

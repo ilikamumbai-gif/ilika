@@ -128,7 +128,12 @@ const ProductCard = ({
         {/* IMAGE AREA */}
         <div className="relative aspect-square overflow-hidden flex items-center justify-center ">
 
-          <img loading="lazy"
+          <img
+            loading="lazy"
+            fetchPriority="low"
+            decoding="async"
+            width={640}
+            height={640}
             src={`${productImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
 
             alt={product.name}

@@ -47,7 +47,7 @@ const Banner = ({
         src={desktopSrc}
         alt={resolvedAlt}
         className={`w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
-        decoding="async"
+        decoding={priority ? "sync" : "async"}
         width={width}
         height={height}
       />
