@@ -379,59 +379,101 @@ const Home = () => {
             priority
           />
 
-          <LazyMountSection minHeight={220} rootMargin="120px 0px">
-            <Suspense fallback={<div className="min-h-[220px]" />}>
-              <PromoCardGrid />
-            </Suspense>
-          </LazyMountSection>
+          {isMobile ? (
+            <>
+              <LazyMountSection minHeight={220}>
+                <Suspense fallback={<div className="h-40" />}>
+                  {/* CATEGORY NAV */}
+                  <CategoryNav categories={categoriesData} />
+                </Suspense>
+              </LazyMountSection>
 
+              <LazyMountSection
+                minHeight={360}
+                className="bg-[#c0392b12] py-6"
+              >
+                <Suspense fallback={<div className="h-40" />}>
+                  <Heading
+                    heading="Trending Picks"
+                    sub={"Trending beauty tools curated for you"}
+                  />
 
+                  <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
+                    <Link
+                      to="/newarrival"
+                      className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
+                    >
+                      View All
+                    </Link>
+                  </div>
 
-          <LazyMountSection
-            minHeight={360}
-            className="bg-[#c0392b12] py-6"
-          >
-            <Suspense fallback={<div className="h-40" />}>
-              <Heading
-                heading="Trending Picks"
-                sub={"Trending beauty tools curated for you"}
-              />
+                  <ProductList
+                    mobileScroll
+                    productNames={[
+                      "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
+                      "Hot & Cold Facial Pore Blackhead Remover For Men & Women ",
+                      "Ilika High-Speed Leafless Hair Dryer For Men & Women",
+                      "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
+                    ]}
+                    limit={8}
+                  />
+                </Suspense>
+              </LazyMountSection>
 
-              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
-                <Link
-                  to="/newarrival"
-                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
-                >
-                  View All
-                </Link>
-              </div>
+              <LazyMountSection minHeight={220} rootMargin="120px 0px">
+                <Suspense fallback={<div className="min-h-[220px]" />}>
+                  <PromoCardGrid />
+                </Suspense>
+              </LazyMountSection>
+            </>
+          ) : (
+            <>
+              <LazyMountSection minHeight={220} rootMargin="120px 0px">
+                <Suspense fallback={<div className="min-h-[220px]" />}>
+                  <PromoCardGrid />
+                </Suspense>
+              </LazyMountSection>
 
-              <ProductList
-                mobileScroll
-                productNames={[
-                  "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
-                  "Hot & Cold Facial Pore Blackhead Remover For Men & Women ",
-                  "Ilika High-Speed Leafless Hair Dryer For Men & Women",
-                  "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
-                ]}
-                limit={8}
-              />
-            </Suspense>
-          </LazyMountSection>
+              <LazyMountSection
+                minHeight={360}
+                className="bg-[#c0392b12] py-6"
+              >
+                <Suspense fallback={<div className="h-40" />}>
+                  <Heading
+                    heading="Trending Picks"
+                    sub={"Trending beauty tools curated for you"}
+                  />
 
+                  <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
+                    <Link
+                      to="/newarrival"
+                      className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
+                    >
+                      View All
+                    </Link>
+                  </div>
 
-          <LazyMountSection minHeight={220}>
-            <Suspense fallback={<div className="h-40" />}>
-            
-              {/* <SkinTypeBanner  title="Know Your Skin Type"  
-              subtitle="Get your personalized cleanser, toner, moisturizer and treatment kit in under 2 minutes." 
-              ctaText="Start Skin Analysis"  
-              to="/knowskintype"/> */}
+                  <ProductList
+                    mobileScroll
+                    productNames={[
+                      "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
+                      "Hot & Cold Facial Pore Blackhead Remover For Men & Women ",
+                      "Ilika High-Speed Leafless Hair Dryer For Men & Women",
+                      "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
+                    ]}
+                    limit={8}
+                  />
+                </Suspense>
+              </LazyMountSection>
 
-              {/* CATEGORY NAV */}
-              <CategoryNav categories={categoriesData} />
-            </Suspense>
-          </LazyMountSection>
+              <LazyMountSection minHeight={220}>
+                <Suspense fallback={<div className="h-40" />}>
+                  {/* CATEGORY NAV */}
+                  <CategoryNav categories={categoriesData} />
+                </Suspense>
+              </LazyMountSection>
+            </>
+          )}
 
 
           <LazyMountSection
@@ -755,11 +797,13 @@ const Home = () => {
 
 
           {/* TESTIMONIAL */}
-          <LazyMountSection minHeight={440}>
-            <Heading heading="COSTUMER'S STORIES" />
-            <Suspense fallback={<div className="h-24" />}>
-              <TestimonialList />
-            </Suspense>
+          <LazyMountSection minHeight={340}>
+            <section className="min-h-[320px] lg:min-h-[340px] flex flex-col justify-center">
+              <Heading heading="COSTUMER'S STORIES" />
+              <Suspense fallback={<div className="h-24" />}>
+                <TestimonialList />
+              </Suspense>
+            </section>
           </LazyMountSection>
 
           {/* MANIFESTO */}
