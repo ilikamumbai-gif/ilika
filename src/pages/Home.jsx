@@ -753,7 +753,7 @@ const Home = () => {
 
 
           {/* MANIFESTO */}
-          <LazyMountSection minHeight={200}>
+          <LazyMountSection minHeight={150}>
             <Suspense fallback={<div className="h-24" />}>
               <Menifesto />
             </Suspense>

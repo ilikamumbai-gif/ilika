@@ -27,17 +27,17 @@ const manifestoItems = [
 
 const Menifesto = () => {
   return (
-    <section className="w-full py-4 sm:py-8">
+    <section className="w-full py-2 sm:py-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="rounded-2xl  border p-6 sm:p-10 lg:p-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <div className="rounded-2xl border p-4 sm:p-6 lg:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
             {/* LEFT */}
             <div className="w-full">
               <div className="text-center lg:text-left">
                 <Heading heading={"The Ilika Manifesto"} />
               </div>
 
-              <div className="grid grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 mt-6 sm:mt-8">
+              <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:gap-x-4 sm:gap-y-6 mt-4 sm:mt-5">
                 {manifestoItems.map((item, index) => {
                   const Icon = item.icon;
                   return (
@@ -45,8 +45,8 @@ const Menifesto = () => {
                       key={index}
                       className="flex flex-col items-center text-center gap-2"
                     >
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#f8f8f8] flex items-center justify-center">
-                        <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-[#8b1f23]" />
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#f8f8f8] flex items-center justify-center">
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#8b1f23]" />
                       </div>
 
                       <p className="text-xs sm:text-sm font-semibold leading-tight text-[#143b2f]">
@@ -60,11 +60,11 @@ const Menifesto = () => {
 
             {/* RIGHT */}
             <div className="w-full">
-              <h3 className="text-2xl sm:text-3xl font-semibold text-center heading-color mb-4 sm:mb-5">
+              <h3 className="text-xl sm:text-2xl font-semibold text-center heading-color mb-3 sm:mb-4">
                 Our Assurance
               </h3>
 
-              <p className="text-lg sm:text-xl md:text-base text-center leading-relaxed content-text max-w-xl mx-auto">
+              <p className="text-base sm:text-lg md:text-base text-center leading-relaxed content-text max-w-xl mx-auto">
                 Ilika is <strong>"Clean Compatible"</strong> Not just free of harmful and toxic chemicals but uses only those ingredients that either enhance the health of our hair, skin or support the effectiveness of formulations.
               </p>
             </div>
