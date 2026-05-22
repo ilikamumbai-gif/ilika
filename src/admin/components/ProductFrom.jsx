@@ -988,6 +988,9 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
         {form.hasVideo && (
           <div className="space-y-5">
+            <p className="text-xs text-gray-500">
+              Add YouTube or Google Drive links. These videos will appear as the last thumbnail(s) in product gallery.
+            </p>
             {(form.videos || []).map((video, idx) => (
               <div key={idx} className="border rounded-xl p-4 bg-white space-y-3">
                 <div className="flex justify-between">

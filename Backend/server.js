@@ -969,6 +969,18 @@ const normalizeCouponPayload = (payload = {}, fallback = {}) => {
   };
 };
 
+const normalizeProductVideos = (videos = []) => {
+  if (!Array.isArray(videos)) return [];
+  return videos
+    .map((video = {}) => ({
+      url: String(video?.url || "").trim(),
+      title: String(video?.title || "").trim(),
+      subtitle: String(video?.subtitle || "").trim(),
+      description: String(video?.description || "").trim(),
+    }))
+    .filter((video) => Boolean(video.url));
+};
+
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -1316,6 +1328,7 @@ app.post("/api/products", async (req, res) => {
     const now = Date.now();
     const productData = {
       ...req.body,
+      videos: normalizeProductVideos(req.body?.videos),
       isActive: req.body.isActive ?? true,
       inStock: req.body.inStock ?? true,
       createdAt: now,
@@ -1368,6 +1381,7 @@ app.put("/api/products/:id", async (req, res) => {
     const existingData = existingDoc.data();
     const updateData = {
       ...req.body,
+      videos: normalizeProductVideos(req.body?.videos),
       reviews: (req.body.reviews || []).map(r => {
         const images = normalizeReviewImages(r);
         const verifiedPurchase = Boolean(r.verifiedPurchase);

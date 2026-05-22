@@ -265,8 +265,23 @@ const formatIngredientTitle = (src = "", index = 0) => {
   }
 };
 
-const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe }) => {
-  const [current, setCurrent] = useState(initialIndex);
+const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe }) => {
+  const mediaItems = useMemo(() => {
+    const imageItems = (Array.isArray(images) ? images : []).map((src, index) => ({
+      type: "image",
+      src,
+      key: `img-${index}-${src}`,
+    }));
+    const videoItems = (Array.isArray(videos) ? videos : []).map((video, index) => ({
+      type: "video",
+      src: video?.embedUrl || "",
+      thumb: video?.thumb || "",
+      title: video?.title || `Product video ${index + 1}`,
+      key: video?.id || `vid-${index}`,
+    })).filter((item) => item.src);
+    return [...imageItems, ...videoItems];
+  }, [images, videos]);
+  const [current, setCurrent] = useState(Math.max(0, Math.min(initialIndex, Math.max(mediaItems.length - 1, 0))));
   const [zoomActive, setZoomActive] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const thumbsRef = useRef(null);
@@ -278,8 +293,8 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowRight") { userInteractedRef.current = true; setCurrent(c => (c + 1) % images.length); }
-      if (e.key === "ArrowLeft") { userInteractedRef.current = true; setCurrent(c => (c - 1 + images.length) % images.length); }
+      if (e.key === "ArrowRight") { userInteractedRef.current = true; setCurrent((c) => Math.min(c + 1, mediaItems.length - 1)); }
+      if (e.key === "ArrowLeft") { userInteractedRef.current = true; setCurrent((c) => Math.max(c - 1, 0)); }
     };
     document.addEventListener("keydown", handleKey);
     document.body.style.overflow = "hidden";
@@ -287,7 +302,11 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
       document.removeEventListener("keydown", handleKey);
       document.body.style.overflow = "";
     };
-  }, [images.length, onClose]);
+  }, [mediaItems.length, onClose]);
+
+  useEffect(() => {
+    setCurrent(0);
+  }, [product?.id, product?._id, mediaItems.length]);
 
   // Scroll active thumb into view
   useEffect(() => {
@@ -298,12 +317,19 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
 
   // Auto-scroll through images every 3 seconds
   useEffect(() => {
-    if (images.length <= 1) return;
+    if (mediaItems.length <= 1) return;
+    setCurrent(0);
     const timer = setInterval(() => {
-      setCurrent(c => (c + 1) % images.length);
+      setCurrent((c) => {
+        if (c >= mediaItems.length - 1) {
+          window.clearInterval(timer);
+          return c;
+        }
+        return c + 1;
+      });
     }, 30000);
     return () => clearInterval(timer);
-  }, [images.length]);
+  }, [mediaItems.length]);
 
   const handleZoomMove = (e) => {
     if (!imageZoomRef.current) return;
@@ -347,36 +373,49 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
           onMouseMove={handleZoomMove}
         >
           {/* Prev */}
-          {images.length > 1 && (
+          {mediaItems.length > 1 && (
             <button
-              onClick={() => { userInteractedRef.current = true; setCurrent(c => (c - 1 + images.length) % images.length); }}
+              onClick={() => { userInteractedRef.current = true; setCurrent((c) => Math.max(c - 1, 0)); }}
               className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md hover:shadow-lg border border-gray-100 transition text-[#2b2a29]"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
           )}
 
-          <img loading="lazy"
-            src={images[current]}
-            alt="Product"
-            width="1080"
-            height="1080"
-            className="w-full h-full object-contain"
-            style={{
-              maxHeight: "90vh",
-              userSelect: "none",
-              transform: zoomActive ? "scale(1.8)" : "scale(1)",
-              transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
-              transition: zoomActive ? "transform 80ms ease-out" : "transform 220ms ease-out",
-              cursor: zoomActive ? "zoom-out" : "zoom-in",
-            }}
-            draggable={false}
-          />
+          {mediaItems[current]?.type === "video" ? (
+            <div className="w-full h-full bg-white flex items-center justify-center">
+              <iframe
+                src={mediaItems[current]?.src}
+                title={mediaItems[current]?.title || "Product video"}
+                className="w-full aspect-video max-h-full"
+                style={{ border: "none" }}
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <img loading="lazy"
+              src={mediaItems[current]?.src || images[0]}
+              alt="Product"
+              width="1080"
+              height="1080"
+              className="w-full h-full object-contain"
+              style={{
+                maxHeight: "90vh",
+                userSelect: "none",
+                transform: zoomActive ? "scale(1.8)" : "scale(1)",
+                transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                transition: zoomActive ? "transform 80ms ease-out" : "transform 220ms ease-out",
+                cursor: zoomActive ? "zoom-out" : "zoom-in",
+              }}
+              draggable={false}
+            />
+          )}
 
           {/* Next */}
-          {images.length > 1 && (
+          {mediaItems.length > 1 && (
             <button
-              onClick={() => { userInteractedRef.current = true; setCurrent(c => (c + 1) % images.length); }}
+              onClick={() => { userInteractedRef.current = true; setCurrent((c) => Math.min(c + 1, mediaItems.length - 1)); }}
               className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md hover:shadow-lg border border-gray-100 transition text-[#2b2a29]"
             >
               <ChevronRight className="w-5 h-5" />
@@ -384,9 +423,9 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
           )}
 
           {/* Counter pill */}
-          {images.length > 1 && (
+          {mediaItems.length > 1 && (
             <span className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-[11px] font-medium px-3 py-1 rounded-full backdrop-blur-sm">
-              {current + 1} / {images.length}
+              {current + 1} / {mediaItems.length}
             </span>
           )}
         </div>
@@ -401,16 +440,25 @@ const ImageLightbox = ({ images, initialIndex = 0, onClose, product, price, mrp,
             style={{ scrollbarWidth: "thin", scrollbarColor: "#E7A6A1 transparent" }}
           >
             <div className="grid grid-cols-3 gap-2">
-              {images.map((img, i) => (
+              {mediaItems.map((item, i) => (
                 <button
-                  key={i}
+                  key={item.key}
                   onClick={() => { userInteractedRef.current = true; setCurrent(i); }}
                   className={`aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200
                     ${current === i
                       ? "border-[#801f1f] shadow-md ring-2 ring-[#E7A6A1]/40"
                       : "border-transparent hover:border-gray-200"}`}
                 >
-                  <img loading="lazy" src={img} decoding="async" alt="" width="200" height="200" className="w-full h-full object-cover" draggable={false} />
+                  {item.type === "video" ? (
+                    <div className="w-full h-full bg-black/80 relative flex items-center justify-center">
+                      {item.thumb ? (
+                        <img loading="lazy" src={item.thumb} decoding="async" alt={item.title} width="200" height="200" className="w-full h-full object-cover opacity-80" draggable={false} />
+                      ) : null}
+                      <span className="absolute inset-0 flex items-center justify-center text-white text-xl">▶</span>
+                    </div>
+                  ) : (
+                    <img loading="lazy" src={item.src} decoding="async" alt="" width="200" height="200" className="w-full h-full object-cover" draggable={false} />
+                  )}
                 </button>
               ))}
             </div>
@@ -603,6 +651,10 @@ const BeforeAfterSlider = ({
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const getVideoEmbedUrl = (url) => {
   if (!url) return "";
+  const withParams = (base, params) => {
+    const qs = new URLSearchParams(params).toString();
+    return `${base}${base.includes("?") ? "&" : "?"}${qs}`;
+  };
   if (url.includes("youtube.com") || url.includes("youtu.be")) {
     let videoId = "";
     if (url.includes("youtu.be")) {
@@ -613,13 +665,73 @@ const getVideoEmbedUrl = (url) => {
       const params = new URL(url).searchParams;
       videoId = params.get("v");
     }
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+    return videoId
+      ? withParams(`https://www.youtube-nocookie.com/embed/${videoId}`, {
+        autoplay: 1,
+        mute: 1,
+        playsinline: 1,
+        loop: 1,
+        playlist: videoId,
+        rel: 0,
+        modestbranding: 1,
+        iv_load_policy: 3,
+        controls: 0,
+        fs: 0,
+        disablekb: 1,
+      })
+      : "";
   }
   if (url.includes("drive.google.com")) {
     const match = url.match(/\/d\/(.*?)\//);
-    return match ? `https://drive.google.com/file/d/${match[1]}/preview` : "";
+    return match
+      ? withParams(`https://drive.google.com/file/d/${match[1]}/preview`, {
+        autoplay: 1,
+      })
+      : "";
   }
   return url;
+};
+
+const getYouTubeVideoId = (url = "") => {
+  try {
+    if (!url) return "";
+    if (url.includes("youtu.be/")) {
+      return url.split("youtu.be/")[1]?.split(/[?&]/)[0] || "";
+    }
+    if (url.includes("/shorts/")) {
+      return url.split("/shorts/")[1]?.split(/[?&]/)[0] || "";
+    }
+    const params = new URL(url).searchParams;
+    return params.get("v") || "";
+  } catch {
+    return "";
+  }
+};
+
+const getDriveFileId = (url = "") => {
+  if (!url) return "";
+  const fromFilePath = url.match(/\/d\/([^/]+)/)?.[1];
+  if (fromFilePath) return fromFilePath;
+  try {
+    const parsed = new URL(url);
+    return parsed.searchParams.get("id") || "";
+  } catch {
+    return "";
+  }
+};
+
+const getVideoThumbnailUrl = (url = "") => {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  if (raw.includes("youtube.com") || raw.includes("youtu.be")) {
+    const id = getYouTubeVideoId(raw);
+    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "";
+  }
+  if (raw.includes("drive.google.com")) {
+    const id = getDriveFileId(raw);
+    return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w640` : "";
+  }
+  return "";
 };
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -1033,6 +1145,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState("");
+  const [selectedVideoPlaying, setSelectedVideoPlaying] = useState(false);
   const [activeVariant, setActiveVariant] = useState(null);
   const [touchStartX, setTouchStartX] = useState(null);
   const [touchEndX, setTouchEndX] = useState(null);
@@ -1264,6 +1378,8 @@ const ProductDetail = () => {
 
     // 1. Wipe stale images immediately so old thumbnails never flash
     setSelectedImage(null);
+    setSelectedVideoUrl("");
+    setSelectedVideoPlaying(false);
     setActiveVariant(null);
     setDisplayImages([]);
 
@@ -1285,6 +1401,8 @@ const ProductDetail = () => {
 
       // Show the main (first) image right away
       setSelectedImage(firstImage);
+      setSelectedVideoUrl("");
+      setSelectedVideoPlaying(false);
 
       // Preload ALL images async - thumbnails only appear once images are ready
       await preloadImages(newImages);
@@ -1296,6 +1414,23 @@ const ProductDetail = () => {
   const productId = product?.id || product?._id || null;
   // `images` = source of truth for lightbox, swipe, auto-scroll logic
   const images = activeVariant?.images?.length ? activeVariant.images : product?.images || [];
+  const productVideos = useMemo(() => {
+    const rawVideos = Array.isArray(product?.videos) ? product.videos : [];
+    return rawVideos
+      .map((video, index) => {
+        const rawUrl = String(video?.url || "").trim();
+        const embedUrl = getVideoEmbedUrl(rawUrl);
+        if (!rawUrl || !embedUrl) return null;
+        return {
+          id: `video-${index}-${rawUrl}`,
+          url: rawUrl,
+          embedUrl,
+          thumb: getVideoThumbnailUrl(rawUrl),
+          title: String(video?.title || "").trim() || `Product Video ${index + 1}`,
+        };
+      })
+      .filter(Boolean);
+  }, [product?.videos]);
   // `displayImages` = what thumbnails actually render - only set after async preload
   const basePrice = Number(activeVariant?.price ?? product?.price ?? 0);
   const mrp = Number(activeVariant?.mrp ?? product?.mrp ?? 0);
@@ -1351,16 +1486,32 @@ const ProductDetail = () => {
   /* â”€â”€ Auto-scroll thumbnails on product page â”€â”€ */
   useEffect(() => {
     clearInterval(autoScrollRef.current);
-    if (!images || images.length <= 1) return;
+    if (selectedVideoUrl) return;
+    if (!images || images.length === 0) return;
 
     const currentImages = images;
+    const lastImageIndex = currentImages.length - 1;
     let idx = 0;
+    setSelectedImage(currentImages[0]);
+    setSelectedVideoUrl("");
+    setSelectedVideoPlaying(false);
 
     autoScrollRef.current = setInterval(() => {
-      idx = (idx + 1) % currentImages.length;
-      setSelectedImage(currentImages[idx]);
+      if (idx < lastImageIndex) {
+        idx += 1;
+        setSelectedImage(currentImages[idx]);
+        setSelectedVideoUrl("");
+        setSelectedVideoPlaying(false);
+      } else if (productVideos.length > 0) {
+        setSelectedVideoUrl(productVideos[0].embedUrl);
+        setSelectedVideoPlaying(true);
+        clearInterval(autoScrollRef.current);
+      } else {
+        clearInterval(autoScrollRef.current);
+      }
       if (thumbsRef.current) {
-        const thumb = thumbsRef.current.querySelectorAll("button")[idx];
+        const targetIndex = idx < lastImageIndex ? idx : currentImages.length;
+        const thumb = thumbsRef.current.querySelectorAll("button")[targetIndex];
         if (thumb) {
           const strip = thumbsRef.current;
           strip.scrollTo({ left: thumb.offsetLeft - strip.offsetWidth / 2 + thumb.offsetWidth / 2, behavior: "smooth" });
@@ -1369,9 +1520,22 @@ const ProductDetail = () => {
     }, 3500);
 
     return () => clearInterval(autoScrollRef.current);
-  }, [images.join("|"), activeVariant?.id]);
+  }, [images.join("|"), activeVariant?.id, selectedVideoUrl, productVideos]);
 
   const stopAuto = () => clearInterval(autoScrollRef.current);
+  const selectedVideoIndex = useMemo(
+    () => productVideos.findIndex((video) => video.embedUrl === selectedVideoUrl),
+    [productVideos, selectedVideoUrl]
+  );
+  const selectedVideo = useMemo(
+    () => productVideos.find((video) => video.embedUrl === selectedVideoUrl) || null,
+    [productVideos, selectedVideoUrl]
+  );
+  const galleryCount = images.length + productVideos.length;
+  const selectedGalleryIndex =
+    selectedVideoIndex >= 0
+      ? images.length + selectedVideoIndex
+      : Math.max(0, images.indexOf(selectedImage));
 
   const effectiveMrp = Number(mrp) + addonPrice;
   const discount = effectiveMrp ? Math.max(0, Math.round(((effectiveMrp - price) / effectiveMrp) * 100)) : 0;
@@ -1555,8 +1719,16 @@ const ProductDetail = () => {
     if (!images?.length) return;
     const d = touchStartX - touchEndX;
     const ci = images.indexOf(selectedImage);
-    if (d > 50) setSelectedImage(images[(ci + 1) % images.length]);
-    if (d < -50) setSelectedImage(images[(ci - 1 + images.length) % images.length]);
+    if (d > 50) {
+      setSelectedImage(images[(ci + 1) % images.length]);
+      setSelectedVideoUrl("");
+      setSelectedVideoPlaying(false);
+    }
+    if (d < -50) {
+      setSelectedImage(images[(ci - 1 + images.length) % images.length]);
+      setSelectedVideoUrl("");
+      setSelectedVideoPlaying(false);
+    }
   };
 
   const loopedIngredients = useMemo(() => {
@@ -1739,6 +1911,8 @@ const ProductDetail = () => {
     const newImgs = variant.images?.length ? variant.images : product?.images || [];
     setActiveVariant(variant);
     setSelectedImage(variant.images?.[0] || variant.image || null);
+    setSelectedVideoUrl("");
+    setSelectedVideoPlaying(false);
     preloadImages(newImgs);
   }, [product?.images, preloadImages]);
 
@@ -1932,6 +2106,7 @@ const ProductDetail = () => {
       {lightboxOpen && images.length > 0 && (
         <ImageLightbox
           images={images}
+          videos={productVideos}
           initialIndex={lightboxIndex}
           onClose={() => setLightboxOpen(false)}
           product={product}
@@ -1977,17 +2152,57 @@ const ProductDetail = () => {
             <div className="flex flex-col gap-4">
               {/* Main image */}
               <div
-                className="relative bg-white rounded-3xl overflow-hidden shadow-lg select-none group cursor-zoom-in"
+                className={`relative bg-white rounded-3xl overflow-hidden shadow-lg select-none group ${selectedVideoUrl ? "cursor-default" : "cursor-zoom-in"}`}
                 onTouchStart={e => setTouchStartX(e.targetTouches[0].clientX)}
                 onTouchMove={e => setTouchEndX(e.targetTouches[0].clientX)}
                 onTouchEnd={handleSwipe}
                 onClick={() => {
+                  if (selectedVideoUrl) return;
                   const idx = images.indexOf(selectedImage);
                   openLightbox(idx >= 0 ? idx : 0);
                 }}
               >
                 {/* Image or pulse placeholder */}
-                {selectedImage ? (
+                {selectedVideoUrl ? (
+                  <div className="w-full aspect-square bg-white flex items-center justify-center">
+                    {selectedVideoPlaying ? (
+                      <iframe
+                        src={selectedVideoUrl}
+                        title="Product video preview"
+                        className="w-full aspect-video max-h-full"
+                        style={{ border: "none" }}
+                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedVideoPlaying(true);
+                        }}
+                        className="relative w-full h-full overflow-hidden"
+                        aria-label="Play product video"
+                      >
+                        {selectedVideo?.thumb ? (
+                          <img
+                            loading="lazy"
+                            src={selectedVideo.thumb}
+                            alt={selectedVideo.title || "Product video thumbnail"}
+                            className="w-full h-full object-contain bg-white"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-white" />
+                        )}
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <span className="w-16 h-16 rounded-full bg-black/70 text-white text-2xl leading-none flex items-center justify-center shadow-lg">
+                            ▶
+                          </span>
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                ) : selectedImage ? (
                   <img
                     loading="eager"
                     fetchPriority="high"
@@ -2010,13 +2225,13 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Dot indicators */}
-                {images.length > 1 && (
+                {galleryCount > 1 && (
                   <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none">
-                    {images.map((img, i) => (
+                    {Array.from({ length: galleryCount }).map((_, i) => (
                       <span
                         key={i}
-                        className={`rounded-full transition-all duration-300 ${selectedImage === img ? "w-5 h-2" : "w-2 h-2 bg-black/25"}`}
-                        style={selectedImage === img ? { backgroundColor: detailTheme.accent } : undefined}
+                        className={`rounded-full transition-all duration-300 ${selectedGalleryIndex === i ? "w-5 h-2" : "w-2 h-2 bg-black/25"}`}
+                        style={selectedGalleryIndex === i ? { backgroundColor: detailTheme.accent } : undefined}
                       />
                     ))}
                   </div>
@@ -2024,14 +2239,14 @@ const ProductDetail = () => {
               </div>
 
               {/* Thumbnails strip - only renders after async preload completes */}
-              {images.length > 1 && (
+              {galleryCount > 1 && (
                 <div ref={thumbsRef} className="flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                   {displayImages.length > 0 ? (
                     /* Real thumbnails - shown only after preload */
                     displayImages.map((img, i) => (
                       <button
                         key={img}
-                        onClick={() => { stopAuto(); setSelectedImage(img); }}
+                        onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
                         className={`flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all duration-300
                           ${selectedImage === img ? "shadow-md scale-105" : "border-transparent hover:border-gray-200"}`}
                         style={{ width: "74px", height: "74px", borderColor: selectedImage === img ? detailTheme.accent : undefined }}
@@ -2049,6 +2264,28 @@ const ProductDetail = () => {
                       />
                     ))
                   )}
+                  {productVideos.map((video) => {
+                    const isSelected = selectedVideoUrl === video.embedUrl;
+                    return (
+                      <button
+                        key={video.id}
+                        onClick={() => { stopAuto(); setSelectedVideoUrl(video.embedUrl); setSelectedVideoPlaying(true); }}
+                        className={`relative flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${isSelected ? "shadow-md scale-105" : "border-transparent hover:border-gray-200"}`}
+                        style={{ width: "74px", height: "74px", borderColor: isSelected ? detailTheme.accent : undefined }}
+                        aria-label={`Play ${video.title}`}
+                        title={video.title}
+                      >
+                        {video.thumb ? (
+                          <img loading="lazy" src={video.thumb} alt={video.title} width="148" height="148" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-black/80" />
+                        )}
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <span className="w-7 h-7 rounded-full bg-black/65 text-white text-[12px] leading-none flex items-center justify-center">▶</span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
