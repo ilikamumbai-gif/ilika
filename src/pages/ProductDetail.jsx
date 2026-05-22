@@ -1843,10 +1843,11 @@ const ProductDetail = () => {
       .filter(
         (p) =>
           p &&
+          p.isActive !== false &&
           String(p.id || p._id || "") !== String(productId || "") &&
           p.categoryIds?.filter(id => id !== EXCLUDED).some(id => base.includes(id))
       )
-      .slice(0, 6);
+      .slice(0, 8);
   }, [products, product, productId]);
 
   const warrantyRegistrationUrl = useMemo(() => {
