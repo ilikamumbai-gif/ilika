@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { trackPageView } from "../utils/pixel";
 import AdminProtectedRoute from "../admin/components/AdminProtectedRoute";
+import ProtectedRoute from "../components/ProtectedRoute";
 import { AdminAuthProvider } from "../admin/context/AdminAuthContext";
 import { useSeo } from "../hooks/useSeo";
 
@@ -138,7 +139,14 @@ const NavRoutes = () => {
       <Routes>
         <Route path="/" element={renderLazy(Home)} />
         <Route path="/offer" element={renderLazy(Offer)} />
-        <Route path="/checkout" element={renderLazy(Checkout)} />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              {renderLazy(Checkout)}
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="/skin" element={renderLazy(Skin)} />
         <Route path="/hair" element={renderLazy(Hair)} />
