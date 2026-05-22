@@ -4,7 +4,6 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import CtmCard from "../components/CtmCard";
-import kit from "../assets/Products/Product2.webp";
 import { Link } from "react-router-dom";
 
 import { FaLeaf } from "react-icons/fa";
@@ -71,14 +70,14 @@ const Ctm = () => {
               </Link>
             </div>
 
-            {/* Product image */}
-            <div className="flex-shrink-0 flex justify-center">
-              {/* <img
+            {/* CTM image */}
+            <div className="group flex-shrink-0 flex justify-center md:justify-end w-full md:w-auto overflow-hidden">
+              <img
                 loading="lazy"
-                src={kit}
-                alt="CTM Kit"
-                className="w-auto h-auto md:w-64 object-contain drop-shadow-xl"
-              /> */}
+                src="/Images/CTM.png"
+                alt="CTM skincare routine"
+                className="w-[240px] sm:w-[300px] md:w-[360px] h-auto object-contain drop-shadow-xl transition-transform duration-500 ease-out group-hover:scale-105"
+              />
             </div>
           </div>
         </section>

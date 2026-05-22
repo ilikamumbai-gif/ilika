@@ -4,6 +4,7 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import Heading from "../components/Heading";
 
 const removeInlineImagesFromHtml = (html = "") =>
   String(html || "").replace(/<img[^>]*>/gi, "");
@@ -15,8 +16,8 @@ const renderSectionBlock = (section, index) => {
 
   if (section.type === "content-full") {
     return (
-      <div key={`${section.id || "section"}_${index}`} className="rounded-[28px] bg-[#f5f5f5] p-5 sm:p-8">
-        <div className="prose prose-lg max-w-none prose-headings:text-[#261a12] prose-p:text-[#4f443b] prose-p:leading-8 prose-li:text-[#4f443b] prose-a:text-[#9a5429]">
+      <div key={`${section.id || "section"}_${index}`} className="py-1">
+        <div className="prose prose-lg max-w-none prose-headings:text-[#1C371C] prose-p:text-[#385238] prose-p:leading-8 prose-li:text-[#385238] prose-a:text-[#801f1f]">
           <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
         </div>
       </div>
@@ -24,7 +25,7 @@ const renderSectionBlock = (section, index) => {
   }
 
   const imageEl = (
-    <div className="overflow-hidden rounded-[28px] bg-[#f5f5f5]">
+    <figure className="overflow-hidden rounded-2xl bg-[#f8fbf8]">
       {section.image ? (
         <img
           loading="lazy"
@@ -35,19 +36,19 @@ const renderSectionBlock = (section, index) => {
       ) : (
         <div className="h-full min-h-[220px] w-full" />
       )}
-    </div>
+    </figure>
   );
 
   const contentEl = (
-    <div className="rounded-[28px] bg-[#f5f5f5] p-5 sm:p-7">
-      <div className="prose prose-lg max-w-none prose-headings:text-[#261a12] prose-p:text-[#4f443b] prose-p:leading-8 prose-li:text-[#4f443b] prose-a:text-[#9a5429]">
+    <div className="py-1">
+      <div className="prose prose-lg max-w-none prose-headings:text-[#1C371C] prose-p:text-[#385238] prose-p:leading-8 prose-li:text-[#385238] prose-a:text-[#801f1f]">
         <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
       </div>
     </div>
   );
 
   return (
-    <div key={`${section.id || "section"}_${index}`} className="grid gap-5 md:grid-cols-2">
+    <div key={`${section.id || "section"}_${index}`} className="grid gap-8 md:grid-cols-2 md:items-start">
       {section.type === "image-content" ? (
         <>
           {imageEl}
@@ -140,14 +141,14 @@ const BlogDetail = () => {
     return (
       <>
         <MiniDivider />
-        <div className="min-h-screen bg-white text-[#24170f]">
+        <div className="min-h-screen bg-white text-[#1C371C]">
           <Header />
           <CartDrawer />
           <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
             <p className="text-lg font-medium">Blog not found</p>
             <Link
               to="/blog"
-              className="mt-4 inline-flex rounded-xl border border-[#d7c4b6] px-4 py-2 text-sm font-semibold text-[#7b4729] transition hover:bg-[#fff5ed]"
+              className="mt-4 inline-flex rounded-xl border border-[#cfdccf] px-4 py-2 text-sm font-semibold text-[#1C371C] transition hover:bg-[#f2f7f2]"
             >
               Back to Blogs
             </Link>
@@ -161,53 +162,51 @@ const BlogDetail = () => {
   return (
     <>
       <MiniDivider />
-      <div className="min-h-screen bg-white text-[#24170f]">
+      <div className="min-h-screen bg-white text-[#1C371C]">
         <Header />
         <CartDrawer />
 
-        <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+        <main className="mx-auto max-w-6xl px-3 py-8 sm:px-4 sm:py-10">
           <Link
             to="/blog"
-            className="inline-flex items-center gap-1 rounded-full border border-[#e2d4c8] bg-white px-4 py-2 text-sm font-medium text-[#654b3c] transition hover:bg-[#fff8f1]"
+            className="inline-flex items-center gap-1 rounded-full border border-[#d3ddd3] bg-white px-4 py-2 text-sm font-medium text-[#1C371C] transition hover:bg-[#f2f7f2]"
           >
              Back to blogs
           </Link>
 
-          <article className="mt-5 space-y-6">
-            <div className="rounded-2xl bg-[#f5f5f5] px-5 py-4 sm:px-7">
-              <h1 className="text-center text-3xl font-semibold leading-tight text-[#261a12] sm:text-4xl">
-                {blog.title}
-              </h1>
-            </div>
+          <article className="mt-6 space-y-10">
+            <header className="border-b border-[#e2ece2] pb-8">
+              <Heading heading={blog.title} align="left" />
+              <p className="mt-4 text-sm text-[#5f705f]">
+                {formattedDate || "Latest"} | {blog.author || "Ilika Team"} | {comments.length} comments
+              </p>
+            </header>
 
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="rounded-[28px] bg-[#f5f5f5] p-5 sm:p-7">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8d735f]">Article Intro</p>
-                <p className="mt-3 text-[15px] leading-7 text-[#5f5247] sm:text-base">
+            <div className="grid gap-8 md:grid-cols-2 md:items-start">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#801f1f]">Article Intro</p>
+                <p className="mt-3 text-[15px] leading-7 text-[#4a5f4a] sm:text-base">
                   {blog.excerpt || "Discover practical beauty routines and ingredient insights curated for better self-care."}
-                </p>
-                <p className="mt-4 text-sm text-[#6b5d52]">
-                  {formattedDate || "Latest"} · {blog.author || "Ilika Team"} · {comments.length} comments
                 </p>
               </div>
 
-              <div className="overflow-hidden rounded-[28px] bg-[#f5f5f5]">
+              <figure className="overflow-hidden rounded-2xl bg-[#f8fbf8]">
                 <img
                   loading="lazy"
                   src={blog.image}
                   alt={blog.title}
                   className="h-full min-h-[260px] w-full object-cover"
                 />
-              </div>
+              </figure>
             </div>
 
             {contentSections.map((section, index) => renderSectionBlock(section, index))}
           </article>
 
-          <section className="mt-8 rounded-[24px] bg-[#f5f5f5] p-5 sm:p-8">
-            <h2 className="text-2xl font-semibold text-[#261a12]">Comments ({comments.length})</h2>
+          <section className="mt-12 border-t border-[#e2ece2] pt-8">
+            <h2 className="text-2xl font-semibold text-[#1C371C]">Comments ({comments.length})</h2>
 
-            <form onSubmit={submitComment} className="mt-5 space-y-3 rounded-2xl bg-white p-4 sm:p-5">
+            <form onSubmit={submitComment} className="mt-5 space-y-3 rounded-2xl border border-[#e2ece2] bg-white p-4 sm:p-5">
               <input
                 type="text"
                 placeholder="Your name"
@@ -227,7 +226,7 @@ const BlogDetail = () => {
 
               <button
                 disabled={posting}
-                className="rounded-xl bg-[#2c1b12] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1f120c] disabled:opacity-60"
+                className="rounded-xl bg-[#1C371C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163016] disabled:opacity-60"
               >
                 {posting ? "Posting..." : "Post Comment"}
               </button>
@@ -235,17 +234,17 @@ const BlogDetail = () => {
 
             <div className="mt-6 space-y-3">
               {loadingComments ? (
-                <p className="text-sm text-[#7d6e62]">Loading comments...</p>
+                <p className="text-sm text-[#5f705f]">Loading comments...</p>
               ) : comments.length === 0 ? (
-                <p className="text-sm text-[#7d6e62]">No comments yet. Be the first to comment.</p>
+                <p className="text-sm text-[#5f705f]">No comments yet. Be the first to comment.</p>
               ) : (
                 comments.map((c) => (
                   <div key={c.id} className="rounded-2xl bg-white p-4">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-[#2f2218]">{c.name}</p>
-                      <p className="text-xs text-[#907f72]">{new Date(c.createdAt).toLocaleDateString("en-GB")}</p>
+                      <p className="text-sm font-semibold text-[#1C371C]">{c.name}</p>
+                      <p className="text-xs text-[#688068]">{new Date(c.createdAt).toLocaleDateString("en-GB")}</p>
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-[#5d5046]">{c.message}</p>
+                    <p className="mt-2 text-sm leading-6 text-[#4a5f4a]">{c.message}</p>
                   </div>
                 ))
               )}

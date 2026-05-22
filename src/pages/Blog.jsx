@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import MiniDivider from "../components/MiniDivider";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import Heading from "../components/Heading";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -36,17 +37,20 @@ const Blog = () => {
   return (
     <>
       <MiniDivider />
-      <div className="min-h-screen bg-white text-[#24170f]">
+      <div className="min-h-screen bg-white text-[#1C371C]">
         <Header />
         <CartDrawer />
 
         <section className="relative overflow-hidden border-b border-[#ececec] bg-white">
-          <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#99603d]">Ilika Journal</p>
-            <h1 className="mt-3 max-w-2xl text-4xl font-semibold leading-tight tracking-[-0.02em] sm:text-5xl">
-              Beauty insights, routines, and skincare stories that feel premium.
-            </h1>
-            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#5e4f44] sm:text-base">
+          <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#801f1f]">Ilika Journal</p>
+            <div className="mt-1 max-w-2xl mx-auto">
+              <Heading
+                heading="Beauty insights, routines, and skincare stories that feel premium."
+                align="center"
+              />
+            </div>
+            <p className="mt-2 max-w-2xl mx-auto text-[15px] leading-7 text-[#4a5f4a] sm:text-base">
               Discover expert tips, ingredient deep-dives, and practical guides curated for healthier skin and better self-care.
             </p>
           </div>
@@ -54,14 +58,14 @@ const Blog = () => {
 
         <main className="mx-auto max-w-7xl bg-white px-4 py-8 sm:px-6 sm:py-10">
           {blogs.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-[#d9cfc5] bg-white/80 px-6 py-16 text-center text-[#7b6d62]">
+            <div className="rounded-3xl border border-dashed border-[#d3ddd3] bg-white/80 px-6 py-16 text-center text-[#4a5f4a]">
               No blogs yet.
             </div>
           ) : (
             <div className="space-y-10">
               {featuredBlog && (
                 <section>
-                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#8f5b39]">Featured</p>
+                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Featured</p>
                   <div className="max-w-[360px]">
                     <BlogCard blog={featuredBlog} />
                   </div>
@@ -70,7 +74,7 @@ const Blog = () => {
 
               {restBlogs.length > 0 && (
                 <section>
-                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#8f5b39]">Latest Articles</p>
+                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Latest Articles</p>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {restBlogs.map((blog) => (
                       <BlogCard key={blog.id} blog={blog} />

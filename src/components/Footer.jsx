@@ -23,23 +23,24 @@ const Footer = () => {
       <div className="MiniDivider-bg-color py-1" />
 
       {/* MAIN FOOTER */}
-      <div className="
-        max-w-7xl mx-auto 
-        px-4 sm:px-6 lg:px-8 
-        py-10
-        grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
-        gap-10 lg:gap-16
-      ">
+      <div style={{ backgroundColor: "#a21d1d2b" }} className="text-[#3d0e0e]">
+        <div className="
+          max-w-7xl mx-auto 
+          px-4 sm:px-6 lg:px-8 
+          py-6
+          grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
+          gap-6 lg:gap-10
+        ">
 
         {/* BRAND */}
-        <div className="space-y-5 text-center sm:text-left">
+        <div className="space-y-3 text-center sm:text-left">
           <img
             src={logo}
             alt="Ilika"
             className="h-11 mx-auto sm:mx-0"
           />
 
-          <h3 className="heading-color text-xl font-semibold">
+          <h3 className="text-black text-xl font-semibold">
             Beauty Care For Everyone
           </h3>
 
@@ -50,11 +51,11 @@ const Footer = () => {
         </div>
 
         {/* LINKS + ADDRESS */}
-        <div className="space-y-8 text-center sm:text-left">
+        <div className="space-y-5 text-center sm:text-left">
 
           {/* LINKS */}
           <div className="space-y-3">
-            <h4 className="heading-color font-semibold text-lg">
+            <h4 className="text-black font-semibold text-lg">
               Quick Links
             </h4>
 
@@ -71,7 +72,7 @@ const Footer = () => {
 
           {/* ADDRESS */}
           <div className="space-y-3">
-            <h4 className="heading-color font-semibold text-lg flex items-center justify-center sm:justify-start gap-2">
+            <h4 className="text-black font-semibold text-lg flex items-center justify-center sm:justify-start gap-2">
               <MapPin size={16} /> Address
             </h4>
 
@@ -85,11 +86,11 @@ const Footer = () => {
         </div>
 
         {/* SOCIAL + MARKETPLACE + CTA */}
-        <div className="space-y-6 text-center sm:text-left">
+        <div className="space-y-4 text-center sm:text-left">
 
           {/* SOCIAL */}
           <div className="space-y-3">
-            <h4 className="heading-color font-semibold text-lg">
+            <h4 className="text-black font-semibold text-lg">
               Follow Us
             </h4>
 
@@ -111,7 +112,7 @@ const Footer = () => {
 
           {/* MARKETPLACE */}
           <div className="space-y-3">
-            <h4 className="heading-color font-semibold text-lg">
+            <h4 className="text-black font-semibold text-lg">
               Also Available On
             </h4>
 
@@ -150,10 +151,11 @@ const Footer = () => {
           </div>
 
         </div>
+        </div>
       </div>
 
       {/* BOTTOM */}
-      <div className="MiniDivider-bg-color text-xs sm:text-sm py-4">
+      <div className="bg-black text-white text-xs sm:text-sm py-2">
         <div className="
           max-w-7xl mx-auto px-4
           flex flex-col md:flex-row

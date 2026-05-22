@@ -754,19 +754,18 @@ const Home = () => {
 
 
 
-          {/* MANIFESTO */}
-          <LazyMountSection minHeight={150}>
-            <Suspense fallback={<div className="h-24" />}>
-              <Menifesto />
-            </Suspense>
-          </LazyMountSection>
-
-
           {/* TESTIMONIAL */}
           <LazyMountSection minHeight={440}>
             <Heading heading="COSTUMER'S STORIES" />
             <Suspense fallback={<div className="h-24" />}>
               <TestimonialList />
+            </Suspense>
+          </LazyMountSection>
+
+          {/* MANIFESTO */}
+          <LazyMountSection minHeight={150}>
+            <Suspense fallback={<div className="h-24" />}>
+              <Menifesto />
             </Suspense>
           </LazyMountSection>
 

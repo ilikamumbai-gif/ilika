@@ -1,8 +1,10 @@
 import React from 'react'
 
-const Heading = ({ heading, sub }) => {
+const Heading = ({ heading, sub, align = "center" }) => {
+  const isLeft = align === "left";
+
   return (
-    <div className="w-full flex flex-col items-center text-center gap-1.5 py-2 px-4">
+    <div className={`w-full flex flex-col gap-1.5 py-2 ${isLeft ? "items-start text-left px-0" : "items-center text-center px-4"}`}>
 
      
 

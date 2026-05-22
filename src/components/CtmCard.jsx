@@ -1,11 +1,8 @@
 import React from "react";
-import Toner from "../assets/Images/toner.webp";
-import Cleanser from "../assets/Images/clenser.webp";
-import Moisture from "../assets/Images/Moisturizer.webp";
 
 const steps = [
   {
-    image: Cleanser,
+    image: "/Images/Cleanser.webp",
     num: "01",
     tag: "Step One",
     title: "Gentle Cleanser",
@@ -20,7 +17,7 @@ const steps = [
     reverse: false,
   },
   {
-    image: Toner,
+    image: "/Images/Toners.webp",
     num: "02",
     tag: "Step Two",
     title: "Hydrating Toner",
@@ -35,7 +32,7 @@ const steps = [
     reverse: true,
   },
   {
-    image: Moisture,
+    image: "/Images/moisturizer.webp",
     num: "03",
     tag: "Step Three",
     title: "Face Moisturizer",
@@ -56,7 +53,7 @@ const Section = ({ image, tag, title, subtitle, body, benefits, imageBg, reverse
     {/* IMAGE */}
     <div
       className={`
-        ${imageBg} flex items-center justify-center p-6 sm:p-10 min-h-56 sm:min-h-72 md:min-h-[420px] overflow-hidden
+        ${imageBg} flex items-center justify-center min-h-56 sm:min-h-72 md:min-h-[420px] overflow-hidden
         ${reverse ? "md:order-2" : "md:order-1"}
       `}
     >
@@ -64,7 +61,7 @@ const Section = ({ image, tag, title, subtitle, body, benefits, imageBg, reverse
         loading="lazy"
         src={image}
         alt={title}
-        className="w-full h-full max-h-56 sm:max-h-80 object-contain transition-transform duration-500 hover:scale-105"
+        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
       />
     </div>
 
