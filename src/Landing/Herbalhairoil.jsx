@@ -92,47 +92,85 @@ const HERBS = [
 const BENEFITS = [
   {
     icon: ShieldCheck,
-    title: "Eliminates Dandruff at the Root",
-    desc: "Neem and Bhringraj target fungal and bacterial buildup on the scalp - reducing flakes, itchiness, and irritation with regular use.",
+    title: "Prevents & Controls Dandruff",
+    desc: "Neem and Bhringraj target fungal and bacterial buildup on the scalp — reducing flakes, itchiness, and irritation with regular use for a visibly clean scalp.",
   },
   {
     icon: Leaf,
-    title: "Strengthens Hair from the Roots",
-    desc: "Brahmi and Fenugreek nourish follicles deep at the root, reducing breakage and supporting visibly stronger, denser hair growth.",
+    title: "Strengthens Hair Follicles",
+    desc: "Brahmi and Fenugreek nourish follicles at the root level, reducing breakage and supporting visibly stronger, denser hair growth over time.",
   },
   {
     icon: Droplets,
-    title: "Deep Moisture & Conditioning",
-    desc: "Castor oil and Shikakai penetrate each strand to restore softness, prevent split ends, and leave hair feeling silky smooth.",
+    title: "Moisturises Hair Strands",
+    desc: "Castor oil and Shikakai penetrate each strand to restore softness, prevent split ends, and leave hair feeling silky smooth after every wash.",
   },
   {
     icon: Leaf,
-    title: "Promotes Natural Hair Growth",
-    desc: "Bhringraj, the Ayurvedic 'King of Hair', stimulates dormant follicles and improves scalp circulation for healthy regrowth.",
+    title: "Promotes Hair Growth",
+    desc: "Bhringraj — the Ayurvedic 'King of Hair' — stimulates dormant follicles and improves scalp circulation for healthy, natural regrowth.",
   },
   {
     icon: Feather,
     title: "Prevents Premature Greying",
-    desc: "Amla and Curry Leaves preserve your hair's natural melanin, helping maintain your original colour and delay early greying.",
+    desc: "Amla and Curry Leaves preserve your hair's natural melanin, helping maintain your original colour and delay early greying with regular use.",
   },
   {
     icon: Snowflake,
     title: "Cooling & Stress-Relieving",
-    desc: "Vetiver (Khus) cools an overheated scalp while its calming aroma soothes stress - a leading cause of hair fall.",
+    desc: "Vetiver (Khus) cools an overheated scalp while its calming aroma reduces stress — one of the most common causes of hair fall and scalp irritation.",
   },
 ];
 
 const STEPS = [
-  { step: "01", title: "Warm the Oil", desc: "Gently warm a small amount between your palms or in a bowl of hot water for deeper scalp penetration.", time: "1 min" },
-  { step: "02", title: "Apply & Part", desc: "Apply generously from roots to tips, parting hair into sections to ensure the scalp is fully covered.", time: "3 min" },
-  { step: "03", title: "Massage In", desc: "Use your fingertips to massage in circular motions - this stimulates circulation and helps the herbs absorb deeper.", time: "5 min" },
-  { step: "04", title: "Leave & Rinse", desc: "Leave on for at least 1 hour or overnight for best results. Wash off with a mild shampoo and enjoy nourished, dandruff-free hair.", time: "1 hr+" },
+  {
+    step: "01",
+    title: "Take the Required Amount",
+    desc: "Take the required amount of Ilika Herbal Hair Oil into your palm. A little goes a long way — start small for short hair, more for longer hair.",
+    time: "1 min",
+  },
+  {
+    step: "02",
+    title: "Apply from Roots to Tips",
+    desc: "Apply the oil to your hair starting at the roots and moving toward the tips. Part your hair into sections to ensure the scalp is fully covered.",
+    time: "3 min",
+  },
+  {
+    step: "03",
+    title: "Massage Your Scalp",
+    desc: "Gently massage the oil into your scalp in circular motions using your fingertips. This stimulates blood circulation and helps the herbs absorb deeper.",
+    time: "5 min",
+  },
+  {
+    step: "04",
+    title: "Leave Overnight & Wash",
+    desc: "For best results, leave it on overnight before your hair wash. Alternatively, leave on for at least 1 hour. Wash off with a mild shampoo for nourished, dandruff-free hair.",
+    time: "1 hr+",
+  },
 ];
 
 const REVIEWS = [
-  { name: "Sneha T.", loc: "Pune", stars: 5, image: womenReviewImage, text: "My dandruff was embarrassing for years. After 3 weeks of using Ilika Herbal Oil, my scalp is clean, flake-free, and I can finally wear dark clothes again. Totally recommend!" },
-  { name: "Rahul M.", loc: "Hyderabad", stars: 5, image: boyReviewImage, text: "I was losing so much hair in the shower. Started using this twice a week and within a month I can see new baby hair growing. The non-greasy formula is a big plus." },
-  { name: "Deepa V.", loc: "Chennai", stars: 5, image: girlReviewImage, text: "The cooling effect on my scalp is instant - it smells amazing and my hair feels so thick and strong after washing. This has become my Sunday ritual!" },
+  {
+    name: "Sneha T.",
+    loc: "Pune",
+    stars: 5,
+    image: womenReviewImage,
+    text: "My dandruff was so embarrassing for years. After 3 weeks of using Ilika Herbal Oil regularly, my scalp is clean, flake-free, and I can finally wear dark clothes again. Totally recommend!",
+  },
+  {
+    name: "Rahul M.",
+    loc: "Hyderabad",
+    stars: 5,
+    image: boyReviewImage,
+    text: "I was losing so much hair in the shower every day. Started applying this overnight twice a week and within a month I can see new baby hair growing. The non-greasy formula is a big plus.",
+  },
+  {
+    name: "Deepa V.",
+    loc: "Chennai",
+    stars: 5,
+    image: girlReviewImage,
+    text: "The cooling effect on my scalp is instant — it smells amazing and my hair feels so thick and strong after washing. I apply it overnight before every head wash now. This has become my Sunday ritual!",
+  },
 ];
 
 function StarRating({ n }) {
@@ -347,7 +385,7 @@ const Herbalhairoil = () => {
         <section className="mx-auto max-w-[1200px] px-4 py-16 sm:px-6 lg:px-[5%] lg:py-24">
           <div className="mb-12 text-center"><span className="font-sans text-xs font-semibold uppercase tracking-[0.18em] text-[#C8953A]">Simple Routine</span><h2 className="mt-3 text-[clamp(28px,4vw,44px)] font-bold tracking-[-0.5px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>How to Use It</h2></div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">{STEPS.map((s) => <div key={s.step} className="rounded-[20px] border border-[#EAE4D8] bg-white px-6 pb-6 pt-7"><div className="font-sans text-4xl font-extrabold leading-none text-[#F0E8D5]">{s.step}</div><h4 className="mt-3 font-sans text-[17px] font-bold">{s.title}</h4><p className="mt-2 font-sans text-[13.5px] leading-7 text-[#6b6256]">{s.desc}</p><div className="mt-4 font-sans text-xs font-semibold text-[#C8953A]">{s.time}</div></div>)}</div>
-          <p className="mt-8 flex items-center justify-center gap-1 text-center font-sans text-sm text-[#8a7f6e]"><Lightbulb size={14} /> <span><strong>Pro tip:</strong> For dandruff control, warm the oil slightly before applying. Use 2–3 times a week consistently for best results.</span></p>
+          <p className="mt-8 flex items-center justify-center gap-1 text-center font-sans text-sm text-[#8a7f6e]"><Lightbulb size={14} /> <span><strong>Pro tip:</strong> For best dandruff control, apply the oil overnight before your wash day. Use 2-3 times a week consistently for best results.</span></p>
           <div className="mt-10 flex justify-center">
             <button
               onClick={handleBuyNow}
@@ -383,3 +421,4 @@ const Herbalhairoil = () => {
 };
 
 export default Herbalhairoil;
+

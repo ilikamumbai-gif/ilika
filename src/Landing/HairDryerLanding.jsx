@@ -175,7 +175,7 @@ const HairDryerLanding = () => {
         <div className="px-4 py-8 sm:px-10 lg:flex lg:flex-col lg:justify-center lg:px-14 lg:py-8">
           <p className="mb-5 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[#c4b5fd] sm:mb-8 sm:gap-3 sm:text-[11px] sm:tracking-[0.3em]">
             <span className="h-px w-8 bg-[#9569d0]" />
-            Next-gen hair care
+            Ilika Next-gen hair care
           </p>
           <h1 className="mb-4 [font-family:'Bebas_Neue',sans-serif] text-[clamp(38px,15vw,96px)] leading-[0.9] tracking-[0.03em] sm:mb-5">
             REDEFINE<br />YOUR<br /><span className="text-[#c4b5fd]">BLOWOUT.</span>
@@ -232,13 +232,13 @@ const HairDryerLanding = () => {
 
         <div className="relative min-h-[320px] overflow-hidden bg-[#111] sm:min-h-[420px] lg:min-h-0">
           <div className="absolute inset-0 m-auto h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,_rgba(201,168,76,0.18)_0%,_transparent_70%)] sm:h-[420px] sm:w-[420px] lg:h-[460px] lg:w-[460px]" />
-          <div className="absolute left-8 top-1/2 flex -translate-y-1/2 flex-col gap-2">
+          <div className="absolute left-8 top-1/2 hidden -translate-y-1/2 flex-col gap-2 lg:flex">
             {["w-16", "w-10", "w-20", "w-12", "w-14"].map((w, i) => (
               <span key={i} className={`${w} h-px bg-gradient-to-l from-[#9569d0]/60 to-transparent`} />
             ))}
           </div>
           <div className="absolute inset-0 z-[2] flex items-center justify-center p-4 sm:p-8">
-            <img src={productImage} alt={productName} className="max-h-[280px] w-auto object-contain sm:max-h-[380px] lg:max-h-[460px] xl:max-h-[500px]" />
+            <img src={productImage} alt={productName} className="max-h-[280px] w-auto object-contain sm:max-h-[380px] lg:max-h-[500px] xl:max-h-[560px]" />
           </div>
           <div className="absolute bottom-3 right-3 z-[3] rounded-md border border-[#9569d0]/60 bg-black/70 px-3 py-2 text-right backdrop-blur-sm sm:bottom-5 sm:right-5 sm:px-4 sm:py-3">
             <p className="text-[10px] uppercase tracking-[0.2em] text-[#c4b5fd]">Launch Price</p>
@@ -250,10 +250,10 @@ const HairDryerLanding = () => {
         </div>
       </section>
 
-      <div className="overflow-hidden border-y border-[#9569d0]/50 bg-[#9569d0]/10 py-3">
-        <div className="flex w-max gap-12 whitespace-nowrap [animation:marquee_20s_linear_infinite]">
+      <div className="overflow-hidden border-y border-[#9569d0]/50 bg-[#9569d0] py-1.5">
+        <div className="flex w-max gap-8 whitespace-nowrap [animation:marquee_30s_linear_infinite] sm:gap-12">
           {[...marqueeItems, ...marqueeItems].map((item, i) => (
-            <span key={`${item}-${i}`} className="text-[11px] uppercase tracking-[0.22em] text-[#c4b5fd]">{item} *</span>
+            <span key={`${item}-${i}`} className="text-[12px] font-bold uppercase tracking-[0.14em] text-[#140a25] sm:text-[15px] sm:tracking-[0.22em]">{item} •</span>
           ))}
         </div>
       </div>
@@ -266,7 +266,7 @@ const HairDryerLanding = () => {
         <div className="grid grid-cols-1 border border-[#9569d0]/45 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((s) => (
             <div key={s.label} className="border-b border-[#9569d0]/45 bg-[#22163a] p-6 last:border-b-0 sm:border-r sm:border-b-0 sm:p-8 sm:odd:border-r sm:even:border-r-0 lg:even:border-r lg:[&:nth-child(4)]:border-r-0">
-              <p className="[font-family:'Bebas_Neue',sans-serif] text-6xl leading-none text-[#c4b5fd]">{s.value}<span className="text-3xl">{s.unit}</span></p>
+              <p className="[font-family:'Bebas_Neue',sans-serif] text-5xl leading-none text-[#c4b5fd] sm:text-6xl">{s.value}<span className="text-2xl sm:text-3xl">{s.unit}</span></p>
               <p className="mt-2 text-xs uppercase tracking-[0.12em] text-[#ddd6fe]">{s.label}</p>
               <p className="mt-2 text-sm text-[#e5e7eb]">{s.desc}</p>
             </div>
@@ -326,8 +326,8 @@ const HairDryerLanding = () => {
         </div>
         <div className="grid grid-cols-1 gap-[1px] bg-[#9569d0]/35 lg:grid-cols-3">
           {techCards.map((t) => (
-            <div key={t.num} className="bg-[#22163a] p-8 transition hover:bg-[#2d1f4d]">
-              <p className="[font-family:'Bebas_Neue',sans-serif] text-7xl text-[#c4b5fd]/25">{t.num}</p>
+            <div key={t.num} className="bg-[#22163a] p-6 transition hover:bg-[#2d1f4d] sm:p-8">
+              <p className="[font-family:'Bebas_Neue',sans-serif] text-6xl text-[#c4b5fd]/25 sm:text-7xl">{t.num}</p>
               <h3 className="mb-3 text-lg font-medium">{t.title}</h3>
               <p className="text-sm leading-7 text-[#f5f3ff]">{t.desc}</p>
             </div>
@@ -354,7 +354,7 @@ const HairDryerLanding = () => {
                   <FaStar key={`${r.name}-${n}`} className="h-3.5 w-3.5" />
                 ))}
               </div>
-              <div className="mb-5 flex h-[18rem] items-center justify-center overflow-hidden rounded-md border border-[#9569d0]/45 bg-[#0d0b12] sm:h-[24rem]">
+              <div className="mb-5 flex h-[15rem] items-center justify-center overflow-hidden rounded-md border border-[#9569d0]/45 bg-[#0d0b12] sm:h-[24rem]">
                 <img src={r.image} alt={`${r.name} review`} className="h-full w-full object-contain" />
               </div>
               <p className="mb-6 text-sm italic leading-7 text-[#f5f3ff]">"{r.text}"</p>
@@ -394,7 +394,7 @@ const HairDryerLanding = () => {
           <button type="button" onClick={handleBuyNow} className="block w-full cursor-pointer rounded bg-[#9569d0] px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-[#c4b5fd] sm:px-6 sm:py-4 sm:tracking-[0.2em]">
             Order Now - Limited Stock
           </button>
-          <div className="mt-5 flex flex-wrap gap-4 text-xs text-[#f5f3ff]">
+          <div className="mt-5 flex flex-wrap gap-3 text-xs text-[#f5f3ff] sm:gap-4">
             <span>- Cash on Delivery</span>
             <span>- Easy Returns</span>
             <span>- Secure Payment</span>
@@ -402,6 +402,17 @@ const HairDryerLanding = () => {
         </div>
       </section>
 
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#9569d0]/60 bg-[#0b0a11]/95 p-3 backdrop-blur-md lg:hidden">
+        <button
+          type="button"
+          onClick={handleBuyNow}
+          className="w-full cursor-pointer rounded bg-[#9569d0] px-4 py-3 text-center text-sm font-bold uppercase tracking-[0.12em] text-white"
+        >
+          Buy Now - INR {discountedPrice.toLocaleString("en-IN")}
+        </button>
+      </div>
+
+      <div className="h-20 lg:hidden" />
       <Footer theme="black" />
     </div>
   );

@@ -30,6 +30,14 @@ const normalizeLooseSlug = (value = "") =>
 const CATEGORY_KEYWORD_ALIASES = {
   "mask-maker": ["mask maker", "face mask maker", "voice version face mask maker", "nonvoice mask maker"],
 };
+const SERUM_CATEGORY_SLUGS = new Set(["serum", "serums"]);
+const SERUM_PRODUCT_NAMES = [
+  "Dazzling Face Serum | Radiant & Glowing Skin | 30 ML",
+  "Under Eye Serum | Fast-Absorbing Formula | 30 ML",
+  "Hyaluronic Acid Serum (2%) | Intense hydration | 30ML",
+  "Collagen Serum | Firming & Anti-aging | 30 ML",
+  "Peeling Solution | Clarifying & Blemish Control | 30 ML",
+];
 
 const CategoryProducts = () => {
   const { categorySlug = "" } = useParams();
@@ -87,6 +95,13 @@ const CategoryProducts = () => {
   const categoryLabel = matchedCategories[0]?.name || toReadable(categorySlug) || "Category";
 
   const filtered = useMemo(() => {
+    if (SERUM_CATEGORY_SLUGS.has(targetSlug)) {
+      const serumNameSet = new Set(SERUM_PRODUCT_NAMES.map((name) => name.trim().toLowerCase()));
+      return products.filter((product) =>
+        serumNameSet.has(String(product?.name || "").trim().toLowerCase())
+      );
+    }
+
     const byCategory = products.filter((product) => {
       const ids = Array.isArray(product?.categoryIds) ? product.categoryIds.map(String) : [];
       if (ids.some((id) => matchedCategoryIds.has(id))) return true;
