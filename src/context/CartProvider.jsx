@@ -1,5 +1,5 @@
 import React from "react";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useAuth } from "./AuthContext";
 
 const CartContext = createContext(null);
@@ -9,6 +9,7 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [isCartLoaded, setIsCartLoaded] = useState(false);
   const { currentUser } = useAuth();
+  const guestCartRef = useRef([]);
 
   const loadFirestoreDeps = async () => {
     const [{ db }, firestore] = await Promise.all([
@@ -140,6 +141,12 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  useEffect(() => {
+    if (!currentUser) {
+      guestCartRef.current = cartItems;
+    }
+  }, [cartItems, currentUser]);
+
   /* LOAD USER CART WHEN LOGIN */
   useEffect(() => {
     let mounted = true;
@@ -161,10 +168,31 @@ export const CartProvider = ({ children }) => {
 
         if (!mounted) return;
 
-        const items = snapshot.docs.map((itemDoc) => ({
+        const userItems = snapshot.docs.map((itemDoc) => ({
           id: itemDoc.id,
           ...itemDoc.data(),
         }));
+
+        // Preserve pre-login guest cart by merging it into the user's cart once.
+        const guestItems = Array.isArray(guestCartRef.current) ? guestCartRef.current : [];
+        const mergedItems = [...userItems];
+        const mergedById = new Map(mergedItems.map((item) => [item.id, item]));
+
+        for (const guestItem of guestItems) {
+          if (!guestItem?.id) continue;
+          const existing = mergedById.get(guestItem.id);
+
+          if (existing && !isMaskDuoCustom(guestItem)) {
+            const existingQty = Math.max(Number(existing.quantity) || 1, 1);
+            const guestQty = Math.max(Number(guestItem.quantity) || 1, 1);
+            const nextItem = { ...existing, quantity: existingQty + guestQty };
+            mergedById.set(guestItem.id, nextItem);
+          } else if (!existing) {
+            mergedById.set(guestItem.id, { ...guestItem, quantity: Math.max(Number(guestItem.quantity) || 1, 1) });
+          }
+        }
+
+        const items = Array.from(mergedById.values());
 
         const idsToReplace = [];
         const normalizedItems = [];
@@ -201,6 +229,14 @@ export const CartProvider = ({ children }) => {
           for (const normalizedItem of normalizedItems.filter(isMaskDuoCustom)) {
             await setDoc(doc(db, "users", currentUser.uid, "cart", normalizedItem.id), normalizedItem);
           }
+        }
+
+        if (guestItems.length) {
+          const { db, doc, setDoc } = await loadFirestoreDeps();
+          for (const item of normalizedItems) {
+            await setDoc(doc(db, "users", currentUser.uid, "cart", item.id), item);
+          }
+          guestCartRef.current = [];
         }
 
         setCartItems(normalizedItems);

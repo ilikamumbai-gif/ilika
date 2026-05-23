@@ -52,6 +52,7 @@ const BlackseedHairOilLanding = lazy(() => import("../Landing/Blackseedhairoil")
 const HerbalHairOilLanding = lazy(() => import("../Landing/Herbalhairoil"));
 const VoiceMaskMakerLanding = lazy(() => import("../Landing/VoiceMaskMakerLanding"));
 const NonvoiceMaskMakerLanding = lazy(() => import("../Landing/NonvoiceMaskMakerLanding"));
+const HairDryerLanding = lazy(() => import("../Landing/HairDryerLanding"));
 
 const PixelPageTracker = () => {
   const { pathname } = useLocation();
@@ -102,6 +103,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/herbal-hair-oil") return { title: "Herbal Hair Oil", description: "Explore Ilika Herbal Hair Oil benefits, ingredients, and offers." };
   if (pathname === "/voice-mask-maker") return { title: "Voice Version Face Mask Maker", description: "Explore Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide." };
   if (pathname === "/nonvoice-mask-maker") return { title: "Nonvoice Face Mask Maker", description: "Explore Ilika Nonvoice Mask Maker Machine with Collagen Peptide." };
+  if (pathname === "/leafless-hair-dryer") return { title: "Leafless Hair Dryer", description: "Explore Ilika High-Speed Leafless Hair Dryer For Men & Women." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
   if (pathname === "/combo") return { title: "Combo Deals", description: "Explore combo packs and bundle offers from Ilika." };
   if (pathname.startsWith("/combo/")) return { title: "Combo Details", description: "View combo pack details and savings at Ilika." };
@@ -197,6 +199,7 @@ const NavRoutes = () => {
         <Route path="/herbal-hair-oil" element={renderLazy(HerbalHairOilLanding)} />
         <Route path="/voice-mask-maker" element={renderLazy(VoiceMaskMakerLanding)} />
         <Route path="/nonvoice-mask-maker" element={renderLazy(NonvoiceMaskMakerLanding)} />
+        <Route path="/leafless-hair-dryer" element={renderLazy(HairDryerLanding)} />
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />
         <Route path="/combo" element={renderLazy(Combos)} />
         <Route path="/combo/:id" element={renderLazy(ComboDetail)} />

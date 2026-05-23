@@ -363,6 +363,8 @@ const Checkout = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeVerified, setPincodeVerified] = useState(false);
+  const [pincodeError, setPincodeError] = useState("");
   const [guestVerifiedPhones, setGuestVerifiedPhones] = useState([]);
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
@@ -423,6 +425,8 @@ const Checkout = () => {
   const handlePincodeChange = async (e) => {
     const pin = e.target.value.replace(/\D/g, "").slice(0, 6);
     setAddress((prev) => ({ ...prev, pincode: pin, city: "", state: "" }));
+    setPincodeVerified(false);
+    setPincodeError("");
 
     if (pin.length === 6) {
       setPincodeLoading(true);
@@ -438,9 +442,16 @@ const Checkout = () => {
               city: post.District || post.Name || "",
               state: post.State || "",
             }));
+            setPincodeVerified(true);
+          } else {
+            setPincodeError("Could not verify pincode. Please try another one.");
           }
+        } else {
+          setPincodeError("Invalid pincode. Please enter a valid 6-digit pincode.");
         }
-      } catch (_) { /* silent fail */ } finally {
+      } catch (_) {
+        setPincodeError("Could not verify pincode right now. Please try again.");
+      } finally {
         setPincodeLoading(false);
       }
     }
@@ -527,6 +538,7 @@ const Checkout = () => {
     if (!address.name.trim()) { alert("Please enter your full name"); return; }
     if (!phoneRegex.test(address.phone)) { alert("Please enter a valid 10-digit Indian mobile number"); return; }
     if (!pincodeRegex.test(address.pincode)) { alert("Please enter a valid 6-digit pincode"); return; }
+    if (!pincodeVerified) { alert("Please verify a valid pincode to auto-fill city and state."); return; }
     if (!address.city.trim()) { alert("Please enter your city"); return; }
     if (!address.state.trim()) { alert("Please enter your state"); return; }
     if (!address.addressLine.trim()) { alert("Please enter your full address"); return; }
@@ -542,6 +554,8 @@ const Checkout = () => {
       setShowForm(false);
       localStorage.setItem(guestAddressStorageKey, JSON.stringify(updated));
       setAddress({ name: "", phone: "", pincode: "", city: "", state: "", addressLine: "" });
+      setPincodeVerified(false);
+      setPincodeError("");
       return;
     }
 
@@ -561,6 +575,8 @@ const Checkout = () => {
 
       // Reset form
       setAddress({ name: "", phone: "", pincode: "", city: "", state: "", addressLine: "" });
+      setPincodeVerified(false);
+      setPincodeError("");
       // OTP reset is handled by the selectedAddressId useEffect above
     } catch (err) {
       console.error("Save address error:", err);
@@ -866,15 +882,20 @@ const Checkout = () => {
                     </span>
                   )}
                 </div>
+                {pincodeError && (
+                  <p className="text-xs text-rose-600 sm:col-span-2">{pincodeError}</p>
+                )}
                 <input
                   name="city" placeholder="City *"
-                  className="border p-3 rounded-lg"
-                  onChange={handleChange} value={address.city}
+                  className="border p-3 rounded-lg bg-gray-50"
+                  value={address.city}
+                  readOnly
                 />
                 <input
                   name="state" placeholder="State *"
-                  className="border p-3 rounded-lg sm:col-span-2"
-                  onChange={handleChange} value={address.state}
+                  className="border p-3 rounded-lg sm:col-span-2 bg-gray-50"
+                  value={address.state}
+                  readOnly
                 />
                 <textarea
                   name="addressLine"
