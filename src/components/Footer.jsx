@@ -15,15 +15,19 @@ const facebook = "/Images/facebook.png";
 const youtube = "/Images/Youtube.png";
 const instagram = "/Images/instagram.png";
 
-const Footer = () => {
+const Footer = ({ theme = "default" }) => {
+  const isBlackTheme = theme === "black";
   return (
-    <footer className="primary-bg-color">
+    <footer className={isBlackTheme ? "bg-[#e9ddff] text-[#1f1235]" : "primary-bg-color"}>
 
       {/* TOP STRIP */}
-      <div className="MiniDivider-bg-color py-1" />
+      <div className={isBlackTheme ? "bg-[#9569d0] py-1" : "MiniDivider-bg-color py-1"} />
 
       {/* MAIN FOOTER */}
-      <div style={{ backgroundColor: "#a21d1d2b" }} className="text-[#3d0e0e]">
+      <div
+        style={isBlackTheme ? { backgroundColor: "#e9ddff" } : { backgroundColor: "#a21d1d2b" }}
+        className={isBlackTheme ? "text-[#1f1235]" : "text-[#3d0e0e]"}
+      >
         <div className="
           max-w-7xl mx-auto 
           px-4 sm:px-6 lg:px-8 
@@ -40,7 +44,7 @@ const Footer = () => {
             className="h-11 mx-auto sm:mx-0"
           />
 
-          <h3 className="text-black text-xl font-semibold">
+          <h3 className={`${isBlackTheme ? "text-[#1f1235]" : "text-black"} text-xl font-semibold`}>
             Beauty Care For Everyone
           </h3>
 
@@ -55,7 +59,7 @@ const Footer = () => {
 
           {/* LINKS */}
           <div className="space-y-3">
-            <h4 className="text-black font-semibold text-lg">
+            <h4 className={`${isBlackTheme ? "text-[#1f1235]" : "text-black"} font-semibold text-lg`}>
               Quick Links
             </h4>
 
@@ -72,7 +76,7 @@ const Footer = () => {
 
           {/* ADDRESS */}
           <div className="space-y-3">
-            <h4 className="text-black font-semibold text-lg flex items-center justify-center sm:justify-start gap-2">
+            <h4 className={`${isBlackTheme ? "text-[#1f1235]" : "text-black"} font-semibold text-lg flex items-center justify-center sm:justify-start gap-2`}>
               <MapPin size={16} /> Address
             </h4>
 
@@ -90,7 +94,7 @@ const Footer = () => {
 
           {/* SOCIAL */}
           <div className="space-y-3">
-            <h4 className="text-black font-semibold text-lg">
+            <h4 className={`${isBlackTheme ? "text-[#1f1235]" : "text-black"} font-semibold text-lg`}>
               Follow Us
             </h4>
 
@@ -108,23 +112,23 @@ const Footer = () => {
           </div>
 
           {/* DIVIDER */}
-          <div className="h-px bg-gray-300/40 w-full" />
+          <div className={`h-px w-full ${isBlackTheme ? "bg-[#9569d0]/35" : "bg-gray-300/40"}`} />
 
           {/* MARKETPLACE */}
           <div className="space-y-3">
-            <h4 className="text-black font-semibold text-lg">
+            <h4 className={`${isBlackTheme ? "text-[#1f1235]" : "text-black"} font-semibold text-lg`}>
               Also Available On
             </h4>
 
             <div className="flex justify-center sm:justify-start gap-5 items-center">
               <a href="https://www.amazon.in/stores/Ilik%C3%A4/page/4BEEF7C7-AFF6-4530-B62B-3A07943B7277?lp_asin=B0CLLG8RKP&ref_=ast_bln" target="_blank" rel="noopener noreferrer" aria-label="Amazon">
-                <img src={amazon} alt="Amazon" className="h-8 w-8 hover:scale-110 transition" />
+                <img src={amazon} alt="Amazon" className={`${isBlackTheme ? "rounded bg-white p-1" : ""} h-8 w-8 hover:scale-110 transition`} />
               </a>
               <a href="https://www.flipkart.com/ilika-black-seed-hair-oil-prevents-premature-greying-soft-nourished/p/itmd21f91c22dfab?pid=HOLHFPX4WETW7YPK&lid=LSTHOLHFPX4WETW7YPKGOLVRA&hl_lid=&marketplace=FLIPKART&fm=eyJ3dHAiOiJyZWNvIiwicHJwdCI6InBwIiwibWlkIjoiZmFjdEJhc2VkUmVjb21tZW5kYXRpb24vcmVjZW50bHlWaWV3ZWQifQ%3D%3D&pageUID=1779183762586" target="_blank" rel="noopener noreferrer" aria-label="Flipkart">
-                <img src={flipcart} alt="Flipkart" className="h-8 w-8 hover:scale-110 transition" />
+                <img src={flipcart} alt="Flipkart" className={`${isBlackTheme ? "rounded bg-white p-1" : ""} h-8 w-8 hover:scale-110 transition`} />
               </a>
               <a href="https://www.meesho.com/ILIKASKINCARE" target="_blank" rel="noopener noreferrer" aria-label="Meesho">
-                <img src={meesho} alt="Meesho" className="h-8 w-8 hover:scale-110 transition" />
+                <img src={meesho} alt="Meesho" className={`${isBlackTheme ? "rounded bg-white p-1" : ""} h-8 w-8 hover:scale-110 transition`} />
               </a>
             </div>
           </div>
@@ -155,7 +159,7 @@ const Footer = () => {
       </div>
 
       {/* BOTTOM */}
-      <div className="bg-black text-white text-xs sm:text-sm py-2">
+      <div className={isBlackTheme ? "bg-[#ddccff] text-[#1f1235] text-xs sm:text-sm py-2" : "bg-black text-white text-xs sm:text-sm py-2"}>
         <div className="
           max-w-7xl mx-auto px-4
           flex flex-col md:flex-row
