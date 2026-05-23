@@ -50,7 +50,7 @@ const SocialFeed = lazy(() => import("../pages/SocialFeed"));
 const KnowSkinType = lazy(() => import("../pages/KnowSkinType"));
 const BlackseedHairOilLanding = lazy(() => import("../Landing/Blackseedhairoil"));
 const HerbalHairOilLanding = lazy(() => import("../Landing/Herbalhairoil"));
-const VoiceMaskMakerLanding = lazy(() => import("../landing/VoiceMaskMakerLanding"));
+const VoiceMaskMakerLanding = lazy(() => import("../Landing/VoiceMaskMakerLanding"));
 const NonvoiceMaskMakerLanding = lazy(() => import("../Landing/NonvoiceMaskMakerLanding"));
 
 const PixelPageTracker = () => {
