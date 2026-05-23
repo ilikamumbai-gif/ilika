@@ -44,7 +44,13 @@ const NewArrival = () => {
           {hairCategory ? (
             <ProductList
               categoryId={hairCategory.id}
-              priorityNames={["Lip Plumper Vacuum Suction Device | Soft Silicone Material", "Hot & Cold Facial Pore Blackhead Remover For Men & Women", "Ilika Automatic Voice Version Face Mask Maker Machine", "Ilika High-Speed Leafless Hair Dryer For Men & Women"]}
+              priorityNames={[
+                "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
+                "Ilika Nonvoice Mask Maker Machine with Collagen Peptide",
+                "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
+                "Hot & Cold Facial Pore Blackhead Remover For Men & Women",
+                "Ilika High-Speed Leafless Hair Dryer For Men & Women",
+              ]}
             />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>

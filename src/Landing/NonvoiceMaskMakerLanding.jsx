@@ -56,21 +56,21 @@ const features = [
 const reviews = [
   {
     rating: 5,
-    text: '"I was sceptical at first, but after just one week of using it, my skin feels noticeably smoother and brighter. The touch screen makes it so simple to operate every morning."',
+    text: '"I was sceptical at first, but after just one week of using it, my skin feels noticeably smoother and brighter. The touch screen controls are simple and super convenient every morning."',
     initials: "PR",
     name: "Priya Raghavan",
     loc: "Mumbai · Verified Buyer",
   },
   {
     rating: 5,
-    text: '"Used to spend ₹800 per salon visit for a face mask. This machine paid for itself in the first month. The strawberry + honey combo is now my Sunday ritual."',
+    text: '"Used to spend ₹800 per salon visit for a face mask. This nonvoice machine paid for itself in the first month. The strawberry + honey combo is now my Sunday ritual."',
     initials: "AK",
     name: "Anjali Kaur",
     loc: "Delhi · Verified Buyer",
   },
   {
     rating: 4,
-    text: '"Gifted this to my mom for her birthday and she absolutely loves it! The collagen mask has genuinely helped with her skin firmness. Easy to clean and the touch screen is very responsive."',
+    text: '"Gifted this to my mom for her birthday and she absolutely loves it! The collagen mask has genuinely helped with her skin firmness. Easy to clean, and the nonvoice touch panel feels very responsive."',
     initials: "SM",
     name: "Sneha Mehta",
     loc: "Pune · Verified Buyer",
@@ -144,26 +144,26 @@ const NonvoiceMaskMakerLanding = () => {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
       `}</style>
 
-      <section className="bg-[#FFFCFA] px-[4%] py-5 lg:px-[6%] lg:py-6">
-        <div className="mx-auto grid min-h-[calc(100dvh-150px)] w-full max-w-[1240px] grid-cols-1 gap-6 lg:grid-cols-[1.45fr_0.95fr] lg:items-center lg:gap-10">
+      <section className="bg-[#FFFCFA] px-[4%] py-4 sm:py-5 lg:px-[6%] lg:py-6">
+        <div className="mx-auto grid min-h-0 w-full max-w-[1240px] grid-cols-1 gap-6 lg:min-h-[calc(100dvh-150px)] lg:grid-cols-[1.45fr_0.95fr] lg:items-center lg:gap-10">
           <div className="flex w-full flex-col">
             <div className="mb-4 inline-flex w-fit items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#B87161]">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#B87161]" /> Trusted by 10,000+ Skincare Lovers
             </div>
 
-            <h1 className="mb-4 w-full max-w-[760px] [font-family:'Playfair_Display',serif] text-[clamp(34px,3.8vw,60px)] font-bold leading-[1.04] tracking-[-0.02em]">
+            <h1 className="mb-4 w-full max-w-[760px] [font-family:'Playfair_Display',serif] text-[clamp(36px,10vw,60px)] font-bold leading-[1.04] tracking-[-0.02em]">
               Salon-Grade
               <br />
               <em className="block text-[#B87161]">Face Masks.</em>
               <span className="mt-1.5 block text-[0.72em] font-medium tracking-[0.02em] text-[rgba(58,42,39,0.62)]">One Tap. Fresh. Glowing Skin.</span>
             </h1>
 
-            <p className="mb-4 w-full max-w-[760px] text-[14px] font-light leading-[1.7] text-[#7E6660]">
+            <p className="mb-4 w-full max-w-[760px] text-[14px] font-light leading-[1.65] text-[#7E6660] sm:leading-[1.7]">
               Stop spending ₹800 per salon visit. The {productName} turns fresh fruits + collagen into a custom spa mask - right in your kitchen, every day. No voice prompts, just a clean touch screen that keeps things simple and elegant.
             </p>
 
-            <div className="mb-4 flex items-end gap-3">
-              <span className="[font-family:'Playfair_Display',serif] text-[52px] font-bold leading-none">₹{productPrice.toLocaleString("en-IN")}</span>
+            <div className="mb-4 flex items-end gap-2.5 sm:gap-3">
+              <span className="[font-family:'Playfair_Display',serif] text-[44px] font-bold leading-none sm:text-[52px]">₹{productPrice.toLocaleString("en-IN")}</span>
               <div className="flex flex-col gap-1 pb-1">
                 <span className="text-[15px] font-light text-[rgba(126,102,96,0.85)] line-through">MRP ₹{productMrp.toLocaleString("en-IN")}</span>
                 <span className="w-fit rounded-full bg-[rgba(198,160,109,0.22)] px-2.5 py-[3px] text-[12px] font-semibold tracking-[0.04em] text-[#9D6C2F]">
@@ -172,17 +172,17 @@ const NonvoiceMaskMakerLanding = () => {
               </div>
             </div>
 
-            <button type="button" onClick={handleBuyNow} className="group relative mb-3 inline-flex h-[90px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]">
+            <button type="button" onClick={handleBuyNow} className="group relative mb-3 inline-flex h-[74px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-5 py-4 text-[16px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[18px] sm:tracking-[0.03em]">
               <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
               <span className="relative z-[1] inline-flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5" />
                 Buy Now - ₹{productPrice.toLocaleString("en-IN")}
               </span>
-              <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">LIMITED STOCK</span>
+              <span className="absolute bottom-1.5 right-2 rounded-full bg-[rgba(255,255,255,0.2)] px-1.5 py-[2px] text-[9px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)] sm:right-3 sm:px-2 sm:text-[10px]">LIMITED STOCK</span>
             </button>
 
-            <div className="mb-3 flex w-full max-w-[760px] flex-wrap gap-3">
-              <a href={productPath} className="inline-flex h-[48px] min-w-[170px] items-center justify-center px-1 text-[15px] font-semibold text-[#8F5A4E] underline-offset-2 hover:text-[#75483F] hover:underline">Know More ↓</a>
+            <div className="mb-3 flex w-full max-w-[760px] flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <a href={productPath} className="inline-flex h-[42px] w-full items-center justify-center px-1 text-[14px] font-semibold text-[#8F5A4E] underline-offset-2 hover:text-[#75483F] hover:underline sm:h-[48px] sm:min-w-[170px] sm:w-auto sm:text-[15px]">Know More ↓</a>
             </div>
 
             <div className="mt-1 flex items-center gap-2.5 text-[12px] text-[rgba(126,102,96,0.9)]">
@@ -194,8 +194,8 @@ const NonvoiceMaskMakerLanding = () => {
           </div>
 
           <div className="relative mx-auto flex w-full max-w-[470px] items-center justify-center">
-            <div className="absolute left-1/2 top-1/2 h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(184,113,97,0.16)] bg-[rgba(184,113,97,0.08)] lg:h-[430px] lg:w-[430px]" />
-            <div className="relative z-[3] aspect-[4/4] w-full border-4 border-white bg-white p-3 shadow-[0_14px_30px_rgba(125,80,66,0.14)]">
+            <div className="absolute left-1/2 top-1/2 h-[290px] w-[290px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(184,113,97,0.16)] bg-[rgba(184,113,97,0.08)] sm:h-[360px] sm:w-[360px] lg:h-[430px] lg:w-[430px]" />
+            <div className="relative z-[3] aspect-[4/4] w-full max-w-[360px] border-4 border-white bg-white p-2 shadow-[0_14px_30px_rgba(125,80,66,0.14)] sm:max-w-[470px] sm:p-3">
               <img src={productImage} alt={productName} className="h-full w-full bg-[#F7F7F7] object-contain object-center" onError={(e) => { e.currentTarget.src = "https://placehold.co/460x520/251610/C8705A?text=Ilika+Mask+Maker"; }} />
             </div>
           </div>
