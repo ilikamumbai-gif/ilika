@@ -9,20 +9,16 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 
-const getProductId = (product) =>
-  String(product?._id ?? product?.id ?? "");
-
+const getProductId = (product) => String(product?._id ?? product?.id ?? "");
 const toSlug = (str = "") => str.toLowerCase().replace(/[^a-z0-9]/g, "");
 
 const TYPES = ["cleanser", "toner", "moisturizer"];
 const LABELS = { cleanser: "Cleanser", toner: "Toner", moisturizer: "Moisturizer" };
 const KIT_PRICE = 699;
-
 const INIT_SELECTED = { cleanser: null, toner: null, moisturizer: null };
 
 const KitSummaryContent = ({ selected, selectedCount, allSelected, addKitToCart }) => (
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-5">
-    {/* Product thumbnails */}
     <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-1">
       {TYPES.map((type, i) => (
         <React.Fragment key={type}>
@@ -54,21 +50,18 @@ const KitSummaryContent = ({ selected, selectedCount, allSelected, addKitToCart 
                 selected[type] ? "text-[#1C371C] font-semibold" : "text-stone-400",
               ].join(" ")}
             >
-              {selected[type]?.name ?? "—"}
+              {selected[type]?.name ?? "-"}
             </p>
           </div>
-          {i < 2 && (
-            <span className="text-base sm:text-lg text-stone-300 font-light flex-shrink-0">+</span>
-          )}
+          {i < 2 && <span className="text-base sm:text-lg text-stone-300 font-light flex-shrink-0">+</span>}
         </React.Fragment>
       ))}
     </div>
 
-    {/* Price + CTA */}
     <div className="flex items-center gap-3 sm:gap-5 flex-shrink-0 justify-between sm:justify-end">
       <div className="text-right">
-        <p className="font-sans text-xs text-gray-400 line-through leading-none mb-0.5">₹999</p>
-        <p className="font-serif text-2xl sm:text-3xl text-[#1C371C] leading-none">₹{KIT_PRICE}</p>
+        <p className="font-sans text-xs text-gray-400 line-through leading-none mb-0.5">Rs 999</p>
+        <p className="font-serif text-2xl sm:text-3xl text-[#1C371C] leading-none">Rs {KIT_PRICE}</p>
         <p className={["font-sans text-[10px] font-semibold mt-1", allSelected ? "text-green-600" : "text-gray-400"].join(" ")}>
           {selectedCount}/3 selected
         </p>
@@ -85,7 +78,7 @@ const KitSummaryContent = ({ selected, selectedCount, allSelected, addKitToCart 
             : "bg-stone-200 text-stone-400 cursor-not-allowed",
         ].join(" ")}
       >
-        {allSelected ? "Add Kit to Bag →" : "Complete Your Kit"}
+        {allSelected ? "Add Kit to Bag ->" : "Complete Your Kit"}
       </button>
     </div>
   </div>
@@ -96,21 +89,13 @@ const CreateCtm = () => {
   const { categories } = useCategories();
   const { activeProducts = [] } = useProducts();
 
-  const findCategory = (slug) =>
-    categories.find((c) => toSlug(c.name) === slug);
-
+  const findCategory = (slug) => categories.find((c) => toSlug(c.name) === slug);
   const cleanserCat = findCategory("cleanser");
   const tonerCat = findCategory("toner");
-  const moisturizerCat = categories.find(
-    (c) => toSlug(c.name).startsWith("moistur")
-  );
+  const moisturizerCat = categories.find((c) => toSlug(c.name).startsWith("moistur"));
 
   const filterByCategory = (cat) =>
-    cat
-      ? activeProducts.filter((p) =>
-          p.categoryIds?.includes(cat._id ?? cat.id)
-        )
-      : [];
+    cat ? activeProducts.filter((p) => p.categoryIds?.includes(cat._id ?? cat.id)) : [];
 
   const cleansers = filterByCategory(cleanserCat);
   const toners = filterByCategory(tonerCat);
@@ -200,9 +185,7 @@ const CreateCtm = () => {
           )}
         </div>
         {items.length === 0 ? (
-          <p className="font-sans text-sm text-gray-400 py-6">
-            No products available.
-          </p>
+          <p className="font-sans text-sm text-gray-400 py-6">No products available.</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {items.map((product) => (
@@ -227,7 +210,7 @@ const CreateCtm = () => {
         <Header />
         <CartDrawer />
 
-        {/* ── PAGE HEADER ──────────────────────────────────────── */}
+        {/* PAGE HEADER */}
         <div className="bg-[#1C371C] relative overflow-hidden text-center px-4 sm:px-6 py-10 sm:py-14">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] rounded-full bg-red-300 opacity-[0.1]" />
@@ -236,13 +219,12 @@ const CreateCtm = () => {
             Custom Kit Builder
           </p>
           <h1 className="font-serif text-white leading-tight mb-4 text-3xl sm:text-4xl md:text-5xl">
-            Build Your{" "}
-            <span className="italic text-[#e76e6e]">Perfect</span>
+            Build Your <span className="italic text-[#e76e6e]">Perfect</span>
             <br />
             CTM Routine
           </h1>
           <p className="font-sans text-white/60 text-sm font-light mb-6 sm:mb-8 max-w-md mx-auto">
-            Choose one from each step — get your personalised trio at ₹699
+            Choose one from each step - get your personalised trio at Rs 699
           </p>
           <div className="flex items-center justify-center gap-2 flex-wrap">
             {TYPES.map((type, i) => {
@@ -275,14 +257,14 @@ const CreateCtm = () => {
           </div>
         </div>
 
-        {/* ── PRODUCT SECTIONS ─────────────────────────────────── */}
+        {/* PRODUCT SECTIONS */}
         <div className="max-w-6xl mx-auto px-3 sm:px-4 pt-8 sm:pt-12 pb-8 sm:pb-10">
           <Section title="Choose Your Cleanser" items={cleansers} type="cleanser" stepNum="1" />
           <Section title="Choose Your Toner" items={toners} type="toner" stepNum="2" />
           <Section title="Choose Your Moisturizer" items={moisturizers} type="moisturizer" stepNum="3" />
         </div>
 
-        {/* ── KIT SUMMARY (in-flow) ────────────────────────────── */}
+        {/* KIT SUMMARY (in-flow) */}
         <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-10 sm:pb-14">
           <div id="ctm-kit-summary" className="bg-white border border-stone-200 rounded-2xl px-4 sm:px-6 py-4 sm:py-5 shadow-sm">
             <p className="font-sans text-[10px] tracking-[2px] text-gray-400 font-bold uppercase mb-3 sm:mb-4">
@@ -297,7 +279,7 @@ const CreateCtm = () => {
           </div>
         </div>
 
-        {/* ── STICKY KIT BAR ──────────────────────────────────── */}
+        {/* STICKY KIT BAR */}
         <div
           style={{
             position: "fixed",
