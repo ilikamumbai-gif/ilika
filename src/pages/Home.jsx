@@ -5,7 +5,6 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Heading from "../components/Heading";
 import { categoriesData } from "../Dummy/categoriesData";
-import CartDrawer from "../components/CartDrawer";
 import SkinTypeBanner from "../components/SkinTypeBanner";
 
 import { CategoryContext } from "../admin/context/CategoryContext";
@@ -13,14 +12,15 @@ import { ProductContext } from "../admin/context/ProductContext";
 
 const ProductList = lazy(() => import("../components/ProductList"));
 import Banner from "../components/Banner";
+const CartDrawer = lazy(() => import("../components/CartDrawer"));
 const Footer = lazy(() => import("../components/Footer"));
 const PromoCardGrid = lazy(() => import("../components/PromoCardGrid"));
-import CategoryNav from "../components/CategoryNav";
+const CategoryNav = lazy(() => import("../components/CategoryNav"));
 
 /* assets (correct import) */
 import bannerSkincare from "../assets/Images/FacecareBanner.webp";
 import bannerHair from "../assets/Images/HairBanner.webp";
-import Carousel from "../components/Carousel";
+const Carousel = lazy(() => import("../components/Carousel"));
 
 const Menifesto = lazy(() => import("../components/Menifesto"));
 const TestimonialList = lazy(() => import("../components/TestimonialList"));
@@ -32,12 +32,32 @@ const hairMobile = "/Images/hairMobile.webp";
 const BannerStyle = "/Images/Banner.webp";
 const mothersDayBanner = "/Images/womens-day-banner.webp";
 const mothersDayBannerMobile = "/Images/womens-day-banner1.webp";
+const HAIR_CAROUSEL_ITEMS = [
+  { title: "Healthy Hair Growth", image: "/Images/hairc5.webp", bgColor: "", link: "/hair/care" },
+  { title: "Hair Fall Control", image: "/Images/hairc1.webp", bgColor: "", link: "/hair/care" },
+  { title: "Dandruff-Free Scalp", image: "/Images/hairc2.webp", bgColor: "", link: "/hair/care" },
+  { title: "Dry & Damaged Hair", image: "/Images/hairc3.webp", bgColor: "", link: "/hair/care" },
+  { title: "Frizz-Free Smoothness", image: "/Images/hairc4.webp", bgColor: "", link: "/hair/care" },
+  { title: "Deep Hair Repair", image: "/Images/hairc6.webp", bgColor: "", link: "/hair/care" },
+  { title: "Soft & Shiny Hair", image: "/Images/hairc2.webp", bgColor: "", link: "/hair/care" },
+  { title: "Scalp Hydration", image: "/Images/hairc4.webp", bgColor: "", link: "/hair/care" },
+];
+const SKIN_CAROUSEL_ITEMS = [
+  { title: "Bright & Glowing Skin", image: "/Images/skinc1.webp", bgColor: "", link: "/skin" },
+  { title: "Acne & Pimple Care", image: "/Images/skinc2.webp", bgColor: "", link: "/skin" },
+  { title: "Deep Hydration", image: "/Images/skinc3.webp", bgColor: "", link: "/skin" },
+  { title: "Dark Spot Reduction", image: "/Images/skinc4.webp", bgColor: "", link: "/skin" },
+  { title: "Anti-Aging Care", image: "/Images/skinc5.webp", bgColor: "", link: "/skin" },
+  { title: "Skin Barrier Repair", image: "/Images/skinc6.webp", bgColor: "", link: "/skin" },
+  { title: "Soft & Smooth Skin", image: "/Images/skinc7.webp", bgColor: "", link: "/skin" },
+  { title: "Oil Control Care", image: "/Images/skinc8.webp", bgColor: "", link: "/skin" },
+];
 
 const LazyMountSection = ({
   children,
   minHeight = 320,
   className = "",
-  rootMargin = "300px 0px",
+  rootMargin = "120px 0px",
 }) => {
   const sectionRef = useRef(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -98,16 +118,13 @@ const Home = () => {
   }, []);
 
   const { hairstylingCategory, skincareCategory, haircareCategory } = useMemo(() => {
+    const byName = new Map(
+      categories.map((c) => [String(c?.name || "").toLowerCase().replace(/\s+/g, ""), c])
+    );
     return {
-      hairstylingCategory: categories.find(
-        (c) => c.name.toLowerCase().replace(/\s+/g, "") === "hairstyling"
-      ),
-      skincareCategory: categories.find(
-        (c) => c.name.toLowerCase().replace(/\s+/g, "") === "skincare"
-      ),
-      haircareCategory: categories.find(
-        (c) => c.name.toLowerCase().replace(/\s+/g, "") === "haircare"
-      ),
+      hairstylingCategory: byName.get("hairstyling"),
+      skincareCategory: byName.get("skincare"),
+      haircareCategory: byName.get("haircare"),
     };
   }, [categories]);
   const skinTotal = useMemo(
@@ -156,17 +173,6 @@ const Home = () => {
     return prev < 0 ? Math.max(total - step, 0) : prev;
   };
 
-  const categoryCarouselItems = useMemo(
-    () =>
-      categoriesData.map((item) => ({
-        title: item.name,
-        image: item.icon,
-        link: item.link?.startsWith("/") ? item.link : `/${item.link || ""}`,
-        badge: item.name?.toLowerCase() === "offers" ? "FREE" : "",
-      })),
-    []
-  );
-
   return (
     <>
       <MiniDivider />
@@ -174,7 +180,9 @@ const Home = () => {
       <div className="relative primary-bg-color">
 
         <Header />
-        <CartDrawer />
+        <Suspense fallback={null}>
+          <CartDrawer />
+        </Suspense>
         <main>
 
           <Banner
@@ -334,58 +342,10 @@ const Home = () => {
 
 
 
-              <Carousel heading={"What’s Your Hair Craving Today?"} subheading={"Healthy, shiny hair begins with the Right Care."}
-                items={[
-                     {
-                    title: "Healthy Hair Growth",
-                    image: "/Images/hairc5.webp",
-                    bgColor: "",
-                    link: "/hair/care",
-                  },
-                  {
-                    title: "Hair Fall Control",
-                    image: "/Images/hairc1.webp",
-                    bgColor: "",
-                    link: "/hair/care",
-                  },
-                  {
-                    title: "Dandruff-Free Scalp",
-                    image: "/Images/hairc2.webp",
-                    bgColor: "",
-                    link: "/hair/care",
-                  },
-                  {
-                    title: "Dry & Damaged Hair",
-                    image: "/Images/hairc3.webp",
-                    bgColor: "",
-                    link: "/hair/care",
-                  },
-                  {
-                    title: "Frizz-Free Smoothness",
-                    image: "/Images/hairc4.webp",
-                    bgColor: "",
-                    link: "/hair/care",
-                  },
-               
-                  {
-                    title: "Deep Hair Repair",
-                    image: "/Images/hairc6.webp",
-                    bgColor: "",
-                    link: "/hair/care",
-                  },
-                  {
-                    title: "Soft & Shiny Hair",
-                    image: "/Images/hairc2.webp",
-                    bgColor: "",
-                    link: "/hair/care",
-                  },
-                  {
-                    title: "Scalp Hydration",
-                    image: "/Images/hairc4.webp",
-                    bgColor: "",
-                    link: "/hair/care",
-                  },
-                ]}
+              <Carousel
+                heading={"What’s Your Hair Craving Today?"}
+                subheading={"Healthy, shiny hair begins with the Right Care."}
+                items={HAIR_CAROUSEL_ITEMS}
               />
               <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
                 <Link
@@ -445,57 +405,11 @@ const Home = () => {
                 imageFit={isMobile ? "contain" : "cover"}
               />
 
-             <Carousel heading={"What Does Your Skin Need Today?"} subheading={"Target every skin concern with personalized skincare"}
-                items={[
-  {
-    title: "Bright & Glowing Skin",
-    image: "/Images/skinc1.webp",
-    bgColor: "",
-    link: "/skin",
-  },
-  {
-    title: "Acne & Pimple Care",
-    image: "/Images/skinc2.webp",
-    bgColor: "",
-    link: "/skin",
-  },
-  {
-    title: "Deep Hydration",
-    image: "/Images/skinc3.webp",
-    bgColor: "",
-    link: "/skin",
-  },
-  {
-    title: "Dark Spot Reduction",
-    image: "/Images/skinc4.webp",
-    bgColor: "",
-    link: "/skin",
-  },
-  {
-    title: "Anti-Aging Care",
-    image: "/Images/skinc5.webp",
-    bgColor: "",
-    link: "/skin",
-  },
-  {
-    title: "Skin Barrier Repair",
-    image: "/Images/skinc6.webp",
-    bgColor: "",
-    link: "/skin",
-  },
-  {
-    title: "Soft & Smooth Skin",
-    image: "/Images/skinc7.webp",
-    bgColor: "",
-    link: "/skin",
-  },
-  {
-    title: "Oil Control Care",
-    image: "/Images/skinc8.webp",
-    bgColor: "",
-    link: "/skin",
-  },
-]}/>
+             <Carousel
+                heading={"What Does Your Skin Need Today?"}
+                subheading={"Target every skin concern with personalized skincare"}
+                items={SKIN_CAROUSEL_ITEMS}
+              />
               <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
                 <Link
                   to="/skin"
@@ -637,4 +551,6 @@ const Home = () => {
 };
 
 export default Home;
+
+
 

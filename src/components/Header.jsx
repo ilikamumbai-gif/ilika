@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+import React, { Suspense, lazy, useState } from "react";
 import { Menu, X, Search } from "lucide-react";
 import logo from "/Images/logo2.webp";
-import Nav, { SearchBar } from "./Nav";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "../admin/context/ProductContext";
+
+const Nav = lazy(() => import("./Nav"));
+const SearchBar = lazy(() =>
+  import("./Nav").then((module) => ({ default: module.SearchBar }))
+);
 
 const Header = () => {
   const navigate = useNavigate();
@@ -34,7 +38,9 @@ const Header = () => {
 
         {/* Desktop Nav — pushed to the right via ml-auto */}
         <div className="hidden lg:flex items-center h-14 flex-1 min-w-0 lg:order-2">
-          <Nav />
+          <Suspense fallback={null}>
+            <Nav />
+          </Suspense>
         </div>
 
         {/* Mobile controls — only visible on mobile */}
@@ -94,21 +100,25 @@ const Header = () => {
       {/* Mobile expanding search bar */}
       {searchOpen && (
         <div className="lg:hidden px-4 pb-3">
-          <SearchBar
-            products={products}
-            onClose={() => {
-              setSearchOpen(false);
-              setOpen(false);
-            }}
-            className="w-full"
-          />
+          <Suspense fallback={<div className="h-10 w-full" />}>
+            <SearchBar
+              products={products}
+              onClose={() => {
+                setSearchOpen(false);
+                setOpen(false);
+              }}
+              className="w-full"
+            />
+          </Suspense>
         </div>
       )}
 
       {/* Mobile drawer */}
       {open && (
         <div className="lg:hidden px-4 pb-4 border-t border-gray-100">
-          <Nav mobile onClose={() => setOpen(false)} />
+          <Suspense fallback={<div className="h-10" />}>
+            <Nav mobile onClose={() => setOpen(false)} />
+          </Suspense>
         </div>
       )}
 
