@@ -324,11 +324,12 @@ const Home = () => {
 
               {/* HAIR CARE */}
               <Banner
-                className="mt-0 aspect-[5/4] md:aspect-auto md:h-[60vh]"
+                className="mt-0 md:h-[60vh]"
                 src={bannerHair}
                 mobileSrc={hairMobile}
                 linkUrl="/product/black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth"
                 bannerKey="home-haircare"
+                imageFit={isMobile ? "contain" : "cover"}
               />
 
 
@@ -436,11 +437,12 @@ const Home = () => {
 
               {/* SKIN CARE */}
               <Banner
-                className="mt-0 aspect-[5/4] md:aspect-auto md:h-[60vh]"
+                className="mt-0 md:h-[60vh]"
                 src={bannerSkincare}
                 mobileSrc={skinMobile}
                 linkUrl="/skin"
                 bannerKey="home-skincare"
+                imageFit={isMobile ? "contain" : "cover"}
               />
 
              <Carousel heading={"What Does Your Skin Need Today?"} subheading={"Target every skin concern with personalized skincare"}
@@ -544,11 +546,12 @@ const Home = () => {
 
               {/* APPLIANCES */}
               <Banner
-                className="mt-0 mb-6 aspect-[16/10] md:aspect-auto md:h-auto"
+                className="mt-0 mb-6 md:h-auto"
                 src={BannerStyle}
                 mobileSrc={BannerStyle}
                 linkUrl="/hair/styling"
                 bannerKey="home-appliances"
+                imageFit={isMobile ? "contain" : "cover"}
               />
 
               <Heading heading="Style Your Hair, Your Way" sub="Smart hair appliances for salon-like results at home" />
