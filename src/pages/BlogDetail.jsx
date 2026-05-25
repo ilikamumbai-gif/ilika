@@ -9,6 +9,13 @@ import Heading from "../components/Heading";
 const removeInlineImagesFromHtml = (html = "") =>
   String(html || "").replace(/<img[^>]*>/gi, "");
 
+const normalizeInternalLink = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return "";
+  return raw.startsWith("/") ? raw : `/${raw}`;
+};
+
 const renderSectionBlock = (section, index) => {
   if (!section) return null;
 
@@ -137,6 +144,11 @@ const BlogDetail = () => {
     return [{ type: "content-full", content: structuredContentHtml }];
   }, [blog?.contentSections, structuredContentHtml]);
 
+  const blogInternalLink = useMemo(
+    () => normalizeInternalLink(blog?.internalLink),
+    [blog?.internalLink]
+  );
+
   if (!blog) {
     return (
       <>
@@ -201,6 +213,18 @@ const BlogDetail = () => {
             </div>
 
             {contentSections.map((section, index) => renderSectionBlock(section, index))}
+
+            {blogInternalLink ? (
+              <div className="rounded-2xl border border-[#d3ddd3] bg-[#f8fbf8] p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#801f1f]">Related Internal Link</p>
+                <Link
+                  to={blogInternalLink}
+                  className="mt-3 inline-flex rounded-xl bg-[#1C371C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163016]"
+                >
+                  Visit Link
+                </Link>
+              </div>
+            ) : null}
           </article>
 
           <section className="mt-12 border-t border-[#e2ece2] pt-8">

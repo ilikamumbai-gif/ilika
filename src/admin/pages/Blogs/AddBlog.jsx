@@ -163,6 +163,7 @@ const AddBlog = () => {
     title: "",
     image: "",
     author: "",
+    internalLink: "",
     shortDesc: "",
     content: "",
     contentSections: [
@@ -360,6 +361,13 @@ const AddBlog = () => {
             className="w-full border p-3"
             onChange={handleChange}
             required
+          />
+
+          <input
+            name="internalLink"
+            placeholder="Internal Link (example: /product/your-product-slug)"
+            className="w-full border p-3"
+            onChange={handleChange}
           />
 
 

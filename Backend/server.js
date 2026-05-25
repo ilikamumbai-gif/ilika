@@ -1450,16 +1450,20 @@ app.delete("/api/products/:id", async (req, res) => {
 /* ============================== BLOGS ============================== */
 app.post("/api/blogs", async (req, res) => {
   try {
-    const { title, image, author, shortDesc, content } = req.body;
+    const { title, image, author, shortDesc, content, internalLink, contentSections } = req.body;
     if (!title) return res.status(400).json({ error: "Title required" });
 
     const now = Date.now();
+    const normalizedInternalLink = String(internalLink || "").trim();
     const blogData = {
       title: title || "",
       image: image || "",
       author: author || "",
       excerpt: shortDesc || "",
       content: content || "",
+      shortDesc: shortDesc || "",
+      internalLink: normalizedInternalLink,
+      contentSections: Array.isArray(contentSections) ? contentSections : [],
       createdAt: now,
       updatedAt: now,
     };

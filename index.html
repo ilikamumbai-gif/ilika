@@ -8,47 +8,6 @@
       window.location.replace(target);
     })();
   </script>
-  <!-- ===== Meta In-App Browser Redirect ===== -->
-  <!-- Forces Instagram / Facebook in-app browser to open in Chrome or Safari -->
-  <script>
-    (function () {
-      var ua = navigator.userAgent || '';
-
-      // Detect Meta / Facebook / Instagram in-app browsers
-      var isInstagram = ua.indexOf('Instagram') > -1;
-      var isFacebook  = ua.indexOf('FBAN') > -1 || ua.indexOf('FBAV') > -1 || ua.indexOf('FB_IAB') > -1;
-
-      if (!isInstagram && !isFacebook) return; // Not a Meta in-app browser — do nothing
-
-      var url = window.location.href;
-
-      // ---- Android: intent:// scheme forces Chrome ----
-      var isAndroid = /Android/i.test(ua);
-      if (isAndroid) {
-        // Strip the protocol so we can build the intent URI
-        var stripped = url.replace(/^https?:\/\//, '');
-        var intentUrl =
-          'intent://' + stripped +
-          '#Intent;scheme=https;package=com.android.chrome;end';
-        window.location.replace(intentUrl);
-        return;
-      }
-
-      // ---- iOS: window.open trick to break out of in-app browser ----
-      // On iOS we cannot use intent://, but opening with _blank and then
-      // replacing location works for most cases.  We also add ?openExternalBrowser=1
-      // which triggers a special handler in some apps.
-      var isIOS = /iPhone|iPad|iPod/i.test(ua);
-      if (isIOS) {
-        // Some newer Instagram / TikTok builds respect this query param
-        var sep = url.indexOf('?') === -1 ? '?' : '&';
-        window.location.replace(url + sep + 'openExternalBrowser=1');
-        return;
-      }
-    })();
-  </script>
-  <!-- ===== End Meta In-App Browser Redirect ===== -->
-
   <!-- Google Tag Manager (lazy load to protect first paint) -->
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -91,7 +50,7 @@
   <!-- End Google Tag Manager -->
   <meta charset="UTF-8" />
   <meta name="google" content="notranslate" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Ilika - Elegant. Bright. You. | Premium Skincare & Beauty Products</title>
   <meta name="description" content="Ilika offers premium skincare, beauty, and personal care products designed for glowing, healthy, and radiant skin. Shop face wash, creams, masks, hair care, and natural beauty products online in India." />
   <meta name="robots" content="index, follow" />
