@@ -644,6 +644,8 @@ const Checkout = () => {
         baseProductId: item.baseProductId || null,
         variantId: item.variantId || null,
         name: item.name,
+        hsnCode: item.hsnCode || item.hsn || null,
+        gstRate: item.gstRate ?? null,
         price: Number(item.price),
         quantity: Number(item.quantity) || 1,
         image: item.image || item.images?.[0] || item.imageUrl || "",

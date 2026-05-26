@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../components/AdminLayout";
 import { useOrders } from "../../context/OrderContext";
+import { useProducts } from "../../context/ProductContext";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { logActivity } from "../../Utils/logActivity";
@@ -102,6 +103,7 @@ const OrderDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getOrderById, updateOrderStatus, saveOrderTracking } = useOrders();
+  const { products, fetchProducts } = useProducts();
   const order = getOrderById(id);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [trackingSaving, setTrackingSaving] = useState(false);
@@ -161,6 +163,32 @@ const OrderDetail = () => {
 
   /* ─── PDF ─── */
   const downloadInvoice = async () => {
+    let productCatalog = Array.isArray(products) ? products : [];
+    if (!productCatalog.length) {
+      productCatalog = await fetchProducts();
+    }
+
+    const productById = new Map(
+      (Array.isArray(productCatalog) ? productCatalog : []).map((p) => [String(p?.id || ""), p])
+    );
+
+    const getMetaForInvoiceItem = (item = {}) => {
+      const candidateId = item.baseProductId || item.productId || item.id;
+      let matchedProduct = candidateId ? productById.get(String(candidateId)) : null;
+
+      if (!matchedProduct && item?.name) {
+        matchedProduct = productCatalog.find(
+          (p) => String(p?.name || "").trim().toLowerCase() === String(item.name || "").trim().toLowerCase()
+        );
+      }
+
+      const hsnCode = item.hsnCode || item.hsn || matchedProduct?.hsnCode || matchedProduct?.hsn || "85163200";
+      const gstRateRaw = item.gstRate ?? matchedProduct?.gstRate;
+      const gstRate = Number.isFinite(Number(gstRateRaw)) ? Number(gstRateRaw) : 0;
+
+      return { hsnCode, gstRate };
+    };
+
     const doc          = new jsPDF();
     const margin       = 14;
     const pageWidth    = doc.internal.pageSize.getWidth();
@@ -343,8 +371,9 @@ const OrderDetail = () => {
         pageBreak: "auto",
         rowPageBreak: "auto",
         showHead: "everyPage",
-        head: [["#", "Product", "HSN", "Qty", "Unit Price", "Discount", "Taxable Value", "IGST", "Total"]],
+        head: [["#", "Product Name", "HSN Code", "Qty", "Unit Price", "Discount", "Invoice Value", "GST", "Total Price"]],
         body: order.items.map((item, i) => {
+          const itemMeta = getMetaForInvoiceItem(item);
           const qty       = item.quantity || 1;
           const price     = item.price    || 0;
           const itemTotal = qty * price;
@@ -355,12 +384,12 @@ const OrderDetail = () => {
           return [
             i + 1,
             item?.selectedAddOn?.label ? `${item.name}\nAdd-on: ${item.selectedAddOn.label}` : item.name,
-            item.hsn || "85163200",
+            itemMeta.hsnCode,
             qty,
             formatPrice(price),
             discountText || "—",
             formatPrice(itemTotal),
-            "0%",
+            `${itemMeta.gstRate}%`,
             formatPrice(itemTotal),
           ];
         }),

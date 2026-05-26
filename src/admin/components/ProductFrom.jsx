@@ -159,6 +159,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   const { admin } = useAdminAuth();
 
   const emptyForm = {
+    hsnCode: "", gstRate: "",
     name: "", shortInfo: "", price: "", mrp: "",
     hasVariants: false, variants: [], categoryIds: [],
     description: "", additionalInfo: "", tagline: "", points: "",
@@ -181,6 +182,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     const initialCouponId = d.couponId || d.couponSnapshot?.id || "";
     const initialCouponSnapshot = sanitizeCouponSnapshot(d.couponSnapshot) || sanitizeCouponSnapshot(d.coupon);
     return {
+    hsnCode: d.hsnCode || d.hsn || "",
+    gstRate: d.gstRate ?? "",
     name: d.name || "",
     shortInfo: d.shortInfo || "",
     price: d.price || "",
@@ -478,6 +481,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         await logActivity(`${admin?.username || "Admin"} changed MRP of ${form.name} from ₹${initialData.mrp} to ₹${form.mrp}`);
 
       await onSubmit({
+        hsnCode: String(form.hsnCode || "").trim(),
+        gstRate: form.gstRate === "" ? null : Number(form.gstRate),
         name: form.name, shortInfo: form.shortInfo,
         hasVariants: form.hasVariants,
         price: form.hasVariants ? null : Number(form.price),
@@ -526,6 +531,29 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       <div className="border rounded-2xl bg-white p-5 space-y-4">
         <h2 className="text-base font-semibold text-gray-900">Basic Details</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-gray-600 block mb-1">HSN Code</label>
+            <input
+              name="hsnCode"
+              placeholder="HSN Code"
+              value={form.hsnCode}
+              onChange={e => setForm({ ...form, hsnCode: e.target.value })}
+              className="w-full border border-gray-200 p-2.5 rounded-lg"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-600 block mb-1">GST Rate (%)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              name="gstRate"
+              placeholder="GST Rate (%)"
+              value={form.gstRate}
+              onChange={e => setForm({ ...form, gstRate: e.target.value })}
+              className="w-full border border-gray-200 p-2.5 rounded-lg"
+            />
+          </div>
           <div className="lg:col-span-2">
             <label className="text-xs font-semibold text-gray-600 block mb-1">Product Name</label>
             <input name="name" placeholder="Product Name" value={form.name}

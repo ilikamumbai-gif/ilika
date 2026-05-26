@@ -1,5 +1,6 @@
 export const ALL_ADMIN_PERMISSIONS = [
   "dashboard",
+  "analytics",
   "products",
   "coupons",
   "combos",
@@ -22,6 +23,7 @@ const DEFAULT_ROLE_PERMISSIONS = {
   superadmin: ALL_ADMIN_PERMISSIONS,
   admin: [
     "dashboard",
+    "analytics",
     "products",
     "coupons",
     "combos",

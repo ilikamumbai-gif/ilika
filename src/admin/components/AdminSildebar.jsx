@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Package, Layers, ShoppingCart, Users,
   X, Gift, Star, ClipboardList, Logs, MessageSquare,
   ShieldIcon, FileText, BookOpen, ChevronRight, TicketPercent,
-  Bell
+  Bell, LineChart
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -14,6 +14,7 @@ const NAV_GROUPS = [
     label: "Overview",
     items: [
       { to: "/admin",             icon: LayoutDashboard, label: "Dashboard"      },
+      { to: "/admin/analytics",   icon: LineChart,       label: "Analytics", permission: "analytics" },
     ]
   },
   {

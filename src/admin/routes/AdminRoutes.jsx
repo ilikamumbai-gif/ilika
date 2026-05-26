@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Dashboard from "../pages/Dashboard";
+import AnalyticsBoard from "../pages/Analytics/AnalyticsBoard";
 import ProductList from "../pages/products/ProductList";
 import AddProduct from "../pages/products/AddProduct";
 import EditProduct from "../pages/products/EditProduct";
@@ -67,6 +68,7 @@ const AdminRoutes = () => {
                         <ReviewProvider>
                         <Routes>
                         <Route index element={<Dashboard />} />
+                        <Route path="analytics" element={withPermission("analytics", <AnalyticsBoard />)} />
 
                         <Route path="admins" element={withPermission("admins", <AdminList />)} />
 

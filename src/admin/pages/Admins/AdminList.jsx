@@ -8,6 +8,7 @@ import { useAdminAuth } from "../../context/AdminAuthContext";
 const API = `${import.meta.env.VITE_API_URL}/api`;
 
 const ACCESS_LABELS = {
+  analytics: "Analytics",
   products: "Products",
   coupons: "Coupons",
   combos: "Combos",
@@ -41,7 +42,7 @@ const AdminList = () => {
     username: "",
     password: "",
     role: "admin",
-    permissions: ["dashboard", "products", "orders"],
+    permissions: ["dashboard", "analytics", "products", "orders"],
   });
 
   const requesterIsSuperAdmin = isSuperAdmin(currentAdmin);
@@ -86,7 +87,7 @@ const AdminList = () => {
         username: "",
         password: "",
         role: "admin",
-        permissions: ["dashboard", "products", "orders"],
+        permissions: ["dashboard", "analytics", "products", "orders"],
       });
       fetchAdmins();
     } else {
