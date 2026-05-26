@@ -1931,6 +1931,103 @@ app.get("/api/orders", async (req, res) => {
   res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 });
 
+app.get("/api/analytics", async (req, res) => {
+  try {
+    const days = Math.min(Math.max(Number(req.query.days || 30), 7), 120);
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - (days - 1));
+    start.setHours(0, 0, 0, 0);
+
+    const snapshot = await db
+      .collection("orders")
+      .where("createdAt", ">=", start)
+      .orderBy("createdAt", "asc")
+      .get();
+
+    const fmt = (d) =>
+      d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+    const toDate = (value) => {
+      if (!value) return null;
+      if (value instanceof Date) return value;
+      if (typeof value?.toDate === "function") return value.toDate();
+      if (value?._seconds) return new Date(value._seconds * 1000);
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
+    const normalizeSourceLabel = (raw = "") => {
+      const src = String(raw || "").toLowerCase();
+      if (src.includes("facebook") || src.includes("fb") || src.includes("insta") || src.includes("meta")) {
+        return "meta";
+      }
+      if (src.includes("google")) return "google";
+      return "organic";
+    };
+
+    const labels = [];
+    const fullTrafficMap = new Map();
+    const metaClickMap = new Map();
+    const googleClickMap = new Map();
+    const organicSearchMap = new Map();
+
+    for (let i = 0; i < days; i += 1) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const key = fmt(d);
+      labels.push(key);
+      fullTrafficMap.set(key, 0);
+      metaClickMap.set(key, 0);
+      googleClickMap.set(key, 0);
+      organicSearchMap.set(key, 0);
+    }
+
+    let metaRevenue = 0;
+    let googleRevenue = 0;
+    let organicRevenue = 0;
+
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data() || {};
+      const createdAt = toDate(data.createdAt);
+      if (!createdAt) return;
+      const key = fmt(createdAt);
+      if (!fullTrafficMap.has(key)) return;
+
+      const amount = Number(data.totalAmount || data.total || 0);
+      const source = normalizeSourceLabel(data.source);
+
+      fullTrafficMap.set(key, Number(fullTrafficMap.get(key) || 0) + 1);
+      if (source === "meta") {
+        metaClickMap.set(key, Number(metaClickMap.get(key) || 0) + 1);
+        metaRevenue += amount;
+      } else if (source === "google") {
+        googleClickMap.set(key, Number(googleClickMap.get(key) || 0) + 1);
+        googleRevenue += amount;
+      } else {
+        organicSearchMap.set(key, Number(organicSearchMap.get(key) || 0) + 1);
+        organicRevenue += amount;
+      }
+    });
+
+    const toSeries = (map) =>
+      labels.map((label) => ({ label, value: Number(map.get(label) || 0) }));
+
+    res.json({
+      fullTraffic: toSeries(fullTrafficMap),
+      metaClick: toSeries(metaClickMap),
+      googleClick: toSeries(googleClickMap),
+      organicSearch: toSeries(organicSearchMap),
+      revenue: {
+        meta: Number(metaRevenue.toFixed(2)),
+        google: Number(googleRevenue.toFixed(2)),
+        organic: Number(organicRevenue.toFixed(2)),
+      },
+    });
+  } catch (error) {
+    console.error("ANALYTICS FETCH ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch analytics" });
+  }
+});
+
 app.get("/api/users/:uid/orders", async (req, res) => {
   try {
     const uid = String(req.params.uid || "").trim();
@@ -3136,5 +3233,4 @@ app.listen(PORT, () => {
     } target=${MERCHANT_TARGET_COUNTRY} language=${MERCHANT_CONTENT_LANGUAGE}`
   );
 });
-
 
