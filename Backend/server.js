@@ -1944,6 +1944,12 @@ app.get("/api/analytics", async (req, res) => {
       .where("createdAt", ">=", start)
       .orderBy("createdAt", "asc")
       .get();
+    const [usersSnapshot, allOrdersSnapshot, allCartEventsSnapshot, recentCartEventsSnapshot] = await Promise.all([
+      db.collection("users").get(),
+      db.collection("orders").get(),
+      db.collection("cartEvents").get(),
+      db.collection("cartEvents").where("createdAt", ">=", start).get(),
+    ]);
 
     const fmt = (d) =>
       d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
@@ -2020,6 +2026,13 @@ app.get("/api/analytics", async (req, res) => {
         meta: Number(metaRevenue.toFixed(2)),
         google: Number(googleRevenue.toFixed(2)),
         organic: Number(organicRevenue.toFixed(2)),
+      },
+      firebaseAnalytics: {
+        usersTotal: usersSnapshot.size,
+        ordersTotal: allOrdersSnapshot.size,
+        cartEventsTotal: allCartEventsSnapshot.size,
+        ordersInRange: snapshot.size,
+        cartEventsInRange: recentCartEventsSnapshot.size,
       },
     });
   } catch (error) {
@@ -3233,4 +3246,3 @@ app.listen(PORT, () => {
     } target=${MERCHANT_TARGET_COUNTRY} language=${MERCHANT_CONTENT_LANGUAGE}`
   );
 });
-

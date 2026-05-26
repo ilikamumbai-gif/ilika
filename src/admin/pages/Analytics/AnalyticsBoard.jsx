@@ -49,6 +49,13 @@ const FALLBACK_ANALYTICS = {
     { label: "May 25", value: 15 },
   ],
   revenue: { meta: 24500, google: 18200, organic: 15300 },
+  firebaseAnalytics: {
+    usersTotal: 0,
+    ordersTotal: 0,
+    cartEventsTotal: 0,
+    ordersInRange: 0,
+    cartEventsInRange: 0,
+  },
 };
 
 const normalizeSeries = (value) => {
@@ -66,8 +73,7 @@ const normalizeSeries = (value) => {
     .filter((item) => Number.isFinite(item.value));
 };
 
-const deriveAnalyticsFromOrders = (orders = []) => {
-  const days = 30;
+const deriveAnalyticsFromOrders = (orders = [], days = 30) => {
   const now = new Date();
   const start = new Date(now);
   start.setDate(now.getDate() - (days - 1));
@@ -143,6 +149,13 @@ const deriveAnalyticsFromOrders = (orders = []) => {
       google: Number(googleRevenue.toFixed(2)),
       organic: Number(organicRevenue.toFixed(2)),
     },
+    firebaseAnalytics: {
+      usersTotal: 0,
+      ordersTotal: Array.isArray(orders) ? orders.length : 0,
+      cartEventsTotal: 0,
+      ordersInRange: Array.isArray(orders) ? orders.length : 0,
+      cartEventsInRange: 0,
+    },
   };
 };
 
@@ -153,28 +166,52 @@ const toNumber = (value) => Number(value || 0).toLocaleString("en-IN");
 
 const SimpleLineChart = ({ data = [] }) => {
   const width = 560;
-  const height = 220;
+  const height = 240;
+  const leftPad = 38;
+  const rightPad = 12;
+  const topPad = 12;
+  const bottomPad = 30;
   const points = useMemo(() => {
     if (!data.length) return "";
     const max = Math.max(...data.map((d) => d.value), 1);
     return data
       .map((d, i) => {
-        const x = (i / Math.max(data.length - 1, 1)) * (width - 20) + 10;
-        const y = height - ((d.value / max) * (height - 30) + 15);
+        const x =
+          (i / Math.max(data.length - 1, 1)) * (width - leftPad - rightPad) + leftPad;
+        const y =
+          height - bottomPad - (d.value / max) * (height - topPad - bottomPad);
         return `${x},${y}`;
       })
       .join(" ");
   }, [data]);
+
+  const maxY = Math.max(...data.map((d) => Number(d.value || 0)), 1);
+  const midY = Math.round(maxY / 2);
+  const firstLabel = data[0]?.label || "";
+  const midLabel = data[Math.floor(data.length / 2)]?.label || "";
+  const lastLabel = data[data.length - 1]?.label || "";
 
   if (!data.length) {
     return <div className="h-[220px] grid place-items-center text-sm text-gray-400">No chart data</div>;
   }
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-[220px]">
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-[240px]">
+      <line x1={leftPad} y1={topPad} x2={leftPad} y2={height - bottomPad} stroke="#cbd5e1" strokeWidth="1" />
+      <line x1={leftPad} y1={height - bottomPad} x2={width - rightPad} y2={height - bottomPad} stroke="#cbd5e1" strokeWidth="1" />
+      <line x1={leftPad} y1={height - bottomPad - (height - topPad - bottomPad) / 2} x2={width - rightPad} y2={height - bottomPad - (height - topPad - bottomPad) / 2} stroke="#e5e7eb" strokeWidth="1" />
+
+      <text x={leftPad - 6} y={height - bottomPad + 4} textAnchor="end" fontSize="10" fill="#64748b">0</text>
+      <text x={leftPad - 6} y={height - bottomPad - (height - topPad - bottomPad) / 2 + 4} textAnchor="end" fontSize="10" fill="#64748b">{midY}</text>
+      <text x={leftPad - 6} y={topPad + 4} textAnchor="end" fontSize="10" fill="#64748b">{maxY}</text>
+
+      <text x={leftPad} y={height - 8} textAnchor="start" fontSize="10" fill="#64748b">{firstLabel}</text>
+      <text x={(width - leftPad - rightPad) / 2 + leftPad} y={height - 8} textAnchor="middle" fontSize="10" fill="#64748b">{midLabel}</text>
+      <text x={width - rightPad} y={height - 8} textAnchor="end" fontSize="10" fill="#64748b">{lastLabel}</text>
+
       <polyline points={points} fill="none" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" />
       <polyline
-        points={`${points} ${width - 10},${height - 5} 10,${height - 5}`}
+        points={`${points} ${width - rightPad},${height - bottomPad} ${leftPad},${height - bottomPad}`}
         fill="rgba(37,99,235,0.12)"
         stroke="none"
       />
@@ -194,6 +231,9 @@ const ChartCard = ({ title, data }) => (
 
 const AnalyticsBoard = () => {
   const { getAdminAuthHeaders } = useAdminAuth();
+  const [days, setDays] = useState(30);
+  const [live, setLive] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
@@ -203,6 +243,13 @@ const AnalyticsBoard = () => {
     googleClick: [],
     organicSearch: [],
     revenue: { meta: 0, google: 0, organic: 0 },
+    firebaseAnalytics: {
+      usersTotal: 0,
+      ordersTotal: 0,
+      cartEventsTotal: 0,
+      ordersInRange: 0,
+      cartEventsInRange: 0,
+    },
   });
 
   useEffect(() => {
@@ -226,15 +273,18 @@ const AnalyticsBoard = () => {
       }
 
       try {
-        const endpoint = analyticsPath.startsWith("http") ? analyticsPath : `${API}${analyticsPath}`;
+        const baseEndpoint = analyticsPath.startsWith("http") ? analyticsPath : `${API}${analyticsPath}`;
+        const joiner = baseEndpoint.includes("?") ? "&" : "?";
+        const endpoint = `${baseEndpoint}${joiner}days=${days}`;
         const res = await fetch(endpoint, { headers });
         if (!res.ok) {
           // Fallback: derive analytics from orders if analytics route is not deployed yet.
           const ordersRes = await fetch(`${API}/api/orders`, { headers });
           if (ordersRes.ok) {
             const orders = await ordersRes.json();
-            setAnalytics(deriveAnalyticsFromOrders(Array.isArray(orders) ? orders : []));
+            setAnalytics(deriveAnalyticsFromOrders(Array.isArray(orders) ? orders : [], days));
             setError("Analytics route not found on backend. Showing computed analytics from orders.");
+            setLastUpdated(new Date());
             setLoading(false);
             return;
           }
@@ -262,23 +312,69 @@ const AnalyticsBoard = () => {
             google: Number(revenue.google || 0),
             organic: Number(revenue.organic || 0),
           },
+          firebaseAnalytics: {
+            usersTotal: Number(source?.firebaseAnalytics?.usersTotal || 0),
+            ordersTotal: Number(source?.firebaseAnalytics?.ordersTotal || 0),
+            cartEventsTotal: Number(source?.firebaseAnalytics?.cartEventsTotal || 0),
+            ordersInRange: Number(source?.firebaseAnalytics?.ordersInRange || 0),
+            cartEventsInRange: Number(source?.firebaseAnalytics?.cartEventsInRange || 0),
+          },
         });
+        setLastUpdated(new Date());
       } catch (fetchError) {
         setAnalytics(FALLBACK_ANALYTICS);
         setError("Unable to fetch analytics data from backend. Showing sample analytics data.");
+        setLastUpdated(new Date());
       } finally {
         setLoading(false);
       }
     };
 
     load();
-  }, [getAdminAuthHeaders]);
+    let timer = null;
+    if (live) {
+      timer = window.setInterval(() => {
+        load();
+      }, 30000);
+    }
+    return () => {
+      if (timer) window.clearInterval(timer);
+    };
+  }, [getAdminAuthHeaders, days, live]);
 
   return (
     <AdminLayout>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Marketing Analytics</h1>
-        <p className="text-sm text-gray-500 mt-1">Traffic, channel clicks, and revenue overview</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Marketing Analytics</h1>
+            <p className="text-sm text-gray-500 mt-1">Traffic, channel clicks, and revenue overview</p>
+            {lastUpdated ? (
+              <p className="text-xs text-gray-400 mt-1">
+                Last updated: {lastUpdated.toLocaleTimeString("en-IN")}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={days}
+              onChange={(e) => setDays(Number(e.target.value))}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white"
+            >
+              <option value={7}>Last 7 days</option>
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+            </select>
+            <label className="flex items-center gap-2 text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white">
+              <input
+                type="checkbox"
+                checked={live}
+                onChange={(e) => setLive(e.target.checked)}
+              />
+              Live
+            </label>
+          </div>
+        </div>
       </div>
 
       {loading ? (
@@ -312,6 +408,32 @@ const AnalyticsBoard = () => {
                 <p className="text-2xl font-bold text-gray-900 mt-1">{toCurrency(analytics.revenue[item.key])}</p>
               </div>
             ))}
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Firebase Analytics Snapshot</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Users (Total)</p>
+                <p className="text-lg font-bold text-gray-900">{toNumber(analytics.firebaseAnalytics.usersTotal)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Orders (Total)</p>
+                <p className="text-lg font-bold text-gray-900">{toNumber(analytics.firebaseAnalytics.ordersTotal)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Cart Events (Total)</p>
+                <p className="text-lg font-bold text-gray-900">{toNumber(analytics.firebaseAnalytics.cartEventsTotal)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Orders ({days}d)</p>
+                <p className="text-lg font-bold text-gray-900">{toNumber(analytics.firebaseAnalytics.ordersInRange)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Cart Events ({days}d)</p>
+                <p className="text-lg font-bold text-gray-900">{toNumber(analytics.firebaseAnalytics.cartEventsInRange)}</p>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
