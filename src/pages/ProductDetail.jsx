@@ -474,9 +474,7 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
               <span className="text-xl font-bold text-[#1C371C]">₹{price}</span>
               {mrp > 0 && <span className="text-xs text-gray-400 line-through">MRP ₹{mrp}</span>}
               {discount > 0 && (
-                <span className="text-[10px] font-bold bg-white/55 backdrop-blur-md text-black px-2 py-0.5 rounded-md border border-white/70 shadow-sm">
-                  {discount}% OFF
-                </span>
+                <span className="text-[10px] font-bold bg-[#1C371C] text-white px-2 py-0.5 rounded-md">{discount}% OFF</span>
               )}
             </div>
             <p className="text-[10px] text-gray-400 -mt-1">Inclusive of all taxes</p>

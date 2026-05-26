@@ -151,7 +151,7 @@ const ProductCard = ({
 
           {/* DISCOUNT BADGE (THEME) */}
           {calculatedDiscount && (
-            <div className="absolute top-3 right-3 bg-white/55 backdrop-blur-md text-black text-xs font-semibold px-2.5 py-1 rounded-md border border-white/70 shadow-sm">
+            <div className="absolute top-3 right-3 bg-[#b34140] text-white text-xs font-semibold px-2.5 py-1 rounded-md shadow">
               {calculatedDiscount}% OFF
             </div>
           )}
