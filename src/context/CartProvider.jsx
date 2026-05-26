@@ -22,6 +22,48 @@ export const CartProvider = ({ children }) => {
 
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
+  const ATTRIBUTION_KEY = "ilika_attribution_v1";
+
+  const getAttributionData = () => {
+    if (typeof window === "undefined") return {};
+
+    const query = new URLSearchParams(window.location.search || "");
+    const current = {
+      fbclid: query.get("fbclid") || "",
+      gclid: query.get("gclid") || "",
+      utmSource: query.get("utm_source") || "",
+      utmCampaign: query.get("utm_campaign") || "",
+      utmMedium: query.get("utm_medium") || "",
+      utmContent: query.get("utm_content") || "",
+      utmTerm: query.get("utm_term") || "",
+      campaignId: query.get("campaign_id") || query.get("utm_id") || "",
+      adsetId: query.get("adset_id") || "",
+      adId: query.get("ad_id") || "",
+      landingPath: `${window.location.pathname || "/"}${window.location.search || ""}`,
+    };
+
+    let stored = {};
+    try {
+      stored = JSON.parse(localStorage.getItem(ATTRIBUTION_KEY) || "{}");
+    } catch {
+      stored = {};
+    }
+
+    const hasCurrentAttribution = Object.values(current).some((v) => Boolean(v));
+    if (hasCurrentAttribution) {
+      const next = {
+        ...stored,
+        ...current,
+        updatedAt: Date.now(),
+      };
+      try {
+        localStorage.setItem(ATTRIBUTION_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    }
+
+    return stored || {};
+  };
 
   const createIdSuffix = () =>
     `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -276,6 +318,7 @@ export const CartProvider = ({ children }) => {
             null,
           userId: currentUser?.uid || null,
           userEmail: currentUser?.email || null,
+          ...getAttributionData(),
         }),
       });
     } catch (err) {

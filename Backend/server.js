@@ -18,6 +18,14 @@ const SMTP_SECURE = String(process.env.SMTP_SECURE || "true").toLowerCase() !== 
 const SMTP_USER = process.env.SMTP_USER || process.env.GMAIL_USER || "";
 const SMTP_PASS = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "";
 const SMTP_FROM = process.env.SMTP_FROM || SMTP_USER;
+const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN || "";
+const META_AD_ACCOUNT_ID = String(process.env.META_AD_ACCOUNT_ID || "").replace(/^act_/, "");
+const GOOGLE_ADS_DEVELOPER_TOKEN = process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "";
+const GOOGLE_ADS_CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID || "";
+const GOOGLE_ADS_CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET || "";
+const GOOGLE_ADS_REFRESH_TOKEN = process.env.GOOGLE_ADS_REFRESH_TOKEN || "";
+const GOOGLE_ADS_CUSTOMER_ID = String(process.env.GOOGLE_ADS_CUSTOMER_ID || "").replace(/-/g, "");
+const GOOGLE_ADS_LOGIN_CUSTOMER_ID = String(process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID || "").replace(/-/g, "");
 let mailTransporter = null;
 
 const getMailTransporter = () => {
@@ -97,6 +105,260 @@ const createOrderWithGeneratedId = async (orderData = {}) => {
 
     return selectedId;
   });
+};
+
+const fetchMetaAdsInsights = async (days = 30) => {
+  if (!META_ACCESS_TOKEN || !META_AD_ACCOUNT_ID) {
+    return {
+      enabled: false,
+      rows: [],
+      totalImpressions: 0,
+      totalClicks: 0,
+      totalSpend: 0,
+      error: "Missing META_ACCESS_TOKEN or META_AD_ACCOUNT_ID",
+    };
+  }
+
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - (days - 1));
+
+  const since = start.toISOString().slice(0, 10);
+  const until = end.toISOString().slice(0, 10);
+
+  const params = new URLSearchParams({
+    access_token: META_ACCESS_TOKEN,
+    level: "ad",
+    time_increment: "1",
+    fields: "date_start,date_stop,campaign_name,adset_name,ad_name,publisher_platform,platform_position,impressions,clicks,spend",
+    time_range: JSON.stringify({ since, until }),
+    limit: "500",
+  });
+
+  const url = `https://graph.facebook.com/v19.0/act_${META_AD_ACCOUNT_ID}/insights?${params.toString()}`;
+  const response = await fetch(url);
+  const json = await response.json();
+
+  if (!response.ok) {
+    return {
+      enabled: true,
+      rows: [],
+      totalImpressions: 0,
+      totalClicks: 0,
+      totalSpend: 0,
+      error: json?.error?.message || "Failed to fetch Meta insights",
+    };
+  }
+
+  const rows = Array.isArray(json?.data) ? json.data : [];
+  const normalized = rows.map((row) => ({
+    date: row.date_start || "",
+    campaignName: row.campaign_name || "Unknown Campaign",
+    adsetName: row.adset_name || "Unknown Adset",
+    adName: row.ad_name || "Unknown Ad",
+    publisherPlatform: row.publisher_platform || "unknown",
+    platformPosition: row.platform_position || "unknown",
+    impressions: Number(row.impressions || 0),
+    clicks: Number(row.clicks || 0),
+    spend: Number(row.spend || 0),
+  }));
+
+  const totals = normalized.reduce(
+    (acc, row) => {
+      acc.impressions += row.impressions;
+      acc.clicks += row.clicks;
+      acc.spend += row.spend;
+      return acc;
+    },
+    { impressions: 0, clicks: 0, spend: 0 }
+  );
+
+  const platformTotalsMap = new Map();
+  normalized.forEach((row) => {
+    const key = String(row.publisherPlatform || "unknown").toLowerCase();
+    if (!platformTotalsMap.has(key)) {
+      platformTotalsMap.set(key, { platform: key, impressions: 0, clicks: 0, spend: 0 });
+    }
+    const entry = platformTotalsMap.get(key);
+    entry.impressions += Number(row.impressions || 0);
+    entry.clicks += Number(row.clicks || 0);
+    entry.spend += Number(row.spend || 0);
+  });
+  const platformTotals = Array.from(platformTotalsMap.values()).map((item) => ({
+    ...item,
+    spend: Number(item.spend.toFixed(2)),
+  }));
+
+  return {
+    enabled: true,
+    rows: normalized,
+    platformTotals,
+    totalImpressions: totals.impressions,
+    totalClicks: totals.clicks,
+    totalSpend: Number(totals.spend.toFixed(2)),
+    error: null,
+  };
+};
+
+const fetchGoogleAdsAccessToken = async () => {
+  const tokenUrl = "https://oauth2.googleapis.com/token";
+  const body = new URLSearchParams({
+    client_id: GOOGLE_ADS_CLIENT_ID,
+    client_secret: GOOGLE_ADS_CLIENT_SECRET,
+    refresh_token: GOOGLE_ADS_REFRESH_TOKEN,
+    grant_type: "refresh_token",
+  });
+  const res = await fetch(tokenUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  const data = await res.json();
+  if (!res.ok || !data?.access_token) {
+    throw new Error(data?.error_description || data?.error || "Failed to fetch Google Ads access token");
+  }
+  return data.access_token;
+};
+
+const fetchGoogleAdsInsights = async (days = 30) => {
+  if (
+    !GOOGLE_ADS_DEVELOPER_TOKEN ||
+    !GOOGLE_ADS_CLIENT_ID ||
+    !GOOGLE_ADS_CLIENT_SECRET ||
+    !GOOGLE_ADS_REFRESH_TOKEN ||
+    !GOOGLE_ADS_CUSTOMER_ID
+  ) {
+    return {
+      enabled: false,
+      rows: [],
+      totalImpressions: 0,
+      totalClicks: 0,
+      totalSpend: 0,
+      error: "Missing Google Ads credentials env vars",
+    };
+  }
+
+  try {
+    const accessToken = await fetchGoogleAdsAccessToken();
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - (days - 1));
+    const since = start.toISOString().slice(0, 10);
+    const until = end.toISOString().slice(0, 10);
+
+    const query = `
+      SELECT
+        segments.date,
+        campaign.id,
+        campaign.name,
+        campaign.advertising_channel_type,
+        metrics.impressions,
+        metrics.clicks,
+        metrics.cost_micros
+      FROM campaign
+      WHERE segments.date BETWEEN '${since}' AND '${until}'
+      ORDER BY segments.date DESC
+    `;
+
+    const url = `https://googleads.googleapis.com/v17/customers/${GOOGLE_ADS_CUSTOMER_ID}/googleAds:searchStream`;
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      "developer-token": GOOGLE_ADS_DEVELOPER_TOKEN,
+      "Content-Type": "application/json",
+    };
+    if (GOOGLE_ADS_LOGIN_CUSTOMER_ID) {
+      headers["login-customer-id"] = GOOGLE_ADS_LOGIN_CUSTOMER_ID;
+    }
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ query }),
+    });
+
+    const text = await res.text();
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = null;
+    }
+    if (!res.ok) {
+      const message = parsed?.error?.message || text || "Failed to fetch Google Ads insights";
+      return {
+        enabled: true,
+        rows: [],
+        totalImpressions: 0,
+        totalClicks: 0,
+        totalSpend: 0,
+        error: message,
+      };
+    }
+
+    const chunks = Array.isArray(parsed) ? parsed : [];
+    const rows = [];
+    chunks.forEach((chunk) => {
+      (chunk?.results || []).forEach((r) => {
+        const impressions = Number(r?.metrics?.impressions || 0);
+        const clicks = Number(r?.metrics?.clicks || 0);
+        const spend = Number(r?.metrics?.costMicros || r?.metrics?.cost_micros || 0) / 1_000_000;
+        rows.push({
+          date: r?.segments?.date || "",
+          campaignId: String(r?.campaign?.id || ""),
+          campaignName: r?.campaign?.name || "Unknown Campaign",
+          channelType: r?.campaign?.advertisingChannelType || r?.campaign?.advertising_channel_type || "UNKNOWN",
+          impressions,
+          clicks,
+          spend: Number(spend.toFixed(2)),
+        });
+      });
+    });
+
+    const totals = rows.reduce(
+      (acc, row) => {
+        acc.impressions += row.impressions;
+        acc.clicks += row.clicks;
+        acc.spend += row.spend;
+        return acc;
+      },
+      { impressions: 0, clicks: 0, spend: 0 }
+    );
+
+    const channelMap = new Map();
+    rows.forEach((row) => {
+      const key = String(row.channelType || "UNKNOWN");
+      if (!channelMap.has(key)) {
+        channelMap.set(key, { channel: key, impressions: 0, clicks: 0, spend: 0 });
+      }
+      const bucket = channelMap.get(key);
+      bucket.impressions += row.impressions;
+      bucket.clicks += row.clicks;
+      bucket.spend += row.spend;
+    });
+    const channelTotals = Array.from(channelMap.values()).map((item) => ({
+      ...item,
+      spend: Number(item.spend.toFixed(2)),
+    }));
+
+    return {
+      enabled: true,
+      rows,
+      channelTotals,
+      totalImpressions: totals.impressions,
+      totalClicks: totals.clicks,
+      totalSpend: Number(totals.spend.toFixed(2)),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      enabled: true,
+      rows: [],
+      totalImpressions: 0,
+      totalClicks: 0,
+      totalSpend: 0,
+      error: error?.message || "Failed to fetch Google Ads insights",
+    };
+  }
 };
 
 const sendAdminLoginAlert = async ({ username, role, req }) => {
@@ -1944,11 +2206,13 @@ app.get("/api/analytics", async (req, res) => {
       .where("createdAt", ">=", start)
       .orderBy("createdAt", "asc")
       .get();
-    const [usersSnapshot, allOrdersSnapshot, allCartEventsSnapshot, recentCartEventsSnapshot] = await Promise.all([
+    const [usersSnapshot, allOrdersSnapshot, allCartEventsSnapshot, recentCartEventsSnapshot, metaAds, googleAds] = await Promise.all([
       db.collection("users").get(),
       db.collection("orders").get(),
       db.collection("cartEvents").get(),
       db.collection("cartEvents").where("createdAt", ">=", start).get(),
+      fetchMetaAdsInsights(days),
+      fetchGoogleAdsInsights(days),
     ]);
 
     const fmt = (d) =>
@@ -2002,15 +2266,36 @@ app.get("/api/analytics", async (req, res) => {
       const source = normalizeSourceLabel(data.source);
 
       fullTrafficMap.set(key, Number(fullTrafficMap.get(key) || 0) + 1);
-      if (source === "meta") {
+      if (source === "meta") metaRevenue += amount;
+      else if (source === "google") googleRevenue += amount;
+      else organicRevenue += amount;
+    });
+
+    const classifyCartEventSource = (event = {}) => {
+      const source = String(event?.utmSource || "").toLowerCase();
+      const medium = String(event?.utmMedium || "").toLowerCase();
+      const hasFb = Boolean(event?.fbclid) || source.includes("facebook") || source.includes("instagram") || source.includes("meta");
+      const hasGoogle = Boolean(event?.gclid) || source.includes("google");
+
+      if (hasFb) return "meta";
+      if (hasGoogle) return "google";
+      if (medium === "organic" || source === "organic") return "organic";
+      return "organic";
+    };
+
+    recentCartEventsSnapshot.docs.forEach((doc) => {
+      const ev = doc.data() || {};
+      const createdAt = toDate(ev.createdAt);
+      if (!createdAt) return;
+      const key = fmt(createdAt);
+      if (!fullTrafficMap.has(key)) return;
+      const type = classifyCartEventSource(ev);
+      if (type === "meta") {
         metaClickMap.set(key, Number(metaClickMap.get(key) || 0) + 1);
-        metaRevenue += amount;
-      } else if (source === "google") {
+      } else if (type === "google") {
         googleClickMap.set(key, Number(googleClickMap.get(key) || 0) + 1);
-        googleRevenue += amount;
       } else {
         organicSearchMap.set(key, Number(organicSearchMap.get(key) || 0) + 1);
-        organicRevenue += amount;
       }
     });
 
@@ -2034,6 +2319,8 @@ app.get("/api/analytics", async (req, res) => {
         ordersInRange: snapshot.size,
         cartEventsInRange: recentCartEventsSnapshot.size,
       },
+      metaAds,
+      googleAds,
     });
   } catch (error) {
     console.error("ANALYTICS FETCH ERROR:", error);
@@ -2394,7 +2681,25 @@ app.delete("/api/reviews/:productId/:index", async (req, res) => {
 /* ============================== CART EVENTS ============================== */
 app.post("/api/cart-events", async (req, res) => {
   try {
-    const { productId, name, price, image, userId, userEmail } = req.body;
+    const {
+      productId,
+      name,
+      price,
+      image,
+      userId,
+      userEmail,
+      fbclid,
+      gclid,
+      utmSource,
+      utmCampaign,
+      utmMedium,
+      utmContent,
+      utmTerm,
+      campaignId,
+      adsetId,
+      adId,
+      landingPath,
+    } = req.body;
 
     const eventData = {
       productId: productId || null,
@@ -2403,6 +2708,17 @@ app.post("/api/cart-events", async (req, res) => {
       image: typeof image === "string" ? image : null, // ✅ FIX
       userId: userId || null,
       userEmail: userEmail || null,
+      fbclid: String(fbclid || "").trim() || null,
+      gclid: String(gclid || "").trim() || null,
+      utmSource: String(utmSource || "").trim() || null,
+      utmCampaign: String(utmCampaign || "").trim() || null,
+      utmMedium: String(utmMedium || "").trim() || null,
+      utmContent: String(utmContent || "").trim() || null,
+      utmTerm: String(utmTerm || "").trim() || null,
+      campaignId: String(campaignId || "").trim() || null,
+      adsetId: String(adsetId || "").trim() || null,
+      adId: String(adId || "").trim() || null,
+      landingPath: String(landingPath || "").trim() || null,
       createdAt: new Date(),
     };
     

@@ -73,7 +73,7 @@ const normalizeSeries = (value) => {
     .filter((item) => Number.isFinite(item.value));
 };
 
-const deriveAnalyticsFromOrders = (orders = [], days = 30) => {
+const deriveAnalyticsFromOrders = (orders = [], days = 30, extras = {}) => {
   const now = new Date();
   const start = new Date(now);
   start.setDate(now.getDate() - (days - 1));
@@ -150,11 +150,11 @@ const deriveAnalyticsFromOrders = (orders = [], days = 30) => {
       organic: Number(organicRevenue.toFixed(2)),
     },
     firebaseAnalytics: {
-      usersTotal: 0,
+      usersTotal: Number(extras.usersTotal || 0),
       ordersTotal: Array.isArray(orders) ? orders.length : 0,
-      cartEventsTotal: 0,
+      cartEventsTotal: Number(extras.cartEventsTotal || 0),
       ordersInRange: Array.isArray(orders) ? orders.length : 0,
-      cartEventsInRange: 0,
+      cartEventsInRange: Number(extras.cartEventsInRange || 0),
     },
   };
 };
@@ -250,6 +250,23 @@ const AnalyticsBoard = () => {
       ordersInRange: 0,
       cartEventsInRange: 0,
     },
+    metaAds: {
+      enabled: false,
+      rows: [],
+      totalImpressions: 0,
+      totalClicks: 0,
+      totalSpend: 0,
+      error: null,
+    },
+    googleAds: {
+      enabled: false,
+      rows: [],
+      channelTotals: [],
+      totalImpressions: 0,
+      totalClicks: 0,
+      totalSpend: 0,
+      error: null,
+    },
   });
 
   useEffect(() => {
@@ -282,7 +299,43 @@ const AnalyticsBoard = () => {
           const ordersRes = await fetch(`${API}/api/orders`, { headers });
           if (ordersRes.ok) {
             const orders = await ordersRes.json();
-            setAnalytics(deriveAnalyticsFromOrders(Array.isArray(orders) ? orders : [], days));
+            const [usersRes, cartEventsRes] = await Promise.all([
+              fetch(`${API}/api/users`, { headers }).catch(() => null),
+              fetch(`${API}/api/cart-events`, { headers }).catch(() => null),
+            ]);
+
+            const users = usersRes?.ok ? await usersRes.json() : [];
+            const cartEvents = cartEventsRes?.ok ? await cartEventsRes.json() : [];
+            const daysAgo = new Date();
+            daysAgo.setDate(daysAgo.getDate() - (days - 1));
+            daysAgo.setHours(0, 0, 0, 0);
+
+            const toDate = (value) => {
+              if (!value) return null;
+              if (typeof value?.toDate === "function") return value.toDate();
+              if (value?._seconds) return new Date(value._seconds * 1000);
+              const d = new Date(value);
+              return Number.isNaN(d.getTime()) ? null : d;
+            };
+
+            const cartEventsInRange = Array.isArray(cartEvents)
+              ? cartEvents.filter((item) => {
+                  const created = toDate(item?.createdAt);
+                  return created && created >= daysAgo;
+                }).length
+              : 0;
+
+            setAnalytics(
+              deriveAnalyticsFromOrders(
+                Array.isArray(orders) ? orders : [],
+                days,
+                {
+                  usersTotal: Array.isArray(users) ? users.length : 0,
+                  cartEventsTotal: Array.isArray(cartEvents) ? cartEvents.length : 0,
+                  cartEventsInRange,
+                }
+              )
+            );
             setError("Analytics route not found on backend. Showing computed analytics from orders.");
             setLastUpdated(new Date());
             setLoading(false);
@@ -318,6 +371,24 @@ const AnalyticsBoard = () => {
             cartEventsTotal: Number(source?.firebaseAnalytics?.cartEventsTotal || 0),
             ordersInRange: Number(source?.firebaseAnalytics?.ordersInRange || 0),
             cartEventsInRange: Number(source?.firebaseAnalytics?.cartEventsInRange || 0),
+          },
+          metaAds: {
+            enabled: Boolean(source?.metaAds?.enabled),
+            rows: Array.isArray(source?.metaAds?.rows) ? source.metaAds.rows : [],
+            platformTotals: Array.isArray(source?.metaAds?.platformTotals) ? source.metaAds.platformTotals : [],
+            totalImpressions: Number(source?.metaAds?.totalImpressions || 0),
+            totalClicks: Number(source?.metaAds?.totalClicks || 0),
+            totalSpend: Number(source?.metaAds?.totalSpend || 0),
+            error: source?.metaAds?.error || null,
+          },
+          googleAds: {
+            enabled: Boolean(source?.googleAds?.enabled),
+            rows: Array.isArray(source?.googleAds?.rows) ? source.googleAds.rows : [],
+            channelTotals: Array.isArray(source?.googleAds?.channelTotals) ? source.googleAds.channelTotals : [],
+            totalImpressions: Number(source?.googleAds?.totalImpressions || 0),
+            totalClicks: Number(source?.googleAds?.totalClicks || 0),
+            totalSpend: Number(source?.googleAds?.totalSpend || 0),
+            error: source?.googleAds?.error || null,
           },
         });
         setLastUpdated(new Date());
@@ -433,6 +504,166 @@ const AnalyticsBoard = () => {
                 <p className="text-[11px] text-gray-500">Cart Events ({days}d)</p>
                 <p className="text-lg font-bold text-gray-900">{toNumber(analytics.firebaseAnalytics.cartEventsInRange)}</p>
               </div>
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Meta Ads Insights (Facebook Ads + Instagram Ads + Audience Network Ads)</h3>
+            {analytics.metaAds.error ? (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
+                {analytics.metaAds.error}
+              </p>
+            ) : null}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Impressions</p>
+                <p className="text-lg font-bold text-gray-900">{toNumber(analytics.metaAds.totalImpressions)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Clicks</p>
+                <p className="text-lg font-bold text-gray-900">{toNumber(analytics.metaAds.totalClicks)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Spend (INR)</p>
+                <p className="text-lg font-bold text-gray-900">{toCurrency(analytics.metaAds.totalSpend)}</p>
+              </div>
+            </div>
+            {analytics.metaAds.platformTotals?.length ? (
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-sm min-w-[520px]">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 text-xs text-gray-500">Platform</th>
+                      <th className="text-right py-2 text-xs text-gray-500">Impressions</th>
+                      <th className="text-right py-2 text-xs text-gray-500">Clicks</th>
+                      <th className="text-right py-2 text-xs text-gray-500">Spend</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.metaAds.platformTotals.map((item, idx) => (
+                      <tr key={`${item.platform}_${idx}`} className="border-b border-gray-100">
+                        <td className="py-2 capitalize">{item.platform === "audience_network" ? "Audience Network Ads" : `${item.platform.replace("_", " ")} Ads`}</td>
+                        <td className="py-2 text-right">{toNumber(item.impressions)}</td>
+                        <td className="py-2 text-right">{toNumber(item.clicks)}</td>
+                        <td className="py-2 text-right">{toCurrency(item.spend)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[760px]">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-2 text-xs text-gray-500">Date</th>
+                    <th className="text-left py-2 text-xs text-gray-500">Platform</th>
+                    <th className="text-left py-2 text-xs text-gray-500">Campaign</th>
+                    <th className="text-left py-2 text-xs text-gray-500">Ad Set</th>
+                    <th className="text-left py-2 text-xs text-gray-500">Ad</th>
+                    <th className="text-right py-2 text-xs text-gray-500">Impressions</th>
+                    <th className="text-right py-2 text-xs text-gray-500">Clicks</th>
+                    <th className="text-right py-2 text-xs text-gray-500">Spend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(analytics.metaAds.rows || []).slice(0, 40).map((row, idx) => (
+                    <tr key={`${row.date}_${row.campaignName}_${idx}`} className="border-b border-gray-100">
+                      <td className="py-2">{row.date || "-"}</td>
+                      <td className="py-2 capitalize">{row.publisherPlatform === "audience_network" ? "Audience Network Ads" : `${String(row.publisherPlatform || "-").replace("_", " ")} Ads`}</td>
+                      <td className="py-2">{row.campaignName || "-"}</td>
+                      <td className="py-2">{row.adsetName || "-"}</td>
+                      <td className="py-2">{row.adName || "-"}</td>
+                      <td className="py-2 text-right">{toNumber(row.impressions)}</td>
+                      <td className="py-2 text-right">{toNumber(row.clicks)}</td>
+                      <td className="py-2 text-right">{toCurrency(row.spend)}</td>
+                    </tr>
+                  ))}
+                  {!analytics.metaAds.rows?.length ? (
+                    <tr>
+                      <td className="py-3 text-gray-400 text-sm" colSpan={8}>No Meta ads data available for this date range.</td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Google Ads Insights</h3>
+            {analytics.googleAds.error ? (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
+                {analytics.googleAds.error}
+              </p>
+            ) : null}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Impressions</p>
+                <p className="text-lg font-bold text-gray-900">{toNumber(analytics.googleAds.totalImpressions)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Clicks</p>
+                <p className="text-lg font-bold text-gray-900">{toNumber(analytics.googleAds.totalClicks)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3">
+                <p className="text-[11px] text-gray-500">Spend (INR)</p>
+                <p className="text-lg font-bold text-gray-900">{toCurrency(analytics.googleAds.totalSpend)}</p>
+              </div>
+            </div>
+            {analytics.googleAds.channelTotals?.length ? (
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-sm min-w-[520px]">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 text-xs text-gray-500">Channel</th>
+                      <th className="text-right py-2 text-xs text-gray-500">Impressions</th>
+                      <th className="text-right py-2 text-xs text-gray-500">Clicks</th>
+                      <th className="text-right py-2 text-xs text-gray-500">Spend</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.googleAds.channelTotals.map((item, idx) => (
+                      <tr key={`${item.channel}_${idx}`} className="border-b border-gray-100">
+                        <td className="py-2">{String(item.channel || "UNKNOWN").replaceAll("_", " ")}</td>
+                        <td className="py-2 text-right">{toNumber(item.impressions)}</td>
+                        <td className="py-2 text-right">{toNumber(item.clicks)}</td>
+                        <td className="py-2 text-right">{toCurrency(item.spend)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[760px]">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-2 text-xs text-gray-500">Date</th>
+                    <th className="text-left py-2 text-xs text-gray-500">Campaign</th>
+                    <th className="text-left py-2 text-xs text-gray-500">Channel</th>
+                    <th className="text-right py-2 text-xs text-gray-500">Impressions</th>
+                    <th className="text-right py-2 text-xs text-gray-500">Clicks</th>
+                    <th className="text-right py-2 text-xs text-gray-500">Spend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(analytics.googleAds.rows || []).slice(0, 40).map((row, idx) => (
+                    <tr key={`${row.date}_${row.campaignName}_${idx}`} className="border-b border-gray-100">
+                      <td className="py-2">{row.date || "-"}</td>
+                      <td className="py-2">{row.campaignName || "-"}</td>
+                      <td className="py-2">{String(row.channelType || "UNKNOWN").replaceAll("_", " ")}</td>
+                      <td className="py-2 text-right">{toNumber(row.impressions)}</td>
+                      <td className="py-2 text-right">{toNumber(row.clicks)}</td>
+                      <td className="py-2 text-right">{toCurrency(row.spend)}</td>
+                    </tr>
+                  ))}
+                  {!analytics.googleAds.rows?.length ? (
+                    <tr>
+                      <td className="py-3 text-gray-400 text-sm" colSpan={6}>No Google ads data available for this date range.</td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
             </div>
           </div>
 

@@ -6,7 +6,7 @@ const MiniDivider = () => {
   const productLink = "/product/ilika-automatic-voice-version-face-mask-maker-machine";
 
   return (
-    <div className="w-full bg-black overflow-hidden">
+    <div className="w-full bg-[#b34140] overflow-hidden">
       <div className="marquee-wrapper">
         <div className="marquee-track ">
           <span><Link to={productLink} style={{ color: "inherit", textDecoration: "none" }}>{saleText}</Link></span>

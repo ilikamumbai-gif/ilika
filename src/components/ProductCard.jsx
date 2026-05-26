@@ -8,7 +8,7 @@ import { createSlug } from "../utils/slugify";
 
 const ProductCard = ({
   product,
-  buttonBg = "bg-[#2b2a29]",
+  buttonBg = "bg-[#b34140]",
   buttonText = "text-white",
   productNames = [],
   couponText = "",
@@ -151,7 +151,7 @@ const ProductCard = ({
 
           {/* DISCOUNT BADGE (THEME) */}
           {calculatedDiscount && (
-            <div className="absolute top-3 right-3 bg-[#b34140] text-white text-xs font-semibold px-2.5 py-1 rounded-md shadow">
+            <div className="absolute top-3 right-3 bg-white/55 backdrop-blur-md text-black text-xs font-semibold px-2.5 py-1 rounded-md border border-white/70 shadow-sm">
               {calculatedDiscount}% OFF
             </div>
           )}
@@ -244,7 +244,7 @@ const ProductCard = ({
             className={`w-full text-[13px] font-clean tracking-widest py-2.5 rounded-lg transition
     ${product.inStock
                 ? `${buttonBg} ${buttonText}`
-                : "bg-[#801f1f] text-white hover:bg-[#5e1414]"
+              : "bg-[#b34140] text-white hover:bg-[#8f302f]"
               }`}
           >
             {product.inStock ? "Add To Cart" : "Notify Me"}

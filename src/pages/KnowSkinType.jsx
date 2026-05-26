@@ -464,7 +464,7 @@ const KnowSkinType = () => {
                         <div className="mt-3 flex flex-col gap-2">
                           <button
                             onClick={() => addProductToCart(p)}
-                            className="rounded-lg bg-[#1c371c] text-white py-2 text-xs font-semibold"
+                            className="rounded-lg bg-[#b34140] hover:bg-[#8f302f] text-white py-2 text-xs font-semibold"
                           >
                             Add to Cart
                           </button>

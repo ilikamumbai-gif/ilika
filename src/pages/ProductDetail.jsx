@@ -474,7 +474,9 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
               <span className="text-xl font-bold text-[#1C371C]">₹{price}</span>
               {mrp > 0 && <span className="text-xs text-gray-400 line-through">MRP ₹{mrp}</span>}
               {discount > 0 && (
-                <span className="text-[10px] font-bold bg-[#1C371C] text-white px-2 py-0.5 rounded-md">{discount}% OFF</span>
+                <span className="text-[10px] font-bold bg-white/55 backdrop-blur-md text-black px-2 py-0.5 rounded-md border border-white/70 shadow-sm">
+                  {discount}% OFF
+                </span>
               )}
             </div>
             <p className="text-[10px] text-gray-400 -mt-1">Inclusive of all taxes</p>
@@ -484,8 +486,8 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
               onClick={isOutOfStock ? onNotifyMe : onAddToCart}
               className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition
     ${isOutOfStock
-                  ? "bg-[#801f1f] text-white hover:bg-[#5e1414]"
-                  : "bg-[#2b2a29] text-white hover:bg-[#1a1918]"}`}
+                  ? "bg-[#b34140] text-white hover:bg-[#8f302f]"
+                  : "bg-[#b34140] text-white hover:bg-[#8f302f]"}`}
             >
               {isOutOfStock ? "Notify Me" : "Add to Cart"}
             </button>
@@ -1075,7 +1077,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
     ${isOutOfStock || isAdding
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "shadow-sm"}`}
-              style={isOutOfStock || isAdding ? undefined : { backgroundColor: theme.primary, color: theme.onPrimary }}
+              style={isOutOfStock || isAdding ? undefined : { backgroundColor: "#b34140", color: "#ffffff" }}
             >
               <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>
