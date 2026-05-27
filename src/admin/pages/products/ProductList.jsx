@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Pencil, Plus, Trash2, Search, Package } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useProducts } from "../../context/ProductContext";
 import { useCategories } from "../../context/CategoryContext";
@@ -19,13 +18,16 @@ const FilterSelect = ({ value, onChange, children }) => (
 );
 
 const ProductList = () => {
-  const navigate = useNavigate();
   const [search, setSearch]           = useState("");
   const [statusFilter, setStatus]     = useState("");
   const [stockFilter, setStock]       = useState("");
   const [categoryFilter, setCategory] = useState("");
   const { products, deleteProduct, fetchProducts } = useProducts();
   const { categories } = useCategories();
+
+  const openInNewTab = (path) => {
+    window.open(path, "_blank", "noopener,noreferrer");
+  };
 
   useEffect(() => { fetchProducts(); }, [categories.length]);
 
@@ -51,7 +53,7 @@ const ProductList = () => {
           <h1 className="text-xl font-bold text-gray-900">Products</h1>
           <p className="text-sm text-gray-400 mt-0.5">{products.length} products in catalogue</p>
         </div>
-        <button onClick={() => navigate("/admin/products/add")}
+        <button onClick={() => openInNewTab("/admin/products/add")}
           className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition hover:opacity-90"
           style={{ background: "linear-gradient(135deg,#E91E8C,#FF6B35)" }}>
           <Plus size={16} /> Add Product
@@ -123,7 +125,7 @@ const ProductList = () => {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
-                      <button onClick={() => navigate(`/admin/products/edit/${p.id}`)}
+                      <button onClick={() => openInNewTab(`/admin/products/edit/${p.id}`)}
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                         <Pencil size={14} />
                       </button>
@@ -157,7 +159,7 @@ const ProductList = () => {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">
-                <button onClick={() => navigate(`/admin/products/edit/${p.id}`)}
+                <button onClick={() => openInNewTab(`/admin/products/edit/${p.id}`)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                   <Pencil size={14} />
                 </button>

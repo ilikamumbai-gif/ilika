@@ -84,6 +84,7 @@ const SOURCE_STYLES = {
 };
 
 const SHIPPING_STATUS_OPTIONS = ["Processing", "Shipped", "Out for Delivery", "Delivered"];
+const INVOICE_SEQUENCE_START = 115;
 
 /* ─────────────────── REUSABLE BITS ─────────────────── */
 
@@ -147,7 +148,6 @@ const OrderDetail = () => {
   const srcDisplay = normalizeSource(order.source);
   const srcColor   = SOURCE_STYLES[srcDisplay] || SOURCE_STYLES.Website;
   const isPaid     = order.paymentStatus === "Paid";
-  const isCancelled = String(order.status || "").toLowerCase() === "cancelled";
   const itemCount  = order.items?.length || 0;
   const addr       = order.shippingAddress || {};
 
@@ -171,10 +171,6 @@ const OrderDetail = () => {
 
   /* ─── PDF ─── */
   const downloadInvoice = async () => {
-    if (isCancelled) {
-      alert("Invoice number is not applicable for cancelled orders.");
-      return;
-    }
 
     let productCatalog = Array.isArray(products) ? products : [];
     if (!productCatalog.length) {
@@ -215,10 +211,8 @@ const OrderDetail = () => {
       return String(a?.id || "").localeCompare(String(b?.id || ""));
     });
     const orderIndex = orderedByDate.findIndex((o) => String(o?.id) === String(order?.id));
-    const sequenceNumber = orderIndex >= 0 ? orderIndex + 1 : 1;
-    const invoiceNumber = isCancelled
-      ? "N/A"
-      : `INV-${String(sequenceNumber).padStart(3, "0")}`;
+    const sequenceNumber = orderIndex >= 0 ? INVOICE_SEQUENCE_START + orderIndex : INVOICE_SEQUENCE_START;
+    const invoiceNumber = `Retail-${String(sequenceNumber).padStart(5, "0")}`;
 
     const formatPrice = (v) =>
       `Rs. ${Number(v).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
@@ -282,6 +276,7 @@ const OrderDetail = () => {
         ["Invoice No",     invoiceNumber],
         ["Invoice Date",   date.toLocaleDateString("en-IN")],
         ["Order ID",       formatOrderId(order.id)],
+        ["Order Status",   order.status || "Placed"],
         ["Payment Method", order.paymentMethod === "ONLINE" ? "Online (Razorpay)" : "Cash on Delivery"],
         ["Payment Status", order.paymentStatus],
       ];
@@ -568,10 +563,9 @@ const OrderDetail = () => {
           </button>
           <button
             onClick={downloadInvoice}
-            disabled={isCancelled}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800 transition"
           >
-            <Download size={15} /> {isCancelled ? "Invoice N/A" : "PDF Invoice"}
+            <Download size={15} /> PDF Invoice
           </button>
         </div>
       </div>
