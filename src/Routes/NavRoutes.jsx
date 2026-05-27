@@ -53,6 +53,7 @@ const HerbalHairOilLanding = lazy(() => import("../Landing/Herbalhairoil"));
 const VoiceMaskMakerLanding = lazy(() => import("../Landing/VoiceMaskMakerLanding"));
 const NonvoiceMaskMakerLanding = lazy(() => import("../Landing/NonvoiceMaskMakerLanding"));
 const HairDryerLanding = lazy(() => import("../Landing/HairDryerLanding"));
+const MaskCombo = lazy(() => import("../pages/MaskCombo"));
 
 const PixelPageTracker = () => {
   const { pathname } = useLocation();
@@ -106,6 +107,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/leafless-hair-dryer") return { title: "Leafless Hair Dryer", description: "Explore Ilika High-Speed Leafless Hair Dryer For Men & Women." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
   if (pathname === "/combo") return { title: "Combo Deals", description: "Explore combo packs and bundle offers from Ilika." };
+  if (pathname === "/mask-combo") return { title: "Mask Combo Offers", description: "Choose from 3 Ilika face mask combo offers at Rs 499." };
   if (pathname.startsWith("/combo/")) return { title: "Combo Details", description: "View combo pack details and savings at Ilika." };
   if (pathname === "/login") return { title: "Login", description: "Login to your Ilika account." };
   if (pathname === "/signup") return { title: "Sign Up", description: "Create your Ilika account." };
@@ -202,6 +204,7 @@ const NavRoutes = () => {
         <Route path="/leafless-hair-dryer" element={renderLazy(HairDryerLanding)} />
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />
         <Route path="/combo" element={renderLazy(Combos)} />
+        <Route path="/mask-combo" element={renderLazy(MaskCombo)} />
         <Route path="/combo/:id" element={renderLazy(ComboDetail)} />
 
         <Route path="/login" element={renderLazy(Login)} />
