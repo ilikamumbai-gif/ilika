@@ -57,6 +57,13 @@ const getItemDiscountMeta = (item = {}) => {
   return null;
 };
 
+const getOrderTimestampMs = (createdAt) => {
+  if (!createdAt) return 0;
+  if (typeof createdAt?._seconds === "number") return createdAt._seconds * 1000;
+  const parsed = new Date(createdAt).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
 /* ─────────────────── STATUS / SOURCE CONFIG ─────────────────── */
 
 const STATUS_CONFIG = {
@@ -102,7 +109,7 @@ const InfoRow = ({ label, value }) => (
 const OrderDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getOrderById, updateOrderStatus, saveOrderTracking } = useOrders();
+  const { orders, getOrderById, updateOrderStatus, saveOrderTracking } = useOrders();
   const { products, fetchProducts } = useProducts();
   const order = getOrderById(id);
   const [statusUpdating, setStatusUpdating] = useState(false);
@@ -140,6 +147,7 @@ const OrderDetail = () => {
   const srcDisplay = normalizeSource(order.source);
   const srcColor   = SOURCE_STYLES[srcDisplay] || SOURCE_STYLES.Website;
   const isPaid     = order.paymentStatus === "Paid";
+  const isCancelled = String(order.status || "").toLowerCase() === "cancelled";
   const itemCount  = order.items?.length || 0;
   const addr       = order.shippingAddress || {};
 
@@ -163,6 +171,11 @@ const OrderDetail = () => {
 
   /* ─── PDF ─── */
   const downloadInvoice = async () => {
+    if (isCancelled) {
+      alert("Invoice number is not applicable for cancelled orders.");
+      return;
+    }
+
     let productCatalog = Array.isArray(products) ? products : [];
     if (!productCatalog.length) {
       productCatalog = await fetchProducts();
@@ -196,13 +209,16 @@ const OrderDetail = () => {
     const footerHeight = 16;
 
     const date = new Date(order.createdAt?._seconds * 1000 || order.createdAt);
-    const invoiceNumber =
-      "INV-" +
-      date.getFullYear() +
-      String(date.getMonth() + 1).padStart(2, "0") +
-      String(date.getDate()).padStart(2, "0") +
-      "-" +
-      formatOrderRef(order.id).slice(-4).toUpperCase();
+    const orderedByDate = [...(Array.isArray(orders) ? orders : [])].sort((a, b) => {
+      const timeDiff = getOrderTimestampMs(a?.createdAt) - getOrderTimestampMs(b?.createdAt);
+      if (timeDiff !== 0) return timeDiff;
+      return String(a?.id || "").localeCompare(String(b?.id || ""));
+    });
+    const orderIndex = orderedByDate.findIndex((o) => String(o?.id) === String(order?.id));
+    const sequenceNumber = orderIndex >= 0 ? orderIndex + 1 : 1;
+    const invoiceNumber = isCancelled
+      ? "N/A"
+      : `INV-${String(sequenceNumber).padStart(3, "0")}`;
 
     const formatPrice = (v) =>
       `Rs. ${Number(v).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
@@ -552,9 +568,10 @@ const OrderDetail = () => {
           </button>
           <button
             onClick={downloadInvoice}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800 transition"
+            disabled={isCancelled}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Download size={15} /> PDF Invoice
+            <Download size={15} /> {isCancelled ? "Invoice N/A" : "PDF Invoice"}
           </button>
         </div>
       </div>

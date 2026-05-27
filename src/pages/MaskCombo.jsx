@@ -19,6 +19,14 @@ const normalize = (value = "") =>
     .trim();
 
 const getImage = (product) =>
+  product?.banners?.[0]?.url ||
+  product?.bannerImage ||
+  product?.banner ||
+  product?.bannerUrl ||
+  product?.heroImage ||
+  product?.thumbnail ||
+  product?.featuredImage ||
+  product?.imageBanner ||
   product?.variants?.[0]?.images?.[0] ||
   product?.images?.[0] ||
   product?.image ||
