@@ -9,14 +9,18 @@ const SearchBar = lazy(() =>
   import("./Nav").then((module) => ({ default: module.SearchBar }))
 );
 
-const Header = () => {
+const Header = ({ forceWhiteBg = false }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { products = [] } = useProducts();
 
   return (
-    <header className="w-full sticky top-0 z-50 bg-[#fffaf9] md:bg-[#e8adad60]/20 md:backdrop-blur-md overflow-x-clip">
+    <header
+      className={`w-full sticky top-0 z-50 overflow-x-clip ${
+        forceWhiteBg ? "bg-white" : "bg-[#fffaf9] md:bg-[#e8adad60]/20 md:backdrop-blur-md"
+      }`}
+    >
 
       {/* ── Main header row ── */}
       <div className="flex items-center justify-between px-4 py-3 w-full">
@@ -103,6 +107,7 @@ const Header = () => {
           <Suspense fallback={<div className="h-10 w-full" />}>
             <SearchBar
               products={products}
+              autoFocus={searchOpen}
               onClose={() => {
                 setSearchOpen(false);
                 setOpen(false);

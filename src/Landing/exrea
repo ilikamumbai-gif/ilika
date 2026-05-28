@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -149,15 +149,15 @@ const VoiceMaskMakerLanding = () => {
   };
 
   return (
-    <div className="bg-[#090909] text-[#FAF6F3] [font-family:'DM_Sans',sans-serif]">
+    <div className="bg-[#FFFDF8] text-[#3A2A27] [font-family:'DM_Sans',sans-serif]">
       <MiniDivider />
-      <Header forceWhiteBg />
+      <Header />
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
       `}</style>
 
-      <section className="bg-[linear-gradient(180deg,_#0C0C0C_0%,_#131313_100%)] px-[4%] py-4 sm:py-5 lg:px-[6%] lg:py-6">
+      <section className="bg-[linear-gradient(180deg,_#FFFDF8_0%,_#FFF7EF_100%)] px-[4%] py-4 sm:py-5 lg:px-[6%] lg:py-6">
         <div className="mx-auto grid min-h-0 w-full max-w-[1240px] grid-cols-1 gap-6 lg:min-h-[calc(100dvh-150px)] lg:grid-cols-[1.45fr_0.95fr] lg:items-center lg:gap-10">
           <div className="flex w-full flex-col">
             <div className="mb-4 inline-flex w-fit items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#B87161]">
@@ -168,17 +168,17 @@ const VoiceMaskMakerLanding = () => {
               Salon-Grade
               <br />
               <em className="block text-[#D86143]">Face Masks.</em>
-              <span className="mt-1.5 block text-[0.72em] font-medium tracking-[0.02em] text-[rgba(250,246,243,0.82)]">Made by You. In Minutes.</span>
+              <span className="mt-1.5 block text-[0.72em] font-medium tracking-[0.02em] text-[rgba(58,42,39,0.62)]">Made by You. In Minutes.</span>
             </h1>
 
-            <p className="mb-4 w-full max-w-[760px] text-[14px] font-light leading-[1.65] text-[#D7C9C2] sm:leading-[1.7]">
+            <p className="mb-4 w-full max-w-[760px] text-[14px] font-light leading-[1.65] text-[#7E6660] sm:leading-[1.7]">
               Stop spending ₹800 per salon visit. The {productName} turns fresh fruits + collagen into a custom spa mask - right in your kitchen, every day.
             </p>
 
             <div className="mb-4 flex items-end gap-2.5 sm:gap-3">
               <span className="[font-family:'Playfair_Display',serif] text-[44px] font-bold leading-none sm:text-[52px]">₹{discountedPrice.toLocaleString("en-IN")}</span>
               <div className="flex flex-col gap-1 pb-1">
-                <span className="text-[15px] font-light text-[rgba(215,201,194,0.85)] line-through">MRP ₹{productMrp.toLocaleString("en-IN")}</span>
+                <span className="text-[15px] font-light text-[rgba(126,102,96,0.85)] line-through">MRP ₹{productMrp.toLocaleString("en-IN")}</span>
                 <span className="w-fit rounded-full bg-[rgba(255,179,102,0.24)] px-2.5 py-[3px] text-[12px] font-semibold tracking-[0.04em] text-[#A85A00]">
                   Save ₹{effectiveSavings.toLocaleString("en-IN")}
                 </span>
@@ -217,13 +217,13 @@ const VoiceMaskMakerLanding = () => {
               </button>
               <a
                 href={productPath}
-                className="inline-flex h-[42px] w-full items-center justify-center px-1 text-[14px] font-semibold text-[#D77A63] underline-offset-2 hover:text-[#E69682] hover:underline sm:h-[48px] sm:min-w-[170px] sm:w-auto sm:text-[15px]"
+                className="inline-flex h-[42px] w-full items-center justify-center px-1 text-[14px] font-semibold text-[#A34E38] underline-offset-2 hover:text-[#8E3F2B] hover:underline sm:h-[48px] sm:min-w-[170px] sm:w-auto sm:text-[15px]"
               >
                 Know More ↓
               </a>
             </div>
 
-            <div className="mt-1 flex items-center gap-2.5 text-[12px] text-[rgba(215,201,194,0.95)]">
+            <div className="mt-1 flex items-center gap-2.5 text-[12px] text-[rgba(126,102,96,0.9)]">
               <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#F0AB57]" />
               <span>
                 Offer ends in <span className="font-semibold text-[#BF533A]">{countdown}</span> · Only 12 units left
@@ -231,17 +231,17 @@ const VoiceMaskMakerLanding = () => {
             </div>
 
             {loading && !targetProduct && (
-              <p className="mt-2 text-[12px] text-[#C68B7D]">Loading live product details...</p>
+              <p className="mt-2 text-[12px] text-[#8F5A4E]">Loading live product details...</p>
             )}
           </div>
 
           <div className="relative mx-auto flex w-full max-w-[470px] items-center justify-center">
-            <div className="absolute left-1/2 top-1/2 h-[290px] w-[290px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(184,113,97,0.28)] bg-[rgba(184,113,97,0.12)] sm:h-[360px] sm:w-[360px] lg:h-[430px] lg:w-[430px]" />
-          <div className="relative z-[3] aspect-[4/4] w-full max-w-[360px] border-4 border-[#2A2523] bg-[#141414] p-2 shadow-[0_14px_30px_rgba(0,0,0,0.45)] sm:max-w-[470px] sm:p-3">
+            <div className="absolute left-1/2 top-1/2 h-[290px] w-[290px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(184,113,97,0.16)] bg-[rgba(184,113,97,0.08)] sm:h-[360px] sm:w-[360px] lg:h-[430px] lg:w-[430px]" />
+          <div className="relative z-[3] aspect-[4/4] w-full max-w-[360px] border-4 border-white bg-white p-2 shadow-[0_14px_30px_rgba(125,80,66,0.14)] sm:max-w-[470px] sm:p-3">
             <img
               src={productImage}
               alt={productName}
-              className="h-full w-full bg-[#1A1A1A] object-contain object-center"
+              className="h-full w-full bg-[#F7F7F7] object-contain object-center"
               onError={(e) => {
                 e.currentTarget.src = "https://placehold.co/460x520/251610/C8705A?text=Ilika+Mask+Maker";
               }}
@@ -251,7 +251,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <div className="flex flex-wrap justify-center gap-6 border-y border-[rgba(184,113,97,0.45)] bg-[linear-gradient(120deg,_#171312_0%,_#241B19_100%)] px-[8%] py-5 lg:gap-12">
+      <div className="flex flex-wrap justify-center gap-6 border-y border-[rgba(240,171,87,0.35)] bg-[linear-gradient(120deg,_#FFEDD8_0%,_#FFDDBB_100%)] px-[8%] py-5 lg:gap-12">
         {[
           { icon: Star, label: "4.0 Verified Reviews" },
           { icon: Volume2, label: "Voice-Guided Smart AI" },
@@ -259,7 +259,7 @@ const VoiceMaskMakerLanding = () => {
           { icon: ShieldCheck, label: "Import Warranty" },
           { icon: Truck, label: "Fast Pan-India Delivery" },
         ].map(({ icon: Icon, label }) => (
-          <div key={label} className="flex items-center gap-2.5 text-[13px] font-medium text-[#F8EEE8]">
+          <div key={label} className="flex items-center gap-2.5 text-[13px] font-medium text-[#8A412F]">
             <span className="grid h-8 w-8 place-content-center rounded-full border border-[rgba(216,97,67,0.42)] bg-[rgba(216,97,67,0.14)] text-base">
               <Icon className="h-4.5 w-4.5" />
             </span>
@@ -268,7 +268,7 @@ const VoiceMaskMakerLanding = () => {
         ))}
       </div>
 
-      <section id="features" className="bg-[#0F0F0F] px-[8%] py-20">
+      <section id="features" className="px-[8%] py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Why You'll Love It</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           Everything a Spa Offers -
@@ -278,12 +278,12 @@ const VoiceMaskMakerLanding = () => {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {features.map((f) => (
-            <div key={f.title} className="rounded-[20px] border border-[#3A2E2A] bg-[#171717] px-7 py-9 transition hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(0,0,0,0.35)]">
-              <div className="mb-5 grid h-[52px] w-[52px] place-content-center rounded-[14px] bg-[#2A211F] text-[26px]">
+            <div key={f.title} className="rounded-[20px] border border-[#EBDDD4] bg-[#FFFDFC] px-7 py-9 transition hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(184,113,97,0.14)]">
+              <div className="mb-5 grid h-[52px] w-[52px] place-content-center rounded-[14px] bg-[#F6E7DE] text-[26px]">
                 <f.icon className="mx-auto h-6.5 w-6.5 text-[#9E5C4F]" />
               </div>
               <h3 className="mb-2.5 text-[17px] font-semibold">{f.title}</h3>
-              <p className="text-[14px] font-light leading-[1.65] text-[#D4C7C0]">{f.desc}</p>
+              <p className="text-[14px] font-light leading-[1.65] text-[#7E6660]">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -306,7 +306,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#121212_0%,_#1A1615_100%)] px-[8%] py-20">
+      <section className="bg-[linear-gradient(180deg,_#FFF4E8_0%,_#FFE7D0_100%)] px-[8%] py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">So Simple</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           Your Mask in <em className="text-[#B87161]">4 Easy Steps</em>
@@ -322,42 +322,42 @@ const VoiceMaskMakerLanding = () => {
             <div key={title} className="text-center">
               <div className="mx-auto mb-5 grid h-14 w-14 place-content-center rounded-full border-4 border-[#F6E7DE] bg-[#B87161] [font-family:'Playfair_Display',serif] text-[22px] font-bold text-white">{num}</div>
               <h3 className="mb-2 text-[15px] font-semibold">{title}</h3>
-              <p className="text-[13px] font-light leading-[1.6] text-[#D4C7C0]">{desc}</p>
+              <p className="text-[13px] font-light leading-[1.6] text-[#7E6660]">{desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#0F0F0F_0%,_#171313_100%)] px-[8%] py-20">
+      <section className="bg-[linear-gradient(180deg,_#FFFDFB_0%,_#FFF0E1_100%)] px-[8%] py-20">
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-[60px]">
           <div>
             <h3 className="mb-5 [font-family:'Playfair_Display',serif] text-[34px] font-bold leading-[1.2]">Made with<br />Real Ingredients</h3>
-            <p className="mb-7 text-[15px] font-light leading-[1.7] text-[#D4C7C0]">
+            <p className="mb-7 text-[15px] font-light leading-[1.7] text-[#7E6660]">
               Unlike store-bought masks packed with chemicals, you control exactly what goes on your skin. Use what's in your fridge - and your skin will thank you.
             </p>
             <div className="flex flex-wrap gap-2.5">
               {["Orange", "Kiwi", "Strawberry", "Lemon", "Milk", "Honey", "Avocado", "Collagen"].map((tag) => (
-                <span key={tag} className="rounded-full border border-[#4A3731] bg-[#221B19] px-[18px] py-2 text-[13px] font-medium text-[#D58A78]">{tag}</span>
+                <span key={tag} className="rounded-full border border-[#EBCFC2] bg-[#F6E7DE] px-[18px] py-2 text-[13px] font-medium text-[#9E5C4F]">{tag}</span>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[28px] bg-[#1E1816] px-10 py-12">
-            <div className="mb-4 rounded-2xl border border-[#45332D] bg-[#141414] p-6">
+          <div className="rounded-[28px] bg-[#F6E7DE] px-10 py-12">
+            <div className="mb-4 rounded-2xl border border-[#EBCFC2] bg-[#FFFDFC] p-6">
               <p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#B87161]">
                 <Star className="h-3.5 w-3.5" /> Included
               </p>
               <h4 className="mb-1.5 text-[15px] font-semibold">Collagen Peptide Pack</h4>
-              <p className="text-[13px] font-light text-[#D4C7C0]">
+              <p className="text-[13px] font-light text-[#7E6660]">
                 Clinically formulated to boost skin elasticity, reduce fine lines and restore that youthful firmness. Just add one scoop to your mask mix.
               </p>
             </div>
-            <div className="rounded-2xl border border-[#45332D] bg-[#141414] p-6">
+            <div className="rounded-2xl border border-[#EBCFC2] bg-[#FFFDFC] p-6">
               <p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#B87161]">
                 <Lightbulb className="h-3.5 w-3.5" /> Pro Tip
               </p>
               <h4 className="mb-1.5 text-[15px] font-semibold">Vitamin C Brightening Mask</h4>
-              <p className="text-[13px] font-light text-[#D4C7C0]">
+              <p className="text-[13px] font-light text-[#7E6660]">
                 Orange + lemon + a pinch of turmeric → instant glow mask. The machine blends it to the perfect consistency for your skin type.
               </p>
             </div>
@@ -382,7 +382,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#111111_0%,_#181414_100%)] px-[8%] py-20">
+      <section className="bg-[linear-gradient(180deg,_#FFFFFF_0%,_#FFF2E6_100%)] px-[8%] py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Real People, Real Glow</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           They Tried It.
@@ -392,18 +392,18 @@ const VoiceMaskMakerLanding = () => {
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
           {reviews.map((r) => (
-            <div key={r.name} className="rounded-2xl border border-[#3F312D] bg-[#171717] px-6 py-7">
+            <div key={r.name} className="rounded-2xl border border-[#EBDDD4] bg-[#FFF9F6] px-6 py-7">
               <div className="mb-3 flex items-center gap-1 text-[#D3A157]">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <Star key={n} className={`h-4 w-4 ${n <= r.rating ? "fill-current" : "opacity-35"}`} />
                 ))}
               </div>
-              <p className="mb-5 text-[14px] italic font-light leading-[1.7] text-[#D8CCC6]">{r.text}</p>
+              <p className="mb-5 text-[14px] italic font-light leading-[1.7] text-[#7E6660]">{r.text}</p>
               <div className="flex items-center gap-3">
-                <span className="grid h-9 w-9 place-content-center rounded-full bg-[#2A211F] text-[13px] font-semibold text-[#D58A78]">{r.initials}</span>
+                <span className="grid h-9 w-9 place-content-center rounded-full bg-[#F1D7CD] text-[13px] font-semibold text-[#9E5C4F]">{r.initials}</span>
                 <div>
                   <p className="text-[13px] font-semibold">{r.name}</p>
-                  <p className="text-[12px] text-[#CCBDB7]">{r.loc}</p>
+                  <p className="text-[12px] text-[#7E6660]">{r.loc}</p>
                 </div>
               </div>
             </div>

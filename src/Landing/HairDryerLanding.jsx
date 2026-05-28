@@ -167,9 +167,7 @@ const HairDryerLanding = () => {
       `}</style>
 
       <MiniDivider />
-      <div className="[&_header]:!bg-white [&_header]:!backdrop-blur-none [&_header]:shadow-sm">
-        <Header />
-      </div>
+      <Header forceWhiteBg />
 
       <section className="grid grid-cols-1 lg:min-h-[640px] lg:grid-cols-2">
         <div className="px-4 py-8 sm:px-10 lg:flex lg:flex-col lg:justify-center lg:px-14 lg:py-8">

@@ -49,9 +49,10 @@ const getProductPreviewPrice = (product = {}) => {
 // and the standalone mobile header search slot
 // ─────────────────────────────────────────────
 
-export const SearchBar = ({ products = [], onClose, className = "" }) => {
+export const SearchBar = ({ products = [], onClose, className = "", autoFocus = false }) => {
   const [query, setQuery] = useState("");
   const searchRef = useRef();
+  const inputRef = useRef(null);
   const navigate = useNavigate();
 
   // Filter across name + shortInfo + benefits (limit 6)
@@ -108,14 +109,23 @@ export const SearchBar = ({ products = [], onClose, className = "" }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (!autoFocus) return;
+    const id = window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [autoFocus]);
+
   return (
     <div className={`relative ${className}`} ref={searchRef}>
-      <div className="flex items-center border rounded-md px-2 w-full">
+      <div className="flex items-center border rounded-md px-2 w-full bg-white">
         <Search className="w-4 h-4 text-gray-400 shrink-0" />
         <input
+          ref={inputRef}
           type="text"
           placeholder="Search products..."
-          className="outline-none px-2 py-2 text-sm w-full"
+          className="outline-none px-2 py-2 text-sm w-full bg-white"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -639,6 +649,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               <div className="absolute right-0 top-full mt-2 z-50 w-[260px]">
                 <SearchBar
                   products={products}
+                  autoFocus={desktopSearchOpen}
                   onClose={() => {
                     setDesktopSearchOpen(false);
                     onClose?.();

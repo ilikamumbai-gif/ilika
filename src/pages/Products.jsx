@@ -21,9 +21,10 @@ const Products = () => {
 
   // Filter across name + shortInfo + benefits
   const filtered = useMemo(() => {
-    if (!query.trim()) return products;
+    const activeProducts = products.filter((p) => p?.isActive !== false);
+    if (!query.trim()) return activeProducts;
     const q = normalizeSearchText(query);
-    return products.filter((p) => {
+    return activeProducts.filter((p) => {
       const haystack = [
         p.name,
         p.shortInfo,
