@@ -145,9 +145,14 @@ const ProductCard = ({
 
           {/* -- Image area -- */}
           <div className="relative aspect-square overflow-hidden bg-white">
+            {!product.inStock && (
+              <span className="absolute right-2 top-2 z-20 inline-flex items-center justify-center rounded-md bg-[rgb(43,42,41)] px-2 py-1 text-[9px] font-bold text-white shadow-sm sm:right-3 sm:top-3 sm:text-[10px]">
+                Out Of Stock
+              </span>
+            )}
             {productTag && (
               <span
-                className={`absolute right-2 top-2 z-20 inline-flex max-w-[55%] items-center justify-center truncate rounded-md px-2 py-1 text-[9px] font-bold text-white shadow-sm sm:right-3 sm:top-3 sm:text-[10px] ${buttonBg}`}
+                className={`absolute ${product.inStock ? "right-2 top-2 sm:right-3 sm:top-3" : "right-2 top-8 sm:right-3 sm:top-10"} z-20 inline-flex max-w-[55%] items-center justify-center truncate rounded-md px-2 py-1 text-[9px] font-bold text-white shadow-sm sm:text-[10px] ${buttonBg}`}
                 title={productTag}
               >
                 {productTag}
