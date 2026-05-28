@@ -27,7 +27,7 @@ const HydrationGlowCombo = () => {
   const { products } = useProducts();
   const { addToCart } = useCart();
 
-  const COMBO_PRICE = 5999;
+  const COMBO_PRICE = 4200;
   const MASK_MAKER_ORIGINAL_PRICE = 7999;
 
   const PRODUCT_KEYWORDS = [
@@ -288,7 +288,7 @@ const HydrationGlowCombo = () => {
                   "linear-gradient(to right, #E96A6A, #D45A5A)",
               }}
             >
-              Grab Combo @ ₹5999
+              Grab Combo @ ₹{COMBO_PRICE}
             </button>
           </div>
         </div>
@@ -394,4 +394,3 @@ const Combos = () => {
 };
 
 export default Combos;
-

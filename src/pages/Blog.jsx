@@ -5,10 +5,14 @@ import MiniDivider from "../components/MiniDivider";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
+import blackSeedLandingImage from "../Landing/assets/Blackseed1.png";
+import herbalLandingImage from "../Landing/assets/Herbal1.png";
+import { useProducts } from "../admin/context/ProductContext";
 
 const API = import.meta.env.VITE_API_URL;
 
 const Blog = () => {
+  const { products = [] } = useProducts();
   const [blogs, setBlogs] = useState([]);
   const [visibleRestCount, setVisibleRestCount] = useState(4);
 
@@ -38,6 +42,61 @@ const Blog = () => {
     () => restBlogs.slice(0, visibleRestCount),
     [restBlogs, visibleRestCount]
   );
+  const nonVoiceMaskMakerImage = useMemo(() => {
+    const target = products.find((product) => {
+      const name = String(product?.name || "").toLowerCase();
+      return name.includes("nonvoice") && name.includes("mask maker machine");
+    });
+
+    return (
+      target?.variants?.[0]?.images?.[0] ||
+      target?.images?.[0] ||
+      target?.image ||
+      target?.imageUrl ||
+      "/Images/MaskMakercard.webp"
+    );
+  }, [products]);
+
+  const LANDING_BLOG_CARDS = useMemo(
+    () => [
+      {
+        id: "landing-leafless-hairdryer",
+        title: "Explore Ilika Leaf Less Hairdryer",
+        author: "Team Ilika",
+        image: "/Images/HairdrayerCard.webp",
+        linkPath: "/leafless-hair-dryer",
+      },
+      {
+        id: "landing-blackseed-hair-oil",
+        title: "Explore Ilika Blackseed Hair Oil",
+        author: "Team Ilika",
+        image: blackSeedLandingImage,
+        linkPath: "/blackseed-hair-oil",
+      },
+      {
+        id: "landing-nonvoice-mask-maker",
+        title: "Explore Nonvoice Mask Maker Machine",
+        author: "Team Ilika",
+        image: nonVoiceMaskMakerImage,
+        linkPath: "/nonvoice-mask-maker",
+      },
+      {
+        id: "landing-voice-mask-maker",
+        title: "Explore Voice Mask Maker Machine",
+        author: "Team Ilika",
+        image: "/Images/MaskMakercard.webp",
+        linkPath: "/voice-mask-maker",
+      },
+      {
+        id: "landing-herbal-hair-oil",
+        title: "Explore Ilika Herbal Hair Oil",
+        author: "Team Ilika",
+        image: herbalLandingImage,
+        linkPath: "/herbal-hair-oil",
+      },
+    ],
+    [nonVoiceMaskMakerImage]
+  );
 
   useEffect(() => {
     setVisibleRestCount(4);
@@ -62,7 +121,7 @@ const Blog = () => {
         <CartDrawer />
 
         <section className="relative overflow-hidden border-b border-[#ececec] bg-white">
-          <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 text-center">
+          <div className="relative mx-auto max-w-7xl px-3 py-7 sm:px-6 sm:py-10 text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#801f1f]">Ilika Journal</p>
             <div className="mt-1 max-w-2xl mx-auto">
               <Heading
@@ -76,17 +135,34 @@ const Blog = () => {
           </div>
         </section>
 
-        <main className="mx-auto max-w-7xl bg-white px-4 py-8 sm:px-6 sm:py-10">
+        <main className="mx-auto max-w-7xl bg-white px-3 py-7 sm:px-6 sm:py-10">
           {blogs.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-[#d3ddd3] bg-white/80 px-6 py-16 text-center text-[#4a5f4a]">
               No blogs yet.
             </div>
           ) : (
-            <div className="space-y-10">
+            <div className="space-y-8 sm:space-y-10">
+              <section>
+                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Product Landing Pages</p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+                  {LANDING_BLOG_CARDS.map((card) => (
+                    <BlogCard
+                      key={card.id}
+                      blog={card}
+                      linkPath={card.linkPath}
+                      hideDate
+                      ctaLabel="View Page"
+                      squareImage
+                      compact
+                    />
+                  ))}
+                </div>
+              </section>
+
               {featuredBlog && (
                 <section>
                   <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Featured</p>
-                  <div className="max-w-[360px]">
+                  <div className="mx-auto w-full max-w-[420px] sm:mx-0 sm:max-w-[360px]">
                     <BlogCard blog={featuredBlog} prioritizeImage />
                   </div>
                 </section>
@@ -95,7 +171,7 @@ const Blog = () => {
               {restBlogs.length > 0 && (
                 <section>
                   <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Latest Articles</p>
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
                     {visibleRestBlogs.map((blog) => (
                       <BlogCard key={blog.id} blog={blog} />
                     ))}

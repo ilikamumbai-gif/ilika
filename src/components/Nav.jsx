@@ -597,7 +597,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
         </Link>
 
         <Link to="/blog" onClick={onClose} className="whitespace-nowrap">
-          Blog
+          Product Blog
         </Link>
 
       </nav>
