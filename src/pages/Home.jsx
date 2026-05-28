@@ -184,8 +184,13 @@ const Home = () => {
           <CartDrawer />
         </Suspense>
         <main>
+          <LazyMountSection minHeight={220} rootMargin="80px 0px">
+            <Suspense fallback={<div className="h-40" />}>
+              <PromoCardGrid />
+            </Suspense>
+          </LazyMountSection>
 
-          <Banner
+          {/* <Banner
             className="mt-0"
             src={mothersDayBanner}
             mobileSrc={mothersDayBannerMobile}
@@ -193,7 +198,7 @@ const Home = () => {
             bannerKey="home-top"
             imageFit="contain"
             priority
-          />
+          /> */}
           {/* <SkinTypeBanner /> */}
 
           {isMobile ? (
@@ -237,11 +242,7 @@ const Home = () => {
                 </Suspense>
               </LazyMountSection>
 
-              <LazyMountSection minHeight={220} rootMargin="120px 0px">
-                <Suspense fallback={<div className="min-h-[220px]" />}>
-                  <PromoCardGrid />
-                </Suspense>
-              </LazyMountSection>
+              
             </>
           ) : (
             <>
@@ -284,11 +285,6 @@ const Home = () => {
                 </Suspense>
               </LazyMountSection>
 
-              <LazyMountSection minHeight={220} rootMargin="120px 0px">
-                <Suspense fallback={<div className="h-40" />}>
-                  <PromoCardGrid />
-                </Suspense>
-              </LazyMountSection>
             </>
           )}
 

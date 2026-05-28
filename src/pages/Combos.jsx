@@ -362,13 +362,13 @@ const Combos = () => {
         <CartDrawer />
 
         {/* TOP BANNER */}
-        <Banner
+        {/* <Banner
           className="mt-0 mb-6"
           src={mothersDayBanner}
           mobileSrc={mothersDayBannerMobile}
           bannerKey="combos-top"
           imageFit="contain"
-        />
+        /> */}
 
         {/* NEW OFFER */}
         <HydrationGlowCombo />
