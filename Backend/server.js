@@ -1710,6 +1710,15 @@ app.delete("/api/products/:id", async (req, res) => {
 });
 
 /* ============================== BLOGS ============================== */
+const createBlogSlug = (value = "") =>
+  String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/['"`]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+
 app.post("/api/blogs", async (req, res) => {
   try {
     const { title, image, author, shortDesc, content, internalLink, contentSections } = req.body;
@@ -1726,6 +1735,7 @@ app.post("/api/blogs", async (req, res) => {
       shortDesc: shortDesc || "",
       internalLink: normalizedInternalLink,
       contentSections: Array.isArray(contentSections) ? contentSections : [],
+      slug: createBlogSlug(title),
       createdAt: now,
       updatedAt: now,
     };
@@ -1741,9 +1751,46 @@ app.post("/api/blogs", async (req, res) => {
 app.get("/api/blogs", async (req, res) => {
   try {
     const snapshot = await db.collection("blogs").orderBy("createdAt", "desc").get();
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    res.json(
+      snapshot.docs.map((doc) => {
+        const data = doc.data() || {};
+        return {
+          id: doc.id,
+          ...data,
+          slug: data.slug || createBlogSlug(data.title || ""),
+        };
+      })
+    );
   } catch {
     res.status(500).json({ error: "Failed to fetch blogs" });
+  }
+});
+
+app.get("/api/blogs/slug/:slug", async (req, res) => {
+  try {
+    const requestedSlug = createBlogSlug(req.params.slug || "");
+    if (!requestedSlug) return res.status(400).json({ error: "Invalid blog slug" });
+
+    const bySlug = await db
+      .collection("blogs")
+      .where("slug", "==", requestedSlug)
+      .limit(1)
+      .get();
+
+    if (!bySlug.empty) {
+      const doc = bySlug.docs[0];
+      return res.json({ id: doc.id, ...doc.data() });
+    }
+
+    const allBlogs = await db.collection("blogs").get();
+    const match = allBlogs.docs.find((entry) =>
+      createBlogSlug(entry.data()?.title || "") === requestedSlug
+    );
+
+    if (!match) return res.status(404).json({ error: "Blog not found" });
+    return res.json({ id: match.id, ...match.data(), slug: requestedSlug });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch blog" });
   }
 });
 
@@ -1751,7 +1798,8 @@ app.get("/api/blogs/:id", async (req, res) => {
   try {
     const doc = await db.collection("blogs").doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: "Blog not found" });
-    res.json({ id: doc.id, ...doc.data() });
+    const data = doc.data() || {};
+    res.json({ id: doc.id, ...data, slug: data.slug || createBlogSlug(data.title || "") });
   } catch {
     res.status(500).json({ error: "Failed to fetch blog" });
   }
@@ -1763,7 +1811,12 @@ app.put("/api/blogs/:id", async (req, res) => {
     const doc = await blogRef.get();
     if (!doc.exists) return res.status(404).json({ error: "Blog not found" });
 
-    await blogRef.update({ ...req.body, updatedAt: Date.now() });
+    const nextTitle = String(req.body?.title || doc.data()?.title || "");
+    await blogRef.update({
+      ...req.body,
+      slug: createBlogSlug(nextTitle),
+      updatedAt: Date.now(),
+    });
     res.json({ message: "Blog updated successfully" });
   } catch (error) {
     console.error(error);
