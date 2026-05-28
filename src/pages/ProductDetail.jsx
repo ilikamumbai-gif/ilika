@@ -753,7 +753,7 @@ const StarRating = ({ value, onChange }) => {
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    REVIEW MODAL
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-const DeferredSection = ({ children, minHeight = 240, rootMargin = "320px 0px" }) => {
+const DeferredSection = ({ children, minHeight = 240, rootMargin = "120px 0px" }) => {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -1145,6 +1145,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [isHeroImageLoaded, setIsHeroImageLoaded] = useState(false);
+  const [pendingImagesToPreload, setPendingImagesToPreload] = useState([]);
   const [selectedVideoUrl, setSelectedVideoUrl] = useState("");
   const [selectedVideoPlaying, setSelectedVideoPlaying] = useState(false);
   const [activeVariant, setActiveVariant] = useState(null);
@@ -1378,6 +1380,7 @@ const ProductDetail = () => {
 
     // 1. Wipe stale images immediately so old thumbnails never flash
     setSelectedImage(null);
+    setIsHeroImageLoaded(false);
     setSelectedVideoUrl("");
     setSelectedVideoPlaying(false);
     setActiveVariant(null);
@@ -1404,12 +1407,17 @@ const ProductDetail = () => {
       setSelectedVideoUrl("");
       setSelectedVideoPlaying(false);
 
-      // Preload ALL images async - thumbnails only appear once images are ready
-      await preloadImages(newImages);
+      // Defer secondary image preloading until hero image has loaded.
+      setPendingImagesToPreload(newImages);
     };
 
     run();
   }, [product, preloadImages]);
+
+  useEffect(() => {
+    if (!isHeroImageLoaded || !pendingImagesToPreload?.length) return;
+    preloadImages(pendingImagesToPreload);
+  }, [isHeroImageLoaded, pendingImagesToPreload, preloadImages]);
 
   const productId = product?.id || product?._id || null;
   // `images` = source of truth for lightbox, swipe, auto-scroll logic
@@ -1907,6 +1915,7 @@ const ProductDetail = () => {
 
   const handleVariantSelect = useCallback((variant) => {
     setSelectedImage(null);
+    setIsHeroImageLoaded(false);
     setDisplayImages([]);
     stopAuto();
     const newImgs = variant.images?.length ? variant.images : product?.images || [];
@@ -1914,8 +1923,8 @@ const ProductDetail = () => {
     setSelectedImage(variant.images?.[0] || variant.image || null);
     setSelectedVideoUrl("");
     setSelectedVideoPlaying(false);
-    preloadImages(newImgs);
-  }, [product?.images, preloadImages]);
+    setPendingImagesToPreload(newImgs);
+  }, [product?.images]);
 
   const renderVariantSelector = () => (
     <div>
@@ -1950,13 +1959,23 @@ const ProductDetail = () => {
 
   useEffect(() => {
     if (!ingredients.length) return;
-    ingredients.forEach((src) => {
-      if (!src || ingredientPreloadedRef.current.has(src)) return;
-      const img = new window.Image();
-      img.decoding = "async";
-      img.src = src;
-      ingredientPreloadedRef.current.add(src);
-    });
+    const warmup = () => {
+      ingredients.slice(0, 2).forEach((src) => {
+        if (!src || ingredientPreloadedRef.current.has(src)) return;
+        const img = new window.Image();
+        img.decoding = "async";
+        img.src = src;
+        ingredientPreloadedRef.current.add(src);
+      });
+    };
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(warmup, { timeout: 1500 });
+      return () => window.cancelIdleCallback(id);
+    }
+
+    const timeoutId = window.setTimeout(warmup, 1200);
+    return () => window.clearTimeout(timeoutId);
   }, [ingredients]);
 
   const additionalInfoArray = useMemo(() => {
@@ -2208,11 +2227,12 @@ const ProductDetail = () => {
                     loading="eager"
                     fetchPriority="high"
                     decoding="sync"
+                    onLoad={() => setIsHeroImageLoaded(true)}
                     src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
                     alt={product.name}
                     width="1080"
                     height="1080"
-                    className="w-full aspect-square sm:aspect-auto sm:h-[400px] lg:h-[540px] object-contain sm:object-cover transition-opacity duration-300 ease-out"
+                    className="w-full aspect-square sm:aspect-auto sm:h-[400px] lg:h-[540px] object-contain transition-opacity duration-300 ease-out"
                   />
                 ) : (
                   <div className="w-full aspect-square sm:h-[400px] sm:aspect-auto lg:h-[540px] bg-gray-100 animate-pulse rounded-3xl" />

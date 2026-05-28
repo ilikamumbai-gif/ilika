@@ -232,7 +232,7 @@ const Home = () => {
                       "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
                       "Hot & Cold Facial Pore Blackhead Remover For Men & Women ",
                     ]}
-                    limit={8}
+                    limit={4}
                   />
                 </Suspense>
               </LazyMountSection>

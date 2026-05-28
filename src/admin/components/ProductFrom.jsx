@@ -161,6 +161,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   const emptyForm = {
     hsnCode: "", gstRate: "",
     name: "", shortInfo: "", price: "", mrp: "",
+    productTag: "",
     hasVariants: false, variants: [], categoryIds: [],
     description: "", additionalInfo: "", tagline: "", points: "",
     images: [], isActive: true, inStock: true,
@@ -188,6 +189,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     shortInfo: d.shortInfo || "",
     price: d.price || "",
     mrp: d.mrp || "",
+    productTag: d.productTag || "",
     hasVariants: d.hasVariants || false,
     variants: (d.variants || []).map(v => ({ ...v, preview: v.images || [] })),
     categoryIds: d.categoryIds || [],
@@ -484,6 +486,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         hsnCode: String(form.hsnCode || "").trim(),
         gstRate: form.gstRate === "" ? null : Number(form.gstRate),
         name: form.name, shortInfo: form.shortInfo,
+        productTag: String(form.productTag || "").trim(),
         hasVariants: form.hasVariants,
         price: form.hasVariants ? null : Number(form.price),
         mrp: form.hasVariants ? null : Number(form.mrp),
@@ -566,6 +569,16 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             <textarea placeholder="Short Info" value={form.shortInfo}
               onChange={e => setForm({ ...form, shortInfo: e.target.value })}
               className="w-full border border-gray-200 p-2.5 rounded-lg" rows={2}
+            />
+          </div>
+          <div className="lg:col-span-2">
+            <label className="text-xs font-semibold text-gray-600 block mb-1">Product Tag (Optional)</label>
+            <input
+              type="text"
+              placeholder="e.g. Top Seller, Best Seller, New Launch"
+              value={form.productTag || ""}
+              onChange={e => setForm({ ...form, productTag: e.target.value })}
+              className="w-full border border-gray-200 p-2.5 rounded-lg"
             />
           </div>
         </div>

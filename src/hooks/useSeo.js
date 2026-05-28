@@ -50,7 +50,10 @@ export const useSeo = ({
     }
 
     upsertMeta("name", "robots", robots);
+    upsertMeta("name", "application-name", "Ilika");
+    upsertMeta("name", "apple-mobile-web-app-title", "Ilika");
     upsertMeta("property", "og:type", type);
+    upsertMeta("property", "og:site_name", "Ilika");
     upsertMeta("property", "og:url", canonicalUrl);
     upsertMeta("property", "og:image", image);
     upsertMeta("name", "twitter:card", "summary_large_image");

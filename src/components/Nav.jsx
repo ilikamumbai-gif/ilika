@@ -59,6 +59,7 @@ export const SearchBar = ({ products = [], onClose, className = "" }) => {
     query.trim().length > 0
       ? products
         .filter((p) => {
+          if (p?.isActive === false) return false;
           const haystack = [
             p.name,
             p.shortInfo,

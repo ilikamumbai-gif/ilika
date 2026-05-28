@@ -18,6 +18,7 @@ const normalizeExternalLink = (url = "") => {
 const SocialFeed = () => {
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(6);
 
   useEffect(() => {
     let ignore = false;
@@ -48,6 +49,26 @@ const SocialFeed = () => {
           return normalizedA - normalizedB;
         }),
     [items]
+  );
+
+  useEffect(() => {
+    setVisibleCount(6);
+    if (activeItems.length <= 6) return;
+
+    const revealAll = () => setVisibleCount(activeItems.length);
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(revealAll, { timeout: 1200 });
+      return () => window.cancelIdleCallback(id);
+    }
+
+    const timeoutId = window.setTimeout(revealAll, 900);
+    return () => window.clearTimeout(timeoutId);
+  }, [activeItems.length]);
+
+  const visibleItems = useMemo(
+    () => activeItems.slice(0, visibleCount),
+    [activeItems, visibleCount]
   );
 
   return (
@@ -93,10 +114,11 @@ const SocialFeed = () => {
             <p className="text-center text-[#634a4a]">No social posts available yet.</p>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-1.5">
-              {activeItems.map((item, index) => {
+              {visibleItems.map((item, index) => {
                 const id = item.id || item._id || index;
                 const isVideo = item.mediaType === "video";
                 const previewSrc = isVideo ? item.thumbnailUrl || item.mediaUrl : item.mediaUrl;
+                const prioritize = index < 2;
                 return (
                   <button
                     key={id}
@@ -107,6 +129,11 @@ const SocialFeed = () => {
                     {previewSrc ? (
                       <img
                         src={previewSrc}
+                        loading={prioritize ? "eager" : "lazy"}
+                        fetchPriority={prioritize ? "high" : "low"}
+                        decoding="async"
+                        width="640"
+                        height="800"
                         alt={item.title || "social post"}
                         className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
                       />

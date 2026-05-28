@@ -50,7 +50,7 @@ const ProductList = ({
         {mobileScroll && (
           <div className="flex gap-4 overflow-x-auto pb-2 sm:hidden scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {filteredProducts.length ? (
-              filteredProducts.map((item) => (
+              filteredProducts.map((item, index) => (
                 <div
                   key={item._id || item.id}
                   className="snap-start shrink-0 w-[62vw] max-w-[240px]"
@@ -60,6 +60,7 @@ const ProductList = ({
                       product={item}
                       buttonBg={buttonBg}
                       buttonText={buttonText}
+                      prioritizeImage={index < 8}
                     />
                   </div>
                 </div>
@@ -73,12 +74,13 @@ const ProductList = ({
         {!mobileScroll && (
           <div className="grid grid-cols-2 gap-4 sm:hidden">
             {filteredProducts.length ? (
-              filteredProducts.map((item) => (
+              filteredProducts.map((item, index) => (
                 <ProductCard
                   key={item._id || item.id}
                   product={item}
                   buttonBg={buttonBg}
                   buttonText={buttonText}
+                  prioritizeImage={index < 8}
                 />
               ))
             ) : (
@@ -89,12 +91,13 @@ const ProductList = ({
 
         <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.length ? (
-            filteredProducts.map((item) => (
+            filteredProducts.map((item, index) => (
               <ProductCard
                 key={item._id || item.id}
                 product={item}
                 buttonBg={buttonBg}
                 buttonText={buttonText}
+                prioritizeImage={index < 8}
               />
             ))
           ) : (

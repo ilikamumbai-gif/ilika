@@ -2,6 +2,7 @@ import React from "react";
 import { auth } from "../firebase/firebaseConfig";
 import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
+import { FiShoppingCart } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { createSlug } from "../utils/slugify";
@@ -12,10 +13,12 @@ const ProductCard = ({
   buttonText = "text-white",
   productNames = [],
   couponText = "",
+  prioritizeImage = false,
 }) => {
   const { addToCart } = useCart();
   const slug = createSlug(product.name);
   const productId = product._id || product.id;
+
   /* VARIANT SUPPORT */
   const defaultVariant = product.hasVariants && product.variants?.length
     ? product.variants[0]
@@ -35,30 +38,23 @@ const ProductCard = ({
     product.imageUrl ||
     "/placeholder.webp";
 
-
   const calculatedDiscount =
     product.discount ||
     (displayMrp
       ? Math.round(((displayMrp - displayPrice) / displayMrp) * 100)
       : null);
 
-
-  const rating = product.rating || 4;
-  const reviews = product.reviews || 80;
   const isTall = productImage?.includes("bottle") || productImage?.includes("tube");
+  const productTag = String(product?.productTag || "").trim();
   const assignedCoupon = product?.couponSnapshot || product?.coupon || null;
-  const couponCode = String(assignedCoupon?.code || "").trim().toUpperCase();
-  const couponName = String(assignedCoupon?.name || "").trim();
+  const couponCode = String(assignedCoupon?.code || "").trim();
   const couponPercent = Number(assignedCoupon?.discountPercent || 0);
   const hasActiveCoupon =
     assignedCoupon &&
     assignedCoupon?.isActive !== false &&
     couponCode &&
     couponPercent > 0;
-  const couponBadgeText = hasActiveCoupon
-    ? `${couponName ? `${couponName} - ` : ""}${couponCode}`
-    : couponText;
-
+  const couponBadgeText = hasActiveCoupon ? couponCode : couponText;
 
   const showNotifyToast = (message, type = "success") => {
     const styles = {
@@ -84,28 +80,25 @@ const ProductCard = ({
       <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl w-[300px]
       bg-gradient-to-r ${s.bg}
       shadow-xl border ${s.border}`}>
-
         <div className={`w-10 h-10 flex items-center justify-center rounded-full
         ${s.iconBg} ${s.iconColor}`}>
           <FiBell size={18} />
         </div>
-
         <p className="text-sm font-semibold text-gray-800">{message}</p>
       </div>
     ));
   };
-  const handleNotifyMe = async (product) => {
+
+  const handleNotifyMe = async (currentProduct) => {
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/notify`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            productId: product._id || product.id,
-            productName: product.name,
+            productId: currentProduct._id || currentProduct.id,
+            productName: currentProduct.name,
             userId: auth.currentUser?.uid || null,
             email: auth.currentUser?.email || null,
           }),
@@ -113,144 +106,118 @@ const ProductCard = ({
       );
 
       if (!res.ok) throw new Error();
-
-      showNotifyToast("You’ll be notified when it's back in stock!", "success");
+      showNotifyToast("You'll be notified when it's back in stock!", "success");
     } catch (err) {
       console.error(err);
       showNotifyToast("Failed to subscribe. Try again!", "error");
     }
   };
+
+  const handleCartClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!product.inStock) {
+      handleNotifyMe(product);
+      return;
+    }
+
+    const item = defaultVariant
+      ? {
+          ...product,
+          id: cartId,
+          baseProductId: productId,
+          variantId: defaultVariant.id,
+          variantLabel: defaultVariant.label,
+          price: defaultVariant.price,
+          mrp: defaultVariant.mrp,
+          image: defaultVariant.images?.[0],
+        }
+      : { ...product, id: productId };
+
+    addToCart(item);
+  };
+
   return (
-    <div className="primary-bg-color rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 w-full flex flex-col">
+    <div className="w-full">
+      <Link to={`/product/${slug}`} state={{ id: productId }} className="group block">
+        <article className="overflow-hidden rounded-2xl border border-[#b34140] bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.08)] sm:rounded-[30px]">
 
-      <Link to={`/product/${slug}`} state={{ id: productId }} className="group flex h-full flex-col">
-
-        {/* IMAGE AREA */}
-        <div className="relative aspect-square overflow-hidden flex items-center justify-center ">
-
-          <img
-            loading="lazy"
-            fetchPriority="low"
-            decoding="async"
-            width={640}
-            height={640}
-            src={`${productImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-
-            alt={product.name}
-            className={`
-              absolute inset-0
-              w-full h-full
-              object-contain
-              ${isTall ? "scale-[1.18] group-hover:scale-[1.22]" : "scale-[1.08] group-hover:scale-[1.12]"}
-              transition-transform duration-500 ease-out
-              p-2
-            `}
-          />
-
-
-
-          {/* DISCOUNT BADGE (THEME) */}
-          {calculatedDiscount && (
-            <div className="absolute top-3 right-3 bg-[#b34140] text-white text-xs font-semibold px-2.5 py-1 rounded-md shadow">
-              {calculatedDiscount}% OFF
-            </div>
-          )}
-
-         
-        </div>
-
-        {/* CONTENT */}
-        <div className="p-4 flex flex-col gap-2 flex-grow">
-
-          {/* NAME */}
-          <h4 className="text-[13px] font-semibold text-[#172917] leading-snug tracking-wide line-clamp-2 ">           
-             {product.name}
-          </h4>
-
-          {couponBadgeText && (
-            <div className="inline-flex w-fit items-center rounded-full bg-[#fff2d7] text-[#7a1f1f] text-[11px] font-semibold px-2.5 py-1 border border-[#f1d8a8]">
-              {couponBadgeText}
-            </div>
-          )}
-
-          {/* TAGLINE */}
-          {product.tagline && (
-            <div className="flex flex-wrap gap-1 mt-1 ">
-              {product.tagline.split(",").map((tag, i, arr) => (
-                <span key={i} className="text-[12px] heading-color font-clean">
-                  {tag.trim()}
-                  {i !== arr.length - 1 && " • "}
-                </span>
-              ))}
-            </div>
-          )}
-
-
-          {/* RATING */}
-          <div className="flex items-center gap-2 text-xs mt-1">
-            <div className="text-[#E7A6A1] font-clean tracking-wider">
-              {"★".repeat(rating)}
-              {"☆".repeat(5 - rating)}
-            </div>
-          </div>
-
-          {/* PRICE */}
-          <div className="flex items-baseline gap-2 mt-1 whitespace-nowrap">
-
-            <span className="font-semibold text-[#1C371C] text-[16px] font-clean">
-              ₹{displayPrice}            </span>
-
-            {displayMrp && displayMrp > displayPrice && (
-              <span className="text-[#1c371c98] text-[13px] font-clean line-through">
-                ₹{displayMrp}
+          {/* -- Image area -- */}
+          <div className="relative aspect-square overflow-hidden bg-white">
+            {productTag && (
+              <span
+                className={`absolute right-2 top-2 z-20 inline-flex max-w-[55%] items-center justify-center truncate rounded-md px-2 py-1 text-[9px] font-bold text-white shadow-sm sm:right-3 sm:top-3 sm:text-[10px] ${buttonBg}`}
+                title={productTag}
+              >
+                {productTag}
               </span>
             )}
 
+            {/* Badges */}
+            <div className="absolute bottom-1 left-2 z-20 flex max-w-[calc(100%-12px)] items-center gap-1 sm:bottom-3 sm:left-3 sm:gap-1.5">
+              <span className="inline-flex h-5 min-w-[44px] items-center justify-center rounded-md border border-[#2f2f2f]/60 bg-white/30 px-1 text-[8px] font-bold uppercase leading-none tracking-[0.05em] text-[#111] backdrop-blur-md shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] sm:h-[22px] sm:min-w-[52px] sm:px-2 sm:text-[10px]">
+                {calculatedDiscount ? `${calculatedDiscount}% Off` : "Off"}
+              </span>
+              {couponBadgeText && (
+                <span className="inline-flex h-5 max-w-[72px] items-center justify-center rounded-md border border-[#2f2f2f]/60 bg-white/30 px-1 text-[8px] font-bold leading-none tracking-[0.05em] text-[#111] backdrop-blur-md shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] truncate sm:h-[22px] sm:max-w-[110px] sm:px-2 sm:text-[10px]">
+                  {couponBadgeText}
+                </span>
+              )}
+            </div>
+
+            <img
+              loading={prioritizeImage ? "eager" : "lazy"}
+              fetchPriority={prioritizeImage ? "high" : "low"}
+              decoding="async"
+              width={640}
+              height={640}
+              src={`${productImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+              alt={product.name}
+              className={`
+                absolute inset-0 h-full w-full object-cover
+                ${isTall ? "scale-[1.02] group-hover:scale-[1.05]" : "scale-100 group-hover:scale-[1.03]"}
+                transition-transform duration-500 ease-out
+              `}
+            />
           </div>
 
+          {/* -- Info area -- */}
+          <div className="relative px-2.5 pt-2.5 pb-2.5 sm:px-4 sm:pt-3.5 sm:pb-4">
 
-        </div>
+            {/* Product name */}
+            <h4 className="w-full pr-11 text-left text-[13px] font-semibold leading-[1.25] tracking-[0.01em] text-[#1e1e1e] line-clamp-2 mb-1.5 sm:pr-12 sm:text-[16px] sm:leading-[1.35] sm:mb-2.5">
+              {product.name}
+            </h4>
 
-        {/* BUTTON */}
-        <div className="px-4 pb-4">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation(); // 🚨 VERY IMPORTANT (because of Link wrapper)
+            {/* Price row */}
+            <div className="flex items-end gap-1 pr-11 sm:gap-2 sm:pr-12">
+              <span className="text-[15px] font-bold leading-none tracking-[-0.02em] text-[#1a1a1a] sm:text-[22px]">
+                Rs {displayPrice}
+              </span>
+              {displayMrp && displayMrp > displayPrice && (
+                <span className="text-[9.5px] font-normal leading-none text-[#a0a0a0] line-through sm:text-[12.5px]">
+                  Rs {displayMrp}
+                </span>
+              )}
+            </div>
 
-              if (!product.inStock) {
-                handleNotifyMe(product);
-                return;
-              }
+            {/* Cart / Notify button */}
+            <button
+              type="button"
+              onClick={handleCartClick}
+              aria-label={product.inStock ? "Add to cart" : "Notify me"}
+              className={`absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-full border border-[#2f2f2f] transition-all duration-150 hover:scale-105 active:scale-95 sm:bottom-3 sm:right-3 sm:h-12 sm:w-12 ${product.inStock ? `${buttonBg} ${buttonText}` : "bg-[rgb(43,42,41)] text-white hover:opacity-95"}`}
+            >
+              {product.inStock ? (
+                <FiShoppingCart className="text-[14px] sm:text-[21px]" />
+              ) : (
+                <FiBell className="text-[14px] sm:text-[21px]" />
+              )}
+            </button>
+          </div>
 
-              const item = defaultVariant
-                ? {
-                  ...product,
-                  id: cartId,
-                  baseProductId: productId,
-                  variantId: defaultVariant.id,
-                  variantLabel: defaultVariant.label,
-                  price: defaultVariant.price,
-                  mrp: defaultVariant.mrp,
-                  image: defaultVariant.images?.[0],
-                }
-                : {
-                  ...product,
-                  id: productId,
-                };
-
-              addToCart(item);
-            }}
-            className={`w-full text-[13px] font-clean tracking-widest py-2.5 rounded-lg transition
-    ${product.inStock
-                ? `${buttonBg} ${buttonText}`
-              : "bg-[#b34140] text-white hover:bg-[#8f302f]"
-              }`}
-          >
-            {product.inStock ? "Add To Cart" : "Notify Me"}
-          </button>
-        </div>
-
+        </article>
       </Link>
     </div>
   );

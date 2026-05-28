@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
+import { createSlug } from "../utils/slugify";
 
 const removeInlineImagesFromHtml = (html = "") =>
   String(html || "").replace(/<img[^>]*>/gi, "");
@@ -72,17 +73,105 @@ const renderSectionBlock = (section, index) => {
 };
 
 const BlogDetail = () => {
-  const { state: blog } = useLocation();
+  const { state: locationBlog } = useLocation();
+  const { slug } = useParams();
   const API = import.meta.env.VITE_API_URL;
+  const [blog, setBlog] = useState(locationBlog || null);
 
   const [comments, setComments] = useState([]);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [loadingComments, setLoadingComments] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [loadingBlog, setLoadingBlog] = useState(!locationBlog);
+  const [commentsVisible, setCommentsVisible] = useState(false);
+  const commentsSectionRef = useRef(null);
 
   useEffect(() => {
-    if (!blog?.id) return;
+    let ignore = false;
+
+    const loadBlog = async () => {
+      if (!slug) {
+        setLoadingBlog(false);
+        return;
+      }
+
+      const stateSlug = String(locationBlog?.slug || createSlug(locationBlog?.title || ""))
+        .trim()
+        .toLowerCase();
+
+      if (locationBlog?.id && stateSlug === String(slug).trim().toLowerCase()) {
+        setBlog(locationBlog);
+        setLoadingBlog(false);
+        return;
+      }
+
+      try {
+        const bySlugRes = await fetch(`${API}/api/blogs/slug/${slug}`);
+        if (bySlugRes.ok) {
+          const bySlugData = await bySlugRes.json();
+          if (!ignore) setBlog(bySlugData || null);
+          return;
+        }
+
+        const byIdRes = await fetch(`${API}/api/blogs/${slug}`);
+        if (byIdRes.ok) {
+          const byIdData = await byIdRes.json();
+          if (!ignore) setBlog(byIdData || null);
+          return;
+        }
+
+        const listRes = await fetch(`${API}/api/blogs`);
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          const blogs = Array.isArray(listData) ? listData : [];
+          const slugLower = String(slug).trim().toLowerCase();
+          const matched = blogs.find((entry) => {
+            const entrySlug = String(entry?.slug || createSlug(entry?.title || ""))
+              .trim()
+              .toLowerCase();
+            return entrySlug === slugLower;
+          });
+          if (!ignore && matched) {
+            setBlog(matched);
+            return;
+          }
+        }
+
+        if (!ignore) setBlog(null);
+      } catch {
+        if (!ignore) setBlog(null);
+      } finally {
+        if (!ignore) setLoadingBlog(false);
+      }
+    };
+
+    loadBlog();
+    return () => {
+      ignore = true;
+    };
+  }, [API, slug, locationBlog]);
+
+  useEffect(() => {
+    const node = commentsSectionRef.current;
+    if (!node || commentsVisible) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setCommentsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "180px 0px", threshold: 0.01 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [commentsVisible]);
+
+  useEffect(() => {
+    if (!blog?.id || !commentsVisible) return;
 
     const loadComments = async () => {
       try {
@@ -97,7 +186,7 @@ const BlogDetail = () => {
     };
 
     loadComments();
-  }, [API, blog?.id]);
+  }, [API, blog?.id, commentsVisible]);
 
   const submitComment = async (e) => {
     e.preventDefault();
@@ -148,6 +237,22 @@ const BlogDetail = () => {
     () => normalizeInternalLink(blog?.internalLink),
     [blog?.internalLink]
   );
+
+  if (loadingBlog) {
+    return (
+      <>
+        <MiniDivider />
+        <div className="min-h-screen bg-white text-[#1C371C]">
+          <Header />
+          <CartDrawer />
+          <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
+            <p className="text-lg font-medium">Loading blog...</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   if (!blog) {
     return (
@@ -204,7 +309,11 @@ const BlogDetail = () => {
 
               <figure className="overflow-hidden rounded-2xl bg-[#f8fbf8]">
                 <img
-                  loading="lazy"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  width="1200"
+                  height="800"
                   src={blog.image}
                   alt={blog.title}
                   className="h-full min-h-[260px] w-full object-cover"
@@ -227,7 +336,7 @@ const BlogDetail = () => {
             ) : null}
           </article>
 
-          <section className="mt-12 border-t border-[#e2ece2] pt-8">
+          <section ref={commentsSectionRef} className="mt-12 border-t border-[#e2ece2] pt-8">
             <h2 className="text-2xl font-semibold text-[#1C371C]">Comments ({comments.length})</h2>
 
             <form onSubmit={submitComment} className="mt-5 space-y-3 rounded-2xl border border-[#e2ece2] bg-white p-4 sm:p-5">
@@ -257,7 +366,9 @@ const BlogDetail = () => {
             </form>
 
             <div className="mt-6 space-y-3">
-              {loadingComments ? (
+              {!commentsVisible ? (
+                <p className="text-sm text-[#5f705f]">Comments load when you reach this section.</p>
+              ) : loadingComments ? (
                 <p className="text-sm text-[#5f705f]">Loading comments...</p>
               ) : comments.length === 0 ? (
                 <p className="text-sm text-[#5f705f]">No comments yet. Be the first to comment.</p>

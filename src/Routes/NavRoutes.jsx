@@ -181,7 +181,7 @@ const NavRoutes = () => {
           element={renderLazy(UserDetail)}
         />
 
-        <Route path="/blog/:id" element={renderLazy(BlogDetail)} />
+        <Route path="/blog/:slug" element={renderLazy(BlogDetail)} />
         <Route path="/product/:slug" element={renderLazy(ProductDetail)} />
         <Route path="/category/:categorySlug" element={renderLazy(CategoryProducts)} />
 
