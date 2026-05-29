@@ -189,7 +189,7 @@ const VoiceMaskMakerLanding = () => {
             <button
               type="button"
               onClick={handleBuyNow}
-              className="group relative mb-3 inline-flex h-[74px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-5 py-4 text-[16px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[18px] sm:tracking-[0.03em]"
+              className="group relative mb-3 inline-flex h-[74px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-5 py-4 text-[18px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[20px] sm:tracking-[0.03em]"
             >
               <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
               <span className="relative z-[1] inline-flex items-center gap-2">
@@ -205,16 +205,16 @@ const VoiceMaskMakerLanding = () => {
               <button
                 type="button"
                 onClick={handleApplyCoupon}
-                className={`inline-flex h-auto min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] border border-dashed px-3 py-2 text-[11px] font-semibold tracking-[0.04em] transition sm:h-[48px] sm:min-w-[320px] sm:flex-1 sm:px-4 sm:py-0 sm:text-[12px] sm:tracking-[0.05em] ${
+                className={`inline-flex h-auto min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] border border-dashed px-3 py-2 text-[14px] font-semibold tracking-[0.03em] transition sm:h-[48px] sm:min-w-[320px] sm:flex-1 sm:px-4 sm:py-0 sm:text-[16px] sm:tracking-[0.04em] ${
                   couponApplied
-                    ? "border-[#F2B38B] bg-[rgba(184,113,97,0.36)] text-[#FFE7DB]"
-                    : "border-[#D38A75] bg-[rgba(184,113,97,0.20)] text-[#F4B39F] hover:bg-[rgba(184,113,97,0.30)]"
+                    ? "border-[#F0C24A] bg-[#FFD54A] text-[#5C3A00]"
+                    : "border-[#E4B63E] bg-[#F7C948] text-[#5C3A00] hover:bg-[#FFD54A]"
                 }`}
               >
                 <Tag className="h-3.5 w-3.5" />
                 {couponApplied ? "Coupon Applied: ilikaDIY · Price Locked at ₹4,999" : "Use Code: ilikaDIY · Flat 15% Off"}
                 {!couponApplied && (
-                  <span className="inline-flex animate-bounce items-center gap-1 rounded-full border border-[#F5B35E] bg-[#FFF3DE] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.08em] text-[#A15A0F]">
+                  <span className="inline-flex animate-bounce items-center gap-1 rounded-full border border-[#E4B63E] bg-[#FFF1C2] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.08em] text-[#7A4D00]">
                     <MousePointerClick className="h-3 w-3" />
                     Click Me
                   </span>

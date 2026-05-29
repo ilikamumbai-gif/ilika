@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Pencil, Plus, Trash2, Search, Package } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useProducts } from "../../context/ProductContext";
 import { useCategories } from "../../context/CategoryContext";
@@ -20,14 +20,29 @@ const FilterSelect = ({ value, onChange, children }) => (
 
 const ProductList = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch]           = useState("");
   const [statusFilter, setStatus]     = useState("");
   const [stockFilter, setStock]       = useState("");
   const [categoryFilter, setCategory] = useState("");
   const { products, deleteProduct, fetchProducts } = useProducts();
   const { categories } = useCategories();
-
   useEffect(() => { fetchProducts(); }, [categories.length]);
+
+  useEffect(() => {
+    const restore = location.state?.restoreListState;
+    if (!restore) return;
+
+    setSearch(restore.search || "");
+    setStatus(restore.statusFilter || "");
+    setStock(restore.stockFilter || "");
+    setCategory(restore.categoryFilter || "");
+
+    const y = Number(restore.scrollY || 0);
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: y, behavior: "auto" });
+    });
+  }, [location.state]);
 
   const getCategoryNames = (ids = []) =>
     ids.map(id => categories.find(c => String(c.id) === String(id))?.name).filter(Boolean).join(", ") || "—";
@@ -42,6 +57,18 @@ const ProductList = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
     await deleteProduct(id);
+  };
+
+  const buildListState = () => ({
+    search,
+    statusFilter,
+    stockFilter,
+    categoryFilter,
+    scrollY: window.scrollY,
+  });
+
+  const goToEdit = (id) => {
+    navigate(`/admin/products/edit/${id}`, { state: { listState: buildListState() } });
   };
 
   return (
@@ -123,7 +150,7 @@ const ProductList = () => {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
-                      <button onClick={() => navigate(`/admin/products/edit/${p.id}`)}
+                      <button onClick={() => goToEdit(p.id)}
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                         <Pencil size={14} />
                       </button>
@@ -157,7 +184,7 @@ const ProductList = () => {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">
-                <button onClick={() => navigate(`/admin/products/edit/${p.id}`)}
+                <button onClick={() => goToEdit(p.id)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                   <Pencil size={14} />
                 </button>

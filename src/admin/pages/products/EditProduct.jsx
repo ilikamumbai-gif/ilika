@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import ProductForm from "../../components/ProductFrom";
 import { useProducts } from "../../context/ProductContext";
@@ -12,6 +12,7 @@ const EditProduct = () => {
   const { id } = useParams();
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     products,
@@ -47,7 +48,9 @@ const EditProduct = () => {
     const result = await updateProduct(id, data);
     console.log("Product update response:", result);
     console.log("Merchant sync result:", result?.merchantSync || { status: "missing" });
-    navigate("/admin/products");
+    navigate("/admin/products", {
+      state: { restoreListState: location.state?.listState || null },
+    });
   };
 
 
