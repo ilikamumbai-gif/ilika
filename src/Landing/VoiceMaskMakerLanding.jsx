@@ -121,7 +121,8 @@ const VoiceMaskMakerLanding = () => {
 
   const productSlug = createSlug(productName);
   const productPath = `/product/${productSlug}`;
-  const discountedPrice = couponApplied ? Math.max(0, Math.round(productPrice * 0.85)) : productPrice;
+  const COUPON_FORCED_PRICE = 4999;
+  const discountedPrice = couponApplied ? COUPON_FORCED_PRICE : productPrice;
   const effectiveSavings = Math.max(productMrp - discountedPrice, 0);
 
   const handleApplyCoupon = () => setCouponApplied(true);
@@ -149,7 +150,7 @@ const VoiceMaskMakerLanding = () => {
   };
 
   return (
-    <div className="bg-[#090909] text-[#FAF6F3] [font-family:'DM_Sans',sans-serif]">
+    <div className="bg-[#202020] text-[#FAF6F3] [font-family:'DM_Sans',sans-serif]">
       <MiniDivider />
       <Header forceWhiteBg />
 
@@ -157,7 +158,7 @@ const VoiceMaskMakerLanding = () => {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
       `}</style>
 
-      <section className="bg-[linear-gradient(180deg,_#0C0C0C_0%,_#131313_100%)] px-[4%] py-4 sm:py-5 lg:px-[6%] lg:py-6">
+      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2A2A_100%)] px-[4%] py-4 sm:py-5 lg:px-[6%] lg:py-6">
         <div className="mx-auto grid min-h-0 w-full max-w-[1240px] grid-cols-1 gap-6 lg:min-h-[calc(100dvh-150px)] lg:grid-cols-[1.45fr_0.95fr] lg:items-center lg:gap-10">
           <div className="flex w-full flex-col">
             <div className="mb-4 inline-flex w-fit items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#B87161]">
@@ -165,9 +166,9 @@ const VoiceMaskMakerLanding = () => {
             </div>
 
             <h1 className="mb-4 w-full max-w-[760px] [font-family:'Playfair_Display',serif] text-[clamp(36px,10vw,60px)] font-bold leading-[1.04] tracking-[-0.02em]">
-              Salon-Grade
+              The Best Automatic Mask Making Machine,
               <br />
-              <em className="block text-[#D86143]">Face Masks.</em>
+              <span className="block text-[0.88em] text-[#D86143]">DIY Natural Skincare.</span>
               <span className="mt-1.5 block text-[0.72em] font-medium tracking-[0.02em] text-[rgba(250,246,243,0.82)]">Made by You. In Minutes.</span>
             </h1>
 
@@ -204,10 +205,14 @@ const VoiceMaskMakerLanding = () => {
               <button
                 type="button"
                 onClick={handleApplyCoupon}
-                className="inline-flex h-auto min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] border border-dashed border-[rgba(245,172,86,0.65)] bg-[rgba(255,205,142,0.22)] px-3 py-2 text-[11px] font-semibold tracking-[0.04em] text-[#B66A10] transition hover:bg-[rgba(255,205,142,0.32)] sm:h-[48px] sm:min-w-[320px] sm:flex-1 sm:px-4 sm:py-0 sm:text-[12px] sm:tracking-[0.05em]"
+                className={`inline-flex h-auto min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] border border-dashed px-3 py-2 text-[11px] font-semibold tracking-[0.04em] transition sm:h-[48px] sm:min-w-[320px] sm:flex-1 sm:px-4 sm:py-0 sm:text-[12px] sm:tracking-[0.05em] ${
+                  couponApplied
+                    ? "border-[#F2B38B] bg-[rgba(184,113,97,0.36)] text-[#FFE7DB]"
+                    : "border-[#D38A75] bg-[rgba(184,113,97,0.20)] text-[#F4B39F] hover:bg-[rgba(184,113,97,0.30)]"
+                }`}
               >
                 <Tag className="h-3.5 w-3.5" />
-                {couponApplied ? "Coupon Applied: ilikaDIY · 15% Off" : "Use Code: ilikaDIY · Flat 15% Off"}
+                {couponApplied ? "Coupon Applied: ilikaDIY · Price Locked at ₹4,999" : "Use Code: ilikaDIY · Flat 15% Off"}
                 {!couponApplied && (
                   <span className="inline-flex animate-bounce items-center gap-1 rounded-full border border-[#F5B35E] bg-[#FFF3DE] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.08em] text-[#A15A0F]">
                     <MousePointerClick className="h-3 w-3" />
@@ -237,11 +242,11 @@ const VoiceMaskMakerLanding = () => {
 
           <div className="relative mx-auto flex w-full max-w-[470px] items-center justify-center">
             <div className="absolute left-1/2 top-1/2 h-[290px] w-[290px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(184,113,97,0.28)] bg-[rgba(184,113,97,0.12)] sm:h-[360px] sm:w-[360px] lg:h-[430px] lg:w-[430px]" />
-          <div className="relative z-[3] aspect-[4/4] w-full max-w-[360px] border-4 border-[#2A2523] bg-[#141414] p-2 shadow-[0_14px_30px_rgba(0,0,0,0.45)] sm:max-w-[470px] sm:p-3">
+          <div className="relative z-[3] aspect-[4/4] w-full max-w-[360px] border-4 border-[#2A2523] bg-[#202020] p-2 shadow-[0_14px_30px_rgba(0,0,0,0.45)] sm:max-w-[470px] sm:p-3">
             <img
               src={productImage}
               alt={productName}
-              className="h-full w-full bg-[#1A1A1A] object-contain object-center"
+              className="h-full w-full bg-[#202020] object-contain object-center"
               onError={(e) => {
                 e.currentTarget.src = "https://placehold.co/460x520/251610/C8705A?text=Ilika+Mask+Maker";
               }}
@@ -251,7 +256,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <div className="flex flex-wrap justify-center gap-6 border-y border-[rgba(184,113,97,0.45)] bg-[linear-gradient(120deg,_#171312_0%,_#241B19_100%)] px-[8%] py-5 lg:gap-12">
+      <div className="flex flex-wrap justify-center gap-6 border-y border-[rgba(201,141,128,0.6)] bg-[#b8716182] px-[8%] py-5 lg:gap-12">
         {[
           { icon: Star, label: "4.0 Verified Reviews" },
           { icon: Volume2, label: "Voice-Guided Smart AI" },
@@ -259,8 +264,8 @@ const VoiceMaskMakerLanding = () => {
           { icon: ShieldCheck, label: "Import Warranty" },
           { icon: Truck, label: "Fast Pan-India Delivery" },
         ].map(({ icon: Icon, label }) => (
-          <div key={label} className="flex items-center gap-2.5 text-[13px] font-medium text-[#F8EEE8]">
-            <span className="grid h-8 w-8 place-content-center rounded-full border border-[rgba(216,97,67,0.42)] bg-[rgba(216,97,67,0.14)] text-base">
+          <div key={label} className="flex items-center gap-2.5 text-[13px] font-medium text-[#FFF7F3]">
+            <span className="grid h-8 w-8 place-content-center rounded-full border border-[rgba(255,233,225,0.55)] bg-[rgba(255,240,234,0.2)] text-base text-[#FFE7DF]">
               <Icon className="h-4.5 w-4.5" />
             </span>
             {label}
@@ -268,7 +273,7 @@ const VoiceMaskMakerLanding = () => {
         ))}
       </div>
 
-      <section id="features" className="bg-[#0F0F0F] px-[8%] py-20">
+      <section id="features" className="bg-[#202020] px-[8%] py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Why You'll Love It</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           Everything a Spa Offers -
@@ -278,12 +283,12 @@ const VoiceMaskMakerLanding = () => {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {features.map((f) => (
-            <div key={f.title} className="rounded-[20px] border border-[#3A2E2A] bg-[#171717] px-7 py-9 transition hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(0,0,0,0.35)]">
-              <div className="mb-5 grid h-[52px] w-[52px] place-content-center rounded-[14px] bg-[#2A211F] text-[26px]">
-                <f.icon className="mx-auto h-6.5 w-6.5 text-[#9E5C4F]" />
+            <div key={f.title} className="rounded-[20px] border border-[#C98D80] bg-[#b8716182] px-7 py-9 transition hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(0,0,0,0.35)]">
+              <div className="mb-5 grid h-[52px] w-[52px] place-content-center rounded-[14px] bg-[#F3D7D1] text-[26px]">
+                <f.icon className="mx-auto h-6.5 w-6.5 text-[#7A3D31]" />
               </div>
-              <h3 className="mb-2.5 text-[17px] font-semibold">{f.title}</h3>
-              <p className="text-[14px] font-light leading-[1.65] text-[#D4C7C0]">{f.desc}</p>
+              <h3 className="mb-2.5 text-[17px] font-semibold text-[#FFF8F5]">{f.title}</h3>
+              <p className="text-[14px] font-light leading-[1.65] text-[#FFEAE4]">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -306,7 +311,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#121212_0%,_#1A1615_100%)] px-[8%] py-20">
+      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2524_100%)] px-[8%] py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">So Simple</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           Your Mask in <em className="text-[#B87161]">4 Easy Steps</em>
@@ -328,7 +333,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#0F0F0F_0%,_#171313_100%)] px-[8%] py-20">
+      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2423_100%)] px-[8%] py-20">
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-[60px]">
           <div>
             <h3 className="mb-5 [font-family:'Playfair_Display',serif] text-[34px] font-bold leading-[1.2]">Made with<br />Real Ingredients</h3>
@@ -342,22 +347,22 @@ const VoiceMaskMakerLanding = () => {
             </div>
           </div>
 
-          <div className="rounded-[28px] bg-[#1E1816] px-10 py-12">
-            <div className="mb-4 rounded-2xl border border-[#45332D] bg-[#141414] p-6">
-              <p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#B87161]">
+          <div className="rounded-[28px] bg-[#b8716182] px-10 py-12">
+            <div className="mb-4 rounded-2xl border border-[rgba(255,228,220,0.35)] bg-[#b8716182] p-6">
+              <p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE2D8]">
                 <Star className="h-3.5 w-3.5" /> Included
               </p>
-              <h4 className="mb-1.5 text-[15px] font-semibold">Collagen Peptide Pack</h4>
-              <p className="text-[13px] font-light text-[#D4C7C0]">
+              <h4 className="mb-1.5 text-[15px] font-semibold text-[#FFF8F5]">Collagen Peptide Pack</h4>
+              <p className="text-[13px] font-light text-[#FFECE6]">
                 Clinically formulated to boost skin elasticity, reduce fine lines and restore that youthful firmness. Just add one scoop to your mask mix.
               </p>
             </div>
-            <div className="rounded-2xl border border-[#45332D] bg-[#141414] p-6">
-              <p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#B87161]">
+            <div className="rounded-2xl border border-[rgba(255,228,220,0.35)] bg-[#b8716182] p-6">
+              <p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE2D8]">
                 <Lightbulb className="h-3.5 w-3.5" /> Pro Tip
               </p>
-              <h4 className="mb-1.5 text-[15px] font-semibold">Vitamin C Brightening Mask</h4>
-              <p className="text-[13px] font-light text-[#D4C7C0]">
+              <h4 className="mb-1.5 text-[15px] font-semibold text-[#FFF8F5]">Vitamin C Brightening Mask</h4>
+              <p className="text-[13px] font-light text-[#FFECE6]">
                 Orange + lemon + a pinch of turmeric → instant glow mask. The machine blends it to the perfect consistency for your skin type.
               </p>
             </div>
@@ -382,7 +387,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#111111_0%,_#181414_100%)] px-[8%] py-20">
+      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#292423_100%)] px-[8%] py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Real People, Real Glow</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           They Tried It.
@@ -392,7 +397,7 @@ const VoiceMaskMakerLanding = () => {
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
           {reviews.map((r) => (
-            <div key={r.name} className="rounded-2xl border border-[#3F312D] bg-[#171717] px-6 py-7">
+            <div key={r.name} className="rounded-2xl border border-[#3F312D] bg-[#202020] px-6 py-7">
               <div className="mb-3 flex items-center gap-1 text-[#D3A157]">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <Star key={n} className={`h-4 w-4 ${n <= r.rating ? "fill-current" : "opacity-35"}`} />

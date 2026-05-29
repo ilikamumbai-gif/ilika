@@ -27,8 +27,8 @@ const HydrationGlowCombo = () => {
   const { products } = useProducts();
   const { addToCart } = useCart();
 
-  const COMBO_PRICE = 4200;
-  const MASK_MAKER_ORIGINAL_PRICE = 7999;
+  const COMBO_PRICE = 3999;
+  const MASK_MAKER_ORIGINAL_PRICE = 5999;
 
   const PRODUCT_KEYWORDS = [
     "hyaluronic acid serum",
