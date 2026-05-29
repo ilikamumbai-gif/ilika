@@ -6,6 +6,7 @@ import MiniDivider from "../components/MiniDivider";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
+import voiceVersionMaskMakerImage from "./assets/voicevesion mask maker.jpeg";
 import {
   Volume2,
   Leaf,
@@ -114,6 +115,7 @@ const VoiceMaskMakerLanding = () => {
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 6999);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 8200);
   const productImage =
+    voiceVersionMaskMakerImage ||
     defaultVariant?.images?.[0] ||
     targetProduct?.images?.[0] ||
     targetProduct?.imageUrl ||
