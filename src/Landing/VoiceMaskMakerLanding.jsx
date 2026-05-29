@@ -156,16 +156,20 @@ const VoiceMaskMakerLanding = () => {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @keyframes offerPop {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.04); }
+        }
       `}</style>
 
-      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2A2A_100%)] px-[4%] py-4 sm:py-5 lg:px-[6%] lg:py-6">
+      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2A2A_100%)] px-[5%] py-4 sm:px-[6%] sm:py-5 lg:px-[6%] lg:py-6">
         <div className="mx-auto grid min-h-0 w-full max-w-[1240px] grid-cols-1 gap-6 lg:min-h-[calc(100dvh-150px)] lg:grid-cols-[1.45fr_0.95fr] lg:items-center lg:gap-10">
           <div className="flex w-full flex-col">
             <div className="mb-4 inline-flex w-fit items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#B87161]">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#B87161]" /> Trusted by 10,000+ Skincare Lovers
             </div>
 
-            <h1 className="mb-4 w-full max-w-[760px] [font-family:'Playfair_Display',serif] text-[clamp(36px,10vw,60px)] font-bold leading-[1.04] tracking-[-0.02em]">
+            <h1 className="mb-4 w-full max-w-[760px] [font-family:'Playfair_Display',serif] text-[clamp(32px,9vw,60px)] font-bold leading-[1.06] tracking-[-0.02em] sm:leading-[1.04]">
               The Best Automatic Mask Making Machine,
               <br />
               <span className="block text-[0.88em] text-[#D86143]">DIY Natural Skincare.</span>
@@ -176,7 +180,7 @@ const VoiceMaskMakerLanding = () => {
               Stop spending ₹800 per salon visit. The {productName} turns fresh fruits + collagen into a custom spa mask - right in your kitchen, every day.
             </p>
 
-            <div className="mb-4 flex items-end gap-2.5 sm:gap-3">
+            <div className="mb-4 flex flex-wrap items-end gap-2.5 sm:gap-3">
               <span className="[font-family:'Playfair_Display',serif] text-[44px] font-bold leading-none sm:text-[52px]">₹{discountedPrice.toLocaleString("en-IN")}</span>
               <div className="flex flex-col gap-1 pb-1">
                 <span className="text-[15px] font-light text-[rgba(215,201,194,0.85)] line-through">MRP ₹{productMrp.toLocaleString("en-IN")}</span>
@@ -189,7 +193,7 @@ const VoiceMaskMakerLanding = () => {
             <button
               type="button"
               onClick={handleBuyNow}
-              className="group relative mb-3 inline-flex h-[74px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-5 py-4 text-[18px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[20px] sm:tracking-[0.03em]"
+              className="group relative mb-3 inline-flex h-[70px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-4 py-3 text-[16px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[20px] sm:tracking-[0.03em]"
             >
               <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
               <span className="relative z-[1] inline-flex items-center gap-2">
@@ -205,7 +209,7 @@ const VoiceMaskMakerLanding = () => {
               <button
                 type="button"
                 onClick={handleApplyCoupon}
-                className={`inline-flex h-auto min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] border border-dashed px-3 py-2 text-[14px] font-semibold tracking-[0.03em] transition sm:h-[48px] sm:min-w-[320px] sm:flex-1 sm:px-4 sm:py-0 sm:text-[16px] sm:tracking-[0.04em] ${
+                className={`inline-flex h-auto min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] border border-dashed px-3 py-2 text-[13px] font-semibold tracking-[0.03em] transition sm:h-[48px] sm:min-w-[320px] sm:flex-1 sm:px-4 sm:py-0 sm:text-[16px] sm:tracking-[0.04em] ${
                   couponApplied
                     ? "border-[#F0C24A] bg-[#FFD54A] text-[#5C3A00]"
                     : "border-[#E4B63E] bg-[#F7C948] text-[#5C3A00] hover:bg-[#FFD54A]"
@@ -228,21 +232,18 @@ const VoiceMaskMakerLanding = () => {
               </a>
             </div>
 
-            <div className="mt-1 flex items-center gap-2.5 text-[12px] text-[rgba(215,201,194,0.95)]">
-              <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#F0AB57]" />
-              <span>
-                Offer ends in <span className="font-semibold text-[#BF533A]">{countdown}</span> · Only 12 units left
-              </span>
-            </div>
-
             {loading && !targetProduct && (
               <p className="mt-2 text-[12px] text-[#C68B7D]">Loading live product details...</p>
             )}
           </div>
 
-          <div className="relative mx-auto flex w-full max-w-[470px] items-center justify-center">
-            <div className="absolute left-1/2 top-1/2 h-[290px] w-[290px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(184,113,97,0.28)] bg-[rgba(184,113,97,0.12)] sm:h-[360px] sm:w-[360px] lg:h-[430px] lg:w-[430px]" />
-          <div className="relative z-[3] aspect-[4/4] w-full max-w-[360px] border-4 border-[#2A2523] bg-[#202020] p-2 shadow-[0_14px_30px_rgba(0,0,0,0.45)] sm:max-w-[470px] sm:p-3">
+          <div className="relative mx-auto flex w-full max-w-[470px] flex-col items-center justify-center">
+            <div className="mb-3 w-[92%] max-w-[420px] rounded-[12px] border border-[#F3C66C] bg-[linear-gradient(135deg,_#F7C948_0%,_#FFD86A_100%)] px-4 py-2.5 text-center shadow-[0_8px_24px_rgba(0,0,0,0.28)] [animation:offerPop_1.8s_ease-in-out_infinite] sm:mb-4 sm:rounded-[14px] sm:px-5 sm:py-3">
+              <p className="text-[14px] font-bold uppercase tracking-[0.08em] text-[#6B4300] sm:text-[16px]">Limited Time Offer</p>
+              <p className="mt-0.5 text-[20px] font-extrabold leading-none text-[#4F3200] sm:text-[26px]">{countdown}</p>
+              <p className="mt-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#7A4D00] sm:text-[13px]">12 Pieces In Stock</p>
+            </div>
+          <div className="relative z-[3] aspect-[4/4] w-full max-w-[330px] border-4 border-[#2A2523] bg-[#202020] p-2 shadow-[0_14px_30px_rgba(0,0,0,0.45)] sm:max-w-[470px] sm:p-3">
             <img
               src={productImage}
               alt={productName}
@@ -256,7 +257,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <div className="flex flex-wrap justify-center gap-6 border-y border-[rgba(201,141,128,0.6)] bg-[#b8716182] px-[8%] py-5 lg:gap-12">
+      <div className="flex flex-wrap justify-center gap-4 border-y border-[rgba(201,141,128,0.6)] bg-[#b8716182] px-[5%] py-4 sm:gap-6 sm:px-[8%] sm:py-5 lg:gap-12">
         {[
           { icon: Star, label: "4.0 Verified Reviews" },
           { icon: Volume2, label: "Voice-Guided Smart AI" },
@@ -273,7 +274,7 @@ const VoiceMaskMakerLanding = () => {
         ))}
       </div>
 
-      <section id="features" className="bg-[#202020] px-[8%] py-20">
+      <section id="features" className="bg-[#202020] px-[5%] py-14 sm:px-[8%] sm:py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Why You'll Love It</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           Everything a Spa Offers -
@@ -283,7 +284,7 @@ const VoiceMaskMakerLanding = () => {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {features.map((f) => (
-            <div key={f.title} className="rounded-[20px] border border-[#C98D80] bg-[#b8716182] px-7 py-9 transition hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(0,0,0,0.35)]">
+            <div key={f.title} className="rounded-[20px] border border-[#C98D80] bg-[#b8716182] px-5 py-7 transition hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(0,0,0,0.35)] sm:px-7 sm:py-9">
               <div className="mb-5 grid h-[52px] w-[52px] place-content-center rounded-[14px] bg-[#F3D7D1] text-[26px]">
                 <f.icon className="mx-auto h-6.5 w-6.5 text-[#7A3D31]" />
               </div>
@@ -311,7 +312,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2524_100%)] px-[8%] py-20">
+      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2524_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">So Simple</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           Your Mask in <em className="text-[#B87161]">4 Easy Steps</em>
@@ -333,7 +334,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2423_100%)] px-[8%] py-20">
+      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-[60px]">
           <div>
             <h3 className="mb-5 [font-family:'Playfair_Display',serif] text-[34px] font-bold leading-[1.2]">Made with<br />Real Ingredients</h3>
@@ -347,8 +348,8 @@ const VoiceMaskMakerLanding = () => {
             </div>
           </div>
 
-          <div className="rounded-[28px] bg-[#b8716182] px-10 py-12">
-            <div className="mb-4 rounded-2xl border border-[rgba(255,228,220,0.35)] bg-[#b8716182] p-6">
+          <div className="rounded-[28px] bg-[#b8716182] px-5 py-7 sm:px-10 sm:py-12">
+            <div className="mb-4 rounded-2xl border border-[rgba(255,228,220,0.35)] bg-[#b8716182] p-4 sm:p-6">
               <p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE2D8]">
                 <Star className="h-3.5 w-3.5" /> Included
               </p>
@@ -357,7 +358,7 @@ const VoiceMaskMakerLanding = () => {
                 Clinically formulated to boost skin elasticity, reduce fine lines and restore that youthful firmness. Just add one scoop to your mask mix.
               </p>
             </div>
-            <div className="rounded-2xl border border-[rgba(255,228,220,0.35)] bg-[#b8716182] p-6">
+            <div className="rounded-2xl border border-[rgba(255,228,220,0.35)] bg-[#b8716182] p-4 sm:p-6">
               <p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE2D8]">
                 <Lightbulb className="h-3.5 w-3.5" /> Pro Tip
               </p>
@@ -387,7 +388,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#292423_100%)] px-[8%] py-20">
+      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#292423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Real People, Real Glow</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           They Tried It.
@@ -416,7 +417,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[linear-gradient(120deg,_#FFB07A_0%,_#F57B5C_52%,_#E45B46_100%)] px-[8%] py-20 text-center">
+      <section className="relative overflow-hidden bg-[linear-gradient(120deg,_#FFB07A_0%,_#F57B5C_52%,_#E45B46_100%)] px-[5%] py-14 text-center sm:px-[8%] sm:py-20">
         <div className="absolute -right-[60px] -top-[60px] h-[300px] w-[300px] rounded-full bg-[rgba(255,255,255,0.06)]" />
         <div className="absolute -bottom-[80px] -left-[40px] h-[240px] w-[240px] rounded-full bg-[rgba(255,255,255,0.06)]" />
 
@@ -433,7 +434,7 @@ const VoiceMaskMakerLanding = () => {
           <button
             type="button"
             onClick={handleBuyNow}
-            className="mb-3 inline-block rounded-full bg-[#FFF7F2] px-12 py-[18px] text-[16px] font-semibold text-[#9E5C4F] transition hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)]"
+            className="mb-3 inline-flex w-full items-center justify-center rounded-full bg-[#FFF7F2] px-8 py-4 text-[15px] font-semibold text-[#9E5C4F] transition hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] sm:inline-block sm:w-auto sm:px-12 sm:py-[18px] sm:text-[16px]"
           >
             <span className="inline-flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
@@ -442,7 +443,7 @@ const VoiceMaskMakerLanding = () => {
           </button>
           <a
             href={productPath}
-            className="mb-3 ml-2 inline-block rounded-full border-2 border-[rgba(255,255,255,0.7)] px-9 py-4 text-[16px] font-medium text-white transition hover:bg-[rgba(255,255,255,0.12)]"
+            className="mb-3 inline-flex w-full items-center justify-center rounded-full border-2 border-[rgba(255,255,255,0.7)] px-7 py-3.5 text-[15px] font-medium text-white transition hover:bg-[rgba(255,255,255,0.12)] sm:ml-2 sm:inline-block sm:w-auto sm:px-9 sm:py-4 sm:text-[16px]"
           >
             Learn More ↗
           </a>
