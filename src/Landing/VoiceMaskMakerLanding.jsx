@@ -14,6 +14,7 @@ import voiceMaskMakerTrayImage from "./assets/voicemaskmaker/tray.jpg";
 import voiceMaskMakerCordImage from "./assets/voicemaskmaker/Cord.jpg";
 import voiceMaskMakerManualImage from "./assets/voicemaskmaker/manual.jpg";
 import voiceMaskMakerCleaningBrushImage from "./assets/voicemaskmaker/Cleaning Brush.jpg";
+import voiceMaskMakerCollagenPeptideImage from "./assets/voicemaskmaker/collegen petpide.jpeg";
 import voiceMaskMakerSpatulaImage from "./assets/voicemaskmaker/spacula.jpg";
 import voiceMaskMakerAngle1Image from "./assets/voicemaskmaker/angle 1.jpg";
 import voiceMaskMakerAngle2Image from "./assets/voicemaskmaker/angle 2.jpg";
@@ -217,6 +218,7 @@ const boxItems = [
   { id: "mask-tray", name: "Mask Tray", image: voiceMaskMakerTrayImage },
   { id: "power-cable", name: "Power Cable", image: voiceMaskMakerCordImage },
   { id: "user-guide", name: "User Guide", image: voiceMaskMakerManualImage },
+  { id: "collagen-peptide", name: "Collagen Peptide", image: voiceMaskMakerCollagenPeptideImage },
   { id: "cleaning-brush", name: "Cleaning Brush", image: voiceMaskMakerCleaningBrushImage },
   { id: "spatula", name: "Spatula", image: voiceMaskMakerSpatulaImage },
 ];
