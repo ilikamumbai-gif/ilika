@@ -6,6 +6,7 @@ import { FiShoppingCart } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { createSlug } from "../utils/slugify";
+import OptimizedImage from "./OptimizedImage";
 
 const ProductCard = ({
   product,
@@ -171,14 +172,13 @@ const ProductCard = ({
               )}
             </div>
 
-            <img
-              loading={prioritizeImage ? "eager" : "lazy"}
-              fetchPriority={prioritizeImage ? "high" : "low"}
-              decoding="async"
+            <OptimizedImage
+              priority={prioritizeImage}
               width={640}
               height={640}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               src={`${productImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-              alt={product.name}
+              alt={`${product.name} product image`}
               className={`
                 absolute inset-0 h-full w-full object-cover
                 ${isTall ? "scale-[1.02] group-hover:scale-[1.05]" : "scale-100 group-hover:scale-[1.03]"}

@@ -18,7 +18,7 @@ const About = () => {
         {/* ABOUT CONTENT */}
         <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
           
-          <Heading heading="WHO ARE WE?" />
+          <Heading level="h1" heading="WHO ARE WE?" />
 
           <p className="mt-6 text-sm sm:text-base leading-relaxed content-text text-center sm:text-left">
             Welcome to <strong>ilika.in</strong>, your one-stop destination for

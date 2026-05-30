@@ -95,7 +95,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
 <link
-  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap&text=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%20.,!-"
   rel="stylesheet"
   media="print"
   onload="this.media='all'"
@@ -123,7 +123,6 @@
         var isCallMethod = (args[0] === 'Purchase'); // callMethod(name, data, options)
         if (isTrack || isCallMethod) {
           if (!_purchaseAllowed) {
-            console.warn('[Ilika] Purchase blocked');
             return;
           }
           _purchaseAllowed = false;

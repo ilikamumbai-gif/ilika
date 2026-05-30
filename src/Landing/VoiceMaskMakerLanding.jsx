@@ -3,22 +3,37 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
+import OptimizedImage from "../components/OptimizedImage";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
 import voiceVersionMaskMakerImage from "./assets/voicevesion mask maker.jpeg";
-import voiceMaskMakerMainImage from "./assets/voicemaskmaker/maskmaker.jpeg";
-import voiceMaskMakerBeakerImage from "./assets/voicemaskmaker/beaker.jpeg";
-import voiceMaskMakerTrayImage from "./assets/voicemaskmaker/tray.jpeg";
-import voiceMaskMakerCordImage from "./assets/voicemaskmaker/cord.jpeg";
-import voiceMaskMakerManualImage from "./assets/voicemaskmaker/manual.jpeg";
-import voiceMaskMakerCleaningBrushImage from "./assets/voicemaskmaker/Cleaning Brush.jpeg";
-import voiceMaskMakerAngle1Image from "./assets/voicemaskmaker/angle1.jpeg";
-import voiceMaskMakerAngle2Image from "./assets/voicemaskmaker/angle 2.jpeg";
-import voiceMaskMakerAngle3Image from "./assets/voicemaskmaker/angle 3.jpeg";
-import voiceMaskMakerAngle4Image from "./assets/voicemaskmaker/angle 4.jpeg";
-import voiceMaskMakerAngle5Image from "./assets/voicemaskmaker/angle 5.jpeg";
-import voiceMaskMakerAngle6Image from "./assets/voicemaskmaker/angle 6.jpeg";
+import voiceMaskMakerMainImage from "./assets/voicemaskmaker/machine.jpg";
+import voiceMaskMakerBeakerImage from "./assets/voicemaskmaker/Beaker.jpg";
+import voiceMaskMakerTrayImage from "./assets/voicemaskmaker/tray.jpg";
+import voiceMaskMakerCordImage from "./assets/voicemaskmaker/Cord.jpg";
+import voiceMaskMakerManualImage from "./assets/voicemaskmaker/manual.jpg";
+import voiceMaskMakerCleaningBrushImage from "./assets/voicemaskmaker/Cleaning Brush.jpg";
+import voiceMaskMakerSpatulaImage from "./assets/voicemaskmaker/spacula.jpg";
+import voiceMaskMakerAngle1Image from "./assets/voicemaskmaker/angle 1.jpg";
+import voiceMaskMakerAngle2Image from "./assets/voicemaskmaker/angle 2.jpg";
+import voiceMaskMakerAngle3Image from "./assets/voicemaskmaker/angle 3.jpg";
+import voiceMaskMakerAngle4Image from "./assets/voicemaskmaker/angle 4.jpg";
+import voiceMaskMakerAngle5Image from "./assets/voicemaskmaker/angle 5.jpg";
+import voiceMaskMakerAngle6Image from "./assets/voicemaskmaker/angle 6.jpg";
+import voiceMaskMakerStep1Image from "./assets/voicemaskmaker/1.jpg";
+import voiceMaskMakerStep2Image from "./assets/voicemaskmaker/2.jpg";
+import voiceMaskMakerStep3Image from "./assets/voicemaskmaker/3.jpg";
+import voiceMaskMakerStep4Image from "./assets/voicemaskmaker/4.jpg";
+import voiceMaskMakerStep5Image from "./assets/voicemaskmaker/5.jpg";
+import voiceMaskMakerStep6Image from "./assets/voicemaskmaker/6.jpg";
+import voiceMaskMakerStep7Image from "./assets/voicemaskmaker/7.jpg";
+import voiceMaskMakerStep8Image from "./assets/voicemaskmaker/8.jpg";
+import voiceMaskMakerStep9Image from "./assets/voicemaskmaker/9.jpg";
+import voiceMaskMakerStep10Image from "./assets/voicemaskmaker/10.jpg";
+import voiceMaskMakerStep11Image from "./assets/voicemaskmaker/11.jpg";
+import voiceMaskMakerStep12Image from "./assets/voicemaskmaker/12.jpg";
+import voiceMaskMakerStep13Image from "./assets/voicemaskmaker/13.jpg";
 import {
   Volume2,
   Leaf,
@@ -92,18 +107,107 @@ const reviews = [
   },
 ];
 
+const stepImages = [
+  voiceMaskMakerStep1Image,
+  voiceMaskMakerStep2Image,
+  voiceMaskMakerStep3Image,
+  voiceMaskMakerStep4Image,
+  voiceMaskMakerStep5Image,
+  voiceMaskMakerStep6Image,
+  voiceMaskMakerStep7Image,
+  voiceMaskMakerStep8Image,
+  voiceMaskMakerStep9Image,
+  voiceMaskMakerStep10Image,
+  voiceMaskMakerStep11Image,
+  voiceMaskMakerStep12Image,
+  voiceMaskMakerStep13Image,
+];
+
 const howItWorksSteps = [
   {
     num: "1",
-    title: "Add Ingredients",
-    desc: "Drop in your favourite fruits, veggies or collagen pack",
-    image: voiceVersionMaskMakerImage,
+    title: "Attach the Power Cord",
+    desc: "Connect the power cord properly to the machine and switch on the power supply.",
+    voicePrompt: "Welcome to use intelligent fruit and vegetable mask machine. Please add pure water.",
+    image: stepImages[0],
   },
   {
     num: "2",
-    title: "Select Skin Type",
-    desc: "The machine customises the mask for oily, dry or sensitive skin",
-    image: voiceVersionMaskMakerImage,
+    title: "Add 60ml Water",
+    desc: "Using the provided beaker, pour approximately 60ml of pure water into the machine.",
+    voicePrompt: "Water has been filled, please add nutrient solution.",
+    image: stepImages[1],
+  },
+  {
+    num: "3",
+    title: "Add 20ml Juice",
+    desc: "Using the beaker, add approximately 20ml of fruit or vegetable juice of your choice into the machine.",
+    image: stepImages[2],
+  },
+  {
+    num: "4",
+    title: "Add One Collagen Peptide",
+    desc: "Add one collagen peptide tablet/sachet into the mixture inside the machine.",
+    voicePrompt: "The nutrient solution has been filled. Please add collagen peptide and press the start button to begin mask making.",
+    image: stepImages[3],
+  },
+  {
+    num: "5",
+    title: "Close the Upper Lid",
+    desc: "Carefully close the upper lid of the mask machine properly before starting the process.",
+    image: stepImages[4],
+  },
+  {
+    num: "6",
+    title: "Press the Power Button",
+    desc: "Turn on the machine by pressing the power/start button.",
+    voicePrompt: "Mask production has started. Please wait.",
+    image: stepImages[5],
+  },
+  {
+    num: "7",
+    title: "Attach the Mask Mould Tray",
+    desc: "Place and attach the mask mould tray properly in its designated position.",
+    image: stepImages[6],
+  },
+  {
+    num: "8",
+    title: "Press the Liquid Flow Button",
+    desc: "Press the liquid flow/export button to allow the prepared mask liquid to flow into the mould tray.",
+    voicePrompt: "The mask has been completed. Please place the mask tray to export the mask.",
+    image: stepImages[7],
+  },
+  {
+    num: "9",
+    title: "Mask Liquid Starts Flowing",
+    desc: "The liquid mask mixture will begin flowing smoothly into the mould tray automatically.",
+    image: stepImages[8],
+  },
+  {
+    num: "10",
+    title: "Fill the Entire Tray",
+    desc: "Allow the complete mould tray to fill fully with the mask liquid without interruption.",
+    image: stepImages[9],
+  },
+  {
+    num: "11",
+    title: "Let the Mask Cool Down",
+    desc: "Keep the filled mould tray undisturbed and allow the mask to cool and solidify properly.",
+    voicePrompt: "Please wait while the mask cools down.",
+    image: stepImages[10],
+  },
+  {
+    num: "12",
+    title: "Remove the Mask Using the Spatula",
+    desc: "Use the provided spatula carefully to remove the prepared mask from the mould tray.",
+    image: stepImages[11],
+  },
+  {
+    num: "13",
+    title: "Your Mask is Ready",
+    desc: "Your customized fruit or vegetable facial mask is now ready to use and enjoy.",
+    voicePrompt: "Your mask of choice is ready. Thank you for using the intelligent mask machine.",
+    image: stepImages[12],
   },
 ];
 
@@ -114,6 +218,7 @@ const boxItems = [
   { id: "power-cable", name: "Power Cable", image: voiceMaskMakerCordImage },
   { id: "user-guide", name: "User Guide", image: voiceMaskMakerManualImage },
   { id: "cleaning-brush", name: "Cleaning Brush", image: voiceMaskMakerCleaningBrushImage },
+  { id: "spatula", name: "Spatula", image: voiceMaskMakerSpatulaImage },
 ];
 
 const productAngles = [
@@ -291,9 +396,13 @@ const VoiceMaskMakerLanding = () => {
               <p className="mt-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#7A4D00] sm:text-[13px]">12 Pieces In Stock</p>
             </div>
           <div className="relative z-[3] aspect-[4/4] w-full max-w-[330px] border-4 border-[#2A2523] bg-[#202020] p-2 shadow-[0_14px_30px_rgba(0,0,0,0.45)] sm:max-w-[470px] sm:p-3">
-            <img
+            <OptimizedImage
+              priority
               src={productImage}
               alt={productName}
+              width={940}
+              height={940}
+              sizes="(max-width: 1024px) 90vw, 470px"
               className="h-full w-full bg-[#202020] object-contain object-center"
               onError={(e) => {
                 e.currentTarget.src = "https://placehold.co/460x520/251610/C8705A?text=Ilika+Mask+Maker";
@@ -369,13 +478,15 @@ const VoiceMaskMakerLanding = () => {
           {howItWorksSteps.map((step, idx) => (
             <div
               key={step.title}
-              className={`grid grid-cols-1 overflow-hidden rounded-[22px] border border-[#C98D80] bg-[#b8716182] shadow-[0_10px_24px_rgba(0,0,0,0.2)] md:grid-cols-2 ${
-                idx % 2 === 1 ? "md:[&>*:first-child]:order-2 md:[&>*:last-child]:order-1" : ""
+              className={`grid grid-cols-1 overflow-hidden rounded-[22px] border border-[#C98D80] bg-[#b8716182] shadow-[0_10px_24px_rgba(0,0,0,0.2)] ${
+                idx % 2 === 1
+                  ? "md:grid-cols-[0.7fr_0.3fr] md:[&>*:first-child]:order-2 md:[&>*:last-child]:order-1"
+                  : "md:grid-cols-[0.3fr_0.7fr]"
               }`}
             >
-              <div className="h-[220px] w-full bg-[#221B19] sm:h-[260px]">
+              <div className="h-[230px] w-full bg-[#221B19] sm:h-[270px] md:h-[300px]">
                 {step.image ? (
-                  <img src={step.image} alt={step.title} className="h-full w-full object-cover" />
+                  <OptimizedImage src={step.image} alt={step.title} width={1040} height={520} sizes="(max-width: 768px) 100vw, 50vw" className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full items-center justify-center">
                     <span className="grid h-14 w-14 place-content-center rounded-full border-4 border-[#F6E7DE] bg-[#B87161] [font-family:'Playfair_Display',serif] text-[22px] font-bold text-white">
@@ -384,11 +495,16 @@ const VoiceMaskMakerLanding = () => {
                   </div>
                 )}
               </div>
-              <div className="flex items-center px-5 py-6 sm:px-7 sm:py-8">
+              <div className="flex items-center px-5 py-4 sm:px-7 sm:py-5">
                 <div>
-                  <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-[#FFE2D8]">Step {step.num}</p>
-                  <h3 className="mb-2 text-[22px] font-semibold text-[#FFF8F5]">{step.title}</h3>
-                  <p className="text-[14px] leading-[1.7] text-[#FFECE6]">{step.desc}</p>
+                  <p className="mb-2 text-[13px] font-semibold uppercase tracking-[0.14em] text-[#FFE2D8] sm:text-[14px]">Step {step.num}</p>
+                  <h3 className="mb-2 text-[24px] font-semibold text-[#FFF8F5] sm:text-[28px]">{step.title}</h3>
+                  <p className="text-[16px] leading-[1.75] text-[#FFECE6] sm:text-[18px]">{step.desc}</p>
+                  {step.voicePrompt ? (
+                    <p className="mt-2 text-[14px] italic leading-[1.65] text-[#F9D8CE] sm:text-[15px]">
+                      Voice Prompt: "{step.voicePrompt}"
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -405,7 +521,7 @@ const VoiceMaskMakerLanding = () => {
           {boxItems.map((item) => (
             <div key={item.id} className="rounded-2xl border border-[#3F312D] bg-[#202020] p-3">
               <div className="aspect-square overflow-hidden rounded-xl bg-[#221B19]">
-                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                <OptimizedImage src={item.image} alt={item.name} width={320} height={320} sizes="(max-width: 768px) 50vw, 25vw" className="h-full w-full object-cover" />
               </div>
               <p className="mt-3 text-center text-[13px] font-medium text-[#EED8D2]">{item.name}</p>
             </div>
@@ -421,7 +537,7 @@ const VoiceMaskMakerLanding = () => {
         <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {productAngles.map((item) => (
             <div key={item.id} className="overflow-hidden rounded-2xl border border-[#3F312D] bg-[#202020]">
-              <img src={item.image} alt={item.alt} className="h-[260px] w-full object-cover" />
+              <OptimizedImage src={item.image} alt={item.alt} width={320} height={260} sizes="(max-width: 768px) 100vw, 25vw" className="h-[260px] w-full object-cover" />
             </div>
           ))}
         </div>

@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import React, { useEffect, useMemo } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
@@ -41,6 +41,7 @@ const SERUM_PRODUCT_NAMES = [
 
 const CategoryProducts = () => {
   const { categorySlug = "" } = useParams();
+  const navigate = useNavigate();
   const { products = [] } = useProducts();
   const { categories = [] } = useCategories();
   const targetSlug = String(categorySlug || "").trim().toLowerCase();
@@ -93,6 +94,10 @@ const CategoryProducts = () => {
   }, [categories, includeGroupWide, matchedGroups]);
 
   const categoryLabel = matchedCategories[0]?.name || toReadable(categorySlug) || "Category";
+  const canonicalCategorySlug = useMemo(
+    () => String(matchedCategories[0]?.slug || createSlug(categoryLabel || categorySlug)).trim().toLowerCase(),
+    [matchedCategories, categoryLabel, categorySlug]
+  );
 
   const filtered = useMemo(() => {
     if (SERUM_CATEGORY_SLUGS.has(targetSlug)) {
@@ -129,12 +134,15 @@ const CategoryProducts = () => {
   useSeo({
     title: `${categoryLabel} Products | Ilika`,
     description: `Shop ${categoryLabel} products at Ilika with fast delivery and secure checkout.`,
-    path: `/category/${categorySlug}`,
+    path: `/category/${canonicalCategorySlug}`,
+    canonical: `/category/${canonicalCategorySlug}`,
+    image: filtered?.[0]?.images?.[0] || filtered?.[0]?.imageUrl || "https://ilika.in/Images/logo2.webp",
+    keywords: ["Ilika", "category products", categoryLabel, `${categoryLabel} products`],
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       name: `${categoryLabel} Products`,
-      url: `https://ilika.in/category/${categorySlug}`,
+      url: `https://ilika.in/category/${canonicalCategorySlug}`,
       mainEntity: {
         "@type": "ItemList",
         itemListElement: filtered.slice(0, 20).map((product, index) => ({
@@ -147,6 +155,12 @@ const CategoryProducts = () => {
     },
   });
 
+  useEffect(() => {
+    if (!categorySlug || !canonicalCategorySlug) return;
+    if (String(categorySlug).trim().toLowerCase() === canonicalCategorySlug) return;
+    navigate(`/category/${canonicalCategorySlug}`, { replace: true });
+  }, [categorySlug, canonicalCategorySlug, navigate]);
+
   return (
     <>
       <MiniDivider />
@@ -154,7 +168,7 @@ const CategoryProducts = () => {
         <Header />
         <CartDrawer />
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
-          <Heading heading={`${categoryLabel} Products`} />
+          <Heading level="h1" heading={`${categoryLabel} Products`} />
           <p className="text-sm text-gray-500 mt-1 mb-6">
             {filtered.length} product{filtered.length === 1 ? "" : "s"} found
           </p>

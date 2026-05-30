@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { createSlug } from "../utils/slugify";
+import OptimizedImage from "./OptimizedImage";
 
 const ComboProductCard = ({ product, selected, onSelect }) => {
 
@@ -44,12 +45,13 @@ const ComboProductCard = ({ product, selected, onSelect }) => {
 
       <div className="aspect-square flex items-center justify-center">
 
-        <img
+        <OptimizedImage
           src={productImage}
-          alt={product.name}
+          alt={`${product.name} combo product image`}
+          width={400}
+          height={400}
+          sizes="(max-width: 768px) 50vw, 25vw"
           className="object-contain h-full w-full transition-transform duration-300"
-          loading="lazy"
-          decoding="async"
         />
 
       </div>

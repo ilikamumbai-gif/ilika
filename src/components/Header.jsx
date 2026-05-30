@@ -3,6 +3,7 @@ import { Menu, X, Search } from "lucide-react";
 import logo from "/Images/logo2.webp";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "../admin/context/ProductContext";
+import OptimizedImage from "./OptimizedImage";
 
 const Nav = lazy(() => import("./Nav"));
 const SearchBar = lazy(() =>
@@ -30,8 +31,8 @@ const Header = ({ forceWhiteBg = false }) => {
           className="h-12 lg:h-14 flex items-center cursor-pointer shrink-0 lg:order-1"
           onClick={() => navigate("/")}
         >
-          <img
-            fetchPriority="auto"
+          <OptimizedImage
+            priority
             src={logo}
             alt="Ilika"
             width={220}

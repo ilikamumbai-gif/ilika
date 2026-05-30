@@ -16,7 +16,7 @@ const ShippingPolicy = () => {
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py- text-gray-700 leading-relaxed">
 
-          <Heading heading="Our Shipping Policy" />
+          <Heading level="h1" heading="Our Shipping Policy" />
 
           {/* INTRO */}
           <p className="mt-6">

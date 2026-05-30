@@ -39,7 +39,7 @@ const NewArrival = () => {
 
 
 
-          <Heading heading="Our New Arrival" />
+          <Heading level="h1" heading="Our New Arrival" />
 
           {hairCategory ? (
             <ProductList

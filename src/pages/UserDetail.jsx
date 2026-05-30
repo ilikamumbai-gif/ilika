@@ -352,7 +352,7 @@ const UserDetail = () => {
 
         <section className="pb-20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <Heading heading="My Account" />
+            <Heading level="h1" heading="My Account" />
 
             {loading ? (
               /* ── Loading state ── */

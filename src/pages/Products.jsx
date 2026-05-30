@@ -64,7 +64,7 @@ const Products = () => {
 
         {/* Heading */}
         <div className="mb-8">
-          <Heading heading={query ? `Results for "${query}"` : "All Products"} />
+          <Heading level="h1" heading={query ? `Results for "${query}"` : "All Products"} />
           <p className="text-sm text-gray-500 mt-1">
             {filtered.length} product{filtered.length !== 1 ? "s" : ""} found
           </p>

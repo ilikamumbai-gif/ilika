@@ -79,7 +79,7 @@ const SocialFeed = () => {
         <CartDrawer />
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
-          <Heading heading={"Social Feed"}></Heading>
+          <Heading level="h1" heading={"Social Feed"}></Heading>
           <div className="flex items-center justify-center gap-3 sm:gap-4 mt-5 sm:mt-6 mb-8 sm:mb-10 flex-wrap">
             <a
               href="https://www.instagram.com/ilikamumbai/"

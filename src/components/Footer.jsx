@@ -6,6 +6,7 @@ import {
   MessageCircle
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import OptimizedImage from "./OptimizedImage";
 
 const logo = "/Images/logo2.webp";
 const amazon = "/Images/Amazon.webp";
@@ -38,9 +39,11 @@ const Footer = ({ theme = "default" }) => {
 
         {/* BRAND */}
         <div className="space-y-3 text-center sm:text-left">
-          <img
+          <OptimizedImage
             src={logo}
             alt="Ilika"
+            width={176}
+            height={44}
             className="h-11 mx-auto sm:mx-0"
           />
 
@@ -100,13 +103,13 @@ const Footer = ({ theme = "default" }) => {
 
             <div className="flex justify-center sm:justify-start gap-4">
               <a href="https://www.facebook.com/profile.php?id=100075034603295" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                <img src={facebook} alt="Facebook" className="h-8 w-8 hover:scale-110 transition" />
+                <OptimizedImage src={facebook} alt="Facebook" width={32} height={32} className="h-8 w-8 hover:scale-110 transition" />
               </a>
               <a href="https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-                <img src={youtube} alt="YouTube" className="h-8 w-8 hover:scale-110 transition" />
+                <OptimizedImage src={youtube} alt="YouTube" width={32} height={32} className="h-8 w-8 hover:scale-110 transition" />
               </a>
               <a href="https://www.instagram.com/ilikamumbai/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                <img src={instagram} alt="Instagram" className="h-8 w-8 hover:scale-110 transition" />
+                <OptimizedImage src={instagram} alt="Instagram" width={32} height={32} className="h-8 w-8 hover:scale-110 transition" />
               </a>
             </div>
           </div>
@@ -122,13 +125,13 @@ const Footer = ({ theme = "default" }) => {
 
             <div className="flex justify-center sm:justify-start gap-5 items-center">
               <a href="https://www.amazon.in/stores/Ilik%C3%A4/page/4BEEF7C7-AFF6-4530-B62B-3A07943B7277?lp_asin=B0CLLG8RKP&ref_=ast_bln" target="_blank" rel="noopener noreferrer" aria-label="Amazon">
-                <img src={amazon} alt="Amazon" className={`${isBlackTheme ? "rounded bg-white p-1" : ""} h-8 w-8 hover:scale-110 transition`} />
+                <OptimizedImage src={amazon} alt="Amazon" width={32} height={32} className={`${isBlackTheme ? "rounded bg-white p-1" : ""} h-8 w-8 hover:scale-110 transition`} />
               </a>
               <a href="https://www.flipkart.com/ilika-black-seed-hair-oil-prevents-premature-greying-soft-nourished/p/itmd21f91c22dfab?pid=HOLHFPX4WETW7YPK&lid=LSTHOLHFPX4WETW7YPKGOLVRA&hl_lid=&marketplace=FLIPKART&fm=eyJ3dHAiOiJyZWNvIiwicHJwdCI6InBwIiwibWlkIjoiZmFjdEJhc2VkUmVjb21tZW5kYXRpb24vcmVjZW50bHlWaWV3ZWQifQ%3D%3D&pageUID=1779183762586" target="_blank" rel="noopener noreferrer" aria-label="Flipkart">
-                <img src={flipcart} alt="Flipkart" className={`${isBlackTheme ? "rounded bg-white p-1" : ""} h-8 w-8 hover:scale-110 transition`} />
+                <OptimizedImage src={flipcart} alt="Flipkart" width={32} height={32} className={`${isBlackTheme ? "rounded bg-white p-1" : ""} h-8 w-8 hover:scale-110 transition`} />
               </a>
               <a href="https://www.meesho.com/ILIKASKINCARE" target="_blank" rel="noopener noreferrer" aria-label="Meesho">
-                <img src={meesho} alt="Meesho" className={`${isBlackTheme ? "rounded bg-white p-1" : ""} h-8 w-8 hover:scale-110 transition`} />
+                <OptimizedImage src={meesho} alt="Meesho" width={32} height={32} className={`${isBlackTheme ? "rounded bg-white p-1" : ""} h-8 w-8 hover:scale-110 transition`} />
               </a>
             </div>
           </div>

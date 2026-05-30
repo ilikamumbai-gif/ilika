@@ -18,7 +18,7 @@ const Contact = () => {
         {/* PAGE CONTENT */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
           
-          <Heading heading="CONTACT US" />
+          <Heading level="h1" heading="CONTACT US" />
 
           {/* CUSTOMER SUPPORT TEXT */}
           <p className=" max-w-3xl mx-auto text-center text-sm sm:text-base leading-relaxed content-text">

@@ -78,6 +78,10 @@ const ComboDetail = () => {
     path: comboPath,
     image: primaryImage,
     type: combo ? "product" : "website",
+    robots: combo ? "index, follow" : "noindex, follow",
+    keywords: combo
+      ? ["Ilika combo", combo.name, "combo offer", "buy combo online"]
+      : ["Ilika combo", "combo offers"],
     jsonLd: productSchema,
   });
 

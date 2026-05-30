@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
 import { createSlug } from "../utils/slugify";
+import { useSeo } from "../hooks/useSeo";
 
 const removeInlineImagesFromHtml = (html = "") =>
   String(html || "").replace(/<img[^>]*>/gi, "");
@@ -75,6 +76,7 @@ const renderSectionBlock = (section, index) => {
 const BlogDetail = () => {
   const { state: locationBlog } = useLocation();
   const { slug } = useParams();
+  const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
   const [blog, setBlog] = useState(locationBlog || null);
 
@@ -238,6 +240,66 @@ const BlogDetail = () => {
     [blog?.internalLink]
   );
 
+  const blogSlug = useMemo(
+    () => String(blog?.slug || createSlug(blog?.title || slug || "blog")).trim().toLowerCase(),
+    [blog?.slug, blog?.title, slug]
+  );
+
+  const seoTitle = blog?.title
+    ? `${blog.title} | Ilika Blog`
+    : "Blog Details | Ilika";
+  const seoDescription =
+    blog?.excerpt ||
+    "Read Ilika blog articles for skincare tips, beauty routines, and product insights.";
+  const seoImage = blog?.image || "https://ilika.in/Images/logo2.webp";
+  const seoKeywords = [
+    "Ilika blog",
+    "skincare tips",
+    "beauty guide",
+    blog?.title || "",
+  ].filter(Boolean);
+
+  useSeo({
+    title: seoTitle,
+    description: seoDescription,
+    path: `/blog/${blogSlug}`,
+    canonical: `/blog/${blogSlug}`,
+    image: seoImage,
+    type: "article",
+    robots: blog ? "index, follow" : "noindex, follow",
+    keywords: seoKeywords,
+    jsonLd: blog
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: blog.title,
+          description: seoDescription,
+          image: [seoImage],
+          author: {
+            "@type": "Organization",
+            name: blog.author || "Ilika Team",
+          },
+          publisher: {
+            "@type": "Organization",
+            name: "Ilika",
+            logo: {
+              "@type": "ImageObject",
+              url: "https://ilika.in/Images/logo2.webp",
+            },
+          },
+          datePublished: blog?.createdAt || undefined,
+          dateModified: blog?.updatedAt || blog?.createdAt || undefined,
+          mainEntityOfPage: `https://ilika.in/blog/${blogSlug}`,
+        }
+      : null,
+  });
+
+  useEffect(() => {
+    if (!blog || !slug || !blogSlug) return;
+    if (String(slug).trim().toLowerCase() === blogSlug) return;
+    navigate(`/blog/${blogSlug}`, { replace: true });
+  }, [blog, slug, blogSlug, navigate]);
+
   if (loadingBlog) {
     return (
       <>
@@ -293,7 +355,7 @@ const BlogDetail = () => {
 
           <article className="mt-6 space-y-10">
             <header className="border-b border-[#e2ece2] pb-8">
-              <Heading heading={blog.title} align="left" />
+              <Heading level="h1" heading={blog.title} align="left" />
               <p className="mt-4 text-sm text-[#5f705f]">
                 {formattedDate || "Latest"} | {blog.author || "Ilika Team"} | {comments.length} comments
               </p>

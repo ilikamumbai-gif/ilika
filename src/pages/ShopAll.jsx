@@ -40,7 +40,7 @@ const ShopAll = () => {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <Heading heading="Shop All Products" />
+        <Heading level="h1" heading="Shop All Products" />
 
         <div className="space-y-14">
 

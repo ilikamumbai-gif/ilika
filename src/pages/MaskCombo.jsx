@@ -241,6 +241,7 @@ const MaskCombo = () => {
       "Choose from 3 Ilika face mask combo offers at Rs 499 and checkout instantly.",
     path: "/mask-combo",
     image: "/Images/24.webp",
+    keywords: ["Ilika mask combo", "face mask combo", "collagen mask combo", "24k gold mask"],
   });
 
   return (

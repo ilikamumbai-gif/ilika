@@ -27,7 +27,7 @@ const Skin = () => {
         <CartDrawer />
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
-          <Heading heading="Skin Care Products" />
+          <Heading level="h1" heading="Skin Care Products" />
 
           {hairCategory ? (
             <ProductList categoryId={hairCategory.id} />

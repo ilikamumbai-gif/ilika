@@ -1,4 +1,23 @@
 User-agent: *
 Allow: /
 
+# Private/admin/auth/account surfaces
+Disallow: /admin
+Disallow: /admin/
+Disallow: /login
+Disallow: /signup
+Disallow: /user
+Disallow: /user/
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /order-success
+Disallow: /order-success/
+
+# Backend/API routes
+Disallow: /api
+Disallow: /api/
+
+# Utility/static non-content paths
+Disallow: /.well-known/
+
 Sitemap: https://ilika.in/sitemap.xml

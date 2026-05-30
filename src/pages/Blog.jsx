@@ -125,6 +125,7 @@ const Blog = () => {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#801f1f]">Ilika Journal</p>
             <div className="mt-1 max-w-2xl mx-auto">
               <Heading
+                level="h1"
                 heading="Beauty insights, routines, and skincare stories that feel premium."
                 align="center"
               />

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useOptionalBanners } from "../admin/context/BannerContext";
+import OptimizedImage from "./OptimizedImage";
 
 
 // 3. Keys currently wired
@@ -61,13 +62,11 @@ const Banner = ({
   const content = (
     <picture>
       <source media="(max-width: 639px)" srcSet={mobileImageSrc} />
-      <img
-        loading={priority && activeIndex === 0 ? "eager" : "lazy"}
-        fetchPriority={priority && activeIndex === 0 ? "high" : "auto"}
+      <OptimizedImage
+        priority={priority && activeIndex === 0}
         src={desktopSrc}
         alt={resolvedAlt}
         className={`w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
-        decoding="async"
         sizes="100vw"
         width={width}
         height={height}

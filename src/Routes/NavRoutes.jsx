@@ -1,10 +1,11 @@
 import React, { Suspense, lazy, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { trackPageView } from "../utils/pixel";
 import AdminProtectedRoute from "../admin/components/AdminProtectedRoute";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { AdminAuthProvider } from "../admin/context/AdminAuthContext";
 import { useSeo } from "../hooks/useSeo";
+const SITE_URL = "https://ilika.in";
 
 const Home = lazy(() => import("../pages/Home"));
 const Offer = lazy(() => import("../pages/Offer"));
@@ -65,7 +66,24 @@ const PixelPageTracker = () => {
   return null;
 };
 
+const UrlCanonicalizer = () => {
+  const { pathname, search, hash } = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!pathname) return;
+    const lower = pathname.toLowerCase();
+    const trimmed = lower.length > 1 ? lower.replace(/\/+$/, "") : lower;
+    const canonical = trimmed || "/";
+    if (canonical === pathname) return;
+    navigate(`${canonical}${search}${hash}`, { replace: true });
+  }, [pathname, search, hash, navigate]);
+
+  return null;
+};
+
 const getRouteSeo = (pathname = "") => {
+  const baseKeywords = ["Ilika", "skincare", "beauty products", "hair care", "grooming tools"];
   if (pathname === "/") return { title: "Ilika - Elegant. Bright. You", description: "Elegant beauty, skincare, haircare, and grooming tools from Ilika." };
   if (pathname === "/offer") return { title: "Offers", description: "Discover latest Ilika offers and beauty deals." };
   if (pathname === "/checkout") return { title: "Checkout", description: "Secure checkout for your Ilika order." };
@@ -74,7 +92,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/grooming") return { title: "Grooming Tools", description: "Premium grooming tools by Ilika." };
   if (pathname === "/newarrival") return { title: "New Arrivals", description: "See the newest Ilika products and launches." };
   if (pathname === "/products" || pathname === "/product")
-    return { title: "All Products", description: "Browse all Ilika beauty and grooming products." };
+    return { title: "All Products", description: "Browse all Ilika beauty and grooming products.", keywords: [...baseKeywords, "all products", "shop products"] };
   if (pathname === "/skin/face") return { title: "Face Care", description: "Face care products from Ilika." };
   if (pathname === "/skin/body") return { title: "Body Care", description: "Body care products from Ilika." };
   if (pathname === "/hair/care") return { title: "Hair Care Collection", description: "Targeted hair care from Ilika." };
@@ -84,10 +102,10 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/grooming/remover") return { title: "Hair Removal", description: "Hair removal tools from Ilika." };
   if (pathname === "/ctm") return { title: "Explore CTM", description: "Build your CTM skincare routine with Ilika." };
   if (pathname === "/ctmkit") return { title: "Create CTM Kit", description: "Customize your CTM kit with Ilika products." };
-  if (pathname === "/blog") return { title: "Blog", description: "Beauty tips, guides, and updates from Ilika." };
-  if (pathname.startsWith("/blog/")) return { title: "Blog Details", description: "Read Ilika blog articles and beauty insights." };
-  if (pathname.startsWith("/product/")) return { title: "Product Details", description: "Explore product details, benefits, and pricing at Ilika." };
-  if (pathname.startsWith("/category/")) return { title: "Category Products", description: "Browse products by category at Ilika." };
+  if (pathname === "/blog") return { title: "Blog", description: "Beauty tips, guides, and updates from Ilika.", keywords: [...baseKeywords, "beauty blog", "skincare tips"] };
+  if (pathname.startsWith("/blog/")) return { title: "Blog Details", description: "Read Ilika blog articles and beauty insights.", keywords: [...baseKeywords, "blog article"] };
+  if (pathname.startsWith("/product/")) return { title: "Product Details", description: "Explore product details, benefits, and pricing at Ilika.", keywords: [...baseKeywords, "product details", "buy online"] };
+  if (pathname.startsWith("/category/")) return { title: "Category Products", description: "Browse products by category at Ilika.", keywords: [...baseKeywords, "category products"] };
   if (pathname === "/shopall") return { title: "Shop All", description: "Shop the complete Ilika collection." };
   if (pathname === "/user") return { title: "My Account", description: "Manage your Ilika account and orders." };
   if (pathname === "/privacy") return { title: "Privacy Policy", description: "Read Ilika privacy policy." };
@@ -114,19 +132,85 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/signup") return { title: "Sign Up", description: "Create your Ilika account." };
   if (pathname === "/admin/login") return { title: "Admin Login", description: "Ilika admin login portal." };
   if (pathname.startsWith("/admin")) return { title: "Admin Panel", description: "Ilika admin panel." };
-  return { title: "Ilika", description: "Ilika beauty and grooming products." };
+  return { title: "Ilika", description: "Ilika beauty and grooming products.", keywords: baseKeywords };
+};
+
+const titleFromSegment = (segment = "") =>
+  String(segment || "")
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
+const buildBreadcrumbJsonLd = (pathname = "", seoTitle = "Page") => {
+  const segments = pathname.split("/").filter(Boolean);
+  const itemListElement = [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: `${SITE_URL}/`,
+    },
+  ];
+
+  if (!segments.length) {
+    return {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement,
+    };
+  }
+
+  let currentPath = "";
+  segments.forEach((segment, index) => {
+    currentPath += `/${segment}`;
+    const isLast = index === segments.length - 1;
+    itemListElement.push({
+      "@type": "ListItem",
+      position: index + 2,
+      name: isLast ? String(seoTitle || titleFromSegment(segment)).replace(/\s+\|\s+Ilika$/i, "") : titleFromSegment(segment),
+      item: `${SITE_URL}${currentPath}`,
+    });
+  });
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement,
+  };
 };
 
 const RouteSeo = () => {
   const { pathname } = useLocation();
   const seo = getRouteSeo(pathname);
   const isAdminPath = pathname.startsWith("/admin");
+  const pageTitle = pathname === "/" ? seo.title : `${seo.title} | Ilika`;
+
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Ilika",
+    url: SITE_URL,
+    logo: `${SITE_URL}/Images/logo2.webp`,
+    sameAs: ["https://www.instagram.com/", "https://www.facebook.com/"],
+  };
+
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Ilika",
+    url: `${SITE_URL}/`,
+  };
+
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(pathname, seo.title);
 
   useSeo({
-    title: pathname === "/" ? seo.title : `${seo.title} | Ilika`,
+    title: pageTitle,
     description: seo.description,
     path: pathname,
     robots: isAdminPath ? "noindex, nofollow" : "index, follow",
+    keywords: seo.keywords,
+    jsonLd: isAdminPath ? null : [organizationJsonLd, websiteJsonLd, breadcrumbJsonLd],
   });
 
   return null;
@@ -144,6 +228,7 @@ const NavRoutes = () => {
   return (
     <>
       <PixelPageTracker />
+      <UrlCanonicalizer />
       <RouteSeo />
       <Routes>
         <Route path="/" element={renderLazy(Home)} />
@@ -162,7 +247,7 @@ const NavRoutes = () => {
         <Route path="/grooming" element={renderLazy(Grooming)} />
         <Route path="/newarrival" element={renderLazy(NewArrival)} />
         <Route path="/products" element={renderLazy(Products)} />
-        <Route path="/product" element={renderLazy(Products)} />
+        <Route path="/product" element={<Navigate to="/products" replace />} />
 
         <Route path="/skin/face" element={renderLazy(Face)} />
         <Route path="/skin/body" element={renderLazy(Body)} />

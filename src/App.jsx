@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { Suspense, lazy, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -10,12 +10,13 @@ import { ComboProvider } from "./admin/context/ComboContext";
 import { BannerProvider } from "./admin/context/BannerContext";
 
 import CartStatusToast from "./components/CartStatusToast";
-import ScrollToTopButton from "./components/ScrollToTopButton";
-import EnquiryButton from "./components/EnquiryButton";
 import ScrollToTop from "./components/ScrollToTop";
 import NavRoutes from "./Routes/NavRoutes";
 
 import { captureTrafficSource } from "./utils/tracking";
+
+const EnquiryButton = lazy(() => import("./components/EnquiryButton"));
+const ScrollToTopButton = lazy(() => import("./components/ScrollToTopButton"));
 
 const AppContent = () => {
   const { pathname } = useLocation();
@@ -111,8 +112,10 @@ const AppContent = () => {
                 <BannerProvider>
                   <NavRoutes />
 
-                  <EnquiryButton />
-                  <ScrollToTopButton />
+                  <Suspense fallback={null}>
+                    <EnquiryButton />
+                    <ScrollToTopButton />
+                  </Suspense>
                   <ScrollToTop />
                 </BannerProvider>
               </ComboProvider>

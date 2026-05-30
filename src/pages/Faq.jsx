@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Heading from "../components/Heading";
 import Footer from "../components/Footer";
 import { ChevronDown } from "lucide-react";
+import { useSeo } from "../hooks/useSeo";
 
 const faqData = [
   {
@@ -61,6 +62,25 @@ const faqData = [
 const Faq = () => {
   const [openIndex, setOpenIndex] = useState(null);
 
+  useSeo({
+    title: "FAQ | Ilika",
+    description: "Frequently asked questions about Ilika orders, delivery, returns, support, and product usage.",
+    path: "/faq",
+    keywords: ["Ilika FAQ", "delivery", "returns", "customer support", "COD"],
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqData.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
+    },
+  });
+
   const toggle = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
@@ -73,7 +93,7 @@ const Faq = () => {
         <Header />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-">
-          <Heading heading="Frequently Asked Questions" />
+          <Heading level="h1" heading="Frequently Asked Questions" />
 
           <div className="mt-8 space-y-4">
             {faqData.map((faq, index) => (

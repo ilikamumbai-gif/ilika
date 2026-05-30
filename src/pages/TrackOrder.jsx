@@ -174,7 +174,7 @@ const TrackOrder = () => {
 
         <section className="pb-20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <Heading heading="Track Your Order" />
+            <Heading level="h1" heading="Track Your Order" />
 
             <div className="rounded-3xl border border-[#F3D3BE] bg-gradient-to-br from-[#FFF6F0] via-white to-[#FFF1F8] p-4 sm:p-6">
               <div className="flex items-start justify-between gap-3 flex-wrap">

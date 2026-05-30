@@ -38,32 +38,38 @@ const resolveEnv = async () => {
 };
 
 const STATIC_URLS = [
-  { loc: "/", priority: "1.0" },
-  { loc: "/shopall", priority: "0.9" },
-  { loc: "/products", priority: "0.9" },
-  { loc: "/newarrival", priority: "0.9" },
-  { loc: "/offer", priority: "0.8" },
-  { loc: "/skin", priority: "0.8" },
-  { loc: "/hair", priority: "0.8" },
-  { loc: "/grooming", priority: "0.8" },
-  { loc: "/skin/face", priority: "0.7" },
-  { loc: "/skin/body", priority: "0.7" },
-  { loc: "/hair/care", priority: "0.7" },
-  { loc: "/hair/styling", priority: "0.7" },
-  { loc: "/grooming/roller", priority: "0.7" },
-  { loc: "/grooming/face", priority: "0.7" },
-  { loc: "/grooming/remover", priority: "0.7" },
-  { loc: "/ctm", priority: "0.8" },
-  { loc: "/ctmkit", priority: "0.8" },
-  { loc: "/combo", priority: "0.8" },
-  { loc: "/blog", priority: "0.8" },
-  { loc: "/about", priority: "0.7" },
-  { loc: "/contact", priority: "0.7" },
-  { loc: "/privacy", priority: "0.5" },
-  { loc: "/termsandcondition", priority: "0.5" },
-  { loc: "/return", priority: "0.5" },
-  { loc: "/shippingpolicy", priority: "0.5" },
-  { loc: "/faq", priority: "0.5" },
+  { loc: "/", priority: "1.0", changefreq: "daily" },
+  { loc: "/shopall", priority: "0.9", changefreq: "daily" },
+  { loc: "/products", priority: "0.9", changefreq: "daily" },
+  { loc: "/newarrival", priority: "0.9", changefreq: "daily" },
+  { loc: "/offer", priority: "0.8", changefreq: "daily" },
+  { loc: "/skin", priority: "0.8", changefreq: "weekly" },
+  { loc: "/hair", priority: "0.8", changefreq: "weekly" },
+  { loc: "/grooming", priority: "0.8", changefreq: "weekly" },
+  { loc: "/skin/face", priority: "0.7", changefreq: "weekly" },
+  { loc: "/skin/body", priority: "0.7", changefreq: "weekly" },
+  { loc: "/hair/care", priority: "0.7", changefreq: "weekly" },
+  { loc: "/hair/styling", priority: "0.7", changefreq: "weekly" },
+  { loc: "/grooming/roller", priority: "0.7", changefreq: "weekly" },
+  { loc: "/grooming/face", priority: "0.7", changefreq: "weekly" },
+  { loc: "/grooming/remover", priority: "0.7", changefreq: "weekly" },
+  { loc: "/ctm", priority: "0.8", changefreq: "weekly" },
+  { loc: "/ctmkit", priority: "0.8", changefreq: "weekly" },
+  { loc: "/combo", priority: "0.8", changefreq: "weekly" },
+  { loc: "/mask-combo", priority: "0.7", changefreq: "weekly" },
+  { loc: "/blog", priority: "0.8", changefreq: "daily" },
+  { loc: "/about", priority: "0.7", changefreq: "monthly" },
+  { loc: "/contact", priority: "0.7", changefreq: "monthly" },
+  { loc: "/privacy", priority: "0.5", changefreq: "yearly" },
+  { loc: "/termsandcondition", priority: "0.5", changefreq: "yearly" },
+  { loc: "/return", priority: "0.5", changefreq: "yearly" },
+  { loc: "/shippingpolicy", priority: "0.5", changefreq: "yearly" },
+  { loc: "/faq", priority: "0.5", changefreq: "monthly" },
+  { loc: "/voice-mask-maker", priority: "0.8", changefreq: "weekly" },
+  { loc: "/nonvoice-mask-maker", priority: "0.8", changefreq: "weekly" },
+  { loc: "/leafless-hair-dryer", priority: "0.8", changefreq: "weekly" },
+  { loc: "/blackseed-hair-oil", priority: "0.8", changefreq: "weekly" },
+  { loc: "/herbal-hair-oil", priority: "0.8", changefreq: "weekly" },
 ];
 
 const createSlug = (text = "") =>
@@ -84,62 +90,111 @@ const escapeXml = (value = "") =>
 const absolute = (siteUrl, loc) => `${siteUrl}${loc}`;
 
 const normalizeEndpoint = (url = "") => String(url || "").trim().replace(/\/+$/, "");
+const stripKnownApiSuffix = (url = "") =>
+  normalizeEndpoint(url).replace(/\/api\/(products|categories|blogs)$/i, "");
 
-const addEndpointCandidates = (set, raw) => {
+const addEndpointCandidates = (set, raw, endpointPath) => {
   const normalized = normalizeEndpoint(raw);
   if (!normalized) return;
 
-  set.add(normalized);
-  if (!/\/api\/products$/i.test(normalized)) {
-    set.add(`${normalized}/api/products`);
+  const hasOtherApiSuffix = /\/api\/(products|categories|blogs)$/i.test(normalized)
+    && !new RegExp(`${endpointPath.replace("/", "\\/")}$`, "i").test(normalized);
+
+  if (!hasOtherApiSuffix) {
+    set.add(normalized);
+  }
+  const base = stripKnownApiSuffix(normalized);
+  if (base) set.add(base);
+  const endpointRegex = new RegExp(`${endpointPath.replace("/", "\\/")}$`, "i");
+  if (!endpointRegex.test(normalized)) {
+    set.add(`${base || normalized}${endpointPath}`);
   }
 };
 
-const resolveProductsEndpoints = (env) => {
+const resolveApiEndpoints = (env, endpointPath) => {
   const endpoints = new Set();
-  addEndpointCandidates(endpoints, env.SITEMAP_PRODUCTS_URL);
-  addEndpointCandidates(endpoints, env.SITEMAP_API_URL);
-  addEndpointCandidates(endpoints, env.VITE_API_URL);
+  addEndpointCandidates(endpoints, env.SITEMAP_API_URL, endpointPath);
+  addEndpointCandidates(endpoints, env.VITE_API_URL, endpointPath);
+
+  if (endpointPath === "/api/products") {
+    addEndpointCandidates(endpoints, env.SITEMAP_PRODUCTS_URL, endpointPath);
+  }
+  if (endpointPath === "/api/categories") {
+    addEndpointCandidates(endpoints, env.SITEMAP_CATEGORIES_URL, endpointPath);
+  }
+  if (endpointPath === "/api/blogs") {
+    addEndpointCandidates(endpoints, env.SITEMAP_BLOGS_URL, endpointPath);
+  }
+
   return Array.from(endpoints);
 };
 
-const extractProductList = (data) => {
+const extractList = (data) => {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.products)) return data.products;
+  if (Array.isArray(data?.categories)) return data.categories;
+  if (Array.isArray(data?.blogs)) return data.blogs;
   if (Array.isArray(data?.data)) return data.data;
   return [];
 };
 
-async function fetchProducts(productsEndpoints) {
-  if (!productsEndpoints.length) {
-    console.warn("[sitemap] Products endpoint missing. Set SITEMAP_PRODUCTS_URL or SITEMAP_API_URL/VITE_API_URL.");
+const toIsoDate = (value, fallback = new Date()) => {
+  if (value == null || value === "") return fallback.toISOString().slice(0, 10);
+
+  // Firestore Timestamp support
+  if (typeof value === "object" && typeof value.toDate === "function") {
+    return value.toDate().toISOString().slice(0, 10);
+  }
+  // Firestore seconds/nanoseconds object support
+  if (typeof value === "object" && Number.isFinite(value.seconds)) {
+    return new Date(value.seconds * 1000).toISOString().slice(0, 10);
+  }
+
+  // Numeric epoch (ms or sec)
+  if (typeof value === "number") {
+    const ms = value < 10_000_000_000 ? value * 1000 : value;
+    return new Date(ms).toISOString().slice(0, 10);
+  }
+
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
+  return fallback.toISOString().slice(0, 10);
+};
+
+const dedupeUrls = (urls) =>
+  Array.from(
+    new Map(
+      urls
+        .filter((u) => u?.loc)
+        .map((u) => [u.loc, u])
+    ).values()
+  );
+
+async function fetchResource({ label, endpoints, toUrls }) {
+  if (!endpoints.length) {
+    console.warn(`[sitemap] ${label} endpoint missing. Skipping ${label} URLs.`);
     return [];
   }
 
-  for (const endpoint of productsEndpoints) {
+  for (const endpoint of endpoints) {
     try {
       const res = await fetch(endpoint);
       if (!res.ok) {
-        console.warn(`[sitemap] Product API failed (${res.status}) for ${endpoint}. Trying next endpoint...`);
+        console.warn(`[sitemap] ${label} API failed (${res.status}) for ${endpoint}. Trying next endpoint...`);
         continue;
       }
 
       const data = await res.json();
-      const list = extractProductList(data);
-      const active = list.filter((p) => p?.isActive !== false && p?.name);
-      const urls = active.map((p) => ({
-        loc: `/product/${createSlug(p.name)}`,
-        priority: "0.8",
-      }));
-
-      console.log(`[sitemap] Product source: ${endpoint}`);
-      return Array.from(new Map(urls.map((u) => [u.loc, u])).values());
+      const list = extractList(data);
+      const urls = dedupeUrls(toUrls(list));
+      console.log(`[sitemap] ${label} source: ${endpoint}`);
+      return urls;
     } catch (err) {
-      console.warn(`[sitemap] Product API error for ${endpoint}: ${err?.message || err}. Trying next endpoint...`);
+      console.warn(`[sitemap] ${label} API error for ${endpoint}: ${err?.message || err}. Trying next endpoint...`);
     }
   }
 
-  console.warn("[sitemap] Could not fetch products from any endpoint. Generating static-only sitemap.");
+  console.warn(`[sitemap] Could not fetch ${label} from any endpoint.`);
   return [];
 }
 
@@ -149,7 +204,8 @@ function toSitemapXml(urls, siteUrl) {
     .map(
       (u) => `  <url>
     <loc>${escapeXml(absolute(siteUrl, u.loc))}</loc>
-    <lastmod>${today}</lastmod>
+    <lastmod>${u.lastmod || today}</lastmod>
+    <changefreq>${u.changefreq || "weekly"}</changefreq>
     <priority>${u.priority}</priority>
   </url>`
     )
@@ -162,14 +218,20 @@ ${body}
 `;
 }
 
-function toSitemapHtml(staticUrls, productUrls) {
+function toSitemapHtml(staticUrls, productUrls, categoryUrls, blogUrls) {
   const staticLinks = staticUrls
     .map((u) => `    <li><a href="${u.loc}">${u.loc}</a></li>`)
     .join("\n");
 
   const productLinks = productUrls.length
     ? productUrls.map((u) => `    <li><a href="${u.loc}">${u.loc}</a></li>`).join("\n")
-    : "    <li>No product URLs generated. Set SITEMAP_PRODUCTS_URL (or SITEMAP_API_URL) and rerun.</li>";
+    : "    <li>No product URLs generated.</li>";
+  const categoryLinks = categoryUrls.length
+    ? categoryUrls.map((u) => `    <li><a href="${u.loc}">${u.loc}</a></li>`).join("\n")
+    : "    <li>No category URLs generated.</li>";
+  const blogLinks = blogUrls.length
+    ? blogUrls.map((u) => `    <li><a href="${u.loc}">${u.loc}</a></li>`).join("\n")
+    : "    <li>No blog URLs generated.</li>";
 
   return `<!doctype html>
 <html lang="en">
@@ -188,6 +250,14 @@ ${staticLinks}
   <ul>
 ${productLinks}
   </ul>
+  <h2>Categories</h2>
+  <ul>
+${categoryLinks}
+  </ul>
+  <h2>Blogs</h2>
+  <ul>
+${blogLinks}
+  </ul>
 </body>
 </html>
 `;
@@ -196,17 +266,76 @@ ${productLinks}
 async function main() {
   const env = await resolveEnv();
   const siteUrl = String(env.SITE_URL || "https://ilika.in").trim().replace(/\/+$/, "");
-  const productsEndpoints = resolveProductsEndpoints(env);
-  const productUrls = await fetchProducts(productsEndpoints);
-  const urls = [...STATIC_URLS, ...productUrls];
+  const today = new Date();
+
+  const productsEndpoints = resolveApiEndpoints(env, "/api/products");
+  const categoriesEndpoints = resolveApiEndpoints(env, "/api/categories");
+  const blogsEndpoints = resolveApiEndpoints(env, "/api/blogs");
+
+  const [productUrls, categoryUrls, blogUrls] = await Promise.all([
+    fetchResource({
+      label: "Products",
+      endpoints: productsEndpoints,
+      toUrls: (list) =>
+        list
+          .filter((p) => p?.isActive !== false && p?.name)
+          .map((p) => ({
+            loc: `/product/${createSlug(p.slug || p.name)}`,
+            priority: "0.8",
+            changefreq: "weekly",
+            lastmod: toIsoDate(p.updatedAt || p.createdAt, today),
+          })),
+    }),
+    fetchResource({
+      label: "Categories",
+      endpoints: categoriesEndpoints,
+      toUrls: (list) =>
+        list
+          .filter((c) => c?.isActive !== false && (c?.slug || c?.name))
+          .map((c) => ({
+            loc: `/category/${createSlug(c.slug || c.name)}`,
+            priority: "0.7",
+            changefreq: "weekly",
+            lastmod: toIsoDate(c.updatedAt || c.createdAt, today),
+          })),
+    }),
+    fetchResource({
+      label: "Blogs",
+      endpoints: blogsEndpoints,
+      toUrls: (list) =>
+        list
+          .filter((b) => b?.title)
+          .map((b) => ({
+            loc: `/blog/${createSlug(b.slug || b.title)}`,
+            priority: "0.7",
+            changefreq: "weekly",
+            lastmod: toIsoDate(b.updatedAt || b.createdAt, today),
+          })),
+    }),
+  ]);
+
+  const staticUrls = STATIC_URLS.map((u) => ({
+    ...u,
+    lastmod: today.toISOString().slice(0, 10),
+  }));
+
+  const urls = dedupeUrls([...staticUrls, ...productUrls, ...categoryUrls, ...blogUrls]);
 
   const publicDir = path.resolve(process.cwd(), "public");
   await fs.writeFile(path.join(publicDir, "sitemap.xml"), toSitemapXml(urls, siteUrl), "utf8");
-  await fs.writeFile(path.join(publicDir, "sitemap.html"), toSitemapHtml(STATIC_URLS, productUrls), "utf8");
+  await fs.writeFile(
+    path.join(publicDir, "sitemap.html"),
+    toSitemapHtml(staticUrls, productUrls, categoryUrls, blogUrls),
+    "utf8"
+  );
 
-  console.log(`[sitemap] Done. Static URLs: ${STATIC_URLS.length}, Product URLs: ${productUrls.length}`);
+  console.log(
+    `[sitemap] Done. Static: ${staticUrls.length}, Products: ${productUrls.length}, Categories: ${categoryUrls.length}, Blogs: ${blogUrls.length}`
+  );
   console.log(`[sitemap] SITE_URL=${siteUrl}`);
   console.log(`[sitemap] PRODUCTS_ENDPOINTS=${productsEndpoints.join(", ") || "(not set)"}`);
+  console.log(`[sitemap] CATEGORIES_ENDPOINTS=${categoriesEndpoints.join(", ") || "(not set)"}`);
+  console.log(`[sitemap] BLOGS_ENDPOINTS=${blogsEndpoints.join(", ") || "(not set)"}`);
 }
 
 main().catch((err) => {

@@ -16,7 +16,7 @@ const Return = () => {
         <CartDrawer />
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
 
-          <Heading heading="Return and Refund Policy" />
+          <Heading level="h1" heading="Return and Refund Policy" />
 
           <div className="space-y-6 text-sm sm:text-base leading-relaxed content-text">
 

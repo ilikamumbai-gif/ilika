@@ -337,10 +337,12 @@ const Combos = () => {
   }, [location]);
 
   useSeo({
+    title: "Combo Deals | Ilika",
     description:
       "Build your Ilika combo packs with toner and sheet mask deals. Save more with curated skincare combos.",
     path: "/combo",
     image: offBanner,
+    keywords: ["Ilika combos", "skincare combo offers", "sheet mask combo", "toner combo"],
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",

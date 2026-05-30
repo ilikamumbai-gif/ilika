@@ -19,6 +19,7 @@ import {
 import ProductCard from "../components/ProductCard";
 import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
+import { useSeo } from "../hooks/useSeo";
 
 const DEFAULT_DETAIL_BG = "#FFFFFF";
 const COLLAGEN_ADDON_OPTIONS = [
@@ -396,7 +397,7 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
           ) : (
             <img loading="lazy"
               src={mediaItems[current]?.src || images[0]}
-              alt="Product"
+              alt={`${product?.name || "Product"} image ${current + 1}`}
               width="1080"
               height="1080"
               className="w-full h-full object-contain"
@@ -457,7 +458,7 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
                       <span className="absolute inset-0 flex items-center justify-center text-white text-xl">▶</span>
                     </div>
                   ) : (
-                    <img loading="lazy" src={item.src} decoding="async" alt="" width="200" height="200" className="w-full h-full object-cover" draggable={false} />
+                    <img loading="lazy" src={item.src} decoding="async" alt={`${product?.name || "Product"} thumbnail ${i + 1}`} width="200" height="200" className="w-full h-full object-cover" draggable={false} />
                   )}
                 </button>
               ))}
@@ -980,7 +981,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
               <div className="flex gap-2 mt-2">
                 {reviewImages.map((img, i) => (
                   <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border">
-                    <img src={img} loading="lazy" width="160" height="160" className="w-full h-full object-cover" />
+                    <img src={img} loading="lazy" alt={`${product?.name || "Product"} review image ${i + 1}`} width="160" height="160" className="w-full h-full object-cover" />
                     <button
                       type="button"
                       onClick={() =>
@@ -2044,14 +2045,65 @@ const ProductDetail = () => {
   const rating = product?.rating || 4;
   const beforeAfterPairs = product?.beforeAfter || [];
   const hasBeforeAfter = Array.isArray(beforeAfterPairs) && beforeAfterPairs.length > 0;
+  const canonicalProductSlug = useMemo(
+    () => String(createSlug(product?.name || slug || "")).trim().toLowerCase(),
+    [product?.name, slug]
+  );
+  const seoProductTitle = product?.name
+    ? `${product.name} | Ilika`
+    : "Product Details | Ilika";
+  const seoProductDescription =
+    stripHtml(product?.shortInfo) ||
+    stripHtml(product?.description) ||
+    "Explore product details, benefits, pricing, and offers on Ilika.";
+  const seoProductImage =
+    images?.[0] || product?.imageUrl || product?.image || "https://ilika.in/Images/logo2.webp";
+  const canonicalPath = `/product/${canonicalProductSlug}`;
+  const seoProductKeywords = useMemo(() => {
+    const fromCategories = Array.isArray(product?.categoryName)
+      ? product.categoryName
+      : String(product?.categoryName || "")
+          .split(/[,/|&>]+/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+    return [
+      "Ilika",
+      "buy online",
+      "skincare",
+      product?.name || "",
+      ...fromCategories,
+    ].filter(Boolean);
+  }, [product?.name, product?.categoryName]);
+
+  const productBreadcrumbJsonLd = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://ilika.in/" },
+      { "@type": "ListItem", position: 2, name: "All Products", item: "https://ilika.in/products" },
+      { "@type": "ListItem", position: 3, name: product?.name || "Product", item: `https://ilika.in${canonicalPath}` },
+    ],
+  }), [product?.name, canonicalPath]);
+
+  useSeo({
+    title: seoProductTitle,
+    description: seoProductDescription,
+    path: canonicalPath,
+    canonical: canonicalPath,
+    image: seoProductImage,
+    type: "product",
+    robots: product && product.isActive !== false ? "index, follow" : "noindex, follow",
+    keywords: seoProductKeywords,
+    jsonLd: product && product.isActive !== false ? [productBreadcrumbJsonLd] : null,
+  });
+
   const productJsonLd = useMemo(() => {
     if (!product || product.isActive === false) return null;
 
     const fallbackOrigin =
       (typeof window !== "undefined" && window.location?.origin) || "https://ilika.in";
-    const canonicalPath = `/product/${slug || createSlug(product?.name || "")}`;
     const canonicalUrl = toAbsoluteUrl(
-      typeof window !== "undefined" ? window.location?.href : canonicalPath,
+      canonicalPath,
       fallbackOrigin
     );
 
@@ -2108,7 +2160,13 @@ const ProductDetail = () => {
     }
 
     return data;
-  }, [product, activeVariant?.id, images, isOutOfStock, price, rating, slug]);
+  }, [product, activeVariant?.id, images, isOutOfStock, price, rating, slug, canonicalPath]);
+
+  useEffect(() => {
+    if (!product || !slug || !canonicalProductSlug) return;
+    if (String(slug).trim().toLowerCase() === canonicalProductSlug) return;
+    navigate(`/product/${canonicalProductSlug}`, { replace: true });
+  }, [product, slug, canonicalProductSlug, navigate]);
 
   /* â”€â”€ Loading / not found states â”€â”€ */
   if (loading) return (
@@ -2298,7 +2356,7 @@ const ProductDetail = () => {
                           ${selectedImage === img ? "shadow-md scale-105" : "border-transparent hover:border-gray-200"}`}
                         style={{ width: "74px", height: "74px", borderColor: selectedImage === img ? detailTheme.accent : undefined }}
                       >
-                        <img loading="lazy" src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`} alt="thumb" width="148" height="148" className="w-full h-full object-cover" />
+                        <img loading="lazy" src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`} alt={`${product.name} gallery thumbnail ${i + 1}`} width="148" height="148" className="w-full h-full object-cover" />
                       </button>
                     ))
                   ) : (
