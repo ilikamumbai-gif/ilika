@@ -55,12 +55,12 @@ const features = [
   {
     icon: Volume2,
     title: "Voice-Guided Machine",
-    desc: "Step-by-step voice instructions guide you through every mask. No guesswork, no YouTube tutorials - just press and glow.",
+    desc: "Step-by-step voice instructions guide you through every mask. No guesswork, no YouTube tutorials — just press and glow.",
   },
   {
     icon: Leaf,
-    title: "Fresh Ingredient Masks",
-    desc: "Use real fruits, veggies, milk & honey you already have at home. No preservatives, no fillers - your skin gets only the best.",
+    title: "100% Natural Ingredients",
+    desc: "Use real fruits, veggies, milk & honey you already have at home. No preservatives, no fillers, no harmful chemicals — your skin gets only the best.",
   },
   {
     icon: Gem,
@@ -69,18 +69,18 @@ const features = [
   },
   {
     icon: HandHeart,
-    title: "Salon Results at Home",
-    desc: "Professional-grade sheet masks in minutes. Save thousands every month on salon visits and store-bought sheet mask packs.",
+    title: "Home & Salon Ready",
+    desc: "Perfect for daily home skincare or professional salon use. Make spa-quality masks in your kitchen or serve customized treatments to clients — with zero waste.",
   },
   {
-    icon: Zap,
-    title: "Ready in Minutes",
-    desc: "From ingredients to mask in under 5 minutes. Perfect for morning skincare routines, self-care Sundays, or a quick glow before events.",
+    icon: ShieldCheck,
+    title: "Safe & Chemical-Free",
+    desc: "Unlike commercial masks packed with preservatives, every mask you make is free of harsh chemicals. You control what goes on your skin, always.",
   },
   {
     icon: Gift,
-    title: "Perfect Gift",
-    desc: "A thoughtful, luxurious gift for anyone who loves skincare. Ideal for birthdays, Diwali, anniversaries, or just treating yourself.",
+    title: "Thoughtful Gift",
+    desc: "A luxurious gift for anyone who loves skincare — at home or runs a beauty business. Ideal for birthdays, Diwali, anniversaries, or just treating yourself.",
   },
 ];
 
@@ -331,7 +331,7 @@ const VoiceMaskMakerLanding = () => {
             </h1>
 
             <p className="mb-4 w-full max-w-[760px] text-[13px] font-light leading-[1.62] text-[#D7C9C2] sm:text-[14px] sm:leading-[1.7]">
-              Stop spending ₹800 per salon visit. The {productName} turns fresh fruits + collagen into a custom spa mask - right in your kitchen, every day.
+             Whether you're building a daily skincare ritual at home or elevating your salon's treatments — the {productName} turns fresh fruits, vegetables & collagen into a custom spa mask in minutes. No chemicals. No waste. Just results.
             </p>
 
             <div className="mb-4 flex flex-wrap items-end gap-2 sm:gap-3">
@@ -512,6 +512,23 @@ const VoiceMaskMakerLanding = () => {
             </div>
           ))}
         </div>
+
+        <div className="mx-auto mt-12 w-full max-w-[760px]">
+          <button
+            type="button"
+            onClick={handleBuyNow}
+            className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]"
+          >
+            <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
+            <span className="relative z-[1] inline-flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5" />
+              Buy Now - ₹{discountedPrice.toLocaleString("en-IN")}
+            </span>
+            <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">
+              LIMITED STOCK
+            </span>
+          </button>
+        </div>
       </section>
 
       <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
@@ -528,6 +545,102 @@ const VoiceMaskMakerLanding = () => {
               <p className="mt-3 text-center text-[13px] font-medium text-[#EED8D2]">{item.name}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-[#202020] px-[5%] py-14 sm:px-[8%] sm:py-20">
+        <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Built for Everyone</p>
+        <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
+          Perfect for <em className="text-[#B87161]">Home & Salon</em>
+        </h2>
+
+        <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="rounded-[24px] border border-[#C98D80] bg-[#b8716182] px-6 py-8 sm:px-8 sm:py-10">
+            <div className="mb-5 inline-flex items-center gap-3">
+              <span className="grid h-12 w-12 place-content-center rounded-full bg-[#F3D7D1] text-[22px]">
+                <HandHeart className="h-6 w-6 text-[#7A3D31]" />
+              </span>
+              <h3 className="[font-family:'Playfair_Display',serif] text-[22px] font-bold text-[#FFF8F5]">For Home Use</h3>
+            </div>
+            <ul className="space-y-3 text-[14px] font-light leading-[1.7] text-[#FFECE6]">
+              {[
+                "Make fresh masks anytime - morning skincare, pre-event glow, or self-care Sundays",
+                "Save Rs800+ per salon visit. The machine pays for itself within a month",
+                "Pick ingredients from your fridge - oranges, honey, avocado, milk, strawberries",
+                "Voice guidance walks you through every step. Zero learning curve",
+                "No chemicals. No shelf-life worries. Fresh mask, every single time",
+                "Ideal for all skin types - dry, oily, combination, or sensitive",
+              ].map((point) => (
+                <li key={point} className="flex items-start gap-2.5">
+                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#D58A78]" />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-[24px] border border-[#C98D80] bg-[#b8716182] px-6 py-8 sm:px-8 sm:py-10">
+            <div className="mb-5 inline-flex items-center gap-3">
+              <span className="grid h-12 w-12 place-content-center rounded-full bg-[#F3D7D1] text-[22px]">
+                <Gem className="h-6 w-6 text-[#7A3D31]" />
+              </span>
+              <h3 className="[font-family:'Playfair_Display',serif] text-[22px] font-bold text-[#FFF8F5]">For Salon & Spa Use</h3>
+            </div>
+            <ul className="space-y-3 text-[14px] font-light leading-[1.7] text-[#FFECE6]">
+              {[
+                "Offer freshly made, customized masks to every client - a premium service upgrade",
+                "Consult on skin type, pick ingredients on the spot, make the mask in under 5 minutes",
+                "No pre-made stock. No wastage. Masks made per client, per session",
+                "Clients see the ingredients go in - builds instant trust and premium perception",
+                "Collagen, green tea, honey, fruit-based - serve treatments tailored to each skin concern",
+                "Stand out from competitors. A service no one else in your area is offering",
+              ].map((point) => (
+                <li key={point} className="flex items-start gap-2.5">
+                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#D58A78]" />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mx-auto mt-10 max-w-[1100px] overflow-hidden rounded-[20px] border border-[#3F312D] bg-[#221B19]">
+          <div className="grid grid-cols-3 border-b border-[#3F312D] bg-[#2A2018] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#D58A78] sm:px-8">
+            <span></span>
+            <span className="text-center">Home User</span>
+            <span className="text-center">Salon / Spa</span>
+          </div>
+          {[
+            ["Fresh masks daily", "✓", "✓"],
+            ["No chemicals or preservatives", "✓", "✓"],
+            ["Customise per skin type", "✓", "✓"],
+            ["Save vs buying pre-made masks", "Rs800+/month", "Rs5,000+/month"],
+            ["Client trust building", "-", "✓"],
+            ["Premium upsell service", "-", "✓"],
+          ].map(([label, home, salon]) => (
+            <div key={label} className="grid grid-cols-3 border-b border-[#2E211D] px-5 py-3.5 text-[13px] text-[#FFECE6] sm:px-8">
+              <span className="font-medium text-[#D7C9C2]">{label}</span>
+              <span className="text-center">{home}</span>
+              <span className="text-center">{salon}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="mx-auto mt-12 w-full max-w-[760px]">
+          <button
+            type="button"
+            onClick={handleBuyNow}
+            className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]"
+          >
+            <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
+            <span className="relative z-[1] inline-flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5" />
+              Buy Now - ₹{discountedPrice.toLocaleString("en-IN")}
+            </span>
+            <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">
+              LIMITED STOCK
+            </span>
+          </button>
         </div>
       </section>
 
