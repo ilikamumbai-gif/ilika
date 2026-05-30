@@ -49,7 +49,7 @@ const Header = ({ forceWhiteBg = false }) => {
         </div>
 
         {/* Mobile controls — only visible on mobile */}
-        <div className="flex lg:hidden items-center gap-2">
+        <div className="flex lg:hidden items-center gap-2 text-[#1f1f1f]">
 
           {/* Search toggle */}
           <button
@@ -57,7 +57,7 @@ const Header = ({ forceWhiteBg = false }) => {
               setSearchOpen((v) => !v);
               setOpen(false);
             }}
-            className="shrink-0 p-1"
+            className="shrink-0 p-1 text-[#1f1f1f]"
           >
             {searchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
           </button>
@@ -93,7 +93,7 @@ const Header = ({ forceWhiteBg = false }) => {
                 setOpen((v) => !v);
                 setSearchOpen(false);
               }}
-              className="relative z-10 p-1"
+              className="relative z-10 p-1 text-[#1f1f1f]"
             >
               {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
