@@ -9,18 +9,5 @@ export default defineConfig({
   ],
   build: {
     cssCodeSplit: true,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes("node_modules")) return;
-          if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) {
-            return "react-core";
-          }
-          if (id.includes("firebase")) return "firebase";
-          if (id.includes("lucide-react") || id.includes("react-icons")) return "icons";
-          return "vendor";
-        },
-      },
-    },
   },
 })
