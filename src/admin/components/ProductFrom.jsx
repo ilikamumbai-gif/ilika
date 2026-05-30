@@ -61,7 +61,10 @@ const normalizeCouponCode = (value = "") =>
 const sanitizeCouponSnapshot = (coupon) => {
   if (!coupon || !coupon.id) return null;
   const discountPercent = Number(coupon.discountPercent || 0);
-  if (!discountPercent) return null;
+  const forcedPrice = Number(coupon.forcedPrice || 0);
+  const hasDiscount = discountPercent > 0;
+  const hasForcedPrice = forcedPrice > 0;
+  if (!hasDiscount && !hasForcedPrice) return null;
   const code = normalizeCouponCode(coupon.code);
   if (!code) return null;
 
@@ -70,6 +73,7 @@ const sanitizeCouponSnapshot = (coupon) => {
     name: String(coupon.name || "").trim(),
     code,
     discountPercent,
+    forcedPrice: hasForcedPrice ? forcedPrice : null,
     isActive: coupon.isActive !== false,
   };
 };
@@ -739,20 +743,20 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         >
           {form.couponId && !(coupons || []).some((coupon) => String(coupon.id) === String(form.couponId)) && form.couponSnapshot && (
             <option value={form.couponId}>
-              {form.couponSnapshot.code} - {form.couponSnapshot.discountPercent}% (Unavailable)
+              {form.couponSnapshot.code} - {Number(form.couponSnapshot?.forcedPrice || 0) > 0 ? `Forced ₹${Number(form.couponSnapshot.forcedPrice).toLocaleString("en-IN")}` : `${form.couponSnapshot.discountPercent}%`} (Unavailable)
             </option>
           )}
           <option value="">No coupon</option>
           {(coupons || []).map((coupon) => (
             <option key={coupon.id} value={coupon.id}>
-              {normalizeCouponCode(coupon.code)} - {Number(coupon.discountPercent || 0)}% {coupon.isActive === false ? "(Inactive)" : ""}
+              {normalizeCouponCode(coupon.code)} - {Number(coupon?.forcedPrice || 0) > 0 ? `Forced ₹${Number(coupon.forcedPrice).toLocaleString("en-IN")}` : `${Number(coupon.discountPercent || 0)}%`} {coupon.isActive === false ? "(Inactive)" : ""}
             </option>
           ))}
         </select>
 
         {form.couponSnapshot && (
           <p className="text-xs text-gray-600">
-            Selected: <span className="font-semibold">{form.couponSnapshot.code}</span> ({form.couponSnapshot.discountPercent}% off)
+            Selected: <span className="font-semibold">{form.couponSnapshot.code}</span> ({Number(form.couponSnapshot?.forcedPrice || 0) > 0 ? `Forced ₹${Number(form.couponSnapshot.forcedPrice).toLocaleString("en-IN")}` : `${form.couponSnapshot.discountPercent}% off`})
           </p>
         )}
       </div>

@@ -7,6 +7,18 @@ import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
 import voiceVersionMaskMakerImage from "./assets/voicevesion mask maker.jpeg";
+import voiceMaskMakerMainImage from "./assets/voicemaskmaker/maskmaker.jpeg";
+import voiceMaskMakerBeakerImage from "./assets/voicemaskmaker/beaker.jpeg";
+import voiceMaskMakerTrayImage from "./assets/voicemaskmaker/tray.jpeg";
+import voiceMaskMakerCordImage from "./assets/voicemaskmaker/cord.jpeg";
+import voiceMaskMakerManualImage from "./assets/voicemaskmaker/manual.jpeg";
+import voiceMaskMakerCleaningBrushImage from "./assets/voicemaskmaker/Cleaning Brush.jpeg";
+import voiceMaskMakerAngle1Image from "./assets/voicemaskmaker/angle1.jpeg";
+import voiceMaskMakerAngle2Image from "./assets/voicemaskmaker/angle 2.jpeg";
+import voiceMaskMakerAngle3Image from "./assets/voicemaskmaker/angle 3.jpeg";
+import voiceMaskMakerAngle4Image from "./assets/voicemaskmaker/angle 4.jpeg";
+import voiceMaskMakerAngle5Image from "./assets/voicemaskmaker/angle 5.jpeg";
+import voiceMaskMakerAngle6Image from "./assets/voicemaskmaker/angle 6.jpeg";
 import {
   Volume2,
   Leaf,
@@ -78,6 +90,39 @@ const reviews = [
     name: "Sneha Mehta",
     loc: "Pune · Verified Buyer",
   },
+];
+
+const howItWorksSteps = [
+  {
+    num: "1",
+    title: "Add Ingredients",
+    desc: "Drop in your favourite fruits, veggies or collagen pack",
+    image: voiceVersionMaskMakerImage,
+  },
+  {
+    num: "2",
+    title: "Select Skin Type",
+    desc: "The machine customises the mask for oily, dry or sensitive skin",
+    image: voiceVersionMaskMakerImage,
+  },
+];
+
+const boxItems = [
+  { id: "mask-maker", name: "Voice Mask Maker Machine", image: voiceMaskMakerMainImage },
+  { id: "beaker", name: "Measuring Beaker", image: voiceMaskMakerBeakerImage },
+  { id: "mask-tray", name: "Mask Tray", image: voiceMaskMakerTrayImage },
+  { id: "power-cable", name: "Power Cable", image: voiceMaskMakerCordImage },
+  { id: "user-guide", name: "User Guide", image: voiceMaskMakerManualImage },
+  { id: "cleaning-brush", name: "Cleaning Brush", image: voiceMaskMakerCleaningBrushImage },
+];
+
+const productAngles = [
+  { id: "angle-1", alt: "Product angle 1", image: voiceMaskMakerAngle1Image },
+  { id: "angle-2", alt: "Product angle 2", image: voiceMaskMakerAngle2Image },
+  { id: "angle-3", alt: "Product angle 3", image: voiceMaskMakerAngle3Image },
+  { id: "angle-4", alt: "Product angle 4", image: voiceMaskMakerAngle4Image },
+  { id: "angle-5", alt: "Product angle 5", image: voiceMaskMakerAngle5Image },
+  { id: "angle-6", alt: "Product angle 6", image: voiceMaskMakerAngle6Image },
 ];
 
 const VoiceMaskMakerLanding = () => {
@@ -320,17 +365,63 @@ const VoiceMaskMakerLanding = () => {
           Your Mask in <em className="text-[#B87161]">4 Easy Steps</em>
         </h2>
 
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            ["1", "Add Ingredients", "Drop in your favourite fruits, veggies or collagen pack"],
-            ["2", "Select Skin Type", "The machine customises the mask for oily, dry or sensitive skin"],
-            ["3", "Press & Listen", "Voice instructions guide you through every step automatically"],
-            ["4", "Apply & Glow", "Place the fresh mask on your face and feel the difference instantly"],
-          ].map(([num, title, desc]) => (
-            <div key={title} className="text-center">
-              <div className="mx-auto mb-5 grid h-14 w-14 place-content-center rounded-full border-4 border-[#F6E7DE] bg-[#B87161] [font-family:'Playfair_Display',serif] text-[22px] font-bold text-white">{num}</div>
-              <h3 className="mb-2 text-[15px] font-semibold">{title}</h3>
-              <p className="text-[13px] font-light leading-[1.6] text-[#D4C7C0]">{desc}</p>
+        <div className="mx-auto max-w-[1040px] space-y-6">
+          {howItWorksSteps.map((step, idx) => (
+            <div
+              key={step.title}
+              className={`grid grid-cols-1 overflow-hidden rounded-[22px] border border-[#C98D80] bg-[#b8716182] shadow-[0_10px_24px_rgba(0,0,0,0.2)] md:grid-cols-2 ${
+                idx % 2 === 1 ? "md:[&>*:first-child]:order-2 md:[&>*:last-child]:order-1" : ""
+              }`}
+            >
+              <div className="h-[220px] w-full bg-[#221B19] sm:h-[260px]">
+                {step.image ? (
+                  <img src={step.image} alt={step.title} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <span className="grid h-14 w-14 place-content-center rounded-full border-4 border-[#F6E7DE] bg-[#B87161] [font-family:'Playfair_Display',serif] text-[22px] font-bold text-white">
+                      {step.num}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center px-5 py-6 sm:px-7 sm:py-8">
+                <div>
+                  <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-[#FFE2D8]">Step {step.num}</p>
+                  <h3 className="mb-2 text-[22px] font-semibold text-[#FFF8F5]">{step.title}</h3>
+                  <p className="text-[14px] leading-[1.7] text-[#FFECE6]">{step.desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
+        <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Everything Included</p>
+        <h2 className="mb-10 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
+          What's In The <em className="text-[#B87161]">Box</em>
+        </h2>
+        <div className="mx-auto grid max-w-[1100px] grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {boxItems.map((item) => (
+            <div key={item.id} className="rounded-2xl border border-[#3F312D] bg-[#202020] p-3">
+              <div className="aspect-square overflow-hidden rounded-xl bg-[#221B19]">
+                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+              </div>
+              <p className="mt-3 text-center text-[13px] font-medium text-[#EED8D2]">{item.name}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#292423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
+        <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Gallery</p>
+        <h2 className="mb-10 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
+          Product From <em className="text-[#B87161]">Every Angle</em>
+        </h2>
+        <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {productAngles.map((item) => (
+            <div key={item.id} className="overflow-hidden rounded-2xl border border-[#3F312D] bg-[#202020]">
+              <img src={item.image} alt={item.alt} className="h-[260px] w-full object-cover" />
             </div>
           ))}
         </div>

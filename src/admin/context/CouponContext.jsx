@@ -55,6 +55,7 @@ export const CouponProvider = ({ children }) => {
         name: payload?.name || "",
         code: normalizeCode(payload?.code),
         discountPercent: Number(payload?.discountPercent || 0),
+        forcedPrice: Number(payload?.forcedPrice || 0) > 0 ? Number(payload.forcedPrice) : null,
         isActive: payload?.isActive ?? true,
       }),
     });
@@ -75,6 +76,7 @@ export const CouponProvider = ({ children }) => {
         name: payload?.name || "",
         code: normalizeCode(payload?.code),
         discountPercent: Number(payload?.discountPercent || 0),
+        forcedPrice: Number(payload?.forcedPrice || 0) > 0 ? Number(payload.forcedPrice) : null,
         isActive: payload?.isActive ?? true,
       }),
     });

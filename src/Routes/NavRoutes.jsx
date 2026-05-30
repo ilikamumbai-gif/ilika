@@ -73,7 +73,8 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/hair") return { title: "Hair Care", description: "Shop Ilika hair care and styling essentials." };
   if (pathname === "/grooming") return { title: "Grooming Tools", description: "Premium grooming tools by Ilika." };
   if (pathname === "/newarrival") return { title: "New Arrivals", description: "See the newest Ilika products and launches." };
-  if (pathname === "/products") return { title: "All Products", description: "Browse all Ilika beauty and grooming products." };
+  if (pathname === "/products" || pathname === "/product")
+    return { title: "All Products", description: "Browse all Ilika beauty and grooming products." };
   if (pathname === "/skin/face") return { title: "Face Care", description: "Face care products from Ilika." };
   if (pathname === "/skin/body") return { title: "Body Care", description: "Body care products from Ilika." };
   if (pathname === "/hair/care") return { title: "Hair Care Collection", description: "Targeted hair care from Ilika." };
@@ -161,6 +162,7 @@ const NavRoutes = () => {
         <Route path="/grooming" element={renderLazy(Grooming)} />
         <Route path="/newarrival" element={renderLazy(NewArrival)} />
         <Route path="/products" element={renderLazy(Products)} />
+        <Route path="/product" element={renderLazy(Products)} />
 
         <Route path="/skin/face" element={renderLazy(Face)} />
         <Route path="/skin/body" element={renderLazy(Body)} />

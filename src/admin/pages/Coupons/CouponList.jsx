@@ -8,6 +8,7 @@ const EMPTY_FORM = {
   name: "",
   code: "",
   discountPercent: "",
+  forcedPrice: "",
   isActive: true,
 };
 
@@ -32,10 +33,17 @@ const CouponList = () => {
 
     const code = String(form.code || "").trim();
     const discountPercent = Number(form.discountPercent || 0);
+    const forcedPrice = Number(form.forcedPrice || 0);
 
     if (!code) return alert("Coupon code is required");
-    if (!Number.isFinite(discountPercent) || discountPercent < 1 || discountPercent > 100) {
+    if (discountPercent && (!Number.isFinite(discountPercent) || discountPercent < 1 || discountPercent > 100)) {
       return alert("Discount percent must be between 1 and 100");
+    }
+    if (forcedPrice && (!Number.isFinite(forcedPrice) || forcedPrice < 1)) {
+      return alert("Forced price must be greater than 0");
+    }
+    if (!discountPercent && !forcedPrice) {
+      return alert("Set either discount % or forced price");
     }
 
     setSaving(true);
@@ -44,6 +52,7 @@ const CouponList = () => {
         name: form.name,
         code,
         discountPercent,
+        forcedPrice: forcedPrice || null,
         isActive: form.isActive,
       };
 
@@ -64,10 +73,11 @@ const CouponList = () => {
 
   const handleEdit = (coupon) => {
     setEditingId(coupon.id);
-    setForm({
-      name: coupon.name || "",
+      setForm({
+        name: coupon.name || "",
       code: coupon.code || "",
       discountPercent: coupon.discountPercent || "",
+      forcedPrice: coupon.forcedPrice || "",
       isActive: coupon.isActive !== false,
     });
   };
@@ -93,7 +103,7 @@ const CouponList = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white border rounded-2xl p-4 sm:p-5 mb-5 space-y-4" style={{ borderColor: "#EBEBEB" }}>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <input
             type="text"
             placeholder="Coupon name (optional)"
@@ -117,7 +127,14 @@ const CouponList = () => {
             value={form.discountPercent}
             onChange={(e) => setForm((prev) => ({ ...prev, discountPercent: e.target.value }))}
             className="border rounded-lg px-3 py-2 text-sm"
-            required
+          />
+          <input
+            type="number"
+            placeholder="Forced price (optional)"
+            min={1}
+            value={form.forcedPrice}
+            onChange={(e) => setForm((prev) => ({ ...prev, forcedPrice: e.target.value }))}
+            className="border rounded-lg px-3 py-2 text-sm"
           />
           <label className="flex items-center gap-2 text-sm border rounded-lg px-3 py-2">
             <input
@@ -157,7 +174,7 @@ const CouponList = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F0F0F0" }}>
-                  {["Code", "Name", "Discount", "Status", "Actions"].map((h) => (
+                  {["Code", "Name", "Offer", "Status", "Actions"].map((h) => (
                     <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                       {h}
                     </th>
@@ -169,7 +186,11 @@ const CouponList = () => {
                   <tr key={coupon.id} className="border-b border-gray-100">
                     <td className="px-5 py-4 font-semibold">{coupon.code}</td>
                     <td className="px-5 py-4 text-gray-600">{coupon.name || "-"}</td>
-                    <td className="px-5 py-4">{coupon.discountPercent}%</td>
+                    <td className="px-5 py-4">
+                      {Number(coupon?.forcedPrice || 0) > 0
+                        ? `Forced ₹${Number(coupon.forcedPrice).toLocaleString("en-IN")}`
+                        : `${coupon.discountPercent}%`}
+                    </td>
                     <td className="px-5 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${coupon.isActive === false ? "bg-red-50 text-red-600 border-red-200" : "bg-green-50 text-green-700 border-green-200"}`}>
                         {coupon.isActive === false ? "Inactive" : "Active"}

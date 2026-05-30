@@ -1447,20 +1447,39 @@ const ProductDetail = () => {
     if (!snapshot) return null;
     const code = normalizeCouponCode(snapshot.code);
     const discountPercent = Number(snapshot.discountPercent || 0);
-    if (!code || !discountPercent || snapshot.isActive === false) return null;
+    const forcedPrice = Number(snapshot.forcedPrice || 0);
+    const normalizedName = String(product?.name || "").toLowerCase();
+    const isVoiceMaskMakerProduct = normalizedName.includes("automatic voice version face mask maker machine");
+    const fallbackForcedPrice =
+      isVoiceMaskMakerProduct && code.toLowerCase() === "ilikadiy" ? 4999 : 0;
+    const resolvedForcedPrice = forcedPrice > 0 ? forcedPrice : fallbackForcedPrice;
+    const hasDiscount = discountPercent > 0;
+    const hasForcedPrice = resolvedForcedPrice > 0;
+    if (!code || (!hasDiscount && !hasForcedPrice) || snapshot.isActive === false) return null;
     return {
       code,
       discountPercent,
+      forcedPrice: hasForcedPrice ? resolvedForcedPrice : null,
       name: snapshot.name || "",
     };
-  }, [product?.couponSnapshot, product?.coupon]);
+  }, [product?.couponSnapshot, product?.coupon, product?.name]);
 
+  const couponForcedPrice = appliedCoupon && Number(appliedCoupon?.forcedPrice || 0) > 0
+    ? Number(appliedCoupon.forcedPrice)
+    : null;
   const couponDiscountAmount = appliedCoupon && basePrice > 0
-    ? Number(((basePrice * appliedCoupon.discountPercent) / 100).toFixed(2))
+    ? (couponForcedPrice
+      ? Number(Math.max(0, basePrice - Math.min(basePrice, couponForcedPrice)).toFixed(2))
+      : Number(((basePrice * Number(appliedCoupon.discountPercent || 0)) / 100).toFixed(2)))
     : 0;
   const baseSellingPrice = appliedCoupon && basePrice > 0
-    ? Number(Math.max(0, basePrice - couponDiscountAmount).toFixed(2))
+    ? (couponForcedPrice
+      ? Number(Math.min(basePrice, couponForcedPrice).toFixed(2))
+      : Number(Math.max(0, basePrice - couponDiscountAmount).toFixed(2)))
     : basePrice;
+  const appliedCouponEffectivePercent = appliedCoupon && basePrice > 0
+    ? Number(((couponDiscountAmount / basePrice) * 100).toFixed(2))
+    : 0;
   const eligibleForCollagenAddon = useMemo(() => {
     const name = String(product?.name || "").toLowerCase();
     if (!name.includes("mask maker machine")) return false;
@@ -1590,7 +1609,13 @@ const ProductDetail = () => {
       return;
     }
     setAppliedCoupon(assignedCoupon);
-    setCouponMessage({ type: "success", text: `${assignedCoupon.code} applied successfully` });
+    setCouponMessage({
+      type: "success",
+      text:
+        Number(assignedCoupon?.forcedPrice || 0) > 0
+          ? `${assignedCoupon.code} applied. Price locked at ₹${Number(assignedCoupon.forcedPrice).toLocaleString("en-IN")}`
+          : `${assignedCoupon.code} applied successfully`,
+    });
   }, [assignedCoupon]);
 
   const handleApplyCoupon = useCallback(() => {
@@ -1641,7 +1666,7 @@ const ProductDetail = () => {
             discountApplied: appliedCoupon
               ? {
                 code: appliedCoupon.code,
-                percent: appliedCoupon.discountPercent,
+                percent: appliedCouponEffectivePercent,
                 basedOn: "selling_price",
                 amount: couponDiscountAmount,
               }
@@ -1666,7 +1691,7 @@ const ProductDetail = () => {
             discountApplied: appliedCoupon
               ? {
                 code: appliedCoupon.code,
-                percent: appliedCoupon.discountPercent,
+                percent: appliedCouponEffectivePercent,
                 basedOn: "selling_price",
                 amount: couponDiscountAmount,
               }
@@ -1688,6 +1713,7 @@ const ProductDetail = () => {
     basePrice,
     addonPrice,
     appliedCoupon,
+    appliedCouponEffectivePercent,
     couponDiscountAmount,
     addToCart,
     eligibleForCollagenAddon,
@@ -2422,7 +2448,7 @@ const ProductDetail = () => {
                     <div className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
                       <span className="text-green-700 text-base leading-none">✔</span>
                       <p className="text-xs font-bold flex-1 text-green-700">
-                        {appliedCoupon.code} applied — {appliedCoupon.discountPercent}% off your order!
+                        {appliedCoupon.code} applied — {Number(appliedCoupon?.forcedPrice || 0) > 0 ? `price locked at ₹${Number(appliedCoupon.forcedPrice).toLocaleString("en-IN")}` : `${appliedCoupon.discountPercent}% off your order!`}
                       </p>
                       <button
                         type="button"
