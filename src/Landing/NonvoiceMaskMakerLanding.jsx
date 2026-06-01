@@ -142,7 +142,7 @@ const NonvoiceMaskMakerLanding = () => {
       <Header />
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 900px; }
       `}</style>
 
       <section className="bg-[#FFFCFA] px-[4%] py-4 sm:py-5 lg:px-[6%] lg:py-6">
@@ -218,7 +218,7 @@ const NonvoiceMaskMakerLanding = () => {
         ))}
       </div>
 
-      <section id="features" className="px-[8%] py-20">
+      <section id="features" className="cv-auto px-[8%] py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Why You'll Love It</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">Everything a Spa Offers -<br /><em className="text-[#B87161]">In Your Kitchen</em></h2>
 
@@ -227,27 +227,27 @@ const NonvoiceMaskMakerLanding = () => {
         <div className="mx-auto mt-12 w-full max-w-[760px]"><button type="button" onClick={handleBuyNow} className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]"><span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" /><span className="relative z-[1] inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - ₹{productPrice.toLocaleString("en-IN")}</span><span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">LIMITED STOCK</span></button></div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#F8EDE5_0%,_#F0DCCE_100%)] px-[8%] py-20">
+      <section className="cv-auto bg-[linear-gradient(180deg,_#F8EDE5_0%,_#F0DCCE_100%)] px-[8%] py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">So Simple</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">Your Mask in <em className="text-[#B87161]">4 Easy Steps</em></h2>
 
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">{[["1", "Add Ingredients", "Drop in your favourite fruits, veggies or collagen pack"],["2", "Select Skin Type", "Tap the touch screen to customise the mask for oily, dry or sensitive skin"],["3", "Press & Wait", "The machine automatically blends everything to the perfect consistency"],["4", "Apply & Glow", "Place the fresh mask on your face and feel the difference instantly"]].map(([num, title, desc]) => (<div key={title} className="text-center"><div className="mx-auto mb-5 grid h-14 w-14 place-content-center rounded-full border-4 border-[#F6E7DE] bg-[#B87161] [font-family:'Playfair_Display',serif] text-[22px] font-bold text-white">{num}</div><h3 className="mb-2 text-[15px] font-semibold">{title}</h3><p className="text-[13px] font-light leading-[1.6] text-[#7E6660]">{desc}</p></div>))}</div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#FFFDFB_0%,_#F9EFE7_100%)] px-[8%] py-20">
+      <section className="cv-auto bg-[linear-gradient(180deg,_#FFFDFB_0%,_#F9EFE7_100%)] px-[8%] py-20">
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-[60px]"><div><h3 className="mb-5 [font-family:'Playfair_Display',serif] text-[34px] font-bold leading-[1.2]">Made with<br />Real Ingredients</h3><p className="mb-7 text-[15px] font-light leading-[1.7] text-[#7E6660]">Unlike store-bought masks packed with chemicals, you control exactly what goes on your skin. Use what's in your fridge - and your skin will thank you.</p><div className="flex flex-wrap gap-2.5">{["Orange", "Kiwi", "Strawberry", "Lemon", "Milk", "Honey", "Avocado", "Collagen"].map((tag) => (<span key={tag} className="rounded-full border border-[#EBCFC2] bg-[#F6E7DE] px-[18px] py-2 text-[13px] font-medium text-[#9E5C4F]">{tag}</span>))}</div></div><div className="rounded-[28px] bg-[#F6E7DE] px-10 py-12"><div className="mb-4 rounded-2xl border border-[#EBCFC2] bg-[#FFFDFC] p-6"><p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#B87161]"><Star className="h-3.5 w-3.5" /> Included</p><h4 className="mb-1.5 text-[15px] font-semibold">Collagen Peptide Pack</h4><p className="text-[13px] font-light text-[#7E6660]">Clinically formulated to boost skin elasticity, reduce fine lines and restore that youthful firmness. Just add one scoop to your mask mix.</p></div><div className="rounded-2xl border border-[#EBCFC2] bg-[#FFFDFC] p-6"><p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#B87161]"><Lightbulb className="h-3.5 w-3.5" /> Pro Tip</p><h4 className="mb-1.5 text-[15px] font-semibold">Vitamin C Brightening Mask</h4><p className="text-[13px] font-light text-[#7E6660]">Orange + lemon + a pinch of turmeric → instant glow mask. The machine blends it to the perfect consistency for your skin type.</p></div></div></div>
 
         <div className="mx-auto mt-12 w-full max-w-[760px]"><button type="button" onClick={handleBuyNow} className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]"><span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" /><span className="relative z-[1] inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - ₹{productPrice.toLocaleString("en-IN")}</span><span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">LIMITED STOCK</span></button></div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#FFFFFF_0%,_#FFF5EE_100%)] px-[8%] py-20">
+      <section className="cv-auto bg-[linear-gradient(180deg,_#FFFFFF_0%,_#FFF5EE_100%)] px-[8%] py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Real People, Real Glow</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">They Tried It.<br /><em className="text-[#B87161]">They're Obsessed.</em></h2>
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">{reviews.map((r) => (<div key={r.name} className="rounded-2xl border border-[#EBDDD4] bg-[#FFF9F6] px-6 py-7"><div className="mb-3 flex items-center gap-1 text-[#D3A157]">{[1, 2, 3, 4, 5].map((n) => (<Star key={n} className={`h-4 w-4 ${n <= r.rating ? "fill-current" : "opacity-35"}`} />))}</div><p className="mb-5 text-[14px] italic font-light leading-[1.7] text-[#7E6660]">{r.text}</p><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-content-center rounded-full bg-[#F1D7CD] text-[13px] font-semibold text-[#9E5C4F]">{r.initials}</span><div><p className="text-[13px] font-semibold">{r.name}</p><p className="text-[12px] text-[#7E6660]">{r.loc}</p></div></div></div>))}</div>
       </section>
 
-      <section className="relative overflow-hidden bg-[linear-gradient(120deg,_#2F1F1C_0%,_#472E2A_100%)] px-[8%] py-20 text-center">
+      <section className="cv-auto relative overflow-hidden bg-[linear-gradient(120deg,_#2F1F1C_0%,_#472E2A_100%)] px-[8%] py-20 text-center">
         <div className="absolute -right-[60px] -top-[60px] h-[300px] w-[300px] rounded-full bg-[rgba(255,255,255,0.06)]" />
         <div className="absolute -bottom-[80px] -left-[40px] h-[240px] w-[240px] rounded-full bg-[rgba(255,255,255,0.06)]" />
 

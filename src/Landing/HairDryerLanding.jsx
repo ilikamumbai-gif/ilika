@@ -163,8 +163,8 @@ const HairDryerLanding = () => {
   return (
     <div className="bg-[radial-gradient(circle_at_top,_#171717_0%,_#090909_45%,_#050505_100%)] text-[#f8f7ff] [font-family:'DM_Sans',sans-serif]">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap');
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 900px; }
       `}</style>
 
       <MiniDivider />
@@ -257,7 +257,7 @@ const HairDryerLanding = () => {
         </div>
       </div>
 
-      <section className="border-b border-[#9569d0]/45 px-4 py-10 sm:px-10 sm:py-12 lg:px-14">
+      <section className="cv-auto border-b border-[#9569d0]/45 px-4 py-10 sm:px-10 sm:py-12 lg:px-14">
         <div className="mb-7 flex items-center gap-4">
           <span className="h-px w-10 bg-[#9569d0]" />
           <p className="[font-family:'Bebas_Neue',sans-serif] text-3xl font-bold leading-none tracking-[0.08em] text-[#f5f3ff] sm:text-4xl">Performance Snapshot</p>
@@ -273,7 +273,7 @@ const HairDryerLanding = () => {
         </div>
       </section>
 
-      <section id="features" className="border-b border-[#9569d0]/45 px-4 py-12 sm:px-10 sm:py-14 lg:px-14">
+      <section id="features" className="cv-auto border-b border-[#9569d0]/45 px-4 py-12 sm:px-10 sm:py-14 lg:px-14">
         <div className="mb-8 flex items-center gap-4">
           <span className="h-px w-10 bg-[#9569d0]" />
           <p className="[font-family:'Bebas_Neue',sans-serif] text-3xl font-bold leading-none tracking-[0.08em] text-[#f5f3ff] sm:text-4xl">Features & Benefits</p>
@@ -316,7 +316,7 @@ const HairDryerLanding = () => {
         </div>
       </section>
 
-      <section className="border-b border-[#9569d0]/45 px-4 py-12 sm:px-10 sm:py-16 lg:px-14">
+      <section className="cv-auto border-b border-[#9569d0]/45 px-4 py-12 sm:px-10 sm:py-16 lg:px-14">
         <div className="mb-8 flex items-center gap-4">
           <span className="h-px w-10 bg-[#9569d0]" />
           <p className="[font-family:'Bebas_Neue',sans-serif] text-3xl font-bold leading-none tracking-[0.08em] text-[#f5f3ff] sm:text-4xl">
@@ -334,7 +334,7 @@ const HairDryerLanding = () => {
         </div>
       </section>
 
-      <section className="border-b border-[#9569d0]/45 px-4 py-12 sm:px-10 sm:py-16 lg:px-14">
+      <section className="cv-auto border-b border-[#9569d0]/45 px-4 py-12 sm:px-10 sm:py-16 lg:px-14">
         <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="mb-5 inline-flex items-center gap-3 [font-family:'Bebas_Neue',sans-serif] text-3xl font-bold leading-none tracking-[0.08em] text-[#f5f3ff]"><span className="h-px w-8 bg-[#9569d0]" />Real customers</p>
@@ -371,7 +371,7 @@ const HairDryerLanding = () => {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-8 px-4 py-12 sm:gap-10 sm:px-10 sm:py-16 lg:grid-cols-2 lg:px-14">
+      <section className="cv-auto grid grid-cols-1 gap-8 px-4 py-12 sm:gap-10 sm:px-10 sm:py-16 lg:grid-cols-2 lg:px-14">
         <div>
           <p className="mb-5 inline-flex items-center gap-3 [font-family:'Bebas_Neue',sans-serif] text-3xl font-bold leading-none tracking-[0.08em] text-[#f5f3ff]"><span className="h-px w-8 bg-[#9569d0]" />Limited offer</p>
           <h2 className="mb-4 [font-family:'Bebas_Neue',sans-serif] text-4xl leading-none sm:mb-5 sm:text-5xl">READY TO UPGRADE YOUR ROUTINE?</h2>

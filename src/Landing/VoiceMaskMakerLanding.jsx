@@ -310,11 +310,11 @@ const VoiceMaskMakerLanding = () => {
       <Header forceWhiteBg />
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         @keyframes offerPop {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.04); }
         }
+        .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 900px; }
       `}</style>
 
       <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2A2A_100%)] px-4 py-4 sm:px-[6%] sm:py-5 lg:px-[6%] lg:py-6">
@@ -433,7 +433,7 @@ const VoiceMaskMakerLanding = () => {
         ))}
       </div>
 
-      <section id="features" className="bg-[#202020] px-[5%] py-14 sm:px-[8%] sm:py-20">
+      <section id="features" className="cv-auto bg-[#202020] px-[5%] py-14 sm:px-[8%] sm:py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Why You'll Love It</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           Everything a Spa Offers -
@@ -471,7 +471,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2524_100%)] px-4 py-12 sm:px-[8%] sm:py-20">
+      <section className="cv-auto bg-[linear-gradient(180deg,_#202020_0%,_#2A2524_100%)] px-4 py-12 sm:px-[8%] sm:py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">So Simple</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           Your Mask in <em className="text-[#B87161]">Easy Steps</em>
@@ -532,7 +532,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
+      <section className="cv-auto bg-[linear-gradient(180deg,_#202020_0%,_#2A2423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Everything Included</p>
         <h2 className="mb-10 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           What's In The <em className="text-[#B87161]">Box</em>
@@ -549,7 +549,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[#202020] px-[5%] py-14 sm:px-[8%] sm:py-20">
+      <section className="cv-auto bg-[#202020] px-[5%] py-14 sm:px-[8%] sm:py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Built for Everyone</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           Perfect for <em className="text-[#B87161]">Home & Salon</em>
@@ -645,7 +645,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#292423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
+      <section className="cv-auto bg-[linear-gradient(180deg,_#202020_0%,_#292423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Gallery</p>
         <h2 className="mb-10 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           Product From <em className="text-[#B87161]">Every Angle</em>
@@ -659,7 +659,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
+      <section className="cv-auto bg-[linear-gradient(180deg,_#202020_0%,_#2A2423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-[60px]">
           <div>
             <h3 className="mb-5 [font-family:'Playfair_Display',serif] text-[34px] font-bold leading-[1.2]">Made with<br />Real Ingredients</h3>
@@ -713,7 +713,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,_#202020_0%,_#292423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
+      <section className="cv-auto bg-[linear-gradient(180deg,_#202020_0%,_#292423_100%)] px-[5%] py-14 sm:px-[8%] sm:py-20">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B87161]">Real People, Real Glow</p>
         <h2 className="mb-14 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2]">
           They Tried It.
@@ -742,7 +742,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[linear-gradient(120deg,_#FFB07A_0%,_#F57B5C_52%,_#E45B46_100%)] px-[5%] py-14 text-center sm:px-[8%] sm:py-20">
+      <section className="cv-auto relative overflow-hidden bg-[linear-gradient(120deg,_#FFB07A_0%,_#F57B5C_52%,_#E45B46_100%)] px-[5%] py-14 text-center sm:px-[8%] sm:py-20">
         <div className="absolute -right-[60px] -top-[60px] h-[300px] w-[300px] rounded-full bg-[rgba(255,255,255,0.06)]" />
         <div className="absolute -bottom-[80px] -left-[40px] h-[240px] w-[240px] rounded-full bg-[rgba(255,255,255,0.06)]" />
 
