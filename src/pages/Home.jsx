@@ -59,7 +59,7 @@ const LazyMountSection = ({
   children,
   minHeight = 320,
   className = "",
-  rootMargin = "120px 0px",
+  rootMargin = "40px 0px",
 }) => {
   const sectionRef = useRef(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -251,6 +251,7 @@ const Home = () => {
                       "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
                       "Hot & Cold Facial Pore Blackhead Remover For Men & Women ",
                     ]}
+                    priorityCount={2}
                     limit={4}
                   />
                 </Suspense>
@@ -294,6 +295,7 @@ const Home = () => {
                       "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
                       "Hot & Cold Facial Pore Blackhead Remover For Men & Women ",
                     ]}
+                    priorityCount={2}
                     limit={4}
                   />
                 </Suspense>

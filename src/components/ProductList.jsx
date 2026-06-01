@@ -10,6 +10,7 @@ const ProductList = ({
   buttonText,
   productNames = [],
   priorityNames = [],
+  priorityCount = 0,
   mobileScroll = false,
 }) => {
   const { products } = useProducts();
@@ -60,7 +61,7 @@ const ProductList = ({
                       product={item}
                       buttonBg={buttonBg}
                       buttonText={buttonText}
-                      prioritizeImage={index < 8}
+                      prioritizeImage={index < priorityCount}
                     />
                   </div>
                 </div>
@@ -80,7 +81,7 @@ const ProductList = ({
                   product={item}
                   buttonBg={buttonBg}
                   buttonText={buttonText}
-                  prioritizeImage={index < 8}
+                  prioritizeImage={index < priorityCount}
                 />
               ))
             ) : (
@@ -97,7 +98,7 @@ const ProductList = ({
                 product={item}
                 buttonBg={buttonBg}
                 buttonText={buttonText}
-                prioritizeImage={index < 8}
+                prioritizeImage={index < priorityCount}
               />
             ))
           ) : (
