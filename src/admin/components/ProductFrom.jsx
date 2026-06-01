@@ -78,6 +78,24 @@ const sanitizeCouponSnapshot = (coupon) => {
   };
 };
 
+const sanitizePackOptions = (packOptions = []) => {
+  if (!Array.isArray(packOptions)) return [];
+  return packOptions
+    .map((item, index) => {
+      const label = String(item?.label || item?.name || "").trim();
+      const price = Number(item?.price);
+      const mrp = Number(item?.mrp || 0);
+      if (!label || !Number.isFinite(price) || price <= 0) return null;
+      return {
+        id: String(item?.id || `pack-${index + 1}`),
+        label,
+        price,
+        mrp: Number.isFinite(mrp) && mrp > 0 ? mrp : null,
+      };
+    })
+    .filter(Boolean);
+};
+
 /* ── Rich Text Editor ── */
 const RichTextEditor = ({ value, onChange }) => {
   const editor = useEditor({
@@ -165,6 +183,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   const emptyForm = {
     hsnCode: "", gstRate: "",
     name: "", shortInfo: "", price: "", mrp: "",
+    packOptions: [],
     productTag: "",
     hasVariants: false, variants: [], categoryIds: [],
     description: "", additionalInfo: "", tagline: "", points: "",
@@ -193,6 +212,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     shortInfo: d.shortInfo || "",
     price: d.price || "",
     mrp: d.mrp || "",
+    packOptions: sanitizePackOptions(d.packOptions),
     productTag: d.productTag || "",
     hasVariants: d.hasVariants || false,
     variants: (d.variants || []).map(v => ({ ...v, preview: v.images || [] })),
@@ -494,6 +514,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         hasVariants: form.hasVariants,
         price: form.hasVariants ? null : Number(form.price),
         mrp: form.hasVariants ? null : Number(form.mrp),
+        packOptions: sanitizePackOptions(form.packOptions),
         variants: variantData, categoryIds: form.categoryIds,
         description: form.description,
         additionalInfo: typeof form.additionalInfo === "string"
@@ -625,6 +646,96 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             onChange={e => setForm({ ...form, mrp: e.target.value })}
             className="w-full border border-gray-200 p-2.5 rounded-lg" required
           />
+        </div>
+      )}
+
+      {!form.hasVariants && (
+        <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+          <div>
+            <p className="font-semibold text-sm">Pack Options (Optional)</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Add options like Pack of 2, Pack of 4 with their own prices for product detail page.
+            </p>
+          </div>
+
+          {(form.packOptions || []).map((pack, index) => (
+            <div key={pack.id || index} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end bg-white border rounded-lg p-3">
+              <div className="sm:col-span-5">
+                <label className="text-xs font-semibold text-gray-600 block mb-1">Pack Label</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Pack of 2"
+                  value={pack.label || ""}
+                  onChange={(e) => {
+                    const updated = [...(form.packOptions || [])];
+                    updated[index] = { ...updated[index], label: e.target.value };
+                    setForm({ ...form, packOptions: updated });
+                  }}
+                  className="w-full border border-gray-200 p-2 rounded-lg text-sm"
+                />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="text-xs font-semibold text-gray-600 block mb-1">Price</label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={pack.price ?? ""}
+                  onChange={(e) => {
+                    const updated = [...(form.packOptions || [])];
+                    updated[index] = { ...updated[index], price: e.target.value };
+                    setForm({ ...form, packOptions: updated });
+                  }}
+                  className="w-full border border-gray-200 p-2 rounded-lg text-sm"
+                />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="text-xs font-semibold text-gray-600 block mb-1">MRP (Optional)</label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={pack.mrp ?? ""}
+                  onChange={(e) => {
+                    const updated = [...(form.packOptions || [])];
+                    updated[index] = { ...updated[index], mrp: e.target.value };
+                    setForm({ ...form, packOptions: updated });
+                  }}
+                  className="w-full border border-gray-200 p-2 rounded-lg text-sm"
+                />
+              </div>
+              <div className="sm:col-span-1">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      packOptions: (prev.packOptions || []).filter((_, i) => i !== index),
+                    }))
+                  }
+                  className="w-full h-10 rounded-lg border border-red-200 text-red-600 text-xs hover:bg-red-50"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={() =>
+              setForm((prev) => ({
+                ...prev,
+                packOptions: [
+                  ...(prev.packOptions || []),
+                  { id: crypto.randomUUID(), label: "", price: "", mrp: "" },
+                ],
+              }))
+            }
+            className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+          >
+            + Add Pack Option
+          </button>
         </div>
       )}
 

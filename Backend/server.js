@@ -1528,7 +1528,7 @@ app.get("/api/coupons/:id", async (req, res) => {
   try {
     const doc = await db.collection("coupons").doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: "Coupon not found" });
-    res.json({ id: doc.id, ...doc.data() });
+    res.json({ ...doc.data(), id: doc.id });
   } catch (error) {
     console.error("FETCH COUPON ERROR:", error);
     res.status(500).json({ error: "Failed to fetch coupon" });
@@ -1608,7 +1608,7 @@ app.post("/api/products", async (req, res) => {
       }
     }
 
-    res.json({ id: docRef.id, ...productData, merchantSync });
+    res.json({ ...productData, id: docRef.id, merchantSync });
   } catch (error) {
     console.error("ADD PRODUCT ERROR:", error);
     res.status(500).json({ error: "Failed to add product" });
@@ -1619,7 +1619,7 @@ app.get("/api/products/:id", async (req, res) => {
   try {
     const doc = await db.collection("products").doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: "Product not found" });
-    res.json({ id: doc.id, ...doc.data() });
+    res.json({ ...doc.data(), id: doc.id });
   } catch {
     res.status(500).json({ error: "Failed to fetch product" });
   }
@@ -1639,7 +1639,7 @@ app.get("/admin/products/edit/:id", async (req, res) => {
 app.get("/api/products", async (req, res) => {
   try {
     const snapshot = await db.collection("products").orderBy("createdAt", "desc").get();
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    res.json(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
   } catch {
     res.status(500).json({ error: "Failed to fetch products" });
   }
@@ -1691,7 +1691,7 @@ app.put("/api/products/:id", async (req, res) => {
 
     res.json({
       message: "Product updated successfully",
-      product: { id: updatedDoc.id, ...updatedDoc.data() },
+      product: { ...updatedDoc.data(), id: updatedDoc.id },
       merchantSync,
     });
   } catch (error) {
@@ -1735,7 +1735,7 @@ app.put("/admin/products/edit/:id", async (req, res) => {
     const updatedDoc = await productRef.get();
     res.json({
       message: "Product updated successfully",
-      product: { id: updatedDoc.id, ...updatedDoc.data() },
+      product: { ...updatedDoc.data(), id: updatedDoc.id },
     });
   } catch (error) {
     console.error("UPDATE PRODUCT (ADMIN EDIT ROUTE) ERROR:", error);

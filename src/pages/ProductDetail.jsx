@@ -1160,6 +1160,7 @@ const ProductDetail = () => {
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponMessage, setCouponMessage] = useState({ type: "", text: "" });
+  const [selectedPackId, setSelectedPackId] = useState("");
   const [collagenAddonCount, setCollagenAddonCount] = useState(0);
   // const [footerHeight, setFooterHeight] = useState(0);
 
@@ -1443,6 +1444,25 @@ const ProductDetail = () => {
   // `displayImages` = what thumbnails actually render - only set after async preload
   const basePrice = Number(activeVariant?.price ?? product?.price ?? 0);
   const mrp = Number(activeVariant?.mrp ?? product?.mrp ?? 0);
+  const packOptions = useMemo(() => {
+    const raw = Array.isArray(product?.packOptions) ? product.packOptions : [];
+    return raw
+      .map((item, index) => ({
+        id: String(item?.id || `pack-${index + 1}`),
+        label: String(item?.label || item?.name || "").trim(),
+        price: Number(item?.price || 0),
+        mrp: Number(item?.mrp || 0),
+      }))
+      .filter((item) => item.label && Number.isFinite(item.price) && item.price > 0);
+  }, [product?.packOptions]);
+  const selectedPack = useMemo(() => {
+    if (!packOptions.length) return null;
+    return packOptions.find((item) => item.id === selectedPackId) || packOptions[0];
+  }, [packOptions, selectedPackId]);
+  const packBasePrice = selectedPack ? Number(selectedPack.price || 0) : basePrice;
+  const packMrp = selectedPack
+    ? Number(selectedPack.mrp > 0 ? selectedPack.mrp : selectedPack.price || 0)
+    : mrp;
   const assignedCoupon = useMemo(() => {
     const snapshot = product?.couponSnapshot || product?.coupon || null;
     if (!snapshot) return null;
@@ -1468,18 +1488,18 @@ const ProductDetail = () => {
   const couponForcedPrice = appliedCoupon && Number(appliedCoupon?.forcedPrice || 0) > 0
     ? Number(appliedCoupon.forcedPrice)
     : null;
-  const couponDiscountAmount = appliedCoupon && basePrice > 0
+  const couponDiscountAmount = appliedCoupon && packBasePrice > 0
     ? (couponForcedPrice
-      ? Number(Math.max(0, basePrice - Math.min(basePrice, couponForcedPrice)).toFixed(2))
-      : Number(((basePrice * Number(appliedCoupon.discountPercent || 0)) / 100).toFixed(2)))
+      ? Number(Math.max(0, packBasePrice - Math.min(packBasePrice, couponForcedPrice)).toFixed(2))
+      : Number(((packBasePrice * Number(appliedCoupon.discountPercent || 0)) / 100).toFixed(2)))
     : 0;
-  const baseSellingPrice = appliedCoupon && basePrice > 0
+  const baseSellingPrice = appliedCoupon && packBasePrice > 0
     ? (couponForcedPrice
-      ? Number(Math.min(basePrice, couponForcedPrice).toFixed(2))
-      : Number(Math.max(0, basePrice - couponDiscountAmount).toFixed(2)))
-    : basePrice;
-  const appliedCouponEffectivePercent = appliedCoupon && basePrice > 0
-    ? Number(((couponDiscountAmount / basePrice) * 100).toFixed(2))
+      ? Number(Math.min(packBasePrice, couponForcedPrice).toFixed(2))
+      : Number(Math.max(0, packBasePrice - couponDiscountAmount).toFixed(2)))
+    : packBasePrice;
+  const appliedCouponEffectivePercent = appliedCoupon && packBasePrice > 0
+    ? Number(((couponDiscountAmount / packBasePrice) * 100).toFixed(2))
     : 0;
   const eligibleForCollagenAddon = useMemo(() => {
     const name = String(product?.name || "").toLowerCase();
@@ -1565,10 +1585,13 @@ const ProductDetail = () => {
       ? images.length + selectedVideoIndex
       : Math.max(0, images.indexOf(selectedImage));
 
-  const effectiveMrp = Number(mrp) + addonPrice;
+  const effectiveMrp = Number(packMrp) + addonPrice;
   const discount = effectiveMrp ? Math.max(0, Math.round(((effectiveMrp - price) / effectiveMrp) * 100)) : 0;
   const addonCartSuffix = eligibleForCollagenAddon ? `__addon_${selectedCollagenAddon.count}` : "";
-  const cartId = activeVariant ? `${productId}_${activeVariant.id}${addonCartSuffix}` : `${productId}${addonCartSuffix}`;
+  const packCartSuffix = selectedPack ? `__pack_${selectedPack.id}` : "";
+  const cartId = activeVariant
+    ? `${productId}_${activeVariant.id}${packCartSuffix}${addonCartSuffix}`
+    : `${productId}${packCartSuffix}${addonCartSuffix}`;
   const isInCart = cartItems.some(i => i.id === cartId);
   const isOutOfStock = product?.inStock === false;
 
@@ -1619,6 +1642,14 @@ const ProductDetail = () => {
     });
   }, [assignedCoupon]);
 
+  useEffect(() => {
+    if (!packOptions.length) {
+      setSelectedPackId("");
+      return;
+    }
+    setSelectedPackId(packOptions[0].id);
+  }, [productId, packOptions]);
+
   const handleApplyCoupon = useCallback(() => {
     applyCouponCode(couponCodeInput);
   }, [applyCouponCode, couponCodeInput]);
@@ -1649,6 +1680,14 @@ const ProductDetail = () => {
             baseProductId: productId,
             variantId: activeVariant.id,
             variantLabel: activeVariant.label,
+            selectedPack: selectedPack
+              ? {
+                id: selectedPack.id,
+                label: selectedPack.label,
+                price: selectedPack.price,
+                mrp: selectedPack.mrp || null,
+              }
+              : null,
             price,
             mrp: activeVariant.mrp,
             image: activeVariant.images?.[0],
@@ -1663,7 +1702,7 @@ const ProductDetail = () => {
                   price: selectedCollagenAddon.price,
                 }
                 : null,
-            originalPrice: appliedCoupon ? Number(basePrice + addonPrice) : null,
+            originalPrice: appliedCoupon ? Number(packBasePrice + addonPrice) : null,
             discountApplied: appliedCoupon
               ? {
                 code: appliedCoupon.code,
@@ -1676,6 +1715,14 @@ const ProductDetail = () => {
           : {
             ...product,
             id: productId,
+            selectedPack: selectedPack
+              ? {
+                id: selectedPack.id,
+                label: selectedPack.label,
+                price: selectedPack.price,
+                mrp: selectedPack.mrp || null,
+              }
+              : null,
             price,
             selectedAddOn:
               eligibleForCollagenAddon && selectedCollagenAddon.count > 0
@@ -1688,7 +1735,7 @@ const ProductDetail = () => {
                   price: selectedCollagenAddon.price,
                 }
                 : null,
-            originalPrice: appliedCoupon ? Number(basePrice + addonPrice) : null,
+            originalPrice: appliedCoupon ? Number(packBasePrice + addonPrice) : null,
             discountApplied: appliedCoupon
               ? {
                 code: appliedCoupon.code,
@@ -1711,14 +1758,15 @@ const ProductDetail = () => {
     cartId,
     productId,
     price,
-    basePrice,
+    packBasePrice,
     addonPrice,
     appliedCoupon,
     appliedCouponEffectivePercent,
     couponDiscountAmount,
     addToCart,
     eligibleForCollagenAddon,
-    selectedCollagenAddon]);
+    selectedCollagenAddon,
+    selectedPack]);
 
   const handleBuyNow = useCallback(async () => {
     if (isBuying || isOutOfStock) return;
@@ -2522,6 +2570,41 @@ const ProductDetail = () => {
                   {!appliedCoupon && couponMessage.text && couponMessage.type === "error" && (
                     <p className="text-xs font-medium px-1 text-pink-600">✘ {couponMessage.text}</p>
                   )}
+                </div>
+              )}
+
+              {packOptions.length > 0 && (
+                <div className="rounded-2xl border p-3" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
+                  <p className="text-sm font-semibold mb-2" style={{ color: detailTheme.heading }}>
+                    Choose Pack Size
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {packOptions.map((pack) => {
+                      const active = selectedPack?.id === pack.id;
+                      return (
+                        <button
+                          key={pack.id}
+                          type="button"
+                          onClick={() => setSelectedPackId(pack.id)}
+                          className={`rounded-xl border px-3 py-2 text-left transition ${active ? "shadow-sm" : ""}`}
+                          style={
+                            active
+                              ? {
+                                borderColor: detailTheme.price,
+                                backgroundColor: detailTheme.priceMuted,
+                              }
+                              : {
+                                borderColor: detailTheme.borderSoft,
+                                backgroundColor: "#fff",
+                              }
+                          }
+                        >
+                          <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>{pack.label}</p>
+                          <p className="text-xs" style={{ color: detailTheme.price }}>₹{Number(pack.price || 0)}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
