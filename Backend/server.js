@@ -1630,6 +1630,22 @@ const resolveProductDocByAnyId = async (rawId) => {
     .get();
 
   if (!legacySnap.empty) return legacySnap.docs[0].ref;
+
+  const legacyUnderscoreSnap = await db
+    .collection("products")
+    .where("_id", "==", lookupId)
+    .limit(1)
+    .get();
+
+  if (!legacyUnderscoreSnap.empty) return legacyUnderscoreSnap.docs[0].ref;
+
+  const slugSnap = await db
+    .collection("products")
+    .where("slug", "==", lookupId)
+    .limit(1)
+    .get();
+
+  if (!slugSnap.empty) return slugSnap.docs[0].ref;
   return null;
 };
 
