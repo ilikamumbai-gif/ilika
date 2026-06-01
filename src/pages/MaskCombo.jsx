@@ -111,9 +111,11 @@ const ComboCard = ({ offer, offerIndex, onAdd, isAdding }) => {
           type="button"
           onClick={() => onAdd(offer)}
           disabled={isAdding}
-          className="group w-full rounded-xl border border-[#0f3f22] bg-gradient-to-br from-[#14532d] to-[#1f7a3c] px-6 py-3 text-base font-semibold text-white shadow-[0_8px_20px_rgba(20,83,45,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:from-[#0f3f22] hover:to-[#166534] hover:shadow-[0_10px_24px_rgba(20,83,45,0.35)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-75 sm:w-auto"
+          className="group relative w-full overflow-hidden rounded-xl border border-[#0e3b21] bg-gradient-to-r from-[#0f5130] via-[#1d7a45] to-[#28a055] px-6 py-3.5 text-base font-semibold tracking-wide text-white shadow-[0_10px_28px_rgba(18,95,54,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_34px_rgba(18,95,54,0.45)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-75 sm:w-auto"
         >
-          {isAdding ? "Adding..." : "Add Combo"} <span className="inline-block transition-transform duration-300 group-hover:translate-x-1.5">&rarr;</span>
+          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+          <span className="relative z-[1]">{isAdding ? "Adding..." : "Add Combo"}</span>{" "}
+          <span className="relative z-[1] inline-block transition-transform duration-300 group-hover:translate-x-1.5">&rarr;</span>
         </button>
       </div>
 

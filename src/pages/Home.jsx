@@ -32,6 +32,8 @@ const hairMobile = "/Images/hairMobile.webp";
 const BannerStyle = "/Images/Banner.webp";
 const endBannerDesktop = "/Images/End.webp";
 const endBannerMobile = "/Images/endmobile.webp";
+const maskBannerDesktop = "/Images/mask.webp";
+const maskBannerMobile = "/Images/maskmobile.webp";
 const HAIR_CAROUSEL_ITEMS = [
   { title: "Healthy Hair Growth", image: "/Images/hairc5.webp", bgColor: "", link: "/hair/care" },
   { title: "Hair Fall Control", image: "/Images/hairc1.webp", bgColor: "", link: "/hair/care" },
@@ -186,10 +188,23 @@ const Home = () => {
         <main>
           <Banner
             className="mt-0"
-            src={endBannerDesktop}
-            mobileSrc={endBannerMobile}
-            linkUrl="/mask-combo"
+            slides={[
+              {
+                desktopSrc: endBannerDesktop,
+                mobileSrc: endBannerMobile,
+                linkUrl: "/mask-combo",
+                alt: "Mask Combo Offer Banner",
+              },
+              {
+                desktopSrc: maskBannerDesktop,
+                mobileSrc: maskBannerMobile,
+                linkUrl: "/voice-mask-maker",
+                alt: "Voice Mask Maker Banner",
+              },
+            ]}
             imageFit="contain"
+            autoSlideMs={5000}
+            showControls
             priority
           />
 
