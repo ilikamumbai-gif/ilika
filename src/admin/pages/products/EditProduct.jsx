@@ -25,6 +25,7 @@ const EditProduct = () => {
   const [product, setProduct] = useState(null);
   const [resolvedProductId, setResolvedProductId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [hasResolvedProduct, setHasResolvedProduct] = useState(false);
 
 
   useEffect(() => {
@@ -32,14 +33,35 @@ const EditProduct = () => {
     const load = async () => {
       setIsLoading(true);
       try {
+        const stateProduct = location.state?.product || null;
+        if (stateProduct) {
+          const directId = String(stateProduct?.docId || stateProduct?.id || stateProduct?._id || id);
+          setResolvedProductId(directId);
+          setProduct(stateProduct);
+          setHasResolvedProduct(true);
+          if (directId && directId !== String(id)) {
+            navigate(`/admin/products/edit/${directId}`, { replace: true, state: location.state });
+          }
+          return;
+        }
+
         const sourceList = products.length ? products : await fetchProducts();
 
         const existing =
-          sourceList.find((p) => String(p?.id) === String(id) || String(p?._id) === String(id)) ||
+          sourceList.find((p) =>
+            String(p?.docId) === String(id) ||
+            String(p?.id) === String(id) ||
+            String(p?._id) === String(id)
+          ) ||
           getProductById(id);
         if (existing) {
-          setResolvedProductId(String(existing?.id || existing?._id || id));
+          const existingId = String(existing?.docId || existing?.id || existing?._id || id);
+          setResolvedProductId(existingId);
           setProduct(existing);
+          setHasResolvedProduct(true);
+          if (existingId && existingId !== String(id)) {
+            navigate(`/admin/products/edit/${existingId}`, { replace: true, state: location.state });
+          }
           return;
         }
 
@@ -47,20 +69,33 @@ const EditProduct = () => {
         const res = await fetch(`${API}/api/products/${id}`);
         if (res.ok) {
           const exact = await res.json();
-          setResolvedProductId(String(exact?.id || exact?._id || id));
-          setProduct(exact || null);
+          const normalized = exact ? { ...exact, docId: exact?.docId || exact?.id || exact?._id || id } : null;
+          setResolvedProductId(String(normalized?.docId || normalized?.id || normalized?._id || id));
+          setProduct(normalized || null);
+          setHasResolvedProduct(Boolean(normalized));
         } else {
           // Final fallback for mixed backends: scan full list and match by id/_id.
           const allRes = await fetch(`${API}/api/products`);
           if (allRes.ok) {
             const all = await allRes.json();
             const fallback = (Array.isArray(all) ? all : []).find(
-              (p) => String(p?.id) === String(id) || String(p?._id) === String(id)
+              (p) =>
+                String(p?.docId) === String(id) ||
+                String(p?.id) === String(id) ||
+                String(p?._id) === String(id)
             );
-            setResolvedProductId(String(fallback?.id || fallback?._id || ""));
-            setProduct(fallback || null);
+            const normalized = fallback
+              ? { ...fallback, docId: fallback?.docId || fallback?.id || fallback?._id || "" }
+              : null;
+            setResolvedProductId(String(normalized?.docId || normalized?.id || normalized?._id || ""));
+            if (normalized) {
+              setProduct(normalized);
+              setHasResolvedProduct(true);
+            } else if (!hasResolvedProduct) {
+              setProduct(null);
+            }
           } else {
-            setProduct(null);
+            if (!hasResolvedProduct) setProduct(null);
           }
         }
       } finally {
@@ -71,7 +106,7 @@ const EditProduct = () => {
 
     load();
 
-  }, [id, products, fetchProducts, getProductById, API]);
+  }, [id, products, fetchProducts, getProductById, API, location.state, navigate, hasResolvedProduct]);
 
 
   const handleUpdate = async (data) => {

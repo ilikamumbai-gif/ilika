@@ -67,9 +67,9 @@ const ProductList = () => {
     scrollY: window.scrollY,
   });
 
-  const goToEdit = (id) => {
+  const goToEdit = (id, product = null) => {
     if (!id) return;
-    navigate(`/admin/products/edit/${id}`, { state: { listState: buildListState() } });
+    navigate(`/admin/products/edit/${id}`, { state: { listState: buildListState(), product } });
   };
 
   return (
@@ -127,7 +127,7 @@ const ProductList = () => {
                   <div className="flex flex-col items-center gap-2 text-gray-300"><Package size={36} /><p className="text-sm">No products found</p></div>
                 </td></tr>
               ) : filtered.map(p => {
-                const productId = p?.id || p?._id;
+                const productId = p?.docId || p?.id || p?._id;
                 return (
                 <tr key={productId} className="hover:bg-gray-50/70 transition-colors" style={{ borderBottom: "1px solid #F5F5F5" }}>
                   <td className="px-5 py-4">
@@ -153,7 +153,7 @@ const ProductList = () => {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
-                      <button onClick={() => goToEdit(productId)}
+                      <button onClick={() => goToEdit(productId, p)}
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                         <Pencil size={14} />
                       </button>
@@ -172,7 +172,7 @@ const ProductList = () => {
         {/* Mobile */}
         <div className="md:hidden divide-y divide-gray-100">
           {filtered.map(p => {
-            const productId = p?.id || p?._id;
+            const productId = p?.docId || p?.id || p?._id;
             return (
             <div key={productId} className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
@@ -189,7 +189,7 @@ const ProductList = () => {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">
-                <button onClick={() => goToEdit(productId)}
+                <button onClick={() => goToEdit(productId, p)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                   <Pencil size={14} />
                 </button>

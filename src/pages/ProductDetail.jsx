@@ -1457,7 +1457,7 @@ const ProductDetail = () => {
   }, [product?.packOptions]);
   const selectedPack = useMemo(() => {
     if (!packOptions.length) return null;
-    return packOptions.find((item) => item.id === selectedPackId) || packOptions[0];
+    return packOptions.find((item) => item.id === selectedPackId) || null;
   }, [packOptions, selectedPackId]);
   const packBasePrice = selectedPack ? Number(selectedPack.price || 0) : basePrice;
   const packMrp = selectedPack
@@ -1643,12 +1643,14 @@ const ProductDetail = () => {
   }, [assignedCoupon]);
 
   useEffect(() => {
+    // Default stays normal pack (no selected pack option).
     if (!packOptions.length) {
       setSelectedPackId("");
       return;
     }
-    setSelectedPackId(packOptions[0].id);
-  }, [productId, packOptions]);
+    const stillValid = packOptions.some((item) => item.id === selectedPackId);
+    if (!stillValid) setSelectedPackId("");
+  }, [productId, packOptions, selectedPackId]);
 
   const handleApplyCoupon = useCallback(() => {
     applyCouponCode(couponCodeInput);

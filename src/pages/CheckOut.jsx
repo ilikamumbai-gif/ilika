@@ -848,7 +848,7 @@ const Checkout = () => {
             )}
 
             {isPhoneVerified && selectedAddress && (
-              <p className="text-green-600 text-sm font-medium">?… Phone verified</p>
+              <p className="text-green-600 text-sm font-medium">Phone verified</p>
             )}
 
             <button
@@ -1017,3 +1017,5 @@ const Checkout = () => {
 };
 
 export default Checkout;
+
+

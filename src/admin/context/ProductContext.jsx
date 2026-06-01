@@ -19,7 +19,12 @@ const fetchProducts = async () => {
 
     const data = await res.json();
 
-    const list = Array.isArray(data) ? data : [];
+    const list = Array.isArray(data)
+      ? data.map((item) => ({
+          ...item,
+          docId: item?.docId || item?.id || item?._id || "",
+        }))
+      : [];
 
     setProducts(list);
     sessionStorage.setItem(PRODUCT_CACHE_KEY, JSON.stringify(list));
@@ -87,13 +92,46 @@ const fetchProducts = async () => {
 
   /* ================= UPDATE PRODUCT ================= */
   const updateProduct = async (id, data) => {
-    const res = await fetch(`${API}/api/products/${id}`, {
+    let res = await fetch(`${API}/api/products/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
 
-    const payload = await res.json().catch(() => ({}));
+    let payload = await res.json().catch(() => ({}));
+
+    // Fallback for legacy/mismatched IDs: resolve canonical doc id and retry once.
+    if (!res.ok && res.status === 404) {
+      const listRes = await fetch(`${API}/api/products`);
+      const listData = await listRes.json().catch(() => []);
+      const list = Array.isArray(listData) ? listData : [];
+      const normalize = (value = "") =>
+        String(value || "")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim();
+      const byId = list.find(
+        (p) =>
+          String(p?.docId) === String(id) ||
+          String(p?.id) === String(id) ||
+          String(p?._id) === String(id) ||
+          String(p?.slug) === String(id)
+      );
+      const byName = !byId
+        ? list.find((p) => normalize(p?.name) === normalize(data?.name))
+        : null;
+      const found = byId || byName;
+      const retryId = found?.docId || found?.id || found?._id || "";
+      if (retryId && String(retryId) !== String(id)) {
+        res = await fetch(`${API}/api/products/${retryId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        payload = await res.json().catch(() => ({}));
+      }
+    }
+
     if (!res.ok) {
       throw new Error(payload?.error || "Failed to update product");
     }
@@ -104,11 +142,30 @@ const fetchProducts = async () => {
 
   /* ================= DELETE PRODUCT ================= */
   const deleteProduct = async (id) => {
-    const res = await fetch(`${API}/api/products/${id}`, {
+    let res = await fetch(`${API}/api/products/${id}`, {
       method: "DELETE",
     });
 
-    const payload = await res.json().catch(() => ({}));
+    let payload = await res.json().catch(() => ({}));
+
+    if (!res.ok && res.status === 404) {
+      const listRes = await fetch(`${API}/api/products`);
+      const listData = await listRes.json().catch(() => []);
+      const list = Array.isArray(listData) ? listData : [];
+      const found = list.find(
+        (p) =>
+          String(p?.docId) === String(id) ||
+          String(p?.id) === String(id) ||
+          String(p?._id) === String(id) ||
+          String(p?.slug) === String(id)
+      );
+      const retryId = found?.docId || found?.id || found?._id || "";
+      if (retryId && String(retryId) !== String(id)) {
+        res = await fetch(`${API}/api/products/${retryId}`, { method: "DELETE" });
+        payload = await res.json().catch(() => ({}));
+      }
+    }
+
     if (!res.ok) {
       throw new Error(payload?.error || "Failed to delete product");
     }
@@ -119,7 +176,11 @@ const fetchProducts = async () => {
 
   /* ================= GET BY ID ================= */
   const getProductById = (id) =>
-    products.find((p) => String(p?.id) === String(id) || String(p?._id) === String(id));
+    products.find((p) =>
+      String(p?.docId) === String(id) ||
+      String(p?.id) === String(id) ||
+      String(p?._id) === String(id)
+    );
 
   return (
     <ProductContext.Provider
