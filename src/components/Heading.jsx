@@ -19,12 +19,12 @@ const Heading = ({ heading, sub, align = "center" }) => {
 
        {/* Sub-label — optional */}
       {sub && (
-        <span
+        <h2
           className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-neutral-400"
           style={{ fontFamily: "'Lato', sans-serif" }}
         >
           {sub}
-        </span>
+        </h2>
       )}
 
     </div>
