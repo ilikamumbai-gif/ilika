@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
 import OptimizedImage from "../components/OptimizedImage";
+import CartDrawer from "../components/CartDrawer";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
@@ -774,6 +775,7 @@ const VoiceMaskMakerLanding = () => {
         </div>
       </section>
 
+      <CartDrawer />
       <Footer />
     </div>
   );

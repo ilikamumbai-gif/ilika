@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
+import CartDrawer from "../components/CartDrawer";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
@@ -256,6 +257,7 @@ const NonvoiceMaskMakerLanding = () => {
         <div className="relative z-[1]"><button type="button" onClick={handleBuyNow} className="mb-3 inline-block rounded-full bg-[#FFF7F2] px-12 py-[18px] text-[16px] font-semibold text-[#9E5C4F] transition hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)]"><span className="inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - ₹{productPrice.toLocaleString("en-IN")}</span></button><a href={productPath} className="mb-3 ml-2 inline-block rounded-full border-2 border-[rgba(255,255,255,0.7)] px-9 py-4 text-[16px] font-medium text-white transition hover:bg-[rgba(255,255,255,0.12)]">Learn More ↗</a></div>
       </section>
 
+      <CartDrawer />
       <Footer />
     </div>
   );

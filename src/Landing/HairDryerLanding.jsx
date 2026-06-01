@@ -4,6 +4,7 @@ import { FaWind, FaTemperatureHigh, FaBolt, FaFeatherAlt, FaUsers, FaVolumeMute,
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import CartDrawer from "../components/CartDrawer";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
@@ -411,6 +412,7 @@ const HairDryerLanding = () => {
       </div>
 
       <div className="h-20 lg:hidden" />
+      <CartDrawer />
       <Footer theme="black" />
     </div>
   );

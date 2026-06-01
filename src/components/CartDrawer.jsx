@@ -35,7 +35,7 @@ const CartDrawer = () => {
       />
 
       {/* DRAWER */}
-      <div className="fixed top-0 right-0 h-full w-[90%] sm:w-[420px] bg-white z-50 shadow-xl flex flex-col">
+      <div className="fixed top-0 right-0 h-full w-[90%] sm:w-[420px] bg-white text-neutral-900 z-50 shadow-xl flex flex-col">
 
         {/* HEADER */}
         <div className="flex items-center justify-between p-4 border-b">
