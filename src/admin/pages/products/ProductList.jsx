@@ -68,6 +68,7 @@ const ProductList = () => {
   });
 
   const goToEdit = (id) => {
+    if (!id) return;
     navigate(`/admin/products/edit/${id}`, { state: { listState: buildListState() } });
   };
 
@@ -125,8 +126,10 @@ const ProductList = () => {
                 <tr><td colSpan={6} className="px-5 py-12 text-center">
                   <div className="flex flex-col items-center gap-2 text-gray-300"><Package size={36} /><p className="text-sm">No products found</p></div>
                 </td></tr>
-              ) : filtered.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50/70 transition-colors" style={{ borderBottom: "1px solid #F5F5F5" }}>
+              ) : filtered.map(p => {
+                const productId = p?.id || p?._id;
+                return (
+                <tr key={productId} className="hover:bg-gray-50/70 transition-colors" style={{ borderBottom: "1px solid #F5F5F5" }}>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       {(p.images?.[0] || p.image) && (
@@ -150,26 +153,28 @@ const ProductList = () => {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
-                      <button onClick={() => goToEdit(p.id)}
+                      <button onClick={() => goToEdit(productId)}
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                         <Pencil size={14} />
                       </button>
-                      <button onClick={() => handleDelete(p.id)}
+                      <button onClick={() => handleDelete(productId)}
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition">
                         <Trash2 size={14} />
                       </button>
                     </div>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>
 
         {/* Mobile */}
         <div className="md:hidden divide-y divide-gray-100">
-          {filtered.map(p => (
-            <div key={p.id} className="p-4 flex items-center justify-between gap-3">
+          {filtered.map(p => {
+            const productId = p?.id || p?._id;
+            return (
+            <div key={productId} className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 {(p.images?.[0] || p.image) && (
                   <img loading="lazy" src={p.images?.[0] || p.image} alt={p.name} className="w-12 h-12 rounded-xl object-cover border shrink-0" />
@@ -184,17 +189,17 @@ const ProductList = () => {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">
-                <button onClick={() => goToEdit(p.id)}
+                <button onClick={() => goToEdit(productId)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                   <Pencil size={14} />
                 </button>
-                <button onClick={() => handleDelete(p.id)}
+                <button onClick={() => handleDelete(productId)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500">
                   <Trash2 size={14} />
                 </button>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
     </AdminLayout>

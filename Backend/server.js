@@ -1625,6 +1625,17 @@ app.get("/api/products/:id", async (req, res) => {
   }
 });
 
+// Compatibility routes for admin edit URL usage against backend.
+app.get("/admin/products/edit/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("products").doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: "Product not found" });
+    res.json({ id: doc.id, ...doc.data() });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch product" });
+  }
+});
+
 app.get("/api/products", async (req, res) => {
   try {
     const snapshot = await db.collection("products").orderBy("createdAt", "desc").get();
@@ -1685,6 +1696,49 @@ app.put("/api/products/:id", async (req, res) => {
     });
   } catch (error) {
     console.error("UPDATE PRODUCT ERROR:", error);
+    res.status(500).json({ error: "Failed to update product" });
+  }
+});
+
+app.put("/admin/products/edit/:id", async (req, res) => {
+  try {
+    const productRef = db.collection("products").doc(req.params.id);
+    const existingDoc = await productRef.get();
+    if (!existingDoc.exists) return res.status(404).json({ error: "Product not found" });
+
+    const existingData = existingDoc.data();
+    const updateData = {
+      ...req.body,
+      videos: normalizeProductVideos(req.body?.videos),
+      reviews: (req.body.reviews || []).map(r => {
+        const images = normalizeReviewImages(r);
+        const verifiedPurchase = Boolean(r.verifiedPurchase);
+        return {
+          name: r.name || "",
+          rating: r.rating || 0,
+          comment: r.comment || "",
+          image: images[0] || null,
+          images,
+          userId: r.userId || null,
+          userEmail: r.userEmail || null,
+          verifiedPurchase,
+          isGenuine: getReviewUserType({ verifiedPurchase }) === "genuine",
+          createdAt: r.createdAt || new Date(),
+        };
+      }),
+      isActive: typeof req.body.isActive === "boolean" ? req.body.isActive : existingData.isActive ?? true,
+      inStock: typeof req.body.inStock === "boolean" ? req.body.inStock : existingData.inStock ?? true,
+      updatedAt: Date.now(),
+    };
+
+    await productRef.update(updateData);
+    const updatedDoc = await productRef.get();
+    res.json({
+      message: "Product updated successfully",
+      product: { id: updatedDoc.id, ...updatedDoc.data() },
+    });
+  } catch (error) {
+    console.error("UPDATE PRODUCT (ADMIN EDIT ROUTE) ERROR:", error);
     res.status(500).json({ error: "Failed to update product" });
   }
 });

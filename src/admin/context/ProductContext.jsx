@@ -2,12 +2,12 @@ import React from "react";
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
 
 export const ProductContext = createContext(null);
-const PRODUCT_CACHE_KEY = "ilika.products.v1";
 
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const API = import.meta.env.VITE_API_URL;
+  const PRODUCT_CACHE_KEY = `ilika.products.v1:${String(API || "").trim()}`;
 
   /* ================= FETCH PRODUCTS ================= */
 const fetchProducts = async () => {
@@ -119,7 +119,7 @@ const fetchProducts = async () => {
 
   /* ================= GET BY ID ================= */
   const getProductById = (id) =>
-    products.find((p) => String(p.id) === String(id));
+    products.find((p) => String(p?.id) === String(id) || String(p?._id) === String(id));
 
   return (
     <ProductContext.Provider

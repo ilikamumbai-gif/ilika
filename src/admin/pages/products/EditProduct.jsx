@@ -8,6 +8,7 @@ import { useProducts } from "../../context/ProductContext";
 
 
 const EditProduct = () => {
+  const API = import.meta.env.VITE_API_URL;
 
   const { id } = useParams();
 
@@ -22,30 +23,60 @@ const EditProduct = () => {
   } = useProducts();
 
   const [product, setProduct] = useState(null);
+  const [resolvedProductId, setResolvedProductId] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
 
   useEffect(() => {
 
     const load = async () => {
+      setIsLoading(true);
+      try {
+        const sourceList = products.length ? products : await fetchProducts();
 
-      if (!products.length) {
-        await fetchProducts();
+        const existing =
+          sourceList.find((p) => String(p?.id) === String(id) || String(p?._id) === String(id)) ||
+          getProductById(id);
+        if (existing) {
+          setResolvedProductId(String(existing?.id || existing?._id || id));
+          setProduct(existing);
+          return;
+        }
+
+        // Fallback: fetch exact product by route id to avoid stale-cache mismatches.
+        const res = await fetch(`${API}/api/products/${id}`);
+        if (res.ok) {
+          const exact = await res.json();
+          setResolvedProductId(String(exact?.id || exact?._id || id));
+          setProduct(exact || null);
+        } else {
+          // Final fallback for mixed backends: scan full list and match by id/_id.
+          const allRes = await fetch(`${API}/api/products`);
+          if (allRes.ok) {
+            const all = await allRes.json();
+            const fallback = (Array.isArray(all) ? all : []).find(
+              (p) => String(p?.id) === String(id) || String(p?._id) === String(id)
+            );
+            setResolvedProductId(String(fallback?.id || fallback?._id || ""));
+            setProduct(fallback || null);
+          } else {
+            setProduct(null);
+          }
+        }
+      } finally {
+        setIsLoading(false);
       }
-
-      const existing =
-        getProductById(id);
-
-      setProduct(existing || null);
 
     };
 
     load();
 
-  }, [id, products]);
+  }, [id, products, fetchProducts, getProductById, API]);
 
 
   const handleUpdate = async (data) => {
-    const result = await updateProduct(id, data);
+    const targetId = resolvedProductId || id;
+    const result = await updateProduct(targetId, data);
     console.log("Product update response:", result);
     console.log("Merchant sync result:", result?.merchantSync || { status: "missing" });
     navigate("/admin/products", {
@@ -54,7 +85,7 @@ const EditProduct = () => {
   };
 
 
-  if (!product) {
+  if (isLoading) {
 
     return (
       <AdminLayout>
@@ -62,6 +93,23 @@ const EditProduct = () => {
       </AdminLayout>
     );
 
+  }
+
+  if (!product) {
+    return (
+      <AdminLayout>
+        <div className="space-y-3">
+          <p className="text-sm text-gray-600">Product not found for this ID.</p>
+          <button
+            type="button"
+            onClick={() => navigate("/admin/products")}
+            className="px-4 py-2 rounded-md border border-gray-300 text-sm hover:bg-gray-50"
+          >
+            Back to Products
+          </button>
+        </div>
+      </AdminLayout>
+    );
   }
 
 
