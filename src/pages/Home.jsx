@@ -30,8 +30,8 @@ const skinMobile = "/Images/skinMobile.webp";
 
 const hairMobile = "/Images/hairMobile.webp";
 const BannerStyle = "/Images/Banner.webp";
-const mothersDayBanner = "/Images/womens-day-banner.webp";
-const mothersDayBannerMobile = "/Images/womens-day-banner1.webp";
+const endBannerDesktop = "/Images/End.webp";
+const endBannerMobile = "/Images/endmobile.webp";
 const HAIR_CAROUSEL_ITEMS = [
   { title: "Healthy Hair Growth", image: "/Images/hairc5.webp", bgColor: "", link: "/hair/care" },
   { title: "Hair Fall Control", image: "/Images/hairc1.webp", bgColor: "", link: "/hair/care" },
@@ -184,21 +184,20 @@ const Home = () => {
           <CartDrawer />
         </Suspense>
         <main>
+          <Banner
+            className="mt-0"
+            src={endBannerDesktop}
+            mobileSrc={endBannerMobile}
+            linkUrl="/mask-combo"
+            imageFit="contain"
+            priority
+          />
+
           <LazyMountSection minHeight={220} rootMargin="80px 0px">
             <Suspense fallback={<div className="h-40" />}>
               <PromoCardGrid />
             </Suspense>
           </LazyMountSection>
-
-          {/* <Banner
-            className="mt-0"
-            src={mothersDayBanner}
-            mobileSrc={mothersDayBannerMobile}
-            linkUrl="/combo"
-            bannerKey="home-top"
-            imageFit="contain"
-            priority
-          /> */}
           {/* <SkinTypeBanner /> */}
 
           {isMobile ? (

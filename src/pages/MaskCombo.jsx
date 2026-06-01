@@ -9,8 +9,10 @@ import Heading from "../components/Heading";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import Banner from "../components/Banner";
 
-const COMBO_PRICE = 499;
+const endBannerDesktop = "/Images/End.webp";
+const endBannerMobile = "/Images/endmobile.webp";
 
 const normalize = (value = "") =>
   String(value)
@@ -18,19 +20,13 @@ const normalize = (value = "") =>
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 
-const getImage = (product) =>
-  product?.banners?.[0]?.url ||
-  product?.bannerImage ||
-  product?.banner ||
-  product?.bannerUrl ||
-  product?.heroImage ||
-  product?.thumbnail ||
-  product?.featuredImage ||
-  product?.imageBanner ||
-  product?.variants?.[0]?.images?.[0] ||
-  product?.images?.[0] ||
+const getProductImage = (product) =>
   product?.image ||
   product?.imageUrl ||
+  product?.images?.[0] ||
+  product?.variants?.[0]?.images?.[0] ||
+  product?.thumbnail ||
+  product?.featuredImage ||
   "/placeholder.webp";
 
 const findProductByKeywords = (products = [], keywords = []) => {
@@ -46,7 +42,7 @@ const buildComboItems = (items = []) =>
   items.map((item) => ({
     id: item.id || item._id || item.name,
     name: item.name,
-    image: getImage(item),
+    image: getProductImage(item),
     price: Number(item.price) || 0,
   }));
 
@@ -54,7 +50,7 @@ const ItemTile = ({ entry }) => (
   <div className="overflow-hidden rounded-2xl border border-[#f3dfcd] bg-[#fff8f2]">
     <div className="flex h-[220px] items-center justify-center border-b border-[#f3dfcd] bg-white p-3 sm:h-[240px]">
       <img
-        src={getImage(entry.product)}
+        src={getProductImage(entry.product)}
         alt={entry.product?.name || entry.fallbackName}
         className="max-h-full max-w-full object-contain"
         loading="lazy"
@@ -86,7 +82,7 @@ const ComboCard = ({ offer, offerIndex, onAdd, isAdding }) => {
 
         <div className="w-full rounded-xl border border-[#f2d7be] bg-[#f9f0e8] px-4 py-3 text-left sm:w-auto sm:text-center">
           <span className="block text-[10px] uppercase tracking-[0.1em] text-[#9a7b6c]">Price</span>
-          <span className="block text-[2rem] font-semibold leading-none text-[#14532d]">Rs {COMBO_PRICE}</span>
+          <span className="block text-[2rem] font-semibold leading-none text-[#14532d]">Rs {offer.price}</span>
         </div>
       </div>
 
@@ -108,7 +104,7 @@ const ComboCard = ({ offer, offerIndex, onAdd, isAdding }) => {
       <div className="flex flex-wrap items-center gap-3 border-t border-[#f7ede3] px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex-1">
           <p className="text-sm font-light text-[#9a7b6c]">2 premium masks</p>
-          <p className="text-3xl font-semibold text-[#14532d]">Rs {COMBO_PRICE} total</p>
+          <p className="text-3xl font-semibold text-[#14532d]">Rs {offer.price} total</p>
         </div>
 
         <button
@@ -168,6 +164,7 @@ const MaskCombo = () => {
         id: "mask-combo-mixed",
         title: "Best Seller Duo",
         subtitle: "Ilika 4 in 1 + 24K Gold",
+        price: 499,
         description:
           "One 4-in-1 Collagen Mask for glow and hydration, paired with one 24K Gold Anti-aging Mask.",
         items: [
@@ -179,6 +176,7 @@ const MaskCombo = () => {
         id: "mask-combo-4in1",
         title: "Double Glow",
         subtitle: "2 x Ilika 4 in 1",
+        price: 449,
         description:
           "Two Ilika 4-in-1 Collagen Masks for double the glow, firmness, and hydration at one special price.",
         items: [
@@ -190,6 +188,7 @@ const MaskCombo = () => {
         id: "mask-combo-gold",
         title: "Double Anti-aging",
         subtitle: "2 x 24K Gold",
+        price: 500,
         description:
           "Two 24K Gold Collagen Anti-aging Masks for a luxurious skincare ritual at an unbeatable price.",
         items: [
@@ -215,14 +214,14 @@ const MaskCombo = () => {
       };
     });
 
-    const comboImage = getImage(comboItems[0]);
+    const comboImage = getProductImage(comboItems[0]);
 
     try {
       await addToCart({
         id: `${offer.id}-${Date.now()}`,
         baseProductId: offer.id,
         name: `${offer.title} - Mask Combo`,
-        price: COMBO_PRICE,
+        price: Number(offer.price) || 0,
         quantity: 1,
         image: comboImage,
         isCombo: true,
@@ -250,8 +249,15 @@ const MaskCombo = () => {
       <div className="min-h-screen bg-[#fffaf6]">
         <Header />
         <CartDrawer />
+        <Banner
+          className="mt-0"
+          src={endBannerDesktop}
+          mobileSrc={endBannerMobile}
+          imageFit="contain"
+          priority
+        />
 
-        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-5 px-1 pb-8 sm:px-2 sm:pb-12">
+        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-4 pt-6 pb-10 sm:px-6 sm:pt-8 sm:pb-12 lg:px-8">
           {offers.map((offer, offerIndex) => (
             <ComboCard
               key={offer.id}
