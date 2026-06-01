@@ -1615,9 +1615,29 @@ app.post("/api/products", async (req, res) => {
   }
 });
 
+const resolveProductDocByAnyId = async (rawId) => {
+  const lookupId = String(rawId || "").trim();
+  if (!lookupId) return null;
+
+  const docRef = db.collection("products").doc(lookupId);
+  const docSnap = await docRef.get();
+  if (docSnap.exists) return docRef;
+
+  const legacySnap = await db
+    .collection("products")
+    .where("id", "==", lookupId)
+    .limit(1)
+    .get();
+
+  if (!legacySnap.empty) return legacySnap.docs[0].ref;
+  return null;
+};
+
 app.get("/api/products/:id", async (req, res) => {
   try {
-    const doc = await db.collection("products").doc(req.params.id).get();
+    const productRef = await resolveProductDocByAnyId(req.params.id);
+    if (!productRef) return res.status(404).json({ error: "Product not found" });
+    const doc = await productRef.get();
     if (!doc.exists) return res.status(404).json({ error: "Product not found" });
     res.json({ ...doc.data(), id: doc.id });
   } catch {
@@ -1628,9 +1648,11 @@ app.get("/api/products/:id", async (req, res) => {
 // Compatibility routes for admin edit URL usage against backend.
 app.get("/admin/products/edit/:id", async (req, res) => {
   try {
-    const doc = await db.collection("products").doc(req.params.id).get();
+    const productRef = await resolveProductDocByAnyId(req.params.id);
+    if (!productRef) return res.status(404).json({ error: "Product not found" });
+    const doc = await productRef.get();
     if (!doc.exists) return res.status(404).json({ error: "Product not found" });
-    res.json({ id: doc.id, ...doc.data() });
+    res.json({ ...doc.data(), id: doc.id });
   } catch {
     res.status(500).json({ error: "Failed to fetch product" });
   }
@@ -1647,7 +1669,8 @@ app.get("/api/products", async (req, res) => {
 
 app.put("/api/products/:id", async (req, res) => {
   try {
-    const productRef = db.collection("products").doc(req.params.id);
+    const productRef = await resolveProductDocByAnyId(req.params.id);
+    if (!productRef) return res.status(404).json({ error: "Product not found" });
     const existingDoc = await productRef.get();
     if (!existingDoc.exists) return res.status(404).json({ error: "Product not found" });
 
@@ -1702,7 +1725,8 @@ app.put("/api/products/:id", async (req, res) => {
 
 app.put("/admin/products/edit/:id", async (req, res) => {
   try {
-    const productRef = db.collection("products").doc(req.params.id);
+    const productRef = await resolveProductDocByAnyId(req.params.id);
+    if (!productRef) return res.status(404).json({ error: "Product not found" });
     const existingDoc = await productRef.get();
     if (!existingDoc.exists) return res.status(404).json({ error: "Product not found" });
 
@@ -1745,7 +1769,9 @@ app.put("/admin/products/edit/:id", async (req, res) => {
 
 app.delete("/api/products/:id", async (req, res) => {
   try {
-    await db.collection("products").doc(req.params.id).delete();
+    const productRef = await resolveProductDocByAnyId(req.params.id);
+    if (!productRef) return res.status(404).json({ error: "Product not found" });
+    await productRef.delete();
 
     let merchantSync = { status: "disabled", reason: "auto_sync_disabled" };
     if (MERCHANT_SYNC_AUTO) {
