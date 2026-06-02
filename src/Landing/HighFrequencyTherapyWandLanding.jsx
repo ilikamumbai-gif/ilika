@@ -275,7 +275,7 @@ const HighFrequencyTherapyWandLanding = () => {
             </div>
 
             <div className="mt-6 flex flex-wrap items-end gap-2 sm:mt-8 sm:gap-3">
-              <span className="[font-family:'Cormorant_Garamond',serif] text-4xl font-semibold leading-none text-[#1a1410] sm:text-5xl">
+              <span className="text-4xl font-semibold leading-none text-[#1a1410] sm:text-5xl">
                 ₹{productPrice.toLocaleString("en-IN")}
               </span>
               <span className="pb-1 text-base text-[#7a6757] line-through sm:text-lg">
@@ -542,7 +542,7 @@ const HighFrequencyTherapyWandLanding = () => {
         </div>
       </section>
 
-      <section className="cv-auto bg-[#faf7f2] px-4 py-12 sm:px-[6%] sm:py-24">
+      <section className="cv-auto bg-[#faf7f2] px-4 pb-8 pt-12 sm:px-[6%] sm:pb-14 sm:pt-24">
         <div className="mx-auto max-w-[1320px]">
           <p className="text-[10px] uppercase tracking-[0.3em] text-[#c9a96e]">List of Accessories</p>
           <h3 className="[font-family:'Cormorant_Garamond',serif] mt-3 text-[clamp(30px,5vw,50px)] font-light leading-[1.08] text-[#1a1410]">
@@ -575,7 +575,7 @@ const HighFrequencyTherapyWandLanding = () => {
         </div>
       </section>
 
-      <section className="cv-auto bg-[#faf7f2] px-4 py-12 sm:px-[6%] sm:py-24">
+      <section className="cv-auto bg-[#faf7f2] px-4 pb-12 pt-6 sm:px-[6%] sm:pb-24 sm:pt-10">
         <div className="mx-auto max-w-[1320px]">
           <p className="text-center text-[10px] uppercase tracking-[0.3em] text-[#c9a96e]">Customer Reviews</p>
           <h2 className="[font-family:'Cormorant_Garamond',serif] mt-3 text-center text-[clamp(30px,5vw,50px)] font-light leading-[1.08] text-[#1a1410]">
