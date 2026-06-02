@@ -56,22 +56,40 @@ const Blog = () => {
       "/Images/MaskMakercard.webp"
     );
   }, [products]);
+  const hfWandImage = useMemo(() => {
+    const target = products.find((product) => {
+      const name = String(product?.name || "").toLowerCase();
+      return (
+        name.includes("high frequency") &&
+        name.includes("wand") &&
+        name.includes("electrodes")
+      );
+    });
+
+    return (
+      target?.variants?.[0]?.images?.[0] ||
+      target?.images?.[0] ||
+      target?.image ||
+      target?.imageUrl ||
+      "/Images/MaskMakercard.webp"
+    );
+  }, [products]);
 
   const LANDING_BLOG_CARDS = useMemo(
     () => [
+      {
+        id: "landing-high-frequency-therapy-wand",
+        title: "Explore High Frequency Therapy Wand",
+        author: "Team Ilika",
+        image: hfWandImage,
+        linkPath: "/high-frequency-therapy-wand",
+      },
       {
         id: "landing-leafless-hairdryer",
         title: "Explore Ilika Leaf Less Hairdryer",
         author: "Team Ilika",
         image: "/Images/HairdrayerCard.webp",
         linkPath: "/leafless-hair-dryer",
-      },
-      {
-        id: "landing-blackseed-hair-oil",
-        title: "Explore Ilika Blackseed Hair Oil",
-        author: "Team Ilika",
-        image: blackSeedLandingImage,
-        linkPath: "/blackseed-hair-oil",
       },
       {
         id: "landing-nonvoice-mask-maker",
@@ -88,6 +106,13 @@ const Blog = () => {
         linkPath: "/voice-mask-maker",
       },
       {
+        id: "landing-blackseed-hair-oil",
+        title: "Explore Ilika Blackseed Hair Oil",
+        author: "Team Ilika",
+        image: blackSeedLandingImage,
+        linkPath: "/blackseed-hair-oil",
+      },
+      {
         id: "landing-herbal-hair-oil",
         title: "Explore Ilika Herbal Hair Oil",
         author: "Team Ilika",
@@ -95,7 +120,7 @@ const Blog = () => {
         linkPath: "/herbal-hair-oil",
       },
     ],
-    [nonVoiceMaskMakerImage]
+    [hfWandImage, nonVoiceMaskMakerImage]
   );
 
   useEffect(() => {
