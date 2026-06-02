@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
 import { useSeo } from "../hooks/useSeo";
+import { createSlug } from "../utils/slugify";
 
 import MiniDivider from "../components/MiniDivider";
 import Heading from "../components/Heading";
@@ -46,21 +47,45 @@ const buildComboItems = (items = []) =>
     price: Number(item.price) || 0,
   }));
 
-const ItemTile = ({ entry }) => (
-  <div className="overflow-hidden rounded-2xl border border-[#f3dfcd] bg-[#fff8f2]">
-    <div className="flex h-[220px] items-center justify-center border-b border-[#f3dfcd] bg-white p-3 sm:h-[240px]">
-      <img
-        src={getProductImage(entry.product)}
-        alt={entry.product?.name || entry.fallbackName}
-        className="max-h-full max-w-full object-contain"
-        loading="lazy"
-      />
-    </div>
-    <p className="px-3 py-3 text-center text-base font-bold leading-snug text-[#3b312d]">
-      {entry.product?.name || entry.fallbackName}
-    </p>
-  </div>
-);
+const ItemTile = ({ entry }) => {
+  const productName = entry.product?.name || entry.fallbackName;
+  const productSlug = entry.product ? createSlug(productName || "") : "";
+  const productPath = productSlug ? `/product/${productSlug}` : "";
+  const isClickable = Boolean(entry.product && productPath);
+
+  const content = (
+    <>
+      <div className="flex h-[220px] items-center justify-center border-b border-[#f3dfcd] bg-white p-3 sm:h-[240px]">
+        <img
+          src={getProductImage(entry.product)}
+          alt={productName}
+          className="max-h-full max-w-full object-contain"
+          loading="lazy"
+        />
+      </div>
+      <p className="px-3 py-3 text-center text-base font-bold leading-snug text-[#3b312d]">
+        {productName}
+      </p>
+    </>
+  );
+
+  if (!isClickable) {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-[#f3dfcd] bg-[#fff8f2]">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={productPath}
+      className="block overflow-hidden rounded-2xl border border-[#f3dfcd] bg-[#fff8f2] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(44,24,16,0.08)]"
+    >
+      {content}
+    </a>
+  );
+};
 
 const ComboCard = ({ offer, offerIndex, onAdd, isAdding }) => {
   const missingProduct = offer.items.some((entry) => !entry.product);
