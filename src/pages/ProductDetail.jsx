@@ -29,6 +29,36 @@ const COLLAGEN_ADDON_OPTIONS = [
   { id: "pack3", count: 3, label: "3 Collagen Peptide Packs (48 no.s)", tablets: 48, price: 2299 },
 ];
 
+const PRODUCT_SLUG_ALIASES = {
+  "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-25g": [
+    "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-50g",
+    "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-25-g",
+  ],
+};
+
+const normalizeRouteSlug = (value = "") =>
+  String(value || "").trim().toLowerCase();
+
+const getCandidateProductSlugs = (value = "") => {
+  const currentSlug = normalizeRouteSlug(value);
+  return [currentSlug, ...(PRODUCT_SLUG_ALIASES[currentSlug] || [])].filter(Boolean);
+};
+
+const getProductRouteSlugs = (product = {}) => {
+  const values = [product?.slug, product?.name, product?.id, product?._id];
+  const slugs = new Set();
+
+  values.forEach((value) => {
+    if (!value) return;
+    const raw = normalizeRouteSlug(value);
+    const generated = normalizeRouteSlug(createSlug(String(value)));
+    if (raw) slugs.add(raw);
+    if (generated) slugs.add(generated);
+  });
+
+  return Array.from(slugs);
+};
+
 const stripHtml = (value = "") =>
   String(value || "")
     .replace(/<[^>]*>/g, " ")
@@ -1340,17 +1370,36 @@ const ProductDetail = () => {
 
   /* â”€â”€ Fetch product by slug â”€â”€ */
   useEffect(() => {
+    let isCurrentRoute = true;
+
+    if (!slug) {
+      setProduct(null);
+      setLoading(false);
+      return () => {
+        isCurrentRoute = false;
+      };
+    }
+
+    if (!products.length) {
+      setLoading(true);
+      return () => {
+        isCurrentRoute = false;
+      };
+    }
+
+    const candidateSlugs = getCandidateProductSlugs(slug);
+
     const load = async () => {
+      setLoading(true);
+      setProduct((currentProduct) => {
+        if (!currentProduct) return null;
+        const currentProductSlugs = getProductRouteSlugs(currentProduct);
+        return currentProductSlugs.some((productSlug) => candidateSlugs.includes(productSlug))
+          ? currentProduct
+          : null;
+      });
+
       try {
-        const slugAliases = {
-          "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-25g": [
-            "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-50g",
-            "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-25-g",
-          ],
-        };
-
-        const candidateSlugs = [slug, ...(slugAliases[slug] || [])];
-
         let found = products.find((p) =>
           candidateSlugs.includes(createSlug(p.name))
         );
@@ -1368,12 +1417,24 @@ const ProductDetail = () => {
           if (!resolved) throw new Error();
           found = resolved;
         }
+
+        if (!isCurrentRoute) return;
         setProduct(found);
         trackViewContent(found.id || found._id, found.name, found.variants?.[0]?.price ?? found.price ?? 0);
-      } catch { console.error("product not found"); }
-      setLoading(false);
+      } catch (error) {
+        if (!isCurrentRoute) return;
+        console.error("product not found", error);
+        setProduct(null);
+      } finally {
+        if (isCurrentRoute) setLoading(false);
+      }
     };
-    if (slug && products.length) load();
+
+    load();
+
+    return () => {
+      isCurrentRoute = false;
+    };
   }, [slug, products]);
 
   /* â”€â”€ Set first image - clear stale data immediately, then preload & populate â”€â”€ */
@@ -2095,8 +2156,23 @@ const ProductDetail = () => {
   const rating = product?.rating || 4;
   const beforeAfterPairs = product?.beforeAfter || [];
   const hasBeforeAfter = Array.isArray(beforeAfterPairs) && beforeAfterPairs.length > 0;
+  const currentRouteSlug = useMemo(
+    () => normalizeRouteSlug(slug),
+    [slug]
+  );
+  const productRouteSlugs = useMemo(
+    () => getProductRouteSlugs(product),
+    [product]
+  );
+  const productMatchesCurrentRoute = useMemo(() => {
+    if (!product || !currentRouteSlug) return false;
+    const candidateSlugs = getCandidateProductSlugs(currentRouteSlug);
+    return productRouteSlugs.some((productSlug) =>
+      candidateSlugs.includes(productSlug)
+    );
+  }, [product, currentRouteSlug, productRouteSlugs]);
   const canonicalProductSlug = useMemo(
-    () => String(createSlug(product?.name || slug || "")).trim().toLowerCase(),
+    () => normalizeRouteSlug(createSlug(product?.name || slug || "")),
     [product?.name, slug]
   );
   const seoProductTitle = product?.name
@@ -2213,10 +2289,11 @@ const ProductDetail = () => {
   }, [product, activeVariant?.id, images, isOutOfStock, price, rating, slug, canonicalPath]);
 
   useEffect(() => {
-    if (!product || !slug || !canonicalProductSlug) return;
-    if (String(slug).trim().toLowerCase() === canonicalProductSlug) return;
+    if (!product || !currentRouteSlug || !canonicalProductSlug) return;
+    if (!productMatchesCurrentRoute) return;
+    if (currentRouteSlug === canonicalProductSlug) return;
     navigate(`/product/${canonicalProductSlug}`, { replace: true });
-  }, [product, slug, canonicalProductSlug, navigate]);
+  }, [product, currentRouteSlug, canonicalProductSlug, productMatchesCurrentRoute, navigate]);
 
   /* â”€â”€ Loading / not found states â”€â”€ */
   if (loading) return (
