@@ -164,6 +164,62 @@ const reviews = [
   },
 ];
 
+const getVideoEmbedData = (url = "") => {
+  const rawUrl = String(url || "").trim();
+  if (!rawUrl) return { embedUrl: "", isShorts: false };
+
+  const withParams = (base, params) => {
+    const queryString = new URLSearchParams(params).toString();
+    return `${base}${base.includes("?") ? "&" : "?"}${queryString}`;
+  };
+
+  try {
+    if (rawUrl.includes("youtube.com") || rawUrl.includes("youtu.be")) {
+      let videoId = "";
+      const isShorts = rawUrl.includes("/shorts/");
+
+      if (rawUrl.includes("youtu.be/")) {
+        videoId = rawUrl.split("youtu.be/")[1]?.split(/[?&]/)[0] || "";
+      } else if (isShorts) {
+        videoId = rawUrl.split("/shorts/")[1]?.split(/[?&]/)[0] || "";
+      } else {
+        videoId = new URL(rawUrl).searchParams.get("v") || "";
+      }
+
+      return videoId
+        ? {
+            embedUrl: withParams(`https://www.youtube-nocookie.com/embed/${videoId}`, {
+              autoplay: 1,
+              mute: 1,
+              playsinline: 1,
+              loop: 1,
+              playlist: videoId,
+              rel: 0,
+              modestbranding: 1,
+            }),
+            isShorts,
+          }
+        : { embedUrl: "", isShorts: false };
+    }
+
+    if (rawUrl.includes("drive.google.com")) {
+      const fileId = rawUrl.match(/\/d\/([^/]+)/)?.[1];
+      return fileId
+        ? {
+            embedUrl: withParams(`https://drive.google.com/file/d/${fileId}/preview`, {
+              autoplay: 1,
+            }),
+            isShorts: false,
+          }
+        : { embedUrl: "", isShorts: false };
+    }
+  } catch {
+    return { embedUrl: "", isShorts: false };
+  }
+
+  return { embedUrl: rawUrl, isShorts: false };
+};
+
 const HighFrequencyTherapyWandLanding = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -198,6 +254,20 @@ const HighFrequencyTherapyWandLanding = () => {
     createSlug(productName) || "high-frequency-therapy-wand-with-4-electrodes-for-men-women";
   const productPath = `/product/${productSlug}`;
   const savings = Math.max(productMrp - productPrice, 0);
+  const landingVideo = useMemo(() => {
+    const productVideos = Array.isArray(targetProduct?.videos) ? targetProduct.videos : [];
+    const firstVideo = productVideos.find((video) => String(video?.url || "").trim());
+    if (!firstVideo) return null;
+
+    const { embedUrl, isShorts } = getVideoEmbedData(firstVideo.url);
+    if (!embedUrl) return null;
+
+    return {
+      title: String(firstVideo?.title || "Watch the therapy wand in action").trim(),
+      embedUrl,
+      isShorts,
+    };
+  }, [targetProduct]);
 
   const handleBuyNow = async () => {
     const cartPayload = {
@@ -322,6 +392,48 @@ const HighFrequencyTherapyWandLanding = () => {
           </div>
         </div>
       </section>
+
+      {landingVideo ? (
+        <section className="cv-auto bg-[#f2ede4] px-4 py-8 sm:px-[6%] sm:py-20">
+          <div className="mx-auto max-w-[1320px]">
+            <div className="grid grid-cols-1 gap-5 rounded-[24px] border border-[#c9a96e]/20 bg-[linear-gradient(135deg,_rgba(255,255,255,0.96)_0%,_rgba(250,247,242,0.94)_55%,_rgba(242,237,228,0.92)_100%)] p-4 shadow-[0_24px_70px_rgba(61,43,31,0.08)] sm:gap-8 sm:rounded-[28px] sm:p-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-center lg:gap-12 lg:p-10">
+              <div className="order-2 lg:order-1">
+                <p className="text-[10px] uppercase tracking-[0.24em] text-[#c9a96e] sm:tracking-[0.3em]">Watch The Wand</p>
+                <h2 className="[font-family:'Cormorant_Garamond',serif] mt-3 text-[clamp(28px,10vw,50px)] font-light leading-[1.02] text-[#1a1410] sm:leading-[1.08]">
+                  See the device
+                  <br />
+                  <em className="font-normal italic text-[#8b6e3a]">before you buy</em>
+                </h2>
+                <p className="mt-4 max-w-[480px] text-[13px] leading-6 text-[#7a6757] sm:text-[15px] sm:leading-8">
+                  This video is pulled directly from the product details in Firebase, so the landing page always shows the latest demo uploaded for the high-frequency therapy wand.
+                </p>
+                <div className="mt-5 inline-flex w-full rounded-[18px] border border-[#c9a96e]/20 bg-white/80 px-4 py-2.5 text-[10px] uppercase tracking-[0.08em] text-[#8b6e3a] sm:mt-6 sm:w-auto sm:rounded-full sm:text-[11px] sm:tracking-[0.12em]">
+                  {landingVideo.title}
+                </div>
+              </div>
+
+              <div className="order-1 overflow-hidden rounded-[20px] border border-[#c9a96e]/20 bg-[#1a1410] shadow-[0_24px_60px_rgba(26,20,16,0.16)] sm:rounded-[24px] lg:order-2">
+                <div
+                  className={
+                    landingVideo.isShorts
+                      ? "mx-auto aspect-[9/16] w-full max-w-[280px] sm:max-w-[360px]"
+                      : "aspect-video w-full"
+                  }
+                >
+                  <iframe
+                    src={landingVideo.embedUrl}
+                    title={landingVideo.title}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="cv-auto relative overflow-hidden bg-[#1a1410] px-4 py-12 text-[#f2ede4] sm:px-[6%] sm:py-24">
         <div className="absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,_rgba(201,169,110,0.06)_0%,_transparent_65%)]" />

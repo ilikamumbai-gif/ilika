@@ -42,7 +42,7 @@ const Footer = ({ theme = "default" }) => {
           <OptimizedImage
             src={logo}
             alt="Ilika"
-            width={176}
+            width="auto"
             height={44}
             className="h-11 mx-auto sm:mx-0"
           />
