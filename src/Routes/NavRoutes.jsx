@@ -55,6 +55,7 @@ const VoiceMaskMakerLanding = lazy(() => import("../Landing/VoiceMaskMakerLandin
 const NonvoiceMaskMakerLanding = lazy(() => import("../Landing/NonvoiceMaskMakerLanding"));
 const HairDryerLanding = lazy(() => import("../Landing/HairDryerLanding"));
 const HighFrequencyTherapyWandLanding = lazy(() => import("../Landing/HighFrequencyTherapyWandLanding"));
+const HotColdBlackheadRemoverLanding = lazy(() => import("../Landing/HotColdBlackheadRemoverLanding"));
 const MaskCombo = lazy(() => import("../pages/MaskCombo"));
 
 const PixelPageTracker = () => {
@@ -126,6 +127,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/nonvoice-mask-maker") return { title: "Nonvoice Face Mask Maker", description: "Explore Ilika Nonvoice Mask Maker Machine with Collagen Peptide." };
   if (pathname === "/leafless-hair-dryer") return { title: "Leafless Hair Dryer", description: "Explore Ilika High-Speed Leafless Hair Dryer For Men & Women." };
   if (pathname === "/high-frequency-therapy-wand") return { title: "High Frequency Therapy Wand", description: "Explore Ilika High Frequency Therapy Wand with 4 Electrodes For Men & Women." };
+  if (pathname === "/hot-cold-blackhead-remover") return { title: "Hot & Cold Blackhead Remover", description: "Explore Ilika Hot & Cold Facial Pore Blackhead Remover For Men & Women." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
   if (pathname === "/combo") return { title: "Combo Deals", description: "Explore combo packs and bundle offers from Ilika." };
   if (pathname === "/mask-combo") return { title: "Mask Combo Offers", description: "Choose from 3 Ilika face mask combo offers at Rs 499." };
@@ -292,6 +294,7 @@ const NavRoutes = () => {
         <Route path="/nonvoice-mask-maker" element={renderLazy(NonvoiceMaskMakerLanding)} />
         <Route path="/leafless-hair-dryer" element={renderLazy(HairDryerLanding)} />
         <Route path="/high-frequency-therapy-wand" element={renderLazy(HighFrequencyTherapyWandLanding)} />
+        <Route path="/hot-cold-blackhead-remover" element={renderLazy(HotColdBlackheadRemoverLanding)} />
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />
         <Route path="/combo" element={renderLazy(Combos)} />
         <Route path="/mask-combo" element={renderLazy(MaskCombo)} />

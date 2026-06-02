@@ -6,6 +6,7 @@ import AnalyticsBoard from "../pages/Analytics/AnalyticsBoard";
 import ProductList from "../pages/products/ProductList";
 import AddProduct from "../pages/products/AddProduct";
 import EditProduct from "../pages/products/EditProduct";
+import ViewProductDetails from "../pages/products/ViewProductDetails";
 import CategoryList from "../pages/categories/CategoryList";
 import AddCategory from "../pages/categories/AddCategory";
 import OrderList from "../pages/Orders/OrderList";
@@ -75,6 +76,7 @@ const AdminRoutes = () => {
                         <Route path="products" element={withPermission("products", <ProductList />)} />
                         <Route path="products/add" element={withPermission("products", <AddProduct />)} />
                         <Route path="products/edit/:id" element={withPermission("products", <EditProduct />)} />
+                        <Route path="products/view/:id" element={withPermission("products", <ViewProductDetails />)} />
                         <Route path="coupons" element={withPermission("coupons", <CouponList />)} />
 
                         <Route path="combos" element={withPermission("combos", <ComboList />)} />

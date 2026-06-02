@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Pencil, Plus, Trash2, Search, Package } from "lucide-react";
+import { Pencil, Plus, Trash2, Search, Package, Eye } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useProducts } from "../../context/ProductContext";
@@ -70,6 +70,11 @@ const ProductList = () => {
   const goToEdit = (id, product = null) => {
     if (!id) return;
     navigate(`/admin/products/edit/${id}`, { state: { listState: buildListState(), product } });
+  };
+
+  const goToView = (id, product = null) => {
+    if (!id) return;
+    navigate(`/admin/products/view/${id}`, { state: { listState: buildListState(), product } });
   };
 
   return (
@@ -157,6 +162,11 @@ const ProductList = () => {
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                         <Pencil size={14} />
                       </button>
+                      <button onClick={() => goToView(productId, p)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-violet-50 text-violet-600 hover:bg-violet-100 transition"
+                        title="View product details">
+                        <Eye size={14} />
+                      </button>
                       <button onClick={() => handleDelete(productId)}
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition">
                         <Trash2 size={14} />
@@ -192,6 +202,10 @@ const ProductList = () => {
                 <button onClick={() => goToEdit(productId, p)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                   <Pencil size={14} />
+                </button>
+                <button onClick={() => goToView(productId, p)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+                  <Eye size={14} />
                 </button>
                 <button onClick={() => handleDelete(productId)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500">
