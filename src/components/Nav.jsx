@@ -130,7 +130,7 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
           ref={inputRef}
           type="text"
           placeholder="Search products..."
-          className="outline-none px-2 py-2 text-sm w-full bg-white"
+          className="w-full bg-white px-2 py-2 text-sm text-[#2c2523] placeholder:text-gray-400 caret-[#7a3535] outline-none"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -153,7 +153,7 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
                   setQuery("");
                   setTimeout(() => onClose?.(), 0);
                 }}
-                className="flex items-center gap-3 px-3 py-3 hover:bg-gray-50"
+                className="flex items-center gap-3 px-3 py-3 text-[#2c2523] hover:bg-gray-50"
               >
                 <img loading="lazy"
                   src={previewImage}
@@ -161,11 +161,11 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
                   className="w-12 h-12 object-cover rounded-md border shrink-0"
                 />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">
+                  <p className="truncate text-sm font-medium text-[#2c2523]">
                     {highlightText(product.name)}
                   </p>
                   {product.shortInfo && (
-                    <p className="text-xs text-gray-400 truncate">
+                    <p className="truncate text-xs text-gray-500">
                       {highlightText(product.shortInfo)}
                     </p>
                   )}
@@ -206,7 +206,7 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
             })
           ) : (
             <>
-              <p className="px-4 py-3 text-sm text-gray-500">
+              <p className="px-4 py-3 text-sm text-gray-600">
                 No products found
               </p>
               <button

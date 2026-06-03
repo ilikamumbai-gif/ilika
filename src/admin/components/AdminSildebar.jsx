@@ -41,6 +41,7 @@ const NAV_GROUPS = [
       { to: "/admin/users",       icon: Users,           label: "Users", permission: "users"          },
       { to: "/admin/reviews",     icon: Star,            label: "Reviews", permission: "reviews"        },
       { to: "/admin/feedback",    icon: MessageSquare,   label: "Feedback", permission: "feedback"       },
+      { to: "/admin/support-tickets", icon: MessageSquare, label: "Claims & Complaints", permission: "warranty" },
       { to: "/admin/warranty",    icon: ShieldIcon,      label: "Warranty", permission: "warranty"       },
       { to: "/admin/blogs",       icon: BookOpen,        label: "Blogs", permission: "blogs"          },
       { to: "/admin/blog-comments",icon: MessageSquare,  label: "Blog Comments", permission: "blogs"  },

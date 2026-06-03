@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
@@ -66,17 +66,19 @@ const inputBaseClassName =
 const selectBaseClassName =
   `${inputBaseClassName} appearance-none bg-[linear-gradient(180deg,#fffdfc_0%,#fff7f5_100%)]`;
 
-const Field = ({ label, required = false, children }) => (
+const Field = ({ label, required = false, children, hint = "" }) => (
   <label className="block space-y-2">
     <span className="text-sm font-semibold text-[#5c302b]">
       {label}
       {required ? <span className="text-[#b74b4b]"> *</span> : null}
     </span>
     {children}
+    {hint ? <p className="text-xs text-[#9f8a84]">{hint}</p> : null}
   </label>
 );
 
 const initialForm = {
+  ticketType: "complaint",
   name: "",
   phone: "",
   email: "",
@@ -90,17 +92,45 @@ const initialForm = {
   state: "",
   city: "",
   pincode: "",
+  issueSummary: "",
+  issueDetails: "",
 };
 
-const WarrantyRegistration = () => {
-  const [searchParams] = useSearchParams();
+const TYPE_META = {
+  complaint: {
+    title: "Raise a Complaint",
+    subtitle:
+      "Tell us what went wrong and our support team will review your complaint and get back to you quickly.",
+    invoiceHint: "Upload invoice, packaging, or product issue image if available.",
+    summaryLabel: "Complaint Subject",
+    summaryPlaceholder: "Example: Product stopped working after first use",
+    detailsLabel: "Describe Your Complaint",
+    detailsPlaceholder:
+      "Please share what happened, when it started, and what kind of help you need from us.",
+  },
+  warranty_claim: {
+    title: "Submit a Warranty Claim",
+    subtitle:
+      "Share your warranty claim details below and our team will verify the product and invoice information.",
+    invoiceHint: "Upload invoice image or PDF for warranty verification.",
+    summaryLabel: "Claim Subject",
+    summaryPlaceholder: "Example: Device is not turning on",
+    detailsLabel: "Describe the Product Issue",
+    detailsPlaceholder:
+      "Explain the issue clearly, when it started, and anything you have already tried.",
+  },
+};
+
+const SupportTicket = () => {
   const API = import.meta.env.VITE_API_URL;
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { currentUser, userData } = useAuth();
   const { products = [], fetchProducts } = useProducts();
   const { categories = [], fetchCategories } = useCategories();
 
   const [form, setForm] = useState(initialForm);
-  const [invoiceFile, setInvoiceFile] = useState(null);
+  const [attachmentFile, setAttachmentFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [pincodeLookupState, setPincodeLookupState] = useState("idle");
   const [success, setSuccess] = useState("");
@@ -125,6 +155,13 @@ const WarrantyRegistration = () => {
       phone: prev.phone || nextPhone.replace(/^\+91/, ""),
     }));
   }, [currentUser, userData]);
+
+  useEffect(() => {
+    const queryType = searchParams.get("type");
+    const pathType = location.pathname === "/warranty-claim" ? "warranty_claim" : "complaint";
+    const nextType = queryType === "warranty_claim" || queryType === "complaint" ? queryType : pathType;
+    setForm((prev) => (prev.ticketType === nextType ? prev : { ...prev, ticketType: nextType }));
+  }, [location.pathname, searchParams]);
 
   const activeProducts = useMemo(
     () => (Array.isArray(products) ? products.filter((item) => item?.isActive !== false) : []),
@@ -225,6 +262,9 @@ const WarrantyRegistration = () => {
     };
   }, [form.pincode]);
 
+  const currentTypeMeta = TYPE_META[form.ticketType] || TYPE_META.complaint;
+  const attachmentRequired = form.ticketType === "warranty_claim";
+
   const isValid = useMemo(() => {
     return Boolean(
       form.name.trim() &&
@@ -236,12 +276,25 @@ const WarrantyRegistration = () => {
       form.state &&
       form.city.trim() &&
       form.pincode.trim() &&
-      (invoiceFile || form.invoiceUrl)
+      form.issueSummary.trim() &&
+      form.issueDetails.trim() &&
+      (!attachmentRequired || attachmentFile || form.invoiceUrl)
     );
-  }, [form, invoiceFile]);
+  }, [attachmentFile, attachmentRequired, form]);
 
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleTypeChange = (ticketType) => {
+    setForm((prev) => ({
+      ...prev,
+      ticketType,
+      invoiceUrl: ticketType === "complaint" ? prev.invoiceUrl : prev.invoiceUrl,
+      invoiceName: ticketType === "complaint" ? prev.invoiceName : prev.invoiceName,
+    }));
+    setSuccess("");
+    setError("");
   };
 
   const handleProductTypeChange = (nextTypeId) => {
@@ -266,26 +319,26 @@ const WarrantyRegistration = () => {
     }));
   };
 
-  const uploadInvoice = async () => {
-    if (!invoiceFile) {
+  const uploadAttachment = async () => {
+    if (!attachmentFile) {
       return {
         invoiceUrl: form.invoiceUrl || "",
         invoiceName: form.invoiceName || "",
       };
     }
 
-    const fileName = `${Date.now()}-${invoiceFile.name}`;
-    const invoiceRef = ref(storage, `warranty-invoices/${fileName}`);
-    await uploadBytes(invoiceRef, invoiceFile);
-    const invoiceUrl = await getDownloadURL(invoiceRef);
+    const fileName = `${Date.now()}-${attachmentFile.name}`;
+    const storageRef = ref(storage, `support-tickets/${fileName}`);
+    await uploadBytes(storageRef, attachmentFile);
+    const invoiceUrl = await getDownloadURL(storageRef);
 
     return {
       invoiceUrl,
-      invoiceName: invoiceFile.name,
+      invoiceName: attachmentFile.name,
     };
   };
 
-  const submitWarranty = async (e) => {
+  const submitTicket = async (e) => {
     e.preventDefault();
     if (!isValid || submitting) return;
 
@@ -294,9 +347,10 @@ const WarrantyRegistration = () => {
     setError("");
 
     try {
-      const invoiceData = await uploadInvoice();
+      const attachment = await uploadAttachment();
 
       const payload = {
+        ticketType: form.ticketType,
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),
@@ -307,16 +361,18 @@ const WarrantyRegistration = () => {
         productId: form.modelId,
         productName: form.modelName,
         purchaseDate: form.purchaseDate,
-        invoiceUrl: invoiceData.invoiceUrl || null,
-        invoiceName: invoiceData.invoiceName || null,
+        invoiceUrl: attachment.invoiceUrl || null,
+        invoiceName: attachment.invoiceName || null,
         state: form.state,
         city: form.city.trim(),
         pincode: form.pincode.trim(),
+        issueSummary: form.issueSummary.trim(),
+        issueDetails: form.issueDetails.trim(),
         userId: currentUser?.uid || null,
         userEmail: currentUser?.email || form.email.trim() || null,
       };
 
-      const res = await fetch(`${API}/api/warranty-registrations`, {
+      const res = await fetch(`${API}/api/support-tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -325,22 +381,27 @@ const WarrantyRegistration = () => {
       const { data, text } = await parseApiResponse(res);
       if (!res.ok) {
         const isHtmlError = typeof text === "string" && text.trim().startsWith("<!DOCTYPE");
-        const msg = isHtmlError
-          ? "Warranty service is not available yet. Please contact support."
-          : data?.error || "Failed to register warranty";
-        throw new Error(msg);
+        const message = isHtmlError
+          ? "Support service is not available yet. Please contact support."
+          : data?.error || "Failed to submit support request";
+        throw new Error(message);
       }
 
-      setSuccess("Warranty registration submitted successfully.");
-      setInvoiceFile(null);
+      setSuccess(
+        form.ticketType === "warranty_claim"
+          ? "Warranty claim submitted successfully."
+          : "Complaint submitted successfully."
+      );
+      setAttachmentFile(null);
       setForm((prev) => ({
         ...initialForm,
+        ticketType: prev.ticketType,
         name: userData?.name || currentUser?.displayName || "",
         email: userData?.email || currentUser?.email || "",
         phone: (userData?.phone || currentUser?.phoneNumber || "").replace(/^\+91/, ""),
       }));
     } catch (err) {
-      setError(err?.message || "Unable to submit warranty registration.");
+      setError(err?.message || "Unable to submit support request.");
     } finally {
       setSubmitting(false);
     }
@@ -356,12 +417,48 @@ const WarrantyRegistration = () => {
         <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
           <div className="overflow-hidden rounded-[32px] border border-[#efe1dc] bg-white shadow-[0_30px_80px_rgba(67,33,23,0.08)]">
             <div className="border-b border-[#f2e7e3] bg-[radial-gradient(circle_at_top_left,_rgba(224,168,168,0.2),_transparent_38%),linear-gradient(135deg,#fffaf9_0%,#fff3f0_100%)] px-6 py-7 sm:px-8 sm:py-9">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#b17272]">
+                Ilika Support
+              </p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#6f1e1e] sm:text-4xl">
-                Register Your Ilika Product
+                {currentTypeMeta.title}
               </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-[#7a5d58] sm:text-base">
+                {currentTypeMeta.subtitle}
+              </p>
             </div>
 
-            <form onSubmit={submitWarranty} className="space-y-6 px-6 py-6 sm:px-8 sm:py-8">
+            <form onSubmit={submitTicket} className="space-y-6 px-6 py-6 sm:px-8 sm:py-8">
+              <div className="rounded-[28px] border border-[#f1e4df] bg-[#fff8f6] p-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {[
+                    { value: "complaint", label: "Raise Complaint" },
+                    { value: "warranty_claim", label: "Warranty Claim" },
+                  ].map((option) => {
+                    const active = form.ticketType === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => handleTypeChange(option.value)}
+                        className={`rounded-2xl px-5 py-4 text-left transition ${
+                          active
+                            ? "bg-[linear-gradient(135deg,#7a3535_0%,#c77b61_100%)] text-white shadow-[0_10px_24px_rgba(122,53,53,0.18)]"
+                            : "bg-white text-[#6f1e1e] hover:bg-[#fff1ed]"
+                        }`}
+                      >
+                        <p className="text-base font-semibold">{option.label}</p>
+                        <p className={`mt-1 text-xs leading-5 ${active ? "text-white/85" : "text-[#8b6f69]"}`}>
+                          {option.value === "complaint"
+                            ? "Report a product or service issue."
+                            : "Submit a product warranty claim for review."}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <Field label="Full Name" required>
                 <input
                   type="text"
@@ -430,6 +527,16 @@ const WarrantyRegistration = () => {
                 </Field>
               </div>
 
+              <Field label={currentTypeMeta.summaryLabel} required>
+                <input
+                  type="text"
+                  value={form.issueSummary}
+                  onChange={(e) => updateField("issueSummary", e.target.value)}
+                  placeholder={currentTypeMeta.summaryPlaceholder}
+                  className={inputBaseClassName}
+                />
+              </Field>
+
               <Field label="Please select the date of purchase" required>
                 <input
                   type="date"
@@ -439,14 +546,18 @@ const WarrantyRegistration = () => {
                 />
               </Field>
 
-              <Field label="Please upload your purchase invoice" required>
+              <Field
+                label={form.ticketType === "warranty_claim" ? "Please upload your purchase invoice" : "Please upload invoice or supporting file"}
+                required={attachmentRequired}
+                hint={currentTypeMeta.invoiceHint}
+              >
                 <div className="rounded-2xl border border-dashed border-[#dcc9c4] bg-[#fffaf9] px-4 py-4">
                   <input
                     type="file"
                     accept=".jpg,.jpeg,.png,.pdf,.webp"
                     onChange={(e) => {
                       const file = e.target.files?.[0] || null;
-                      setInvoiceFile(file);
+                      setAttachmentFile(file);
                       if (file) {
                         setForm((prev) => ({
                           ...prev,
@@ -457,7 +568,6 @@ const WarrantyRegistration = () => {
                     }}
                     className="block w-full text-sm text-[#6c5852] file:mr-4 file:rounded-xl file:border-0 file:bg-[#f6d9d5] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#7a3535] hover:file:bg-[#f0c8c3]"
                   />
-                  <p className="mt-2 text-xs text-[#9f8a84]">Upload invoice image or PDF for warranty verification.</p>
                 </div>
               </Field>
 
@@ -509,16 +619,26 @@ const WarrantyRegistration = () => {
                 </Field>
               </div>
 
-              {error && (
+              <Field label={currentTypeMeta.detailsLabel} required>
+                <textarea
+                  rows="6"
+                  value={form.issueDetails}
+                  onChange={(e) => updateField("issueDetails", e.target.value)}
+                  placeholder={currentTypeMeta.detailsPlaceholder}
+                  className={`${inputBaseClassName} resize-none`}
+                />
+              </Field>
+
+              {error ? (
                 <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {error}
                 </div>
-              )}
-              {success && (
+              ) : null}
+              {success ? (
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
                   {success}
                 </div>
-              )}
+              ) : null}
 
               <div className="flex flex-col gap-3 border-t border-[#f2e7e3] pt-5 sm:flex-row sm:items-center sm:justify-between">
                 <button
@@ -526,7 +646,11 @@ const WarrantyRegistration = () => {
                   disabled={!isValid || submitting}
                   className="inline-flex w-full items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7a3535_0%,#c77b61_100%)] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(122,53,53,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(122,53,53,0.24)] disabled:cursor-not-allowed disabled:opacity-60 sm:ml-auto sm:w-auto"
                 >
-                  {submitting ? "Submitting..." : "Submit"}
+                  {submitting
+                    ? "Submitting..."
+                    : form.ticketType === "warranty_claim"
+                      ? "Submit Warranty Claim"
+                      : "Submit Complaint"}
                 </button>
               </div>
             </form>
@@ -539,4 +663,4 @@ const WarrantyRegistration = () => {
   );
 };
 
-export default WarrantyRegistration;
+export default SupportTicket;

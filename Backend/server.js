@@ -3567,6 +3567,167 @@ app.delete("/api/feedback/:id", async (req, res) => {
 });
 
 /* ============================== WARRANTY REGISTRATION ============================== */
+app.post("/api/support-tickets", async (req, res) => {
+  try {
+    const {
+      ticketType = "complaint",
+      name = "",
+      email = "",
+      phone = "",
+      productTypeId = "",
+      productTypeName = "",
+      modelId = "",
+      modelName = "",
+      productId = "",
+      productName = "",
+      purchaseDate = "",
+      invoiceUrl = "",
+      invoiceName = "",
+      state = "",
+      city = "",
+      pincode = "",
+      issueSummary = "",
+      issueDetails = "",
+      userId = null,
+      userEmail = null,
+    } = req.body || {};
+
+    const normalizedType = String(ticketType || "").trim().toLowerCase();
+    if (!["complaint", "warranty_claim"].includes(normalizedType)) {
+      return res.status(400).json({ error: "Invalid support ticket type" });
+    }
+    if (!String(name).trim()) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+    if (!String(phone).trim()) {
+      return res.status(400).json({ error: "Phone is required" });
+    }
+    if (!String(email).trim()) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+    if (!String(productTypeName || productTypeId).trim()) {
+      return res.status(400).json({ error: "Category is required" });
+    }
+    if (!String(modelName || productName || modelId || productId).trim()) {
+      return res.status(400).json({ error: "Product name is required" });
+    }
+    if (!String(purchaseDate).trim()) {
+      return res.status(400).json({ error: "Purchase date is required" });
+    }
+    if (!String(state).trim()) {
+      return res.status(400).json({ error: "State is required" });
+    }
+    if (!String(city).trim()) {
+      return res.status(400).json({ error: "City is required" });
+    }
+    if (!String(pincode).trim()) {
+      return res.status(400).json({ error: "Pincode is required" });
+    }
+    if (!String(issueSummary).trim()) {
+      return res.status(400).json({ error: "Issue summary is required" });
+    }
+    if (!String(issueDetails).trim()) {
+      return res.status(400).json({ error: "Issue details are required" });
+    }
+    if (normalizedType === "warranty_claim" && !String(invoiceUrl).trim()) {
+      return res.status(400).json({ error: "Purchase invoice is required for warranty claims" });
+    }
+
+    const resolvedProductId = String(modelId || productId).trim();
+    const resolvedProductName = String(modelName || productName).trim();
+
+    const ticket = {
+      ticketType: normalizedType,
+      name: String(name).trim(),
+      email: String(email).trim(),
+      phone: String(phone).trim(),
+      productTypeId: String(productTypeId).trim() || null,
+      productTypeName: String(productTypeName).trim() || null,
+      modelId: String(modelId).trim() || resolvedProductId || null,
+      modelName: String(modelName).trim() || resolvedProductName || null,
+      productId: resolvedProductId || null,
+      productName: resolvedProductName || null,
+      purchaseDate: String(purchaseDate).trim(),
+      invoiceUrl: String(invoiceUrl).trim() || null,
+      invoiceName: String(invoiceName).trim() || null,
+      state: String(state).trim(),
+      city: String(city).trim() || null,
+      pincode: String(pincode).trim(),
+      issueSummary: String(issueSummary).trim(),
+      issueDetails: String(issueDetails).trim(),
+      userId: userId || null,
+      userEmail: userEmail || null,
+      status: "pending",
+      adminNote: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const docRef = await db.collection("supportTickets").add(ticket);
+    res.json({ id: docRef.id, ...ticket });
+  } catch (error) {
+    console.error("ADD SUPPORT TICKET ERROR:", error);
+    res.status(500).json({ error: "Failed to submit support ticket" });
+  }
+});
+
+app.get("/api/support-tickets", async (req, res) => {
+  try {
+    const snapshot = await db.collection("supportTickets").orderBy("createdAt", "desc").get();
+    res.json(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    console.error("FETCH SUPPORT TICKETS ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch support tickets" });
+  }
+});
+
+app.get("/api/support-tickets/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("supportTickets").doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: "Support ticket not found" });
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error("FETCH SUPPORT TICKET DETAIL ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch support ticket detail" });
+  }
+});
+
+app.put("/api/support-tickets/:id/status", async (req, res) => {
+  try {
+    const { status, adminNote = "" } = req.body || {};
+    const allowed = new Set(["pending", "in_review", "approved", "rejected", "closed"]);
+    const nextStatus = String(status || "").trim().toLowerCase();
+    if (!allowed.has(nextStatus)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const ref = db.collection("supportTickets").doc(req.params.id);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ error: "Support ticket not found" });
+
+    await ref.update({
+      status: nextStatus,
+      adminNote: String(adminNote || "").trim() || null,
+      updatedAt: new Date(),
+    });
+
+    res.json({ message: "Support ticket status updated" });
+  } catch (error) {
+    console.error("UPDATE SUPPORT TICKET STATUS ERROR:", error);
+    res.status(500).json({ error: "Failed to update support ticket status" });
+  }
+});
+
+app.delete("/api/support-tickets/:id", async (req, res) => {
+  try {
+    await db.collection("supportTickets").doc(req.params.id).delete();
+    res.json({ message: "Support ticket deleted" });
+  } catch (error) {
+    console.error("DELETE SUPPORT TICKET ERROR:", error);
+    res.status(500).json({ error: "Failed to delete support ticket" });
+  }
+});
+
 app.post("/api/warranty-registrations", async (req, res) => {
   try {
     const {

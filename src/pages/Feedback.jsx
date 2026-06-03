@@ -181,7 +181,7 @@ const Feedback = () => {
             <div className="border-b border-[#f2e7e3] bg-[radial-gradient(circle_at_top_left,_rgba(224,168,168,0.2),_transparent_38%),linear-gradient(135deg,#fffaf9_0%,#fff3f0_100%)] px-6 py-7 sm:px-8 sm:py-9">
              
               <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[#6f1e1e] sm:text-4xl">
-                Give Feedback
+                Share Your FeedBack
               </h1>
              
             </div>
@@ -218,38 +218,27 @@ const Feedback = () => {
                     className={inputBaseClassName}
                   />
                 </Field>
-                <Field label="Product Name" hint="Optional">
+                <Field label="Product Name" required>
                   <input
                     type="text"
                     value={form.productName}
                     onChange={(e) => updateField("productName", e.target.value)}
-                    placeholder="Enter product name"
+                    placeholder="Enter the product name"
                     className={inputBaseClassName}
                   />
                 </Field>
               </div>
 
-              <div className="grid grid-cols-1 gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-                <Field label="Rating" hint="Optional">
-                  <StarRatingInput value={form.rating} onChange={(value) => updateField("rating", value)} />
-                </Field>
+              <Field label="Rating" hint="Optional">
+                <StarRatingInput value={form.rating} onChange={(value) => updateField("rating", value)} />
+              </Field>
 
-                <div className="rounded-[28px] border border-[#efe3df] bg-[#fffaf9] p-5">
-                  <p className="text-sm font-semibold text-[#5c302b]">What helps us most</p>
-                  <ul className="mt-3 space-y-2 text-sm leading-6 text-[#7e6b67]">
-                    <li>Product name or variant</li>
-                    <li>What went well or what went wrong</li>
-                    <li>Any order, delivery, or usage context</li>
-                  </ul>
-                </div>
-              </div>
-
-              <Field label="Your Feedback" required hint="Tell us the full details">
+              <Field label="Your Feedback" required>
                 <textarea
                   rows="6"
                   value={form.message}
                   onChange={(e) => updateField("message", e.target.value)}
-                  placeholder="Describe your issue, suggestion, or experience..."
+                  placeholder="Write your product experience, what you liked, and anything buyers should know..."
                   className={`${inputBaseClassName} min-h-[170px] resize-none pt-4`}
                 />
               </Field>
@@ -266,13 +255,10 @@ const Feedback = () => {
               )}
 
               <div className="flex flex-col gap-3 border-t border-[#f2e7e3] pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs leading-5 text-[#9a8883]">
-                  Name, product name, and feedback are required. Logged-in details are prefilled when available.
-                </p>
                 <button
                   type="submit"
                   disabled={!isValid || submitting}
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#3f302c_0%,#6a5b56_100%)] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(63,48,44,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(63,48,44,0.22)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  className="inline-flex w-full items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#3f302c_0%,#6a5b56_100%)] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(63,48,44,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(63,48,44,0.22)] disabled:cursor-not-allowed disabled:opacity-60 sm:ml-auto sm:w-auto"
                 >
                   {submitting ? "Submitting..." : "Submit Feedback"}
                 </button>

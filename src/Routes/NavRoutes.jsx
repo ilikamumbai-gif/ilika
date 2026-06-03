@@ -45,6 +45,7 @@ const Combos = lazy(() => import("../pages/Combos"));
 const ComboDetail = lazy(() => import("../pages/ComboDetail"));
 const Feedback = lazy(() => import("../pages/Feedback"));
 const WarrantyRegistration = lazy(() => import("../pages/WarrantyRegistration"));
+const SupportTicket = lazy(() => import("../pages/SupportTicket"));
 const CategoryProducts = lazy(() => import("../pages/CategoryProducts"));
 const TrackOrder = lazy(() => import("../pages/TrackOrder"));
 const SocialFeed = lazy(() => import("../pages/SocialFeed"));
@@ -119,6 +120,9 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/contact") return { title: "Contact Us", description: "Get in touch with Ilika support." };
   if (pathname === "/feedback") return { title: "Feedback", description: "Share your feedback with Ilika." };
   if (pathname === "/warranty-registration") return { title: "Warranty Registration", description: "Register import product warranty with Ilika support." };
+  if (pathname === "/raise-complaint") return { title: "Raise Complaint", description: "Submit a complaint about an Ilika product or service." };
+  if (pathname === "/warranty-claim") return { title: "Warranty Claim", description: "Submit an Ilika warranty claim for product review." };
+  if (pathname === "/support-ticket") return { title: "Support Request", description: "Create a complaint or warranty claim ticket with Ilika support." };
   if (pathname === "/shippingpolicy") return { title: "Shipping Policy", description: "Read Ilika shipping policy." };
   if (pathname === "/faq") return { title: "FAQ", description: "Frequently asked questions about Ilika." };
   if (pathname === "/track-order") return { title: "Track Order", description: "Track your Ilika shipment with live courier updates." };
@@ -285,6 +289,9 @@ const NavRoutes = () => {
         <Route path="/contact" element={renderLazy(Contact)} />
         <Route path="/feedback" element={renderLazy(Feedback)} />
         <Route path="/warranty-registration" element={renderLazy(WarrantyRegistration)} />
+        <Route path="/support-ticket" element={renderLazy(SupportTicket)} />
+        <Route path="/raise-complaint" element={renderLazy(SupportTicket)} />
+        <Route path="/warranty-claim" element={renderLazy(SupportTicket)} />
         <Route path="/shippingpolicy" element={renderLazy(ShippingPolicy)} />
         <Route path="/faq" element={renderLazy(Faq)} />
         <Route path="/track-order" element={renderLazy(TrackOrder)} />

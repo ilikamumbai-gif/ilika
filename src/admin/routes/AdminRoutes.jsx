@@ -48,6 +48,8 @@ import FeedbackList from "../pages/Feedback/FeedbackList";
 import FeedbackDetail from "../pages/Feedback/FeedbackDetail";
 import WarrantyList from "../pages/Warranty/WarrantyList";
 import WarrantyDetail from "../pages/Warranty/WarrantyDetail";
+import SupportTicketList from "../pages/SupportTickets/SupportTicketList";
+import SupportTicketDetail from "../pages/SupportTickets/SupportTicketDetail";
 import AdminPermissionRoute from "../components/AdminPermissionRoute";
 
 const withPermission = (permission, element) => (
@@ -112,6 +114,8 @@ const AdminRoutes = () => {
                         <Route path="notifications/:productId" element={withPermission("notifications", <NotificationDetail />)} />
                         <Route path="feedback" element={withPermission("feedback", <FeedbackList />)} />
                         <Route path="feedback/:id" element={withPermission("feedback", <FeedbackDetail />)} />
+                        <Route path="support-tickets" element={withPermission("warranty", <SupportTicketList />)} />
+                        <Route path="support-tickets/:id" element={withPermission("warranty", <SupportTicketDetail />)} />
                         <Route path="warranty" element={withPermission("warranty", <WarrantyList />)} />
                         <Route path="warranty/:id" element={withPermission("warranty", <WarrantyDetail />)} />
                         </Routes>
