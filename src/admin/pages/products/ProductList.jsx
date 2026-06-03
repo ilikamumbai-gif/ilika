@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Pencil, Plus, Trash2, Search, Package, Eye } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useProducts } from "../../context/ProductContext";
 import { useCategories } from "../../context/CategoryContext";
@@ -20,7 +20,6 @@ const FilterSelect = ({ value, onChange, children }) => (
 
 const ProductList = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [search, setSearch]           = useState("");
   const [statusFilter, setStatus]     = useState("");
   const [stockFilter, setStock]       = useState("");
@@ -28,21 +27,6 @@ const ProductList = () => {
   const { products, deleteProduct, fetchProducts } = useProducts();
   const { categories } = useCategories();
   useEffect(() => { fetchProducts(); }, [categories.length]);
-
-  useEffect(() => {
-    const restore = location.state?.restoreListState;
-    if (!restore) return;
-
-    setSearch(restore.search || "");
-    setStatus(restore.statusFilter || "");
-    setStock(restore.stockFilter || "");
-    setCategory(restore.categoryFilter || "");
-
-    const y = Number(restore.scrollY || 0);
-    requestAnimationFrame(() => {
-      window.scrollTo({ top: y, behavior: "auto" });
-    });
-  }, [location.state]);
 
   const getCategoryNames = (ids = []) =>
     ids.map(id => categories.find(c => String(c.id) === String(id))?.name).filter(Boolean).join(", ") || "—";
@@ -59,25 +43,17 @@ const ProductList = () => {
     await deleteProduct(id);
   };
 
-  const buildListState = () => ({
-    search,
-    statusFilter,
-    stockFilter,
-    categoryFilter,
-    scrollY: window.scrollY,
-  });
-
   const getCanonicalProductId = (product) =>
-    product?.id || product?._id || product?.docId || "";
+    product?.docId || product?.id || product?._id || product?.legacyId || "";
 
-  const goToEdit = (id, product = null) => {
+  const goToEdit = (id) => {
     if (!id) return;
-    navigate(`/admin/products/edit/${id}`, { state: { listState: buildListState(), product } });
+    navigate(`/admin/products/edit/${id}`);
   };
 
-  const goToView = (id, product = null) => {
+  const goToView = (id) => {
     if (!id) return;
-    navigate(`/admin/products/view/${id}`, { state: { listState: buildListState(), product } });
+    navigate(`/admin/products/view/${id}`);
   };
 
   return (
@@ -161,11 +137,11 @@ const ProductList = () => {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
-                      <button onClick={() => goToEdit(productId, p)}
+                      <button onClick={() => goToEdit(productId)}
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition">
                         <Pencil size={14} />
                       </button>
-                      <button onClick={() => goToView(productId, p)}
+                      <button onClick={() => goToView(productId)}
                         className="w-8 h-8 flex items-center justify-center rounded-lg bg-violet-50 text-violet-600 hover:bg-violet-100 transition"
                         title="View product details">
                         <Eye size={14} />
@@ -202,11 +178,11 @@ const ProductList = () => {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">
-                <button onClick={() => goToEdit(productId, p)}
+                <button onClick={() => goToEdit(productId)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                   <Pencil size={14} />
                 </button>
-                <button onClick={() => goToView(productId, p)}
+                <button onClick={() => goToView(productId)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-violet-50 text-violet-600">
                   <Eye size={14} />
                 </button>

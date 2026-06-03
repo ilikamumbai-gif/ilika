@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Check,
@@ -131,53 +131,39 @@ const ImageCard = ({ item, index, downloading, onDownload }) => (
 const ViewProductDetails = () => {
   const API = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
-  const location = useLocation();
   const { id } = useParams();
-  const { products, getProductById, fetchProducts, loading } = useProducts();
+  const { loading, getProductById } = useProducts();
   const { categories = [] } = useCategories();
   const [downloadingKey, setDownloadingKey] = useState("");
-  const [product, setProduct] = useState(location.state?.product || null);
+  const [product, setProduct] = useState(null);
   const [resolvedProductId, setResolvedProductId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [hasResolvedProduct, setHasResolvedProduct] = useState(Boolean(location.state?.product));
   const [copiedField, setCopiedField] = useState("");
 
   const getCanonicalProductId = (entry) =>
-    String(entry?.id || entry?._id || entry?.docId || id || "");
+    String(
+      entry?.docId ||
+      entry?.id ||
+      entry?.legacyDocId ||
+      entry?.legacyId ||
+      entry?._id ||
+      id ||
+      ""
+    );
 
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
 
       try {
-        const stateProduct = location.state?.product || null;
-        if (stateProduct) {
-          const directId = getCanonicalProductId(stateProduct);
-          setResolvedProductId(directId);
-          setProduct({ ...stateProduct, id: directId, docId: directId });
-          setHasResolvedProduct(true);
-          if (directId && directId !== String(id)) {
-            navigate(`/admin/products/view/${directId}`, { replace: true, state: location.state });
-          }
-          return;
-        }
-
-        const sourceList = products.length ? products : await fetchProducts();
-        const existing =
-          sourceList.find((entry) =>
-            String(entry?.docId) === String(id) ||
-            String(entry?.id) === String(id) ||
-            String(entry?._id) === String(id)
-          ) ||
-          getProductById(id);
-
+        const existing = getProductById(id);
         if (existing) {
-          const existingId = getCanonicalProductId(existing);
-          setResolvedProductId(existingId);
-          setProduct({ ...existing, id: existingId, docId: existingId });
-          setHasResolvedProduct(true);
-          if (existingId && existingId !== String(id)) {
-            navigate(`/admin/products/view/${existingId}`, { replace: true, state: location.state });
+          const directId = getCanonicalProductId(existing);
+          const normalized = { ...existing, id: directId, docId: directId };
+          setResolvedProductId(directId);
+          setProduct(normalized);
+          if (directId !== String(id)) {
+            navigate(`/admin/products/view/${directId}`, { replace: true });
           }
           return;
         }
@@ -188,42 +174,41 @@ const ViewProductDetails = () => {
           const normalized = exact ? { ...exact, id: getCanonicalProductId(exact), docId: getCanonicalProductId(exact) } : null;
           setResolvedProductId(String(normalized?.id || id));
           setProduct(normalized || null);
-          setHasResolvedProduct(Boolean(normalized));
           return;
         }
 
         const allRes = await fetch(`${API}/api/products`);
         if (allRes.ok) {
           const all = await allRes.json();
+          const targetId = String(id || "").trim().toLowerCase();
           const fallback = (Array.isArray(all) ? all : []).find(
             (entry) =>
-              String(entry?.docId) === String(id) ||
-              String(entry?.id) === String(id) ||
-              String(entry?._id) === String(id)
+              [
+                entry?.docId,
+                entry?.id,
+                entry?._id,
+                entry?.legacyId,
+              ].some((value) => String(value || "").trim().toLowerCase() === targetId)
           );
           const normalized = fallback
             ? { ...fallback, id: getCanonicalProductId(fallback), docId: getCanonicalProductId(fallback) }
             : null;
           setResolvedProductId(String(normalized?.id || ""));
-          if (normalized) {
-            setProduct(normalized);
-            setHasResolvedProduct(true);
-          } else if (!hasResolvedProduct) {
-            setProduct(null);
+          setProduct(normalized);
+          if (normalized?.docId && normalized.docId !== String(id)) {
+            navigate(`/admin/products/view/${normalized.docId}`, { replace: true });
           }
           return;
         }
 
-        if (!hasResolvedProduct) {
-          setProduct(null);
-        }
+        setProduct(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     load();
-  }, [id, products, fetchProducts, getProductById, API, location.state, navigate, hasResolvedProduct]);
+  }, [id, API, getProductById, navigate]);
 
   const categoryNames = useMemo(() => {
     const ids = Array.isArray(product?.categoryIds) ? product.categoryIds : [];
@@ -314,7 +299,7 @@ const ViewProductDetails = () => {
           <div>
             <button
               type="button"
-              onClick={() => navigate("/admin/products", { state: location.state?.listState ? { restoreListState: location.state.listState } : undefined })}
+              onClick={() => navigate("/admin/products")}
               className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition hover:text-gray-800"
             >
               <ArrowLeft size={16} />
@@ -326,7 +311,7 @@ const ViewProductDetails = () => {
 
           <button
             type="button"
-            onClick={() => navigate(`/admin/products/edit/${resolvedProductId || product?.docId || product?.id || product?._id}`, { state: { listState: location.state?.listState, product } })}
+            onClick={() => navigate(`/admin/products/edit/${resolvedProductId || product?.docId || product?.id || product?._id}`)}
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
           >
             <Pencil size={16} />

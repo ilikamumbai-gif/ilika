@@ -1,148 +1,120 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import ProductForm from "../../components/ProductFrom";
 import { useProducts } from "../../context/ProductContext";
 
-/* ================= LOG ================= */
-
-
 const EditProduct = () => {
   const API = import.meta.env.VITE_API_URL;
-
   const { id } = useParams();
-
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const {
-    products,
-    updateProduct,
-    fetchProducts,
-    getProductById
-  } = useProducts();
+  const { updateProduct } = useProducts();
 
   const [product, setProduct] = useState(null);
-  const [resolvedProductId, setResolvedProductId] = useState("");
+  const [candidateIds, setCandidateIds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasResolvedProduct, setHasResolvedProduct] = useState(false);
+  const { getProductById } = useProducts();
 
-  const getCanonicalProductId = (entry) =>
-    String(entry?.id || entry?._id || entry?.docId || id || "");
-
+  const collectCandidateIds = (entry = {}) =>
+    Array.from(
+      new Set(
+        [
+          entry?.docId,
+          entry?.id,
+          entry?.legacyId,
+          entry?._id,
+          id,
+        ]
+          .map((value) => String(value || "").trim())
+          .filter(Boolean)
+      )
+    );
 
   useEffect(() => {
-
-    const load = async () => {
+    const loadProduct = async () => {
       setIsLoading(true);
+
       try {
-        const sourceList = products.length ? products : await fetchProducts();
-        const stateProduct = location.state?.product || null;
-        if (stateProduct) {
-          const resolvedFromList =
-            sourceList.find((entry) =>
-              String(entry?.legacyDocId) === String(stateProduct?.id || stateProduct?.docId || stateProduct?._id || "") ||
-              String(entry?.id) === String(stateProduct?.id || stateProduct?.docId || stateProduct?._id || "") ||
-              String(entry?.docId) === String(stateProduct?.id || stateProduct?.docId || stateProduct?._id || "") ||
-              String(entry?.name || "").trim().toLowerCase() === String(stateProduct?.name || "").trim().toLowerCase()
-            ) || stateProduct;
-          const directId = getCanonicalProductId(resolvedFromList);
-          setResolvedProductId(directId);
-          setProduct({ ...resolvedFromList, id: directId, docId: directId });
-          setHasResolvedProduct(true);
-          if (directId && directId !== String(id)) {
-            navigate(`/admin/products/edit/${directId}`, {
-              replace: true,
-              state: {
-                ...location.state,
-                product: { ...resolvedFromList, id: directId, docId: directId },
-              },
-            });
-          }
-          return;
-        }
-
-        const existing =
-          sourceList.find((p) =>
-            String(p?.docId) === String(id) ||
-            String(p?.id) === String(id) ||
-            String(p?._id) === String(id)
-          ) ||
-          getProductById(id);
+        const existing = getProductById(id);
         if (existing) {
-          const existingId = getCanonicalProductId(existing);
-          setResolvedProductId(existingId);
-          setProduct({ ...existing, id: existingId, docId: existingId });
-          setHasResolvedProduct(true);
-          if (existingId && existingId !== String(id)) {
-            navigate(`/admin/products/edit/${existingId}`, { replace: true, state: location.state });
+          const directId = String(existing?.docId || existing?.id || existing?._id || id);
+          const normalized = { ...existing, docId: directId, id: directId };
+          setProduct(normalized);
+          setCandidateIds(collectCandidateIds(normalized));
+          if (directId !== String(id)) {
+            navigate(`/admin/products/edit/${directId}`, { replace: true });
           }
           return;
         }
 
-        // Fallback: fetch exact product by route id to avoid stale-cache mismatches.
-        const res = await fetch(`${API}/api/products/${id}`);
-        if (res.ok) {
-          const exact = await res.json();
-          const normalized = exact ? { ...exact, id: getCanonicalProductId(exact), docId: getCanonicalProductId(exact) } : null;
-          setResolvedProductId(String(normalized?.id || id));
-          setProduct(normalized || null);
-          setHasResolvedProduct(Boolean(normalized));
-        } else {
-          // Final fallback for mixed backends: scan full list and match by id/_id.
-          const allRes = await fetch(`${API}/api/products`);
-          if (allRes.ok) {
-            const all = await allRes.json();
-            const fallback = (Array.isArray(all) ? all : []).find(
-              (p) =>
-                String(p?.docId) === String(id) ||
-                String(p?.id) === String(id) ||
-                String(p?._id) === String(id)
-            );
-            const normalized = fallback
-              ? { ...fallback, id: getCanonicalProductId(fallback), docId: getCanonicalProductId(fallback) }
-              : null;
-            setResolvedProductId(String(normalized?.id || ""));
-            if (normalized) {
-              setProduct(normalized);
-              setHasResolvedProduct(true);
-            } else if (!hasResolvedProduct) {
-              setProduct(null);
-            }
-          } else {
-            if (!hasResolvedProduct) setProduct(null);
-          }
+        const exactRes = await fetch(`${API}/api/products/${id}`);
+        if (exactRes.ok) {
+          const exact = await exactRes.json();
+          const normalized = {
+            ...exact,
+            docId: String(exact?.id || exact?.docId || exact?._id || id),
+            id: String(exact?.id || exact?.docId || exact?._id || id),
+          };
+          setProduct(normalized);
+          setCandidateIds(collectCandidateIds(normalized));
+          return;
         }
+
+        const listRes = await fetch(`${API}/api/products`);
+        if (!listRes.ok) {
+          setProduct(null);
+          setCandidateIds([]);
+          return;
+        }
+
+        const list = await listRes.json().catch(() => []);
+        const targetId = String(id || "").trim().toLowerCase();
+        const found = (Array.isArray(list) ? list : []).find((entry) =>
+          [
+            entry?.docId,
+            entry?.id,
+            entry?._id,
+            entry?.legacyId,
+          ].some((value) => String(value || "").trim().toLowerCase() === targetId)
+        );
+
+        if (!found) {
+          setProduct(null);
+          setCandidateIds([]);
+          return;
+        }
+
+        const normalized = {
+          ...found,
+          docId: String(found?.docId || found?.id || found?._id || id),
+          id: String(found?.docId || found?.id || found?._id || id),
+        };
+        setProduct(normalized);
+        setCandidateIds(collectCandidateIds(normalized));
+        if (normalized.docId !== String(id)) {
+          navigate(`/admin/products/edit/${normalized.docId}`, { replace: true });
+        }
+      } catch (error) {
+        console.error("Failed to load product for edit:", error);
+        setProduct(null);
+        setCandidateIds([]);
       } finally {
         setIsLoading(false);
       }
-
     };
 
-    load();
-
-  }, [id, products, fetchProducts, getProductById, API, location.state, navigate, hasResolvedProduct]);
-
+    loadProduct();
+  }, [API, id, getProductById, navigate]);
 
   const handleUpdate = async (data) => {
-    const targetId = resolvedProductId || id;
-    const result = await updateProduct(targetId, data);
+    const result = await updateProduct(candidateIds.length ? candidateIds : [id], data);
     console.log("Product update response:", result);
     console.log("Merchant sync result:", result?.merchantSync || { status: "missing" });
-    navigate("/admin/products", {
-      state: { restoreListState: location.state?.listState || null },
-    });
+    navigate("/admin/products");
   };
 
-
   if (isLoading) {
-
-    return (
-      <AdminLayout>
-        Loading...
-      </AdminLayout>
-    );
-
+    return <AdminLayout>Loading...</AdminLayout>;
   }
 
   if (!product) {
@@ -153,7 +125,7 @@ const EditProduct = () => {
           <button
             type="button"
             onClick={() => navigate("/admin/products")}
-            className="px-4 py-2 rounded-md border border-gray-300 text-sm hover:bg-gray-50"
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
           >
             Back to Products
           </button>
@@ -162,24 +134,12 @@ const EditProduct = () => {
     );
   }
 
-
   return (
-
     <AdminLayout>
-
-      <h1 className="text-xl font-semibold mb-4">
-        Edit Product
-      </h1>
-
-      <ProductForm
-        initialData={product}
-        onSubmit={handleUpdate}
-      />
-
+      <h1 className="mb-4 text-xl font-semibold">Edit Product</h1>
+      <ProductForm initialData={product} onSubmit={handleUpdate} />
     </AdminLayout>
-
   );
-
 };
 
 export default EditProduct;

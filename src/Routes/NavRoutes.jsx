@@ -74,6 +74,8 @@ const UrlCanonicalizer = () => {
 
   useEffect(() => {
     if (!pathname) return;
+    if (pathname.startsWith("/admin/")) return;
+    if (pathname === "/admin") return;
     const lower = pathname.toLowerCase();
     const trimmed = lower.length > 1 ? lower.replace(/\/+$/, "") : lower;
     const canonical = trimmed || "/";

@@ -179,9 +179,7 @@ const Feedback = () => {
         <section className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
           <div className="overflow-hidden rounded-[32px] border border-[#efe1dc] bg-white shadow-[0_30px_80px_rgba(67,33,23,0.08)]">
             <div className="border-b border-[#f2e7e3] bg-[radial-gradient(circle_at_top_left,_rgba(224,168,168,0.2),_transparent_38%),linear-gradient(135deg,#fffaf9_0%,#fff3f0_100%)] px-6 py-7 sm:px-8 sm:py-9">
-              <div className="inline-flex rounded-full border border-[#efcfca] bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[#b65a53]">
-                Customer Care
-              </div>
+             
               <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[#6f1e1e] sm:text-4xl">
                 Give Feedback
               </h1>
