@@ -1,18 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Star } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
-import { auth } from "../firebase/firebaseConfig";
-
-const ISSUE_TYPES = [
-  { value: "order", label: "Order Issue" },
-  { value: "product", label: "Product Issue" },
-  { value: "delivery", label: "Delivery Issue" },
-  { value: "payment", label: "Payment Issue" },
-  { value: "other", label: "Other" },
-];
+import { useAuth } from "../context/AuthContext";
 
 const parseApiResponse = async (res) => {
   const text = await res.text();
@@ -25,18 +18,75 @@ const parseApiResponse = async (res) => {
   return { data, text };
 };
 
+const inputBaseClassName =
+  "w-full rounded-2xl border border-[#eadfdb] bg-white/90 px-4 py-3.5 text-sm text-[#2c2523] shadow-[0_1px_2px_rgba(0,0,0,0.03)] outline-none transition placeholder:text-[#a08d88] focus:border-[#c97b7b] focus:ring-4 focus:ring-[#f6d9d5]";
+
+const Field = ({ label, required = false, children, hint = "" }) => (
+  <label className="block space-y-2">
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-sm font-semibold text-[#5c302b]">
+        {label}
+        {required ? <span className="text-[#b74b4b]"> *</span> : null}
+      </span>
+      {hint ? <span className="text-xs text-[#aa918b]">{hint}</span> : null}
+    </div>
+    {children}
+  </label>
+);
+
+const StarRatingInput = ({ value, onChange }) => {
+  const [hovered, setHovered] = useState(0);
+
+  return (
+    <div className="rounded-[24px] border border-[#eadfdb] bg-[linear-gradient(180deg,#fffdfc_0%,#fff7f5_100%)] px-4 py-4 shadow-[0_12px_30px_rgba(188,124,124,0.08)]">
+      <div className="flex flex-wrap items-center gap-3">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => onChange(value === star ? "" : star)}
+            onMouseEnter={() => setHovered(star)}
+            onMouseLeave={() => setHovered(0)}
+            className="rounded-full p-1 transition duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#f2c4bc]"
+            aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+          >
+            <Star
+              className={`h-7 w-7 transition-colors ${
+                (hovered || Number(value)) >= star
+                  ? "fill-[#f4b63d] text-[#f4b63d]"
+                  : "text-[#e2d8d4]"
+              }`}
+            />
+          </button>
+        ))}
+        {value ? (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="ml-auto text-xs font-semibold text-[#9a7e77] hover:text-[#7f5b54]"
+          >
+            Clear
+          </button>
+        ) : null}
+      </div>
+      <p className="mt-3 text-xs text-[#9f8a84]">
+        Tap a star to rate your experience.
+      </p>
+    </div>
+  );
+};
+
 const Feedback = () => {
   const [searchParams] = useSearchParams();
-  const prefilledOrderId = searchParams.get("orderId") || "";
-  const user = auth.currentUser;
+  const prefilledProductName = searchParams.get("productName") || "";
+  const { currentUser, userData } = useAuth();
   const API = import.meta.env.VITE_API_URL;
 
   const [form, setForm] = useState({
     name: "",
-    email: user?.email || "",
+    email: "",
     phone: "",
-    orderId: prefilledOrderId,
-    issueType: "other",
+    productName: prefilledProductName,
     rating: "",
     message: "",
   });
@@ -45,8 +95,23 @@ const Feedback = () => {
   const [error, setError] = useState("");
 
   const isValid = useMemo(() => {
-    return Boolean(form.name.trim() && form.message.trim());
-  }, [form.name, form.message]);
+    return Boolean(form.name.trim() && form.productName.trim() && form.message.trim());
+  }, [form.name, form.productName, form.message]);
+
+  useEffect(() => {
+    const nextName = userData?.name || currentUser?.displayName || "";
+    const nextEmail = userData?.email || currentUser?.email || "";
+    const nextPhone = userData?.phone || currentUser?.phoneNumber || "";
+
+    if (!nextName && !nextEmail && !nextPhone) return;
+
+    setForm((prev) => ({
+      ...prev,
+      name: prev.name || nextName,
+      email: prev.email || nextEmail,
+      phone: prev.phone || nextPhone,
+    }));
+  }, [currentUser, userData]);
 
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -65,12 +130,11 @@ const Feedback = () => {
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),
-        orderId: form.orderId.trim(),
-        issueType: form.issueType,
+        productName: form.productName.trim(),
         rating: form.rating ? Number(form.rating) : null,
         message: form.message.trim(),
-        userId: user?.uid || null,
-        userEmail: user?.email || form.email.trim() || null,
+        userId: currentUser?.uid || null,
+        userEmail: currentUser?.email || form.email.trim() || null,
       };
 
       const res = await fetch(`${API}/api/feedback`, {
@@ -91,8 +155,10 @@ const Feedback = () => {
       setSuccess("Thank you. Your feedback has been submitted.");
       setForm((prev) => ({
         ...prev,
-        name: "",
-        phone: "",
+        name: userData?.name || currentUser?.displayName || "",
+        email: userData?.email || currentUser?.email || "",
+        phone: userData?.phone || currentUser?.phoneNumber || "",
+        productName: "",
         rating: "",
         message: "",
       }));
@@ -110,93 +176,109 @@ const Feedback = () => {
         <Header />
         <CartDrawer />
 
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8">
-            <h1 className="text-2xl sm:text-3xl font-semibold heading-color">Give Feedback</h1>
-            <p className="text-sm text-gray-500 mt-2">
-              Share your issue or suggestion. Our team will review and respond quickly.
-            </p>
+        <section className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
+          <div className="overflow-hidden rounded-[32px] border border-[#efe1dc] bg-white shadow-[0_30px_80px_rgba(67,33,23,0.08)]">
+            <div className="border-b border-[#f2e7e3] bg-[radial-gradient(circle_at_top_left,_rgba(224,168,168,0.2),_transparent_38%),linear-gradient(135deg,#fffaf9_0%,#fff3f0_100%)] px-6 py-7 sm:px-8 sm:py-9">
+              <div className="inline-flex rounded-full border border-[#efcfca] bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[#b65a53]">
+                Customer Care
+              </div>
+              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[#6f1e1e] sm:text-4xl">
+                Give Feedback
+              </h1>
+             
+            </div>
 
-            <form onSubmit={submitFeedback} className="mt-6 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => updateField("name", e.target.value)}
-                  placeholder="Your Name *"
-                  className="w-full p-3 rounded-xl border border-gray-200 text-sm"
-                />
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => updateField("email", e.target.value)}
-                  placeholder="Your Email"
-                  className="w-full p-3 rounded-xl border border-gray-200 text-sm"
-                />
+            <form onSubmit={submitFeedback} className="space-y-6 px-6 py-6 sm:px-8 sm:py-8">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <Field label="Your Name" required>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(e) => updateField("name", e.target.value)}
+                    placeholder="Enter your full name"
+                    className={inputBaseClassName}
+                  />
+                </Field>
+                <Field label="Email Address" hint="Optional">
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => updateField("email", e.target.value)}
+                    placeholder="Enter your email"
+                    className={inputBaseClassName}
+                  />
+                </Field>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  value={form.phone}
-                  onChange={(e) => updateField("phone", e.target.value)}
-                  placeholder="Phone Number"
-                  className="w-full p-3 rounded-xl border border-gray-200 text-sm"
-                />
-                <input
-                  type="text"
-                  value={form.orderId}
-                  onChange={(e) => updateField("orderId", e.target.value)}
-                  placeholder="Order ID (optional)"
-                  className="w-full p-3 rounded-xl border border-gray-200 text-sm"
-                />
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <Field label="Phone Number" hint="Optional">
+                  <input
+                    type="text"
+                    value={form.phone}
+                    onChange={(e) => updateField("phone", e.target.value)}
+                    placeholder="Enter your phone number"
+                    className={inputBaseClassName}
+                  />
+                </Field>
+                <Field label="Product Name" hint="Optional">
+                  <input
+                    type="text"
+                    value={form.productName}
+                    onChange={(e) => updateField("productName", e.target.value)}
+                    placeholder="Enter product name"
+                    className={inputBaseClassName}
+                  />
+                </Field>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <select
-                  value={form.issueType}
-                  onChange={(e) => updateField("issueType", e.target.value)}
-                  className="w-full p-3 rounded-xl border border-gray-200 text-sm bg-white"
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+                <Field label="Rating" hint="Optional">
+                  <StarRatingInput value={form.rating} onChange={(value) => updateField("rating", value)} />
+                </Field>
+
+                <div className="rounded-[28px] border border-[#efe3df] bg-[#fffaf9] p-5">
+                  <p className="text-sm font-semibold text-[#5c302b]">What helps us most</p>
+                  <ul className="mt-3 space-y-2 text-sm leading-6 text-[#7e6b67]">
+                    <li>Product name or variant</li>
+                    <li>What went well or what went wrong</li>
+                    <li>Any order, delivery, or usage context</li>
+                  </ul>
+                </div>
+              </div>
+
+              <Field label="Your Feedback" required hint="Tell us the full details">
+                <textarea
+                  rows="6"
+                  value={form.message}
+                  onChange={(e) => updateField("message", e.target.value)}
+                  placeholder="Describe your issue, suggestion, or experience..."
+                  className={`${inputBaseClassName} min-h-[170px] resize-none pt-4`}
+                />
+              </Field>
+
+              {error && (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  {success}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3 border-t border-[#f2e7e3] pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs leading-5 text-[#9a8883]">
+                  Name, product name, and feedback are required. Logged-in details are prefilled when available.
+                </p>
+                <button
+                  type="submit"
+                  disabled={!isValid || submitting}
+                  className="inline-flex w-full items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#3f302c_0%,#6a5b56_100%)] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(63,48,44,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(63,48,44,0.22)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
-                  {ISSUE_TYPES.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={form.rating}
-                  onChange={(e) => updateField("rating", e.target.value)}
-                  className="w-full p-3 rounded-xl border border-gray-200 text-sm bg-white"
-                >
-                  <option value="">Rating (optional)</option>
-                  <option value="5">5 - Excellent</option>
-                  <option value="4">4 - Good</option>
-                  <option value="3">3 - Average</option>
-                  <option value="2">2 - Poor</option>
-                  <option value="1">1 - Very Poor</option>
-                </select>
+                  {submitting ? "Submitting..." : "Submit Feedback"}
+                </button>
               </div>
-
-              <textarea
-                rows="5"
-                value={form.message}
-                onChange={(e) => updateField("message", e.target.value)}
-                placeholder="Describe your issue or feedback *"
-                className="w-full p-3 rounded-xl border border-gray-200 text-sm resize-none"
-              />
-
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              {success && <p className="text-sm text-emerald-600">{success}</p>}
-
-              <button
-                type="submit"
-                disabled={!isValid || submitting}
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-black text-white text-sm font-semibold disabled:opacity-60"
-              >
-                {submitting ? "Submitting..." : "Submit Feedback"}
-              </button>
             </form>
           </div>
         </section>

@@ -59,9 +59,7 @@ const OrderSuccess = () => {
                 Continue Shopping
               </button>
               <button
-                onClick={() =>
-                  navigate(`/feedback?orderId=${encodeURIComponent(orderId || "")}`)
-                }
+                onClick={() => navigate("/feedback")}
                 className="
                   relative flex-1 flex items-center justify-center gap-2
                   px-6 py-3

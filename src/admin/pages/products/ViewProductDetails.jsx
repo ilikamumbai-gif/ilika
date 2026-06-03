@@ -142,6 +142,9 @@ const ViewProductDetails = () => {
   const [hasResolvedProduct, setHasResolvedProduct] = useState(Boolean(location.state?.product));
   const [copiedField, setCopiedField] = useState("");
 
+  const getCanonicalProductId = (entry) =>
+    String(entry?.id || entry?._id || entry?.docId || id || "");
+
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
@@ -149,9 +152,9 @@ const ViewProductDetails = () => {
       try {
         const stateProduct = location.state?.product || null;
         if (stateProduct) {
-          const directId = String(stateProduct?.docId || stateProduct?.id || stateProduct?._id || id);
+          const directId = getCanonicalProductId(stateProduct);
           setResolvedProductId(directId);
-          setProduct(stateProduct);
+          setProduct({ ...stateProduct, id: directId, docId: directId });
           setHasResolvedProduct(true);
           if (directId && directId !== String(id)) {
             navigate(`/admin/products/view/${directId}`, { replace: true, state: location.state });
@@ -169,9 +172,9 @@ const ViewProductDetails = () => {
           getProductById(id);
 
         if (existing) {
-          const existingId = String(existing?.docId || existing?.id || existing?._id || id);
+          const existingId = getCanonicalProductId(existing);
           setResolvedProductId(existingId);
-          setProduct(existing);
+          setProduct({ ...existing, id: existingId, docId: existingId });
           setHasResolvedProduct(true);
           if (existingId && existingId !== String(id)) {
             navigate(`/admin/products/view/${existingId}`, { replace: true, state: location.state });
@@ -182,8 +185,8 @@ const ViewProductDetails = () => {
         const res = await fetch(`${API}/api/products/${id}`);
         if (res.ok) {
           const exact = await res.json();
-          const normalized = exact ? { ...exact, docId: exact?.docId || exact?.id || exact?._id || id } : null;
-          setResolvedProductId(String(normalized?.docId || normalized?.id || normalized?._id || id));
+          const normalized = exact ? { ...exact, id: getCanonicalProductId(exact), docId: getCanonicalProductId(exact) } : null;
+          setResolvedProductId(String(normalized?.id || id));
           setProduct(normalized || null);
           setHasResolvedProduct(Boolean(normalized));
           return;
@@ -199,9 +202,9 @@ const ViewProductDetails = () => {
               String(entry?._id) === String(id)
           );
           const normalized = fallback
-            ? { ...fallback, docId: fallback?.docId || fallback?.id || fallback?._id || "" }
+            ? { ...fallback, id: getCanonicalProductId(fallback), docId: getCanonicalProductId(fallback) }
             : null;
-          setResolvedProductId(String(normalized?.docId || normalized?.id || normalized?._id || ""));
+          setResolvedProductId(String(normalized?.id || ""));
           if (normalized) {
             setProduct(normalized);
             setHasResolvedProduct(true);

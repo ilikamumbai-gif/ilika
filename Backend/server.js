@@ -3474,9 +3474,8 @@ app.post("/api/feedback", async (req, res) => {
       name = "",
       email = "",
       phone = "",
-      issueType = "other",
+      productName = "",
       message = "",
-      orderId = "",
       rating = null,
       userId = null,
       userEmail = null,
@@ -3495,9 +3494,8 @@ app.post("/api/feedback", async (req, res) => {
       name: String(name).trim(),
       email: String(email).trim() || null,
       phone: String(phone).trim() || null,
-      issueType: String(issueType || "other").trim().toLowerCase(),
+      productName: String(productName).trim() || null,
       message: String(message).trim(),
-      orderId: String(orderId).trim() || null,
       rating: Number.isFinite(parsedRating) && parsedRating >= 1 && parsedRating <= 5
         ? parsedRating
         : null,

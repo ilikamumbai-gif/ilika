@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Eye, Trash2, Search, MessageSquare } from "lucide-react";
+import { Eye, Trash2, Search, MessageSquare, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 
@@ -27,6 +27,25 @@ const parseApiResponse = async (res) => {
     data = null;
   }
   return { data, text };
+};
+
+const StarRating = ({ rating }) => {
+  const value = Math.max(0, Math.min(5, Number(rating) || 0));
+
+  if (!value) return <span className="text-gray-400">-</span>;
+
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          size={12}
+          className={star <= value ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}
+        />
+      ))}
+      <span className="ml-1 text-xs font-semibold text-gray-600">{value}/5</span>
+    </div>
+  );
 };
 
 const FeedbackList = () => {
@@ -76,6 +95,7 @@ const FeedbackList = () => {
         !term ||
         item.name?.toLowerCase().includes(term) ||
         item.email?.toLowerCase().includes(term) ||
+        item.productName?.toLowerCase().includes(term) ||
         item.orderId?.toLowerCase().includes(term) ||
         item.message?.toLowerCase().includes(term);
 
@@ -97,7 +117,7 @@ const FeedbackList = () => {
         <Search size={15} className="text-gray-400 shrink-0" />
         <input
           type="text"
-          placeholder="Search by name, email, order ID..."
+          placeholder="Search by name, email, product..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 min-w-[180px] text-sm bg-transparent focus:outline-none placeholder-gray-300"
@@ -131,7 +151,8 @@ const FeedbackList = () => {
                 <tr className="bg-gray-50 border-b">
                   <th className="px-5 py-3 text-left">Name</th>
                   <th className="px-5 py-3 text-left">Email</th>
-                  <th className="px-5 py-3 text-left">Issue Type</th>
+                  <th className="px-5 py-3 text-left">Product Name</th>
+                  <th className="px-5 py-3 text-left">Rating</th>
                   <th className="px-5 py-3 text-left">Status</th>
                   <th className="px-5 py-3 text-left">Date</th>
                   <th className="px-5 py-3 text-left">Actions</th>
@@ -142,7 +163,10 @@ const FeedbackList = () => {
                   <tr key={item.id} className="border-b hover:bg-gray-50">
                     <td className="px-5 py-4 font-medium">{item.name || "-"}</td>
                     <td className="px-5 py-4 text-gray-600">{item.email || "-"}</td>
-                    <td className="px-5 py-4 capitalize">{(item.issueType || "other").replace("_", " ")}</td>
+                    <td className="px-5 py-4">{item.productName || item.orderId || "-"}</td>
+                    <td className="px-5 py-4">
+                      <StarRating rating={item.rating} />
+                    </td>
                     <td className="px-5 py-4">
                       <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${statusClass(item.status)}`}>
                         {String(item.status || "open").replace("_", " ")}

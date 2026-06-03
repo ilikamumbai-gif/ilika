@@ -3,6 +3,17 @@ import { createContext, useContext, useState, useEffect, useMemo } from "react";
 
 export const ProductContext = createContext(null);
 
+const toCanonicalProduct = (item = {}) => {
+  const canonicalId = item?.id || item?._id || item?.docId || "";
+
+  return {
+    ...item,
+    id: canonicalId,
+    docId: canonicalId,
+    legacyDocId: item?.docId || "",
+  };
+};
+
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -20,10 +31,7 @@ const fetchProducts = async () => {
     const data = await res.json();
 
     const list = Array.isArray(data)
-      ? data.map((item) => ({
-          ...item,
-          docId: item?.docId || item?.id || item?._id || "",
-        }))
+      ? data.map((item) => toCanonicalProduct(item))
       : [];
 
     setProducts(list);
@@ -112,9 +120,11 @@ const fetchProducts = async () => {
           .trim();
       const byId = list.find(
         (p) =>
+          String(p?.id) === String(id) ||
           String(p?.docId) === String(id) ||
           String(p?.id) === String(id) ||
           String(p?._id) === String(id) ||
+          String(p?.legacyDocId) === String(id) ||
           String(p?.slug) === String(id)
       );
       const byName = !byId
@@ -154,9 +164,11 @@ const fetchProducts = async () => {
       const list = Array.isArray(listData) ? listData : [];
       const found = list.find(
         (p) =>
+          String(p?.id) === String(id) ||
           String(p?.docId) === String(id) ||
           String(p?.id) === String(id) ||
           String(p?._id) === String(id) ||
+          String(p?.legacyDocId) === String(id) ||
           String(p?.slug) === String(id)
       );
       const retryId = found?.docId || found?.id || found?._id || "";
@@ -177,9 +189,11 @@ const fetchProducts = async () => {
   /* ================= GET BY ID ================= */
   const getProductById = (id) =>
     products.find((p) =>
+      String(p?.id) === String(id) ||
       String(p?.docId) === String(id) ||
       String(p?.id) === String(id) ||
-      String(p?._id) === String(id)
+      String(p?._id) === String(id) ||
+      String(p?.legacyDocId) === String(id)
     );
 
   return (

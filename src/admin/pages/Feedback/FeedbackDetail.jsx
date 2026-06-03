@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Star } from "lucide-react";
 import AdminLayout from "../../components/AdminLayout";
 
 const parseDate = (value) => {
@@ -18,6 +19,25 @@ const parseApiResponse = async (res) => {
     data = null;
   }
   return { data, text };
+};
+
+const StarRating = ({ rating }) => {
+  const value = Math.max(0, Math.min(5, Number(rating) || 0));
+
+  if (!value) return <p className="font-medium">-</p>;
+
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          size={14}
+          className={star <= value ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}
+        />
+      ))}
+      <span className="ml-1 text-sm font-medium text-gray-700">{value}/5</span>
+    </div>
+  );
 };
 
 const FeedbackDetail = () => {
@@ -120,16 +140,12 @@ const FeedbackDetail = () => {
             <p className="font-medium">{feedback.phone || "-"}</p>
           </div>
           <div>
-            <p className="text-gray-500">Order ID</p>
-            <p className="font-medium">{feedback.orderId || "-"}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Issue Type</p>
-            <p className="font-medium capitalize">{String(feedback.issueType || "other").replace("_", " ")}</p>
+            <p className="text-gray-500">Product Name</p>
+            <p className="font-medium">{feedback.productName || feedback.orderId || "-"}</p>
           </div>
           <div>
             <p className="text-gray-500">Rating</p>
-            <p className="font-medium">{feedback.rating || "-"}</p>
+            <StarRating rating={feedback.rating} />
           </div>
         </div>
 

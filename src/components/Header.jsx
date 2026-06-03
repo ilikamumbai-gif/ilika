@@ -18,8 +18,8 @@ const Header = ({ forceWhiteBg = false }) => {
 
   return (
     <header
-      className={`w-full sticky top-0 z-50 overflow-x-clip ${
-        forceWhiteBg ? "bg-white" : "bg-[#fffaf9] md:bg-[#e8adad60]/20 md:backdrop-blur-md"
+      className={`w-full sticky top-0 z-50 overflow-x-clip border-b border-white/10 bg-black ${
+        forceWhiteBg ? "bg-black" : "bg-black"
       }`}
     >
 
@@ -28,7 +28,7 @@ const Header = ({ forceWhiteBg = false }) => {
 
         {/* Logo — always on the left */}
         <div
-          className="h-12 lg:h-14 flex items-center cursor-pointer shrink-0 lg:order-1"
+          className="flex h-12 shrink-0 cursor-pointer items-center rounded-2xl bg-white px-3 py-1.5 shadow-[0_10px_30px_rgba(255,255,255,0.08)] lg:order-1 lg:h-14"
           onClick={() => navigate("/")}
         >
           <OptimizedImage
@@ -37,7 +37,7 @@ const Header = ({ forceWhiteBg = false }) => {
             alt="Ilika"
             width={220}
             height={56}
-            className="h-12 xl:h-14 w-auto object-contain"
+            className="h-10 w-auto object-contain xl:h-12"
           />
         </div>
 
@@ -49,7 +49,7 @@ const Header = ({ forceWhiteBg = false }) => {
         </div>
 
         {/* Mobile controls — only visible on mobile */}
-        <div className="flex lg:hidden items-center gap-2 text-[#1f1f1f]">
+        <div className="flex lg:hidden items-center gap-2 text-white">
 
           {/* Search toggle */}
           <button
@@ -57,7 +57,7 @@ const Header = ({ forceWhiteBg = false }) => {
               setSearchOpen((v) => !v);
               setOpen(false);
             }}
-            className="shrink-0 p-1 text-[#1f1f1f]"
+            className="shrink-0 p-1 text-white"
           >
             {searchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
           </button>
@@ -67,7 +67,7 @@ const Header = ({ forceWhiteBg = false }) => {
             {!open && (
               <div
                 onClick={() => navigate("/combo")}
-                className="
+              className="
                   relative
                   bg-gradient-to-r from-[#2a2a2a] to-black
                   text-white text-[11px] px-3 py-[5px]
@@ -93,7 +93,7 @@ const Header = ({ forceWhiteBg = false }) => {
                 setOpen((v) => !v);
                 setSearchOpen(false);
               }}
-              className="relative z-10 p-1 text-[#1f1f1f]"
+              className="relative z-10 p-1 text-white"
             >
               {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -121,7 +121,7 @@ const Header = ({ forceWhiteBg = false }) => {
 
       {/* Mobile drawer */}
       {open && (
-        <div className="lg:hidden px-4 pb-4 border-t border-gray-100">
+        <div className="border-t border-white/10 px-4 pb-4 lg:hidden">
           <Suspense fallback={<div className="h-10" />}>
             <Nav mobile onClose={() => setOpen(false)} />
           </Suspense>

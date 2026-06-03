@@ -67,6 +67,9 @@ const ProductList = () => {
     scrollY: window.scrollY,
   });
 
+  const getCanonicalProductId = (product) =>
+    product?.id || product?._id || product?.docId || "";
+
   const goToEdit = (id, product = null) => {
     if (!id) return;
     navigate(`/admin/products/edit/${id}`, { state: { listState: buildListState(), product } });
@@ -132,7 +135,7 @@ const ProductList = () => {
                   <div className="flex flex-col items-center gap-2 text-gray-300"><Package size={36} /><p className="text-sm">No products found</p></div>
                 </td></tr>
               ) : filtered.map(p => {
-                const productId = p?.docId || p?.id || p?._id;
+                const productId = getCanonicalProductId(p);
                 return (
                 <tr key={productId} className="hover:bg-gray-50/70 transition-colors" style={{ borderBottom: "1px solid #F5F5F5" }}>
                   <td className="px-5 py-4">
@@ -182,7 +185,7 @@ const ProductList = () => {
         {/* Mobile */}
         <div className="md:hidden divide-y divide-gray-100">
           {filtered.map(p => {
-            const productId = p?.docId || p?.id || p?._id;
+            const productId = getCanonicalProductId(p);
             return (
             <div key={productId} className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">

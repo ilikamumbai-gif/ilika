@@ -15,6 +15,11 @@ const getMenuFromPath = (pathname = "") => {
   return null;
 };
 
+const isActivePath = (pathname = "", target = "") => {
+  if (target === "/") return pathname === "/";
+  return pathname === target || pathname.startsWith(`${target}/`);
+};
+
 const normalizeSearchText = (value = "") =>
   String(value || "").toLowerCase().replace(/\s+/g, "");
 
@@ -237,6 +242,14 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
   const { products = [] } = useProducts();
   const { categories = [] } = useCategories();
   const timerRef = useRef(null);
+  const desktopNavItemClass = (active) =>
+    `relative inline-flex items-center whitespace-nowrap pb-1 text-white/88 transition duration-300 hover:text-white after:absolute after:bottom-0 after:left-0 after:h-[2px] after:rounded-full after:bg-[#e63946] after:transition-all after:duration-300 ${
+      active ? "text-white after:w-full" : "after:w-0 hover:after:w-full"
+    }`;
+  const mobileNavItemClass = (active) =>
+    `inline-flex items-center whitespace-nowrap transition ${
+      active ? "text-white" : "text-white/88 hover:text-white"
+    }`;
 
   const newCategory = categories.find(
     (c) => c.name.toLowerCase().replace(/\s+/g, "") === "new"
@@ -296,8 +309,8 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
     <div
       ref={menuRef}
       className={`${mobile
-        ? "w-full flex flex-col gap-4 py-3 px-3"
-       : "grid grid-cols-[minmax(0,1fr)_auto] items-center w-full min-w-0 gap-4"
+        ? "w-full flex flex-col gap-4 py-3 px-3 text-white"
+       : "grid grid-cols-[minmax(0,1fr)_auto] items-center w-full min-w-0 gap-4 text-white"
         } heading-2-color`}
     >
       {/* LINKS */}
@@ -307,7 +320,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           : "order-1 flex items-center justify-center justify-self-center gap-3 lg:gap-5 xl:gap-6 text-[14px] lg:text-[15px] xl:text-[16px] whitespace-nowrap min-w-0 w-full"
           }`}
       >
-        <Link to="/" onClick={onClose} className="whitespace-nowrap">
+        <Link to="/" onClick={onClose} className={mobile ? mobileNavItemClass(isActivePath(location.pathname, "/")) : desktopNavItemClass(isActivePath(location.pathname, "/"))}>
           Home
         </Link>
 
@@ -343,7 +356,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             <Link
               to="/newarrival"
               onClick={onClose}
-              className="w-full flex items-center justify-between text-left"
+              className={`w-full flex items-center justify-between text-left ${mobileNavItemClass(isActivePath(location.pathname, "/newarrival"))}`}
             >
               <span className="whitespace-nowrap">New Arrival</span>
               <ChevronDown
@@ -355,14 +368,14 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               <Link
                 to="/newarrival"
                 onClick={() => setOpenMenu("newarrival")}
-                className="whitespace-nowrap"
+                className={desktopNavItemClass(isActivePath(location.pathname, "/newarrival"))}
               >
                 New Arrival
               </Link>
               <button
                 type="button"
                 onClick={() => toggleMenu("newarrival")}
-                className="cursor-pointer"
+                className="cursor-pointer text-white"
                 aria-label="Toggle New Arrival menu"
               >
                 <ChevronDown
@@ -376,7 +389,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               ? openMenu === "newarrival"
                 ? "block mt-2"
                 : "hidden"
-              : `absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 ${openMenu === "newarrival" ? "block" : "hidden"
+              : `absolute left-0 top-full mt-2 min-w-[220px] rounded-xl border border-white/10 bg-[#0f0f10] shadow-2xl z-50 ${openMenu === "newarrival" ? "block" : "hidden"
               }`
               }`}
           >
@@ -389,7 +402,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
                 to={`/product/${createSlug(item.name)}`}
                 state={{ id: itemId }}
                 onClick={() => setTimeout(() => onClose?.(), 0)}
-                className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100"
+                className="flex items-center gap-3 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
               >
                 {/* PRODUCT IMAGE */}
                 <img loading="lazy"
@@ -414,7 +427,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             <Link
               to="/skin"
               onClick={onClose}
-              className="w-full flex items-center justify-between text-left"
+              className={`w-full flex items-center justify-between text-left ${mobileNavItemClass(isActivePath(location.pathname, "/skin"))}`}
             >
               <span className="whitespace-nowrap">Skin</span>
               <ChevronDown
@@ -423,13 +436,13 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             </Link>
           ) : (
             <div className="flex items-center justify-between">
-              <Link to="/skin" onClick={() => setOpenMenu("skin")} className="whitespace-nowrap">
+              <Link to="/skin" onClick={() => setOpenMenu("skin")} className={desktopNavItemClass(isActivePath(location.pathname, "/skin"))}>
                 Skin
               </Link>
               <button
                 type="button"
                 onClick={() => toggleMenu("skin")}
-                className="cursor-pointer"
+                className="cursor-pointer text-white"
                 aria-label="Toggle Skin menu"
               >
                 <ChevronDown
@@ -443,14 +456,14 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               ? openMenu === "skin"
                 ? "block mt-2"
                 : "hidden"
-              : `absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 ${openMenu === "skin" ? "block" : "hidden"
+              : `absolute left-0 top-full mt-2 min-w-[220px] rounded-xl border border-white/10 bg-[#0f0f10] shadow-2xl z-50 ${openMenu === "skin" ? "block" : "hidden"
               }`
               }`}
           >
             <Link
               to="/skin/face"
               onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-100"
+              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
             >
               <Sparkles className="w-4 h-4 text-pink-500" />
               Face Care
@@ -459,7 +472,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             <Link
               to="/skin/body"
               onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-100"
+              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
             >
               <Droplets className="w-4 h-4 text-blue-500" />
               Body Care
@@ -473,7 +486,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             <Link
               to="/hair"
               onClick={onClose}
-              className="w-full flex items-center justify-between text-left"
+              className={`w-full flex items-center justify-between text-left ${mobileNavItemClass(isActivePath(location.pathname, "/hair"))}`}
             >
               <span className="whitespace-nowrap">Hair</span>
               <ChevronDown
@@ -482,13 +495,13 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             </Link>
           ) : (
             <div className="flex items-center justify-between">
-              <Link to="/hair" onClick={onClose} className="whitespace-nowrap">
+              <Link to="/hair" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/hair"))}>
                 Hair
               </Link>
               <button
                 type="button"
                 onClick={() => toggleMenu("hair")}
-                className="cursor-pointer"
+                className="cursor-pointer text-white"
                 aria-label="Toggle Hair menu"
               >
                 <ChevronDown
@@ -502,14 +515,14 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               ? openMenu === "hair"
                 ? "block mt-2"
                 : "hidden"
-              : `absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 ${openMenu === "hair" ? "block" : "hidden"
+              : `absolute left-0 top-full mt-2 min-w-[220px] rounded-xl border border-white/10 bg-[#0f0f10] shadow-2xl z-50 ${openMenu === "hair" ? "block" : "hidden"
               }`
               }`}
           >
             <Link
               to="/hair/care"
               onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-100"
+              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
             >
               <Scissors className="w-4 h-4 text-gray-600" />
               Hair Care
@@ -518,7 +531,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             <Link
               to="/hair/styling"
               onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-100"
+              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
             >
               <Wand2 className="w-4 h-4 text-purple-500" />
               Hair Styling
@@ -532,7 +545,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             <Link
               to="/grooming"
               onClick={onClose}
-              className="w-full flex items-center justify-between text-left"
+              className={`w-full flex items-center justify-between text-left ${mobileNavItemClass(isActivePath(location.pathname, "/grooming"))}`}
             >
               <span className="whitespace-nowrap">Grooming</span>
               <ChevronDown
@@ -544,14 +557,14 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               <Link
                 to="/grooming"
                 onClick={onClose}
-                className="whitespace-nowrap"
+                className={desktopNavItemClass(isActivePath(location.pathname, "/grooming"))}
               >
                 Grooming
               </Link>
               <button
                 type="button"
                 onClick={() => toggleMenu("grooming")}
-                className="cursor-pointer"
+                className="cursor-pointer text-white"
                 aria-label="Toggle Grooming menu"
               >   
                 <ChevronDown
@@ -565,14 +578,14 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               ? openMenu === "grooming"
                 ? "block mt-2"
                 : "hidden"
-              : `absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md min-w-[180px] z-50 ${openMenu === "grooming" ? "block" : "hidden"
+              : `absolute left-0 top-full mt-2 min-w-[220px] rounded-xl border border-white/10 bg-[#0f0f10] shadow-2xl z-50 ${openMenu === "grooming" ? "block" : "hidden"
               }`
               }`}
           >
             <Link
               to="/grooming/face"
               onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-100"
+              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
             >
               <Sparkles className="w-4 h-4 text-green-500" />
               Face Grooming Tools
@@ -581,7 +594,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             <Link
               to="/grooming/roller"
               onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-100"
+              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
             >
               <Wand2 className="w-4 h-4 text-yellow-500" />
               Roller and Gausha
@@ -590,7 +603,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
             <Link
               to="/grooming/remover"
               onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-100"
+              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
             >
               <Scissors className="w-4 h-4 text-red-500" />
               Hair Removing Tools
@@ -598,15 +611,15 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
           </div>
         </div>
 
-        <Link to="/ctm" onClick={onClose} className="whitespace-nowrap">
+        <Link to="/ctm" onClick={onClose} className={mobile ? mobileNavItemClass(isActivePath(location.pathname, "/ctm")) : desktopNavItemClass(isActivePath(location.pathname, "/ctm"))}>
           Explore CTM
         </Link>
 
-        <Link to="/social-feed" onClick={onClose} className="whitespace-nowrap">
+        <Link to="/social-feed" onClick={onClose} className={mobile ? mobileNavItemClass(isActivePath(location.pathname, "/social-feed")) : desktopNavItemClass(isActivePath(location.pathname, "/social-feed"))}>
           Social Feed
         </Link>
 
-        <Link to="/blog" onClick={onClose} className="whitespace-nowrap">
+        <Link to="/blog" onClick={onClose} className={mobile ? mobileNavItemClass(isActivePath(location.pathname, "/blog")) : desktopNavItemClass(isActivePath(location.pathname, "/blog"))}>
           Product Blog
         </Link>
 
@@ -616,23 +629,23 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
       {/* ICONS */}
       {mobile ? (
         /* Mobile: cart + profile inside the drawer */
-        <div className="flex items-center gap-4 pt-3 border-t w-full">
+        <div className="flex items-center gap-4 pt-3 border-t border-white/10 w-full text-white">
           <ShoppingBag
             className="w-6 h-6 shrink-0 cursor-pointer"
             onClick={() => { openCart(); onClose?.(); }}
           />
-          <Link to="/user" onClick={onClose} className="shrink-0">
+          <Link to="/user" onClick={onClose} className="shrink-0 text-white">
             <User className="w-6 h-6" />
           </Link>
         </div>
       ) : (
         /* Desktop: profile + cart + search */
-        <div className="order-2 flex items-center justify-end gap-3 xl:gap-4 shrink-0 justify-self-end">
-          <Link to="/user" className="shrink-0">
+        <div className="order-2 flex items-center justify-end gap-3 xl:gap-4 shrink-0 justify-self-end text-white">
+          <Link to="/user" className="shrink-0 text-white transition hover:text-white/80">
             <User />
           </Link>
           <ShoppingBag
-            className="w-6 h-6 shrink-0 cursor-pointer"
+            className="w-6 h-6 shrink-0 cursor-pointer text-white transition hover:text-white/80"
             onClick={openCart}
           />
           <div ref={searchWrapRef} className="relative">
@@ -640,7 +653,7 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               type="button"
               aria-label="Toggle search"
               onClick={() => setDesktopSearchOpen((v) => !v)}
-              className="p-1.5 rounded-md hover:bg-black/5 transition"
+              className="p-1.5 rounded-md text-white transition hover:bg-white/10"
             >
               <Search className="w-5 h-5" />
             </button>
