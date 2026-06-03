@@ -36,19 +36,31 @@ const EditProduct = () => {
     const load = async () => {
       setIsLoading(true);
       try {
+        const sourceList = products.length ? products : await fetchProducts();
         const stateProduct = location.state?.product || null;
         if (stateProduct) {
-          const directId = getCanonicalProductId(stateProduct);
+          const resolvedFromList =
+            sourceList.find((entry) =>
+              String(entry?.legacyDocId) === String(stateProduct?.id || stateProduct?.docId || stateProduct?._id || "") ||
+              String(entry?.id) === String(stateProduct?.id || stateProduct?.docId || stateProduct?._id || "") ||
+              String(entry?.docId) === String(stateProduct?.id || stateProduct?.docId || stateProduct?._id || "") ||
+              String(entry?.name || "").trim().toLowerCase() === String(stateProduct?.name || "").trim().toLowerCase()
+            ) || stateProduct;
+          const directId = getCanonicalProductId(resolvedFromList);
           setResolvedProductId(directId);
-          setProduct({ ...stateProduct, id: directId, docId: directId });
+          setProduct({ ...resolvedFromList, id: directId, docId: directId });
           setHasResolvedProduct(true);
           if (directId && directId !== String(id)) {
-            navigate(`/admin/products/edit/${directId}`, { replace: true, state: location.state });
+            navigate(`/admin/products/edit/${directId}`, {
+              replace: true,
+              state: {
+                ...location.state,
+                product: { ...resolvedFromList, id: directId, docId: directId },
+              },
+            });
           }
           return;
         }
-
-        const sourceList = products.length ? products : await fetchProducts();
 
         const existing =
           sourceList.find((p) =>

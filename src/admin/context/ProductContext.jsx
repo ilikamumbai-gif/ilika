@@ -18,7 +18,7 @@ export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const API = import.meta.env.VITE_API_URL;
-  const PRODUCT_CACHE_KEY = `ilika.products.v1:${String(API || "").trim()}`;
+  const PRODUCT_CACHE_KEY = `ilika.products.v2:${String(API || "").trim()}`;
 
   /* ================= FETCH PRODUCTS ================= */
 const fetchProducts = async () => {
