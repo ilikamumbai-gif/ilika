@@ -74,9 +74,34 @@ const Blog = () => {
       "/Images/MaskMakercard.webp"
     );
   }, [products]);
+  const blackheadRemoverImage = useMemo(() => {
+    const target = products.find((product) => {
+      const name = String(product?.name || "").toLowerCase();
+      return (
+        name.includes("blackhead remover") &&
+        name.includes("hot") &&
+        name.includes("cold")
+      );
+    });
+
+    return (
+      target?.variants?.[0]?.images?.[0] ||
+      target?.images?.[0] ||
+      target?.image ||
+      target?.imageUrl ||
+      "/Images/MaskMakercard.webp"
+    );
+  }, [products]);
 
   const LANDING_BLOG_CARDS = useMemo(
     () => [
+      {
+        id: "landing-hot-cold-blackhead-remover",
+        title: "Explore Hot & Cold Blackhead Remover",
+        author: "Team Ilika",
+        image: blackheadRemoverImage,
+        linkPath: "/hot-cold-blackhead-remover",
+      },
       {
         id: "landing-high-frequency-therapy-wand",
         title: "Explore High Frequency Therapy Wand",
@@ -120,7 +145,7 @@ const Blog = () => {
         linkPath: "/herbal-hair-oil",
       },
     ],
-    [hfWandImage, nonVoiceMaskMakerImage]
+    [blackheadRemoverImage, hfWandImage, nonVoiceMaskMakerImage]
   );
 
   useEffect(() => {

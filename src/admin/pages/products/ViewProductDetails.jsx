@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
+  Check,
+  Copy,
   Download,
   ExternalLink,
   Image as ImageIcon,
@@ -66,6 +68,17 @@ const flattenImages = (product) => {
   ].filter((entry) => String(entry?.url || "").trim());
 };
 
+const htmlToPlainText = (value = "") => {
+  if (!value) return "";
+  if (typeof window === "undefined") {
+    return String(value).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  const temp = window.document.createElement("div");
+  temp.innerHTML = String(value);
+  return (temp.textContent || temp.innerText || "").replace(/\s+/g, " ").trim();
+};
+
 const InfoCard = ({ icon: Icon, label, value }) => (
   <div className="rounded-2xl border border-gray-200 bg-white p-4">
     <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">
@@ -127,6 +140,7 @@ const ViewProductDetails = () => {
   const [resolvedProductId, setResolvedProductId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [hasResolvedProduct, setHasResolvedProduct] = useState(Boolean(location.state?.product));
+  const [copiedField, setCopiedField] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -216,6 +230,22 @@ const ViewProductDetails = () => {
   }, [product?.categoryIds, categories]);
 
   const allImages = useMemo(() => flattenImages(product), [product]);
+  const plainDescription = useMemo(() => htmlToPlainText(product?.description || ""), [product?.description]);
+
+  const handleCopy = async (field, value) => {
+    const text = String(value || "").trim();
+    if (!text) return;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      window.setTimeout(() => {
+        setCopiedField((current) => (current === field ? "" : current));
+      }, 1800);
+    } catch (error) {
+      console.error(`Failed to copy ${field}:`, error);
+    }
+  };
 
   const handleDownloadImage = async (item, index) => {
     const fileKey = `${item.group}-${index}`;
@@ -361,6 +391,28 @@ const ViewProductDetails = () => {
               <div>
                 <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Product ID</p>
                 <p>{product.docId || product.id || product._id || "-"}</p>
+              </div>
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Description</p>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy("description", plainDescription)}
+                    disabled={!plainDescription}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {copiedField === "description" ? <Check size={14} /> : <Copy size={14} />}
+                    {copiedField === "description" ? "Copied" : "Copy"}
+                  </button>
+                </div>
+                {product.description ? (
+                  <div
+                    className="max-h-56 overflow-auto rounded-2xl border border-gray-200 bg-gray-50 p-4 leading-6 text-gray-700 [&_ol]:ml-5 [&_ol]:list-decimal [&_p+p]:mt-3 [&_strong]:font-semibold [&_ul]:ml-5 [&_ul]:list-disc"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
+                ) : (
+                  <p>-</p>
+                )}
               </div>
             </div>
           </div>
