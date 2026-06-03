@@ -77,8 +77,12 @@ const WarrantyList = () => {
         !term ||
         item.name?.toLowerCase().includes(term) ||
         item.phone?.toLowerCase().includes(term) ||
-        item.address?.toLowerCase().includes(term) ||
-        item.productName?.toLowerCase().includes(term);
+        item.email?.toLowerCase().includes(term) ||
+        item.productName?.toLowerCase().includes(term) ||
+        item.modelName?.toLowerCase().includes(term) ||
+        item.productTypeName?.toLowerCase().includes(term) ||
+        item.city?.toLowerCase().includes(term) ||
+        item.state?.toLowerCase().includes(term);
 
       const matchesStatus =
         !statusFilter || String(item.status || "pending").toLowerCase() === statusFilter;
@@ -98,7 +102,7 @@ const WarrantyList = () => {
         <Search size={15} className="text-gray-400 shrink-0" />
         <input
           type="text"
-          placeholder="Search by name, phone, product, address..."
+          placeholder="Search by name, phone, email, model, city..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 min-w-[180px] text-sm bg-transparent focus:outline-none placeholder-gray-300"
@@ -132,8 +136,9 @@ const WarrantyList = () => {
               <thead>
                 <tr className="bg-gray-50 border-b">
                   <th className="px-5 py-3 text-left">Name</th>
-                  <th className="px-5 py-3 text-left">Product</th>
-                  <th className="px-5 py-3 text-left">Address</th>
+                  <th className="px-5 py-3 text-left">Model</th>
+                  <th className="px-5 py-3 text-left">Type</th>
+                  <th className="px-5 py-3 text-left">Location</th>
                   <th className="px-5 py-3 text-left">Phone</th>
                   <th className="px-5 py-3 text-left">Status</th>
                   <th className="px-5 py-3 text-left">Date</th>
@@ -144,8 +149,11 @@ const WarrantyList = () => {
                 {filtered.map((item) => (
                   <tr key={item.id} className="border-b hover:bg-gray-50">
                     <td className="px-5 py-4 font-medium">{item.name || "-"}</td>
-                    <td className="px-5 py-4 text-gray-600">{item.productName || "-"}</td>
-                    <td className="px-5 py-4 text-gray-600">{item.address || "-"}</td>
+                    <td className="px-5 py-4 text-gray-600">{item.modelName || item.productName || "-"}</td>
+                    <td className="px-5 py-4 text-gray-600">{item.productTypeName || "-"}</td>
+                    <td className="px-5 py-4 text-gray-600">
+                      {[item.city, item.state].filter(Boolean).join(", ") || "-"}
+                    </td>
                     <td className="px-5 py-4 text-gray-600">{item.phone || "-"}</td>
                     <td className="px-5 py-4">
                       <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${statusClass(item.status)}`}>

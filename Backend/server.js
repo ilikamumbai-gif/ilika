@@ -3573,10 +3573,18 @@ app.post("/api/warranty-registrations", async (req, res) => {
       name = "",
       email = "",
       phone = "",
+      productTypeId = "",
+      productTypeName = "",
+      modelId = "",
+      modelName = "",
       productId = "",
       productName = "",
       purchaseDate = "",
+      invoiceUrl = "",
+      invoiceName = "",
+      state = "",
       city = "",
+      pincode = "",
       address = "",
       userId = null,
       userEmail = null,
@@ -3588,21 +3596,50 @@ app.post("/api/warranty-registrations", async (req, res) => {
     if (!String(phone).trim()) {
       return res.status(400).json({ error: "Phone is required" });
     }
-    if (!String(productName).trim()) {
-      return res.status(400).json({ error: "Product name is required" });
+    if (!String(email).trim()) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+    if (!String(productTypeName || productTypeId).trim()) {
+      return res.status(400).json({ error: "Product type is required" });
+    }
+    if (!String(modelName || productName || modelId || productId).trim()) {
+      return res.status(400).json({ error: "Model is required" });
     }
     if (!String(purchaseDate).trim()) {
       return res.status(400).json({ error: "Purchase date is required" });
     }
+    if (!String(state).trim()) {
+      return res.status(400).json({ error: "State is required" });
+    }
+    if (!String(city).trim()) {
+      return res.status(400).json({ error: "City is required" });
+    }
+    if (!String(pincode).trim()) {
+      return res.status(400).json({ error: "Pincode is required" });
+    }
+    if (!String(invoiceUrl).trim()) {
+      return res.status(400).json({ error: "Purchase invoice is required" });
+    }
+
+    const resolvedProductId = String(modelId || productId).trim();
+    const resolvedProductName = String(modelName || productName).trim();
 
     const registration = {
       name: String(name).trim(),
-      email: String(email).trim() || null,
+      email: String(email).trim(),
       phone: String(phone).trim(),
-      productId: String(productId).trim() || null,
-      productName: String(productName).trim(),
+      productTypeId: String(productTypeId).trim() || null,
+      productTypeName: String(productTypeName).trim() || null,
+      modelId: String(modelId).trim() || resolvedProductId || null,
+      modelName: String(modelName).trim() || resolvedProductName || null,
+      productId: resolvedProductId || null,
+      productName: resolvedProductName,
       purchaseDate: String(purchaseDate).trim(),
+      invoiceUrl: String(invoiceUrl).trim() || null,
+      invoiceName: String(invoiceName).trim() || null,
+      state: String(state).trim(),
       city: String(city).trim() || null,
+      pincode: String(pincode).trim(),
       address: String(address).trim() || null,
       userId: userId || null,
       userEmail: userEmail || null,

@@ -94,6 +94,9 @@ const WarrantyDetail = () => {
   if (loading) return <AdminLayout>Loading...</AdminLayout>;
   if (!item) return <AdminLayout>Warranty request not found.</AdminLayout>;
 
+  const invoiceLink = item.invoiceUrl || "";
+  const locationText = [item.city, item.state, item.pincode].filter(Boolean).join(", ");
+
   return (
     <AdminLayout>
       <div className="mb-5">
@@ -122,24 +125,32 @@ const WarrantyDetail = () => {
             <p className="font-medium">{item.email || "-"}</p>
           </div>
           <div>
-            <p className="text-gray-500">Address</p>
-            <p className="font-medium">{item.address || "-"}</p>
+            <p className="text-gray-500">Product Type</p>
+            <p className="font-medium">{item.productTypeName || "-"}</p>
           </div>
           <div>
-            <p className="text-gray-500">Product Name</p>
-            <p className="font-medium">{item.productName || "-"}</p>
+            <p className="text-gray-500">Model</p>
+            <p className="font-medium">{item.modelName || item.productName || "-"}</p>
           </div>
           <div>
-            <p className="text-gray-500">Product ID</p>
-            <p className="font-medium">{item.productId || "-"}</p>
+            <p className="text-gray-500">Model ID</p>
+            <p className="font-medium">{item.modelId || item.productId || "-"}</p>
           </div>
           <div>
             <p className="text-gray-500">Purchase Date</p>
             <p className="font-medium">{item.purchaseDate || "-"}</p>
           </div>
           <div>
+            <p className="text-gray-500">State</p>
+            <p className="font-medium">{item.state || "-"}</p>
+          </div>
+          <div>
             <p className="text-gray-500">City</p>
             <p className="font-medium">{item.city || "-"}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Pincode</p>
+            <p className="font-medium">{item.pincode || "-"}</p>
           </div>
           <div>
             <p className="text-gray-500">Current Status</p>
@@ -148,9 +159,27 @@ const WarrantyDetail = () => {
         </div>
 
         <div>
-          <p className="text-sm text-gray-500 mb-2">Customer Address</p>
+          <p className="text-sm text-gray-500 mb-2">Customer Location</p>
           <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 text-sm whitespace-pre-wrap">
-            {item.address || item.issue || "-"}
+            {locationText || item.address || "-"}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-500 mb-2">Purchase Invoice</p>
+          <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 text-sm">
+            {invoiceLink ? (
+              <a
+                href={invoiceLink}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-blue-600 underline"
+              >
+                {item.invoiceName || "Open invoice"}
+              </a>
+            ) : (
+              "No invoice uploaded."
+            )}
           </div>
         </div>
 
