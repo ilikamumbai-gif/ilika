@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import { useAuth } from "../context/AuthContext";
+import { useProducts } from "../admin/context/ProductContext";
 
 const parseApiResponse = async (res) => {
   const text = await res.text();
@@ -78,14 +79,17 @@ const StarRatingInput = ({ value, onChange }) => {
 
 const Feedback = () => {
   const [searchParams] = useSearchParams();
+  const prefilledProductId = searchParams.get("productId") || "";
   const prefilledProductName = searchParams.get("productName") || "";
   const { currentUser, userData } = useAuth();
+  const { activeProducts = [] } = useProducts();
   const API = import.meta.env.VITE_API_URL;
 
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
+    productId: prefilledProductId,
     productName: prefilledProductName,
     rating: "",
     message: "",
@@ -95,8 +99,39 @@ const Feedback = () => {
   const [error, setError] = useState("");
 
   const isValid = useMemo(() => {
-    return Boolean(form.name.trim() && form.productName.trim() && form.message.trim());
-  }, [form.name, form.productName, form.message]);
+    return Boolean(
+      form.name.trim() &&
+      form.productId.trim() &&
+      form.productName.trim() &&
+      form.rating &&
+      form.message.trim()
+    );
+  }, [form.name, form.productId, form.productName, form.rating, form.message]);
+
+  useEffect(() => {
+    if (!activeProducts.length) return;
+    let matched = null;
+
+    if (form.productId) {
+      matched = activeProducts.find(
+        (product) => String(product?.docId || product?.id || "").trim() === form.productId.trim()
+      );
+    } else if (prefilledProductName) {
+      matched = activeProducts.find(
+        (product) =>
+          String(product?.name || "").trim().toLowerCase() ===
+          String(prefilledProductName).trim().toLowerCase()
+      );
+    }
+
+    if (!matched) return;
+
+    setForm((prev) => ({
+      ...prev,
+      productId: prev.productId || matched.docId || matched.id || "",
+      productName: matched.name || prev.productName,
+    }));
+  }, [activeProducts, form.productId, prefilledProductName]);
 
   useEffect(() => {
     const nextName = userData?.name || currentUser?.displayName || "";
@@ -130,6 +165,7 @@ const Feedback = () => {
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),
+        productId: form.productId.trim(),
         productName: form.productName.trim(),
         rating: form.rating ? Number(form.rating) : null,
         message: form.message.trim(),
@@ -152,12 +188,13 @@ const Feedback = () => {
         throw new Error(msg);
       }
 
-      setSuccess("Thank you. Your feedback has been submitted.");
+      setSuccess("Thank you. Your feedback has been submitted and added to the selected product reviews.");
       setForm((prev) => ({
         ...prev,
         name: userData?.name || currentUser?.displayName || "",
         email: userData?.email || currentUser?.email || "",
         phone: userData?.phone || currentUser?.phoneNumber || "",
+        productId: "",
         productName: "",
         rating: "",
         message: "",
@@ -218,18 +255,32 @@ const Feedback = () => {
                     className={inputBaseClassName}
                   />
                 </Field>
-                <Field label="Product Name" required>
-                  <input
-                    type="text"
-                    value={form.productName}
-                    onChange={(e) => updateField("productName", e.target.value)}
-                    placeholder="Enter the product name"
+                <Field label="Choose Product" required hint="Required for public review sync">
+                  <select
+                    value={form.productId}
+                    onChange={(e) => {
+                      const selected = activeProducts.find(
+                        (product) => String(product?.docId || product?.id || "") === e.target.value
+                      );
+                      updateField("productId", e.target.value);
+                      updateField("productName", selected?.name || "");
+                    }}
                     className={inputBaseClassName}
-                  />
+                  >
+                    <option value="">Select a product</option>
+                    {activeProducts.map((product) => {
+                      const optionId = product.docId || product.id || "";
+                      return (
+                        <option key={optionId} value={optionId}>
+                          {product.name}
+                        </option>
+                      );
+                    })}
+                  </select>
                 </Field>
               </div>
 
-              <Field label="Rating" hint="Optional">
+              <Field label="Rating" required hint="Used in public product reviews">
                 <StarRatingInput value={form.rating} onChange={(value) => updateField("rating", value)} />
               </Field>
 

@@ -1,36 +1,40 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { API_URL, getApiUrl, handleApiError, readSessionCache, writeSessionCache } from "../../utils/api";
 
 const BannerContext = createContext(null);
 const BANNER_CACHE_KEY = "ilika.banners.v1";
 
 export const BannerProvider = ({ children }) => {
-  const [banners, setBanners] = useState([]);
-  const API = import.meta.env.VITE_API_URL;
+  const [banners, setBanners] = useState(() => readSessionCache(BANNER_CACHE_KEY, []));
 
   const fetchBanners = async () => {
-    const res = await fetch(`${API}/api/banners`);
-    if (!res.ok) throw new Error("Failed to fetch banners");
-    const data = await res.json();
-    const list = Array.isArray(data) ? data : [];
-    setBanners(list);
-    sessionStorage.setItem(BANNER_CACHE_KEY, JSON.stringify(list));
-    return list;
+    if (!API_URL) {
+      handleApiError("Banners", new Error("VITE_API_URL is missing"));
+      return banners;
+    }
+
+    try {
+      const res = await fetch(getApiUrl("/api/banners"));
+      if (!res.ok) throw new Error("Failed to fetch banners");
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : [];
+      setBanners(list);
+      writeSessionCache(BANNER_CACHE_KEY, list);
+      return list;
+    } catch (error) {
+      handleApiError("Banners", error);
+      const cached = readSessionCache(BANNER_CACHE_KEY, []);
+      setBanners(cached);
+      return cached;
+    }
   };
 
   useEffect(() => {
-    try {
-      const cached = sessionStorage.getItem(BANNER_CACHE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed)) setBanners(parsed);
-      }
-    } catch (error) {
-      console.error("Banner cache parse error:", error);
-    }
-
     let idleId;
     let timerId;
-    const queueFetch = () => fetchBanners().catch((err) => console.error(err));
+    const queueFetch = () => {
+      fetchBanners();
+    };
 
     if ("requestIdleCallback" in window) {
       idleId = window.requestIdleCallback(queueFetch, { timeout: 2000 });
@@ -45,7 +49,7 @@ export const BannerProvider = ({ children }) => {
   }, []);
 
   const addBanner = async (payload) => {
-    const res = await fetch(`${API}/api/banners`, {
+    const res = await fetch(getApiUrl("/api/banners"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -60,7 +64,7 @@ export const BannerProvider = ({ children }) => {
   };
 
   const updateBanner = async (id, payload) => {
-    const res = await fetch(`${API}/api/banners/${id}`, {
+    const res = await fetch(getApiUrl(`/api/banners/${id}`), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -75,7 +79,7 @@ export const BannerProvider = ({ children }) => {
   };
 
   const deleteBanner = async (id) => {
-    const res = await fetch(`${API}/api/banners/${id}`, { method: "DELETE" });
+    const res = await fetch(getApiUrl(`/api/banners/${id}`), { method: "DELETE" });
     if (!res.ok) throw new Error("Failed to delete banner");
     await fetchBanners();
   };

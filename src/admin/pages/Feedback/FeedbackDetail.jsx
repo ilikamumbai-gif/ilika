@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Star } from "lucide-react";
+import { Eye, Star } from "lucide-react";
 import AdminLayout from "../../components/AdminLayout";
 
 const parseDate = (value) => {
@@ -38,6 +38,13 @@ const StarRating = ({ rating }) => {
       <span className="ml-1 text-sm font-medium text-gray-700">{value}/5</span>
     </div>
   );
+};
+
+const reviewSyncClass = (status = "") => {
+  const value = String(status || "").toLowerCase();
+  if (value === "created") return "bg-emerald-100 text-emerald-700";
+  if (value === "failed") return "bg-red-100 text-red-700";
+  return "bg-amber-100 text-amber-700";
 };
 
 const FeedbackDetail = () => {
@@ -142,10 +149,23 @@ const FeedbackDetail = () => {
           <div>
             <p className="text-gray-500">Product Name</p>
             <p className="font-medium">{feedback.productName || feedback.orderId || "-"}</p>
+            {feedback.productId ? (
+              <p className="text-xs text-gray-400 mt-1">Product ID: {feedback.productId}</p>
+            ) : null}
           </div>
           <div>
             <p className="text-gray-500">Rating</p>
             <StarRating rating={feedback.rating} />
+          </div>
+          <div>
+            <p className="text-gray-500">Review Sync</p>
+            <span className={`inline-flex text-xs px-2.5 py-1 rounded-full font-semibold ${reviewSyncClass(feedback.reviewSyncStatus)}`}>
+              {feedback.reviewSyncStatus === "created"
+                ? "Added to product reviews"
+                : feedback.reviewSyncStatus === "failed"
+                  ? "Sync failed"
+                  : "Pending"}
+            </span>
           </div>
         </div>
 
@@ -175,6 +195,18 @@ const FeedbackDetail = () => {
           >
             Delete Feedback
           </button>
+
+          {feedback.reviewSyncStatus === "created" &&
+          feedback.reviewProductId &&
+          Number.isInteger(Number(feedback.reviewIndex)) ? (
+            <button
+              onClick={() => navigate(`/admin/reviews/${feedback.reviewProductId}/${feedback.reviewIndex}`)}
+              className="h-10 px-4 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center gap-2"
+            >
+              <Eye size={15} />
+              View Review
+            </button>
+          ) : null}
         </div>
       </div>
     </AdminLayout>

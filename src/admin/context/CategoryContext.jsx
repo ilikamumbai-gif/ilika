@@ -1,23 +1,22 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { API_URL, getApiUrl, handleApiError, readSessionCache, writeSessionCache } from "../../utils/api";
 
 export const CategoryContext = createContext(null);
 const CATEGORY_CACHE_KEY = "ilika.categories.v1";
 
 export const CategoryProvider = ({ children }) => {
-  const [categories, setCategories] = useState([]);
-  const API_URL = import.meta.env.VITE_API_URL;
+  const [categories, setCategories] = useState(() =>
+    readSessionCache(CATEGORY_CACHE_KEY, [])
+  );
 
-  /* ===============================
-     FETCH CATEGORIES
-  ================================ */
   const fetchCategories = async () => {
-    try {
-      if (!API_URL) {
-        console.error("❌ VITE_API_URL not defined");
-        return;
-      }
+    if (!API_URL) {
+      handleApiError("Categories", new Error("VITE_API_URL is missing"));
+      return categories;
+    }
 
-      const res = await fetch(`${API_URL}/api/categories`);
+    try {
+      const res = await fetch(getApiUrl("/api/categories"));
 
       if (!res.ok) {
         const text = await res.text();
@@ -25,32 +24,24 @@ export const CategoryProvider = ({ children }) => {
       }
 
       const data = await res.json();
-
-      // Always replace state (important for re-render)
-      setCategories([...data]);
-      sessionStorage.setItem(CATEGORY_CACHE_KEY, JSON.stringify(data));
-
+      const list = Array.isArray(data) ? data : [];
+      setCategories(list);
+      writeSessionCache(CATEGORY_CACHE_KEY, list);
+      return list;
     } catch (error) {
-      console.error("❌ Fetch categories error:", error.message);
+      handleApiError("Categories", error);
+      const cached = readSessionCache(CATEGORY_CACHE_KEY, []);
+      setCategories(cached);
+      return cached;
     }
   };
 
   useEffect(() => {
-    try {
-      const cached = sessionStorage.getItem(CATEGORY_CACHE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed)) {
-          setCategories(parsed);
-        }
-      }
-    } catch (error) {
-      console.error("Category cache parse error:", error);
-    }
-
     let idleId;
     let timerId;
-    const queueFetch = () => fetchCategories();
+    const queueFetch = () => {
+      fetchCategories();
+    };
 
     if ("requestIdleCallback" in window) {
       idleId = window.requestIdleCallback(queueFetch, { timeout: 2000 });
@@ -64,12 +55,9 @@ export const CategoryProvider = ({ children }) => {
     };
   }, []);
 
-  /* ===============================
-     ADD CATEGORY
-  ================================ */
   const addCategory = async (category) => {
     try {
-      const res = await fetch(`${API_URL}/api/categories`, {
+      const res = await fetch(getApiUrl("/api/categories"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(category),
@@ -80,21 +68,16 @@ export const CategoryProvider = ({ children }) => {
         throw new Error(`Add failed: ${text}`);
       }
 
-      // IMPORTANT: re-fetch from DB so all pages update
       await fetchCategories();
-
     } catch (error) {
-      console.error("❌ Add category error:", error.message);
+      handleApiError("Categories", error);
       throw error;
     }
   };
 
-  /* ===============================
-     UPDATE CATEGORY
-  ================================ */
   const updateCategory = async (id, updatedCategory) => {
     try {
-      const res = await fetch(`${API_URL}/api/categories/${id}`, {
+      const res = await fetch(getApiUrl(`/api/categories/${id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedCategory),
@@ -106,19 +89,15 @@ export const CategoryProvider = ({ children }) => {
       }
 
       await fetchCategories();
-
     } catch (error) {
-      console.error("❌ Update category error:", error.message);
+      handleApiError("Categories", error);
       throw error;
     }
   };
 
-  /* ===============================
-     DELETE CATEGORY
-  ================================ */
   const deleteCategory = async (id) => {
     try {
-      const res = await fetch(`${API_URL}/api/categories/${id}`, {
+      const res = await fetch(getApiUrl(`/api/categories/${id}`), {
         method: "DELETE",
       });
 
@@ -128,9 +107,8 @@ export const CategoryProvider = ({ children }) => {
       }
 
       await fetchCategories();
-
     } catch (error) {
-      console.error("❌ Delete category error:", error.message);
+      handleApiError("Categories", error);
       throw error;
     }
   };

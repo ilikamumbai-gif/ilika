@@ -1,19 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, ShoppingBag, User, ChevronDown, Sparkles, Droplets, Scissors, Wand2 } from "lucide-react";
+import { Search, ShoppingBag, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug } from "../utils/slugify";
-import { useCategories } from "../admin/context/CategoryContext";
-
-
-const getMenuFromPath = (pathname = "") => {
-  if (pathname.startsWith("/newarrival")) return "newarrival";
-  if (pathname.startsWith("/skin")) return "skin";
-  if (pathname.startsWith("/hair")) return "hair";
-  if (pathname.startsWith("/grooming")) return "grooming";
-  return null;
-};
 
 const isActivePath = (pathname = "", target = "") => {
   if (target === "/") return pathname === "/";
@@ -49,18 +39,12 @@ const getProductPreviewPrice = (product = {}) => {
   return Number.isFinite(numeric) ? numeric : 0;
 };
 
-// ─────────────────────────────────────────────
-// Shared SearchBar — used in both desktop nav
-// and the standalone mobile header search slot
-// ─────────────────────────────────────────────
-
 export const SearchBar = ({ products = [], onClose, className = "", autoFocus = false }) => {
   const [query, setQuery] = useState("");
   const searchRef = useRef();
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
-  // Filter across name + shortInfo + benefits (limit 6)
   const filtered =
     query.trim().length > 0
       ? products
@@ -70,16 +54,13 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
             p.name,
             p.shortInfo,
             p.categoryName,
-            Array.isArray(p.benefits)
-              ? p.benefits.join(" ")
-              : p.benefits || "",
+            Array.isArray(p.benefits) ? p.benefits.join(" ") : p.benefits || "",
           ].join(" ");
           return normalizeSearchText(haystack).includes(normalizeSearchText(query));
         })
         .slice(0, 6)
       : [];
 
-  // Highlight matched text
   const highlightText = (text = "") => {
     if (!query.trim()) return text;
     const parts = text.split(new RegExp(`(${query})`, "gi"));
@@ -94,7 +75,6 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
     );
   };
 
-  // Enter → /products?q=…
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && query.trim()) {
       navigate(`/products?q=${encodeURIComponent(query.trim())}`);
@@ -103,7 +83,6 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
     }
   };
 
-  // Outside click clears dropdown
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
@@ -145,63 +124,64 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
               const previewImage = getProductPreviewImage(product);
               const previewPrice = getProductPreviewPrice(product);
               return (
-              <Link
-                key={productId}
-                to={`/product/${createSlug(product.name)}`}
-                state={{ id: productId }}
-                onClick={() => {
-                  setQuery("");
-                  setTimeout(() => onClose?.(), 0);
-                }}
-                className="flex items-center gap-3 px-3 py-3 text-[#2c2523] hover:bg-gray-50"
-              >
-                <img loading="lazy"
-                  src={previewImage}
-                  alt={product.name}
-                  className="w-12 h-12 object-cover rounded-md border shrink-0"
-                />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-[#2c2523]">
-                    {highlightText(product.name)}
-                  </p>
-                  {product.shortInfo && (
-                    <p className="truncate text-xs text-gray-500">
-                      {highlightText(product.shortInfo)}
+                <Link
+                  key={productId}
+                  to={`/product/${createSlug(product.name)}`}
+                  state={{ id: productId }}
+                  onClick={() => {
+                    setQuery("");
+                    setTimeout(() => onClose?.(), 0);
+                  }}
+                  className="flex items-center gap-3 px-3 py-3 text-[#2c2523] hover:bg-gray-50"
+                >
+                  <img
+                    loading="lazy"
+                    src={previewImage}
+                    alt={product.name}
+                    className="w-12 h-12 object-cover rounded-md border shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-[#2c2523]">
+                      {highlightText(product.name)}
                     </p>
-                  )}
-                  <p className="text-xs text-gray-500 capitalize">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const categorySlug = createSlug(product.categoryName || "");
-                        if (!categorySlug) return;
-                        setQuery("");
-                        onClose?.();
-                        navigate(`/category/${categorySlug}`);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key !== "Enter" && e.key !== " ") return;
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const categorySlug = createSlug(product.categoryName || "");
-                        if (!categorySlug) return;
-                        setQuery("");
-                        onClose?.();
-                        navigate(`/category/${categorySlug}`);
-                      }}
-                      className="underline cursor-pointer"
-                    >
-                      {product.categoryName}
-                    </span>
-                  </p>
-                  <p className="text-sm font-semibold text-[#1C371C]">
-                    ₹{previewPrice}
-                  </p>
-                </div>
-              </Link>
+                    {product.shortInfo && (
+                      <p className="truncate text-xs text-gray-500">
+                        {highlightText(product.shortInfo)}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 capitalize">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const categorySlug = createSlug(product.categoryName || "");
+                          if (!categorySlug) return;
+                          setQuery("");
+                          onClose?.();
+                          navigate(`/category/${categorySlug}`);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key !== "Enter" && e.key !== " ") return;
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const categorySlug = createSlug(product.categoryName || "");
+                          if (!categorySlug) return;
+                          setQuery("");
+                          onClose?.();
+                          navigate(`/category/${categorySlug}`);
+                        }}
+                        className="underline cursor-pointer"
+                      >
+                        {product.categoryName}
+                      </span>
+                    </p>
+                    <p className="text-sm font-semibold text-[#1C371C]">
+                      Rs{previewPrice}
+                    </p>
+                  </div>
+                </Link>
               );
             })
           ) : (
@@ -217,7 +197,7 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
                 }}
                 className="w-full text-left px-4 py-2 text-sm text-[#E96A6A] font-medium hover:bg-gray-50 border-t"
               >
-                Search all products for "{query}" →
+                Search all products for "{query}" -&gt;
               </button>
             </>
           )}
@@ -227,76 +207,33 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
   );
 };
 
-// ─────────────────────────────────────────────
-// Main Nav — renders links + icons
-// On mobile this is the *drawer* content only
-// (search is NOT included here for mobile)
-// ─────────────────────────────────────────────
-const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
+const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
   const { openCart } = useCart();
-  const menuRef = useRef();
   const searchWrapRef = useRef();
   const location = useLocation();
-  const [openMenu, setOpenMenu] = useState(() => getMenuFromPath(location.pathname));
   const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
   const { products = [] } = useProducts();
-  const { categories = [] } = useCategories();
-  const timerRef = useRef(null);
+  const mobileLinks = [
+    { label: "Home", to: "/" },
+    { label: "New Arrival", to: "/newarrival" },
+    { label: "Explore CTM", to: "/ctm" },
+    { label: "Mask Maker Machine", to: "/voice-mask-maker" },
+  ];
+
   const desktopNavItemClass = (active) =>
-    `relative inline-flex items-center whitespace-nowrap pb-1 text-white/88 transition duration-300 hover:text-white after:absolute after:bottom-0 after:left-0 after:h-[2px] after:rounded-full after:bg-[#e63946] after:transition-all after:duration-300 ${
-      active ? "text-white after:w-full" : "after:w-0 hover:after:w-full"
+    `relative inline-flex items-center whitespace-nowrap pb-1 text-[#3c302c] transition duration-300 hover:text-[#b34140] ${
+      active ? "text-[#b34140]" : ""
     }`;
+
   const mobileNavItemClass = (active) =>
-    `inline-flex items-center whitespace-nowrap transition ${
-      active ? "text-white" : "text-white/88 hover:text-white"
+    `flex min-h-[48px] items-center justify-between rounded-xl px-4 py-3 text-[15px] font-medium transition ${
+      active
+        ? "bg-[#fff1ed] text-[#b34140] shadow-[0_10px_24px_rgba(179,65,64,0.10)]"
+        : "bg-white text-[#3c302c] hover:bg-[#fff5f2]"
     }`;
-
-  const newCategory = categories.find(
-    (c) => c.name.toLowerCase().replace(/\s+/g, "") === "new"
-  );
-
-  const newArrivals = newCategory
-    ? products
-      .filter((p) => p.categoryIds?.includes(newCategory.id))
-      .slice(0, 6)
-    : [];
-
-  const toggleMenu = (menu) => {
-    setOpenMenu((prev) => (prev === menu ? null : menu));
-  };
-
-  useEffect(() => {
-    setOpenMenu(getMenuFromPath(location.pathname));
-  }, [location.pathname]);
-
-  // Auto-close dropdown after 10 seconds
-  useEffect(() => {
-    if (openMenu) {
-      // Clear any existing timer
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-
-      // Set new timer to close after 10 seconds
-      timerRef.current = setTimeout(() => {
-        setOpenMenu(null);
-      }, 5000);
-    }
-
-    // Cleanup timer on unmount or when openMenu changes
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, [openMenu]);
 
   useEffect(() => {
     const handleOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setOpenMenu(null);
-        setDesktopSearchOpen(false);
-      }
       if (searchWrapRef.current && !searchWrapRef.current.contains(e.target)) {
         setDesktopSearchOpen(false);
       }
@@ -307,359 +244,169 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
 
   return (
     <div
-      ref={menuRef}
       className={`${mobile
-        ? "w-full flex flex-col gap-4 py-3 px-3 text-white"
-       : "grid grid-cols-[minmax(0,1fr)_auto] items-center w-full min-w-0 gap-4 text-white"
-        } heading-2-color`}
+        ? "w-full flex flex-col gap-5 py-1 text-[#231815]"
+        : "grid grid-cols-[minmax(0,1fr)_auto] items-center w-full min-w-0 gap-4 text-[#231815]"
+      } heading-2-color`}
     >
-      {/* LINKS */}
       <nav
         className={`${mobile
-          ? "flex flex-col gap-4 text-base w-full"
+          ? "flex flex-col gap-5 text-base w-full"
           : "order-1 flex items-center justify-center justify-self-center gap-3 lg:gap-5 xl:gap-6 text-[14px] lg:text-[15px] xl:text-[16px] whitespace-nowrap min-w-0 w-full"
-          }`}
+        }`}
       >
-        <Link to="/" onClick={onClose} className={mobile ? mobileNavItemClass(isActivePath(location.pathname, "/")) : desktopNavItemClass(isActivePath(location.pathname, "/"))}>
-          Home
-        </Link>
+        {mobile ? (
+          <>
+            <div className="space-y-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a7b72]">
+                Explore
+              </p>
 
-        {/* OFFER */}
-        <div className="relative inline-block group">
-          <Link
-            to="/combo"
-            onClick={onClose}
-            className="
-              whitespace-nowrap font-semibold px-3 py-1 rounded-full
-              bg-black
-              text-white hover:shadow-lg
-              transition-all duration-300
-              animate-[pulse_2.5s_infinite]
-            "
-          >
-            Offer
-          </Link>
-          <span
-            className="
-              absolute -top-2 -right-3 text-[9px] px-2 py-[2px]
-              bg-[#E96A6A] text-white rounded-full shadow
-              animate-bounce
-            "
-          >
-            FREE
-          </span>
-        </div>
-
-        {/* NEW ARRIVALS */}
-        <div className={`${mobile ? "relative w-full group" : "relative group"}`}>
-          {mobile ? (
-            <Link
-              to="/newarrival"
-              onClick={onClose}
-              className={`w-full flex items-center justify-between text-left ${mobileNavItemClass(isActivePath(location.pathname, "/newarrival"))}`}
-            >
-              <span className="whitespace-nowrap">New Arrival</span>
-              <ChevronDown
-                className="w-4 h-4"
-              />
-            </Link>
-          ) : (
-            <div className="flex items-center justify-between">
-              <Link
-                to="/newarrival"
-                onClick={() => setOpenMenu("newarrival")}
-                className={desktopNavItemClass(isActivePath(location.pathname, "/newarrival"))}
-              >
-                New Arrival
-              </Link>
-              <button
-                type="button"
-                onClick={() => toggleMenu("newarrival")}
-                className="cursor-pointer text-white"
-                aria-label="Toggle New Arrival menu"
-              >
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform ${openMenu === "newarrival" ? "rotate-180" : ""}`}
-                />
-              </button>
+              <div className="rounded-2xl border border-[#f1dfd9] bg-white p-2 shadow-[0_12px_28px_rgba(35,24,21,0.06)]">
+                {mobileLinks.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={onClose}
+                    className={mobileNavItemClass(isActivePath(location.pathname, item.to))}
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-lg leading-none text-[#c4a59a]">&gt;</span>
+                  </Link>
+                ))}
+              </div>
             </div>
-          )}
-          <div
-            className={`${mobile
-              ? openMenu === "newarrival"
-                ? "block mt-2"
-                : "hidden"
-              : `absolute left-0 top-full mt-2 min-w-[220px] rounded-xl border border-white/10 bg-[#0f0f10] shadow-2xl z-50 ${openMenu === "newarrival" ? "block" : "hidden"
-              }`
-              }`}
-          >
-            {newArrivals.map((item, idx) => {
-              const itemId = item._id || item.id;
-              const previewImage = getProductPreviewImage(item);
-              return (
+
+            {!!subheaderLinks.length && (
+              <div className="space-y-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a7b72]">
+                  Shop By Category
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {subheaderLinks.map((item) => {
+                    const isActive =
+                      location.pathname === item.to ||
+                      location.pathname.startsWith(`${item.to}/`);
+
+                    return (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={onClose}
+                        className={`rounded-xl border px-3 py-3 text-center text-[13px] font-semibold transition ${
+                          isActive
+                            ? "border-[#eab7aa] bg-[#fff1ed] text-[#b34140]"
+                            : "border-[#f1dfd9] bg-white text-[#5d4a45]"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="rounded-2xl border border-[#f1dfd9] bg-gradient-to-br from-[#fff7f4] to-white p-4 text-[#3c302c] shadow-[0_14px_34px_rgba(35,24,21,0.06)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b34140]">
+                Limited Offer
+              </p>
+              <p className="mt-1 text-base font-semibold">Combo deals made for special customers.</p>
+              <p className="mt-1 text-sm text-[#7b6660]">
+                Jump straight to the current offer and checkout faster.
+              </p>
               <Link
-                key={itemId || `${item.name}-${idx}`}
-                to={`/product/${createSlug(item.name)}`}
-                state={{ id: itemId }}
-                onClick={() => setTimeout(() => onClose?.(), 0)}
-                className="flex items-center gap-3 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
-              >
-                {/* PRODUCT IMAGE */}
-                <img loading="lazy"
-                  src={previewImage}
-                  alt={item.name}
-                  className="w-10 h-10 object-cover rounded-md border"
-                />
-
-                {/* PRODUCT NAME */}
-              <span className="font-medium truncate max-w-[240px]">
-  {item.name}
-</span>
-              </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* SKIN */}
-        <div className={`${mobile ? "relative w-full group" : "relative group"}`}>
-          {mobile ? (
-            <Link
-              to="/skin"
-              onClick={onClose}
-              className={`w-full flex items-center justify-between text-left ${mobileNavItemClass(isActivePath(location.pathname, "/skin"))}`}
-            >
-              <span className="whitespace-nowrap">Skin</span>
-              <ChevronDown
-                className="w-4 h-4"
-              />
-            </Link>
-          ) : (
-            <div className="flex items-center justify-between">
-              <Link to="/skin" onClick={() => setOpenMenu("skin")} className={desktopNavItemClass(isActivePath(location.pathname, "/skin"))}>
-                Skin
-              </Link>
-              <button
-                type="button"
-                onClick={() => toggleMenu("skin")}
-                className="cursor-pointer text-white"
-                aria-label="Toggle Skin menu"
-              >
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform ${openMenu === "skin" ? "rotate-180" : ""}`}
-                />
-              </button>
-            </div>
-          )}
-          <div
-            className={`${mobile
-              ? openMenu === "skin"
-                ? "block mt-2"
-                : "hidden"
-              : `absolute left-0 top-full mt-2 min-w-[220px] rounded-xl border border-white/10 bg-[#0f0f10] shadow-2xl z-50 ${openMenu === "skin" ? "block" : "hidden"
-              }`
-              }`}
-          >
-            <Link
-              to="/skin/face"
-              onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
-            >
-              <Sparkles className="w-4 h-4 text-pink-500" />
-              Face Care
-            </Link>
-
-            <Link
-              to="/skin/body"
-              onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
-            >
-              <Droplets className="w-4 h-4 text-blue-500" />
-              Body Care
-            </Link>
-          </div>
-        </div>
-
-        {/* HAIR */}
-        <div className={`${mobile ? "relative w-full group" : "relative group"}`}>
-          {mobile ? (
-            <Link
-              to="/hair"
-              onClick={onClose}
-              className={`w-full flex items-center justify-between text-left ${mobileNavItemClass(isActivePath(location.pathname, "/hair"))}`}
-            >
-              <span className="whitespace-nowrap">Hair</span>
-              <ChevronDown
-                className="w-4 h-4"
-              />
-            </Link>
-          ) : (
-            <div className="flex items-center justify-between">
-              <Link to="/hair" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/hair"))}>
-                Hair
-              </Link>
-              <button
-                type="button"
-                onClick={() => toggleMenu("hair")}
-                className="cursor-pointer text-white"
-                aria-label="Toggle Hair menu"
-              >
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform ${openMenu === "hair" ? "rotate-180" : ""}`}
-                />
-              </button>
-            </div>
-          )}
-          <div
-            className={`${mobile
-              ? openMenu === "hair"
-                ? "block mt-2"
-                : "hidden"
-              : `absolute left-0 top-full mt-2 min-w-[220px] rounded-xl border border-white/10 bg-[#0f0f10] shadow-2xl z-50 ${openMenu === "hair" ? "block" : "hidden"
-              }`
-              }`}
-          >
-            <Link
-              to="/hair/care"
-              onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
-            >
-              <Scissors className="w-4 h-4 text-gray-600" />
-              Hair Care
-            </Link>
-
-            <Link
-              to="/hair/styling"
-              onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
-            >
-              <Wand2 className="w-4 h-4 text-purple-500" />
-              Hair Styling
-            </Link>
-          </div>
-        </div>
-
-        {/* GROOMING */}
-        <div className={`${mobile ? "relative w-full group" : "relative group"}`}>
-          {mobile ? (
-            <Link
-              to="/grooming"
-              onClick={onClose}
-              className={`w-full flex items-center justify-between text-left ${mobileNavItemClass(isActivePath(location.pathname, "/grooming"))}`}
-            >
-              <span className="whitespace-nowrap">Grooming</span>
-              <ChevronDown
-                className="w-4 h-4"
-              />
-            </Link>
-          ) : (
-            <div className="flex items-center justify-between">
-              <Link
-                to="/grooming"
+                to="/combo"
                 onClick={onClose}
-                className={desktopNavItemClass(isActivePath(location.pathname, "/grooming"))}
+                className="mt-4 inline-flex rounded-full bg-[#231815] px-4 py-2 text-sm font-semibold text-white"
               >
-                Grooming
+                Shop Offer
               </Link>
-              <button
-                type="button"
-                onClick={() => toggleMenu("grooming")}
-                className="cursor-pointer text-white"
-                aria-label="Toggle Grooming menu"
-              >   
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform ${openMenu === "grooming" ? "rotate-180" : ""}`}
-                />
-              </button>
             </div>
-          )}
-          <div
-            className={`${mobile
-              ? openMenu === "grooming"
-                ? "block mt-2"
-                : "hidden"
-              : `absolute left-0 top-full mt-2 min-w-[220px] rounded-xl border border-white/10 bg-[#0f0f10] shadow-2xl z-50 ${openMenu === "grooming" ? "block" : "hidden"
-              }`
-              }`}
-          >
-            <Link
-              to="/grooming/face"
-              onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
-            >
-              <Sparkles className="w-4 h-4 text-green-500" />
-              Face Grooming Tools
+          </>
+        ) : (
+          <>
+            <Link to="/" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/"))}>
+              Home
             </Link>
 
-            <Link
-              to="/grooming/roller"
-              onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
-            >
-              <Wand2 className="w-4 h-4 text-yellow-500" />
-              Roller and Gausha
+            <div className="relative inline-block group">
+              <Link
+                to="/combo"
+                onClick={onClose}
+                className="
+                  whitespace-nowrap font-semibold px-3 py-1 rounded-full
+                  bg-black
+                  text-white hover:shadow-lg
+                  transition-all duration-300
+                  animate-[pulse_2.5s_infinite]
+                "
+              >
+                Offer
+              </Link>
+              <span
+                className="
+                  absolute -top-2 -right-3 text-[9px] px-2 py-[2px]
+                  bg-[#E96A6A] text-white rounded-full shadow
+                  animate-bounce
+                "
+              >
+                FREE
+              </span>
+            </div>
+
+            <Link to="/newarrival" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/newarrival"))}>
+              New Arrival
             </Link>
 
-            <Link
-              to="/grooming/remover"
-              onClick={onClose}
-              className="flex items-center gap-2 px-4 py-3 text-sm text-white/88 transition hover:bg-white/10 hover:text-white"
-            >
-              <Scissors className="w-4 h-4 text-red-500" />
-              Hair Removing Tools
+            <Link to="/ctm" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/ctm"))}>
+              Explore CTM
             </Link>
-          </div>
-        </div>
 
-        <Link to="/ctm" onClick={onClose} className={mobile ? mobileNavItemClass(isActivePath(location.pathname, "/ctm")) : desktopNavItemClass(isActivePath(location.pathname, "/ctm"))}>
-          Explore CTM
-        </Link>
-
-        <Link to="/social-feed" onClick={onClose} className={mobile ? mobileNavItemClass(isActivePath(location.pathname, "/social-feed")) : desktopNavItemClass(isActivePath(location.pathname, "/social-feed"))}>
-          Social Feed
-        </Link>
-
-        <Link to="/blog" onClick={onClose} className={mobile ? mobileNavItemClass(isActivePath(location.pathname, "/blog")) : desktopNavItemClass(isActivePath(location.pathname, "/blog"))}>
-          Product Blog
-        </Link>
-
+            <Link to="/voice-mask-maker" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/voice-mask-maker"))}>
+              Mask Maker Machine
+            </Link>
+          </>
+        )}
       </nav>
 
-      {/* ICONS — desktop only (mobile icons live in the Header) */}
-      {/* ICONS */}
       {mobile ? (
-        /* Mobile: cart + profile inside the drawer */
-        <div className="flex items-center gap-4 pt-3 border-t border-white/10 w-full text-white">
-          <ShoppingBag
-            className="w-6 h-6 shrink-0 cursor-pointer"
-            onClick={() => { openCart(); onClose?.(); }}
-          />
-          <Link to="/user" onClick={onClose} className="shrink-0 text-white">
-            <User className="w-6 h-6" />
+        <div className="grid grid-cols-2 gap-3 w-full border-t border-[#f1dfd9] pt-4 text-[#231815]">
+          <button
+            type="button"
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-[#f1dfd9] bg-white px-3 py-3 text-sm font-semibold shadow-[0_10px_24px_rgba(35,24,21,0.05)]"
+            onClick={() => {
+              openCart();
+              onClose?.();
+            }}
+          >
+            <ShoppingBag className="w-5 h-5 shrink-0" />
+            Cart
+          </button>
+          <Link
+            to="/user"
+            onClick={onClose}
+            className="flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-[#f1dfd9] bg-white px-3 py-3 text-sm font-semibold shadow-[0_10px_24px_rgba(35,24,21,0.05)]"
+          >
+            <User className="w-5 h-5 shrink-0" />
+            Profile
           </Link>
         </div>
       ) : (
-        /* Desktop: profile + cart + search */
-        <div className="order-2 flex items-center justify-end gap-3 xl:gap-4 shrink-0 justify-self-end text-white">
-          <Link to="/user" className="shrink-0 text-white transition hover:text-white/80">
-            <User />
-          </Link>
-          <ShoppingBag
-            className="w-6 h-6 shrink-0 cursor-pointer text-white transition hover:text-white/80"
-            onClick={openCart}
-          />
-          <div ref={searchWrapRef} className="relative">
+        <div className="order-2 flex items-center justify-end gap-3 xl:gap-4 shrink-0 justify-self-end text-[#231815]">
+          <div ref={searchWrapRef} className="relative flex shrink-0 items-center">
             <button
               type="button"
               aria-label="Toggle search"
-              onClick={() => setDesktopSearchOpen((v) => !v)}
-              className="p-1.5 rounded-md text-white transition hover:bg-white/10"
+              onClick={() => setDesktopSearchOpen((value) => !value)}
+              className="inline-flex items-center justify-center shrink-0 text-[#231815] transition hover:text-black"
             >
               <Search className="w-5 h-5" />
             </button>
 
             {desktopSearchOpen && (
-              <div className="absolute right-0 top-full mt-2 z-50 w-[260px]">
+              <div className="absolute right-0 top-full z-[70] mt-3 w-[280px] rounded-2xl border border-[#eadfda] bg-white p-3 shadow-[0_18px_45px_rgba(35,24,21,0.16)] xl:w-[320px]">
                 <SearchBar
                   products={products}
                   autoFocus={desktopSearchOpen}
@@ -672,6 +419,13 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
               </div>
             )}
           </div>
+          <Link to="/user" className="shrink-0 text-[#231815] transition hover:text-black">
+            <User />
+          </Link>
+          <ShoppingBag
+            className="w-6 h-6 shrink-0 cursor-pointer text-[#231815] transition hover:text-black"
+            onClick={openCart}
+          />
         </div>
       )}
     </div>
@@ -679,5 +433,3 @@ const Nav = ({ mobile, onClose, mobileIcons, mobileSearch }) => {
 };
 
 export default Nav;
-
-

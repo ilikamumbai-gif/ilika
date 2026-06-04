@@ -1,7 +1,9 @@
 import React from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { API_URL, getApiUrl, handleApiError, readSessionCache, writeSessionCache } from "../../utils/api";
 
 export const ProductContext = createContext(null);
+const PRODUCT_CACHE_KEY = "ilika.products.v1";
 
 const toCanonicalProduct = (item = {}) => {
   const docId = String(item?.docId || item?.id || item?._id || "").trim();
@@ -19,24 +21,32 @@ const toCanonicalProduct = (item = {}) => {
 };
 
 export const ProductProvider = ({ children }) => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(() =>
+    readSessionCache(PRODUCT_CACHE_KEY, []).map(toCanonicalProduct)
+  );
   const [loading, setLoading] = useState(false);
-  const API = import.meta.env.VITE_API_URL;
 
   const fetchProducts = async () => {
+    if (!API_URL) {
+      handleApiError("Products", new Error("VITE_API_URL is missing"));
+      return products;
+    }
+
     try {
       setLoading(true);
-      const res = await fetch(`${API}/api/products`);
+      const res = await fetch(getApiUrl("/api/products"));
       if (!res.ok) throw new Error("Failed to fetch products");
 
       const data = await res.json();
       const list = Array.isArray(data) ? data.map(toCanonicalProduct) : [];
       setProducts(list);
+      writeSessionCache(PRODUCT_CACHE_KEY, list);
       return list;
     } catch (error) {
-      console.error("Fetch products error:", error);
-      setProducts([]);
-      return [];
+      handleApiError("Products", error);
+      const cached = readSessionCache(PRODUCT_CACHE_KEY, []).map(toCanonicalProduct);
+      setProducts(cached);
+      return cached;
     } finally {
       setLoading(false);
     }
@@ -60,8 +70,8 @@ export const ProductProvider = ({ children }) => {
 
     for (const candidateId of normalizedIds) {
       const endpoints = [
-        `${API}/api/products/${candidateId}`,
-        `${API}/admin/products/edit/${candidateId}`,
+        getApiUrl(`/api/products/${candidateId}`),
+        getApiUrl(`/admin/products/edit/${candidateId}`),
       ];
 
       for (const endpoint of endpoints) {
@@ -85,7 +95,7 @@ export const ProductProvider = ({ children }) => {
   };
 
   const addProduct = async (data) => {
-    const res = await fetch(`${API}/api/products`, {
+    const res = await fetch(getApiUrl("/api/products"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

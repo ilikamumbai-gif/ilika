@@ -1026,6 +1026,72 @@ const normalizeReviewImages = (review = {}) => {
     .slice(0, 2);
 };
 
+const createProductReviewEntry = async ({
+  productId,
+  name = "",
+  rating = 0,
+  comment = "",
+  userId = null,
+  userEmail = null,
+  feedbackId = null,
+  imagesSource = {},
+}) => {
+  const ref = db.collection("products").doc(productId);
+  const doc = await ref.get();
+  if (!doc.exists) {
+    return { error: "Product not found", status: 404 };
+  }
+
+  const product = doc.data() || {};
+  const reviews = Array.isArray(product.reviews) ? [...product.reviews] : [];
+  const parsedRating = Number(rating);
+
+  if (!String(name || "").trim()) {
+    return { error: "Reviewer name is required", status: 400 };
+  }
+
+  if (!String(comment || "").trim()) {
+    return { error: "Review comment is required", status: 400 };
+  }
+
+  if (!Number.isFinite(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+    return { error: "Rating must be between 1 and 5", status: 400 };
+  }
+
+  const images = normalizeReviewImages(imagesSource);
+  const verifiedPurchase = await didUserPurchaseProduct({
+    productId,
+    userId,
+    userEmail,
+  });
+
+  const review = {
+    name: String(name).trim(),
+    rating: parsedRating,
+    comment: String(comment).trim(),
+    image: images[0] || null,
+    images,
+    userId: userId || null,
+    userEmail: userEmail || null,
+    verifiedPurchase,
+    isGenuine: verifiedPurchase,
+    createdAt: new Date(),
+    source: feedbackId ? "feedback" : "review",
+    feedbackId: feedbackId || null,
+  };
+
+  reviews.push(review);
+  const reviewIndex = reviews.length - 1;
+
+  await ref.update({ reviews, updatedAt: Date.now() });
+
+  return {
+    review,
+    reviewIndex,
+    productName: product.name || "",
+  };
+};
+
 const hasPurchasedProductFromOrder = (order = {}, productId = "") => {
   const targetProductId = String(productId || "");
   if (!targetProductId) return false;
@@ -2731,40 +2797,20 @@ app.post("/api/reviews/:productId", async (req, res) => {
     if (!name?.trim()) return res.status(400).json({ error: "Reviewer name is required" });
     if (!comment?.trim()) return res.status(400).json({ error: "Review comment is required" });
 
-    const parsedRating = Number(rating);
-    if (!Number.isFinite(parsedRating) || parsedRating < 1 || parsedRating > 5)
-      return res.status(400).json({ error: "Rating must be between 1 and 5" });
-
-    const ref = db.collection("products").doc(productId);
-    const doc = await ref.get();
-    if (!doc.exists) return res.status(404).json({ error: "Product not found" });
-
-    const data = doc.data();
-    const reviews = Array.isArray(data.reviews) ? [...data.reviews] : [];
-    const images = normalizeReviewImages(req.body);
-    const verifiedPurchase = await didUserPurchaseProduct({
+    const result = await createProductReviewEntry({
       productId,
+      name,
+      rating,
+      comment,
       userId,
       userEmail,
+      imagesSource: req.body,
     });
+    if (result?.error) {
+      return res.status(result.status || 400).json({ error: result.error });
+    }
 
-    const review = {
-      name: String(name).trim(),
-      rating: parsedRating,
-      comment: String(comment).trim(),
-      image: images[0] || null,
-      images,
-      userId: userId || null,
-      userEmail: userEmail || null,
-      verifiedPurchase,
-      isGenuine: verifiedPurchase,
-      createdAt: new Date(),
-    };
-
-    reviews.push(review);
-
-    await ref.update({ reviews, updatedAt: Date.now() });
-    res.json({ message: "Review added successfully", review });
+    res.json({ message: "Review added successfully", review: result.review });
   } catch (err) {
     console.error("ADD REVIEW ERROR:", err);
     res.status(500).json({ error: "Failed to add review" });
@@ -3474,6 +3520,7 @@ app.post("/api/feedback", async (req, res) => {
       name = "",
       email = "",
       phone = "",
+      productId = "",
       productName = "",
       message = "",
       rating = null,
@@ -3489,25 +3536,83 @@ app.post("/api/feedback", async (req, res) => {
       return res.status(400).json({ error: "Feedback message is required" });
     }
 
+    const trimmedProductId = String(productId).trim();
+    if (!trimmedProductId) {
+      return res.status(400).json({ error: "Product is required" });
+    }
+
     const parsedRating = Number(rating);
+    if (!Number.isFinite(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+      return res.status(400).json({ error: "Rating is required for product feedback" });
+    }
+
+    const productRef = db.collection("products").doc(trimmedProductId);
+    const productSnap = await productRef.get();
+    if (!productSnap.exists) {
+      return res.status(404).json({ error: "Selected product not found" });
+    }
+
+    const resolvedProductName =
+      String(productSnap.data()?.name || "").trim() ||
+      String(productName).trim() ||
+      null;
+
     const feedback = {
       name: String(name).trim(),
       email: String(email).trim() || null,
       phone: String(phone).trim() || null,
-      productName: String(productName).trim() || null,
+      productId: trimmedProductId,
+      productName: resolvedProductName,
       message: String(message).trim(),
-      rating: Number.isFinite(parsedRating) && parsedRating >= 1 && parsedRating <= 5
-        ? parsedRating
-        : null,
+      rating: parsedRating,
       userId: userId || null,
       userEmail: userEmail || null,
       status: "open",
+      reviewSyncStatus: "pending",
+      reviewProductId: null,
+      reviewIndex: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     const docRef = await db.collection("feedbacks").add(feedback);
-    res.json({ id: docRef.id, ...feedback });
+
+    const reviewResult = await createProductReviewEntry({
+      productId: trimmedProductId,
+      name,
+      rating: parsedRating,
+      comment: message,
+      userId,
+      userEmail,
+      feedbackId: docRef.id,
+      imagesSource: req.body,
+    });
+
+    if (reviewResult?.error) {
+      await docRef.update({
+        reviewSyncStatus: "failed",
+        reviewSyncError: reviewResult.error,
+        updatedAt: new Date(),
+      });
+      return res.status(reviewResult.status || 400).json({ error: reviewResult.error });
+    }
+
+    await docRef.update({
+      reviewSyncStatus: "created",
+      reviewProductId: trimmedProductId,
+      reviewIndex: reviewResult.reviewIndex,
+      reviewCreatedAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    res.json({
+      id: docRef.id,
+      ...feedback,
+      reviewSyncStatus: "created",
+      reviewProductId: trimmedProductId,
+      reviewIndex: reviewResult.reviewIndex,
+      reviewCreatedAt: new Date(),
+    });
   } catch (error) {
     console.error("ADD FEEDBACK ERROR:", error);
     res.status(500).json({ error: "Failed to save feedback" });

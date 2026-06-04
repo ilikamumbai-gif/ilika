@@ -1,61 +1,67 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { API_URL, getApiUrl, handleApiError, readSessionCache, writeSessionCache } from "../../utils/api";
 
 const ComboContext = createContext(null);
 const COMBO_CACHE_KEY = "ilika.combos.v1";
 
 export const ComboProvider = ({ children }) => {
-  const [combos, setCombos] = useState([]);
-  const API = import.meta.env.VITE_API_URL;
+  const [combos, setCombos] = useState(() => readSessionCache(COMBO_CACHE_KEY, []));
 
   const fetchCombos = async () => {
-    const res = await fetch(`${API}/api/combos`);
-    const data = await res.json();
-    setCombos(data || []);
-    sessionStorage.setItem(COMBO_CACHE_KEY, JSON.stringify(data || []));
+    if (!API_URL) {
+      handleApiError("Combos", new Error("VITE_API_URL is missing"));
+      return combos;
+    }
+
+    try {
+      const res = await fetch(getApiUrl("/api/combos"));
+      if (!res.ok) throw new Error("Failed to fetch combos");
+
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : [];
+      setCombos(list);
+      writeSessionCache(COMBO_CACHE_KEY, list);
+      return list;
+    } catch (error) {
+      handleApiError("Combos", error);
+      const cached = readSessionCache(COMBO_CACHE_KEY, []);
+      setCombos(cached);
+      return cached;
+    }
   };
 
   const addCombo = async (data) => {
-    await fetch(`${API}/api/combos`, {
+    await fetch(getApiUrl("/api/combos"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    fetchCombos();
+    await fetchCombos();
   };
 
   const updateCombo = async (id, data) => {
-    await fetch(`${API}/api/combos/${id}`, {
+    await fetch(getApiUrl(`/api/combos/${id}`), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    fetchCombos();
+    await fetchCombos();
   };
 
   const deleteCombo = async (id) => {
-    await fetch(`${API}/api/combos/${id}`, {
+    await fetch(getApiUrl(`/api/combos/${id}`), {
       method: "DELETE",
     });
-    fetchCombos();
+    await fetchCombos();
   };
 
   useEffect(() => {
-    try {
-      const cached = sessionStorage.getItem(COMBO_CACHE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed)) {
-          setCombos(parsed);
-        }
-      }
-    } catch (error) {
-      console.error("Combo cache parse error:", error);
-    }
-
     let idleId;
     let timerId;
-    const queueFetch = () => fetchCombos();
+    const queueFetch = () => {
+      fetchCombos();
+    };
 
     if ("requestIdleCallback" in window) {
       idleId = window.requestIdleCallback(queueFetch, { timeout: 2200 });

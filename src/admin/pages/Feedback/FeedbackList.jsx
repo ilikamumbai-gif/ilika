@@ -18,6 +18,13 @@ const statusClass = (status = "open") => {
   return "bg-rose-100 text-rose-700";
 };
 
+const reviewSyncClass = (status = "") => {
+  const value = String(status || "").toLowerCase();
+  if (value === "created") return "bg-emerald-100 text-emerald-700";
+  if (value === "failed") return "bg-red-100 text-red-700";
+  return "bg-amber-100 text-amber-700";
+};
+
 const parseApiResponse = async (res) => {
   const text = await res.text();
   let data = null;
@@ -151,8 +158,9 @@ const FeedbackList = () => {
                 <tr className="bg-gray-50 border-b">
                   <th className="px-5 py-3 text-left">Name</th>
                   <th className="px-5 py-3 text-left">Email</th>
-                  <th className="px-5 py-3 text-left">Product Name</th>
+                  <th className="px-5 py-3 text-left">Product</th>
                   <th className="px-5 py-3 text-left">Rating</th>
+                  <th className="px-5 py-3 text-left">Review Sync</th>
                   <th className="px-5 py-3 text-left">Status</th>
                   <th className="px-5 py-3 text-left">Date</th>
                   <th className="px-5 py-3 text-left">Actions</th>
@@ -163,9 +171,23 @@ const FeedbackList = () => {
                   <tr key={item.id} className="border-b hover:bg-gray-50">
                     <td className="px-5 py-4 font-medium">{item.name || "-"}</td>
                     <td className="px-5 py-4 text-gray-600">{item.email || "-"}</td>
-                    <td className="px-5 py-4">{item.productName || item.orderId || "-"}</td>
+                    <td className="px-5 py-4">
+                      <div className="font-medium text-gray-800">{item.productName || item.orderId || "-"}</div>
+                      {item.productId ? (
+                        <div className="text-xs text-gray-400 mt-0.5">{item.productId}</div>
+                      ) : null}
+                    </td>
                     <td className="px-5 py-4">
                       <StarRating rating={item.rating} />
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${reviewSyncClass(item.reviewSyncStatus)}`}>
+                        {item.reviewSyncStatus === "created"
+                          ? "Added to reviews"
+                          : item.reviewSyncStatus === "failed"
+                            ? "Sync failed"
+                            : "Pending"}
+                      </span>
                     </td>
                     <td className="px-5 py-4">
                       <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${statusClass(item.status)}`}>

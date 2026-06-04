@@ -201,6 +201,9 @@ const Footer = ({ theme = "default" }) => {
               essentials designed to make everyday beauty feel elegant, bright, and easy.
             </p>
 
+            <p className={`mt-5 text-[15px] font-semibold uppercase tracking-[0.08em] ${accentText}`}>
+              Also Available On
+            </p>
             <div className="mt-5 flex items-center justify-center gap-3">
               {marketplaces.map(({ href, src, alt }) => (
                 <a key={alt} href={href} target="_blank" rel="noopener noreferrer" aria-label={alt}>
@@ -264,9 +267,24 @@ const Footer = ({ theme = "default" }) => {
               Discover premium yet affordable skin care, hair care, and grooming
               essentials designed to make everyday beauty feel elegant, bright, and easy.
             </p>
+          </div>
 
-            <div className="space-y-1.5">
-              <p className={`text-xs font-semibold ${accentText}`}>Also Available On</p>
+          <div className="space-y-3">
+            <h4 className={`text-sm font-semibold uppercase tracking-[0.18em] ${accentText}`}>
+              Quick Links
+            </h4>
+            <div className="grid grid-cols-1 gap-y-2">
+              {quickLinks.map((link) => (
+                <FooterLink key={link.to} to={link.to} icon={link.icon}>
+                  {link.label}
+                </FooterLink>
+              ))}
+            </div>
+
+            <div className="space-y-1.5 pt-3">
+              <p className={`text-sm font-semibold uppercase tracking-[0.18em] ${accentText}`}>
+                Also Available On
+              </p>
               <div className="flex gap-3">
                 {marketplaces.map(({ href, src, alt }) => (
                   <a key={alt} href={href} target="_blank" rel="noopener noreferrer" aria-label={alt}>
@@ -280,19 +298,6 @@ const Footer = ({ theme = "default" }) => {
                   </a>
                 ))}
               </div>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className={`text-sm font-semibold uppercase tracking-[0.18em] ${accentText}`}>
-              Quick Links
-            </h4>
-            <div className="grid grid-cols-1 gap-y-2">
-              {quickLinks.map((link) => (
-                <FooterLink key={link.to} to={link.to} icon={link.icon}>
-                  {link.label}
-                </FooterLink>
-              ))}
             </div>
           </div>
 

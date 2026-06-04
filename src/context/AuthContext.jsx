@@ -1,9 +1,8 @@
 import React from "react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { API_URL, getApiUrl, handleApiError } from "../utils/api";
 
 const AuthContext = createContext(null);
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -31,9 +30,12 @@ export const AuthProvider = ({ children }) => {
      FETCH FIRESTORE USER DATA
   ================================ */
   const ensureUserRecord = async (firebaseUser) => {
-    if (!firebaseUser?.uid) return;
+    if (!firebaseUser?.uid || !API_URL) {
+      if (!API_URL) handleApiError("Auth", new Error("VITE_API_URL is missing"));
+      return;
+    }
 
-    const res = await fetch(`${API_URL}/api/users/login`, {
+    const res = await fetch(getApiUrl("/api/users/login"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -51,11 +53,17 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = async (uid, firebaseUser = null) => {
     try {
+      if (!API_URL) {
+        handleApiError("Auth", new Error("VITE_API_URL is missing"));
+        setUserData(null);
+        return;
+      }
+
       if (firebaseUser) {
         await ensureUserRecord(firebaseUser);
       }
 
-      const res = await fetch(`${API_URL}/api/users/${uid}`);
+      const res = await fetch(getApiUrl(`/api/users/${uid}`));
 
       if (res.ok) {
         const data = await res.json();
@@ -71,7 +79,8 @@ export const AuthProvider = ({ children }) => {
         console.warn(`User ${uid} not yet available in DB.`);
       }
     } catch (err) {
-      console.error("Network or parsing error:", err);
+      handleApiError("Auth", err);
+      setUserData(null);
     }
   };
 
