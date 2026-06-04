@@ -14,7 +14,6 @@ const API = import.meta.env.VITE_API_URL;
 const Blog = () => {
   const { products = [] } = useProducts();
   const [blogs, setBlogs] = useState([]);
-  const [visibleRestCount, setVisibleRestCount] = useState(4);
 
   useEffect(() => {
     let ignore = false;
@@ -38,10 +37,6 @@ const Blog = () => {
 
   const featuredBlog = useMemo(() => (blogs.length ? blogs[0] : null), [blogs]);
   const restBlogs = useMemo(() => (blogs.length > 1 ? blogs.slice(1) : []), [blogs]);
-  const visibleRestBlogs = useMemo(
-    () => restBlogs.slice(0, visibleRestCount),
-    [restBlogs, visibleRestCount]
-  );
   const nonVoiceMaskMakerImage = useMemo(() => {
     const target = products.find((product) => {
       const name = String(product?.name || "").toLowerCase();
@@ -148,21 +143,6 @@ const Blog = () => {
     [blackheadRemoverImage, hfWandImage, nonVoiceMaskMakerImage]
   );
 
-  useEffect(() => {
-    setVisibleRestCount(4);
-    if (restBlogs.length <= 4) return;
-
-    const revealAll = () => setVisibleRestCount(restBlogs.length);
-
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(revealAll, { timeout: 1400 });
-      return () => window.cancelIdleCallback(id);
-    }
-
-    const timeoutId = window.setTimeout(revealAll, 1000);
-    return () => window.clearTimeout(timeoutId);
-  }, [restBlogs.length]);
-
   return (
     <>
       <MiniDivider />
@@ -213,17 +193,9 @@ const Blog = () => {
               {featuredBlog && (
                 <section>
                   <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Featured</p>
-                  <div className="mx-auto w-full max-w-[420px] sm:mx-0 sm:max-w-[360px]">
-                    <BlogCard blog={featuredBlog} prioritizeImage />
-                  </div>
-                </section>
-              )}
-
-              {restBlogs.length > 0 && (
-                <section>
-                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Latest Articles</p>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-                    {visibleRestBlogs.map((blog) => (
+                    <BlogCard blog={featuredBlog} prioritizeImage />
+                    {restBlogs.map((blog) => (
                       <BlogCard key={blog.id} blog={blog} />
                     ))}
                   </div>
