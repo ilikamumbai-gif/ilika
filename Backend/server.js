@@ -3712,9 +3712,7 @@ app.put("/api/feedback/:id/review-toggle", async (req, res) => {
 
     const feedback = feedbackSnap.data() || {};
     const reviewProductId = String(feedback.reviewProductId || feedback.productId || "").trim();
-    const reviewIndex = Number(feedback.reviewIndex);
-
-    if (!reviewProductId || !Number.isInteger(reviewIndex) || reviewIndex < 0) {
+    if (!reviewProductId) {
       return res.status(400).json({ error: "Linked product review not found for this feedback" });
     }
 
@@ -3724,21 +3722,93 @@ app.put("/api/feedback/:id/review-toggle", async (req, res) => {
 
     const product = productSnap.data() || {};
     const reviews = Array.isArray(product.reviews) ? [...product.reviews] : [];
-    const review = reviews[reviewIndex];
-    if (!review) return res.status(404).json({ error: "Review not found" });
+    let reviewIndex = Number(feedback.reviewIndex);
 
-    reviews[reviewIndex] = {
-      ...review,
-      isFeedbackReview: nextValue,
-      source: nextValue ? "feedback" : "review",
-      updatedAt: new Date(),
-    };
+    if (!Number.isInteger(reviewIndex) || reviewIndex < 0 || !reviews[reviewIndex]) {
+      reviewIndex = reviews.findIndex((item) => String(item?.feedbackId || "") === String(req.params.id));
+    }
 
-    await productRef.update({ reviews, updatedAt: Date.now() });
-    await feedbackRef.update({
-      isFeedbackReview: nextValue,
-      updatedAt: new Date(),
-    });
+    if (nextValue === false) {
+      if (reviewIndex >= 0 && reviews[reviewIndex]) {
+        reviews.splice(reviewIndex, 1);
+        await productRef.update({ reviews, updatedAt: Date.now() });
+
+        const relatedFeedbacks = await db
+          .collection("feedbacks")
+          .where("reviewProductId", "==", reviewProductId)
+          .get();
+
+        const batch = db.batch();
+        relatedFeedbacks.docs.forEach((doc) => {
+          const data = doc.data() || {};
+          if (doc.id === req.params.id) {
+            batch.update(doc.ref, {
+              isFeedbackReview: false,
+              reviewSyncStatus: "removed",
+              reviewIndex: null,
+              updatedAt: new Date(),
+            });
+            return;
+          }
+
+          const currentIndex = Number(data.reviewIndex);
+          if (Number.isInteger(currentIndex) && currentIndex > reviewIndex) {
+            batch.update(doc.ref, {
+              reviewIndex: currentIndex - 1,
+              updatedAt: new Date(),
+            });
+          }
+        });
+        await batch.commit();
+      } else {
+        await feedbackRef.update({
+          isFeedbackReview: false,
+          reviewSyncStatus: "removed",
+          reviewIndex: null,
+          updatedAt: new Date(),
+        });
+      }
+    } else {
+      if (reviewIndex >= 0 && reviews[reviewIndex]) {
+        reviews[reviewIndex] = {
+          ...reviews[reviewIndex],
+          isFeedbackReview: true,
+          source: "feedback",
+          updatedAt: new Date(),
+        };
+        await productRef.update({ reviews, updatedAt: Date.now() });
+        await feedbackRef.update({
+          isFeedbackReview: true,
+          reviewSyncStatus: "created",
+          reviewIndex,
+          updatedAt: new Date(),
+        });
+      } else {
+        const recreated = await createProductReviewEntry({
+          productId: reviewProductId,
+          name: feedback.name || "",
+          rating: feedback.rating || 0,
+          comment: feedback.message || "",
+          userId: feedback.userId || null,
+          userEmail: feedback.userEmail || feedback.email || null,
+          feedbackId: req.params.id,
+          imagesSource: feedback,
+        });
+
+        if (recreated?.error) {
+          return res.status(recreated.status || 400).json({ error: recreated.error });
+        }
+
+        await feedbackRef.update({
+          isFeedbackReview: true,
+          reviewSyncStatus: "created",
+          reviewIndex: recreated.reviewIndex,
+          reviewProductId,
+          reviewCreatedAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+    }
 
     res.json({ message: "Feedback review toggle updated", isFeedbackReview: nextValue });
   } catch (error) {
