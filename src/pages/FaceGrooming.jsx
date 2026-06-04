@@ -1,5 +1,4 @@
 import React from 'react'
-import React from 'react'
 import { useCategories } from "../admin/context/CategoryContext";
 
 import ProductList from '../components/ProductList'
