@@ -2771,6 +2771,8 @@ app.get("/api/reviews", async (req, res) => {
             verifiedPurchase,
             isGenuine: verifiedPurchase,
             userType: getReviewUserType({ verifiedPurchase }),
+            isFeedbackReview: r.isFeedbackReview === true || r.source === "feedback",
+            feedbackId: r.feedbackId || null,
             createdAt: r.createdAt || null,
           });
         });
@@ -2847,10 +2849,45 @@ app.get("/api/reviews/:productId/:index", async (req, res) => {
       verifiedPurchase,
       isGenuine: verifiedPurchase,
       userType: getReviewUserType({ verifiedPurchase }),
+      isFeedbackReview: review.isFeedbackReview === true || review.source === "feedback",
+      feedbackId: review.feedbackId || null,
       createdAt: review.createdAt || null,
     });
   } catch {
     res.status(500).json({ error: "Failed" });
+  }
+});
+
+app.put("/api/reviews/:productId/:index", async (req, res) => {
+  try {
+    const { productId, index } = req.params;
+    const ref = db.collection("products").doc(productId);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ error: "Product not found" });
+
+    const data = doc.data() || {};
+    const reviews = Array.isArray(data.reviews) ? [...data.reviews] : [];
+    const reviewIndex = Number(index);
+    const review = reviews[reviewIndex];
+    if (!review) return res.status(404).json({ error: "Review not found" });
+
+    if (typeof req.body?.isFeedbackReview !== "boolean") {
+      return res.status(400).json({ error: "isFeedbackReview must be a boolean" });
+    }
+
+    const nextIsFeedbackReview = req.body.isFeedbackReview === true;
+    reviews[reviewIndex] = {
+      ...review,
+      isFeedbackReview: nextIsFeedbackReview,
+      source: nextIsFeedbackReview ? "feedback" : "review",
+      updatedAt: new Date(),
+    };
+
+    await ref.update({ reviews, updatedAt: Date.now() });
+    res.json({ message: "Review updated", review: reviews[reviewIndex] });
+  } catch (error) {
+    console.error("UPDATE REVIEW ERROR:", error);
+    res.status(500).json({ error: "Failed to update review" });
   }
 });
 

@@ -42,6 +42,7 @@ const ReviewDetail = () => {
 
   const [review, setReview] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [savingToggle, setSavingToggle] = useState(false);
 
 
   /* ================= FETCH ================= */
@@ -104,6 +105,34 @@ const ReviewDetail = () => {
 
     }
 
+  };
+
+  const updateFeedbackToggle = async (nextValue) => {
+    if (savingToggle) return;
+
+    try {
+      setSavingToggle(true);
+      const res = await fetch(`${API}/api/reviews/${productId}/${index}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFeedbackReview: nextValue }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to update review");
+      }
+
+      setReview((prev) => ({
+        ...prev,
+        isFeedbackReview: nextValue,
+      }));
+    } catch (err) {
+      console.error("Review toggle update failed", err);
+      alert(err?.message || "Unable to update feedback toggle");
+    } finally {
+      setSavingToggle(false);
+    }
   };
 
 
@@ -214,6 +243,31 @@ const ReviewDetail = () => {
           <p className={`font-medium ${review.verifiedPurchase ? "text-emerald-600" : "text-gray-500"}`}>
             {review.verifiedPurchase ? "Yes" : "No"}
           </p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-500">
+            Feedback Review
+          </p>
+          <label className="mt-2 inline-flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => updateFeedbackToggle(!(review.isFeedbackReview === true))}
+              disabled={savingToggle}
+              className={`relative inline-flex h-7 w-12 items-center rounded-full transition ${
+                review.isFeedbackReview === true ? "bg-blue-600" : "bg-gray-300"
+              } ${savingToggle ? "opacity-60 cursor-not-allowed" : ""}`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                  review.isFeedbackReview === true ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <span className={`text-sm font-medium ${review.isFeedbackReview === true ? "text-blue-600" : "text-gray-500"}`}>
+              {review.isFeedbackReview === true ? "Yes, this is a feedback review" : "No, this is a normal review"}
+            </span>
+          </label>
         </div>
 
 
