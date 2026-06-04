@@ -62,6 +62,7 @@ const FeedbackList = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [togglingId, setTogglingId] = useState("");
 
   const fetchFeedbacks = async () => {
     try {
@@ -92,6 +93,34 @@ const FeedbackList = () => {
       setFeedbacks((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error("Delete feedback failed:", err);
+    }
+  };
+
+  const updateFeedbackReviewToggle = async (id, nextValue) => {
+    if (togglingId) return;
+    try {
+      setTogglingId(id);
+      const res = await fetch(`${API}/api/feedback/${id}/review-toggle`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFeedbackReview: nextValue }),
+      });
+      const { data, text } = await parseApiResponse(res);
+      if (!res.ok) {
+        const isHtmlError = typeof text === "string" && text.trim().startsWith("<!DOCTYPE");
+        throw new Error(isHtmlError ? "Feedback toggle API route not found." : data?.error || "Toggle update failed");
+      }
+
+      setFeedbacks((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, isFeedbackReview: nextValue } : item
+        )
+      );
+    } catch (err) {
+      console.error("Feedback review toggle failed:", err);
+      alert(err?.message || "Unable to update feedback review toggle");
+    } finally {
+      setTogglingId("");
     }
   };
 
@@ -160,6 +189,7 @@ const FeedbackList = () => {
                   <th className="px-5 py-3 text-left">Email</th>
                   <th className="px-5 py-3 text-left">Product</th>
                   <th className="px-5 py-3 text-left">Rating</th>
+                  <th className="px-5 py-3 text-left">Feedback Review</th>
                   <th className="px-5 py-3 text-left">Review Sync</th>
                   <th className="px-5 py-3 text-left">Status</th>
                   <th className="px-5 py-3 text-left">Date</th>
@@ -179,6 +209,27 @@ const FeedbackList = () => {
                     </td>
                     <td className="px-5 py-4">
                       <StarRating rating={item.rating} />
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => updateFeedbackReviewToggle(item.id, !(item.isFeedbackReview === true))}
+                          disabled={togglingId === item.id}
+                          className={`relative inline-flex h-8 w-14 items-center rounded-full transition ${
+                            item.isFeedbackReview === true ? "bg-blue-600" : "bg-gray-300"
+                          } ${togglingId === item.id ? "opacity-60 cursor-not-allowed" : ""}`}
+                        >
+                          <span
+                            className={`inline-block h-6 w-6 transform rounded-full bg-white transition ${
+                              item.isFeedbackReview === true ? "translate-x-7" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                        <span className={`text-sm font-medium ${item.isFeedbackReview === true ? "text-blue-600" : "text-gray-500"}`}>
+                          {item.isFeedbackReview === true ? "Yes" : "No"}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-5 py-4">
                       <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${reviewSyncClass(item.reviewSyncStatus)}`}>

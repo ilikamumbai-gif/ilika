@@ -3605,6 +3605,7 @@ app.post("/api/feedback", async (req, res) => {
       userId: userId || null,
       userEmail: userEmail || null,
       status: "open",
+      isFeedbackReview: true,
       reviewSyncStatus: "pending",
       reviewProductId: null,
       reviewIndex: null,
@@ -3695,6 +3696,54 @@ app.put("/api/feedback/:id/status", async (req, res) => {
   } catch (error) {
     console.error("UPDATE FEEDBACK STATUS ERROR:", error);
     res.status(500).json({ error: "Failed to update feedback status" });
+  }
+});
+
+app.put("/api/feedback/:id/review-toggle", async (req, res) => {
+  try {
+    const nextValue = req.body?.isFeedbackReview;
+    if (typeof nextValue !== "boolean") {
+      return res.status(400).json({ error: "isFeedbackReview must be a boolean" });
+    }
+
+    const feedbackRef = db.collection("feedbacks").doc(req.params.id);
+    const feedbackSnap = await feedbackRef.get();
+    if (!feedbackSnap.exists) return res.status(404).json({ error: "Feedback not found" });
+
+    const feedback = feedbackSnap.data() || {};
+    const reviewProductId = String(feedback.reviewProductId || feedback.productId || "").trim();
+    const reviewIndex = Number(feedback.reviewIndex);
+
+    if (!reviewProductId || !Number.isInteger(reviewIndex) || reviewIndex < 0) {
+      return res.status(400).json({ error: "Linked product review not found for this feedback" });
+    }
+
+    const productRef = db.collection("products").doc(reviewProductId);
+    const productSnap = await productRef.get();
+    if (!productSnap.exists) return res.status(404).json({ error: "Product not found" });
+
+    const product = productSnap.data() || {};
+    const reviews = Array.isArray(product.reviews) ? [...product.reviews] : [];
+    const review = reviews[reviewIndex];
+    if (!review) return res.status(404).json({ error: "Review not found" });
+
+    reviews[reviewIndex] = {
+      ...review,
+      isFeedbackReview: nextValue,
+      source: nextValue ? "feedback" : "review",
+      updatedAt: new Date(),
+    };
+
+    await productRef.update({ reviews, updatedAt: Date.now() });
+    await feedbackRef.update({
+      isFeedbackReview: nextValue,
+      updatedAt: new Date(),
+    });
+
+    res.json({ message: "Feedback review toggle updated", isFeedbackReview: nextValue });
+  } catch (error) {
+    console.error("UPDATE FEEDBACK REVIEW TOGGLE ERROR:", error);
+    res.status(500).json({ error: "Failed to update feedback review toggle" });
   }
 });
 

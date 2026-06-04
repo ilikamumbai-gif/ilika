@@ -54,6 +54,7 @@ const FeedbackDetail = () => {
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(true);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [toggleUpdating, setToggleUpdating] = useState(false);
 
   const fetchFeedback = async () => {
     try {
@@ -116,6 +117,29 @@ const FeedbackDetail = () => {
     }
   };
 
+  const updateFeedbackReviewToggle = async (nextValue) => {
+    if (!feedback || toggleUpdating) return;
+    setToggleUpdating(true);
+    try {
+      const res = await fetch(`${API}/api/feedback/${id}/review-toggle`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFeedbackReview: nextValue }),
+      });
+      const { data, text } = await parseApiResponse(res);
+      if (!res.ok) {
+        const isHtmlError = typeof text === "string" && text.trim().startsWith("<!DOCTYPE");
+        throw new Error(isHtmlError ? "Feedback toggle API route not found." : data?.error || "Toggle update failed");
+      }
+      setFeedback((prev) => ({ ...prev, isFeedbackReview: nextValue }));
+    } catch (err) {
+      console.error("Feedback review toggle failed:", err);
+      alert(err?.message || "Unable to update feedback review toggle");
+    } finally {
+      setToggleUpdating(false);
+    }
+  };
+
   if (loading) return <AdminLayout>Loading...</AdminLayout>;
   if (!feedback) return <AdminLayout>Feedback not found.</AdminLayout>;
 
@@ -166,6 +190,28 @@ const FeedbackDetail = () => {
                   ? "Sync failed"
                   : "Pending"}
             </span>
+          </div>
+          <div>
+            <p className="text-gray-500">Feedback Review</p>
+            <label className="mt-2 inline-flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => updateFeedbackReviewToggle(!(feedback.isFeedbackReview === true))}
+                disabled={toggleUpdating}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition ${
+                  feedback.isFeedbackReview === true ? "bg-blue-600" : "bg-gray-300"
+                } ${toggleUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                <span
+                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition ${
+                    feedback.isFeedbackReview === true ? "translate-x-7" : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${feedback.isFeedbackReview === true ? "text-blue-600" : "text-gray-500"}`}>
+                {feedback.isFeedbackReview === true ? "Yes, this is a feedback review" : "No, this is not a feedback review"}
+              </span>
+            </label>
           </div>
         </div>
 

@@ -27,8 +27,6 @@ const getUserType = (review) => {
   return "fake";
 };
 
-const getFeedbackReviewType = (review) => review?.isFeedbackReview === true;
-
 const ReviewList = () => {
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
@@ -172,7 +170,7 @@ const ReviewList = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F0F0F0" }}>
-                    {["Product", "Reviewer", "Email", "User Type", "Feedback", "Rating", "Comment", "Image", "Actions"].map((h) => (
+                    {["Product", "Reviewer", "Email", "User Type", "Rating", "Comment", "Image", "Actions"].map((h) => (
                       <th
                         key={h}
                         className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide"
@@ -204,17 +202,6 @@ const ReviewList = () => {
                           }`}
                         >
                           {getUserType(row) === "genuine" ? "Genuine" : "Fake"}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            getFeedbackReviewType(row)
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-gray-100 text-gray-600"
-                          }`}
-                        >
-                          {getFeedbackReviewType(row) ? "Feedback" : "Normal"}
                         </span>
                       </td>
                       <td className="px-5 py-4">
@@ -276,9 +263,6 @@ const ReviewList = () => {
                         }`}
                       >
                         {getUserType(row) === "genuine" ? "Genuine User" : "Fake User"}
-                      </p>
-                      <p className={`text-[11px] font-semibold mt-1 ${getFeedbackReviewType(row) ? "text-blue-600" : "text-gray-500"}`}>
-                        {getFeedbackReviewType(row) ? "Feedback Review" : "Normal Review"}
                       </p>
                     </div>
                     <div className="flex gap-1.5 shrink-0">
