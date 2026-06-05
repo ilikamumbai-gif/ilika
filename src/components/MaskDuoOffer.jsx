@@ -212,10 +212,9 @@ const MaskDuoOffer = () => {
 
   return (
     <section
-      className="max-w-[1360px] mx-auto px-4 pb-16 pt-4"
-    
+      className="mx-auto max-w-[1360px] px-3 pb-10 pt-3 sm:px-4 sm:pb-16 sm:pt-4"
     >
-      <div className="text-center mb-4">
+      <div className="mb-3 text-center sm:mb-4">
    
 
         <div className="flex justify-center">
@@ -239,31 +238,31 @@ const MaskDuoOffer = () => {
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_350px] items-start">
+      <div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_350px] lg:gap-8 items-start">
         <div className="lg:col-span-3">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="mb-5 flex items-center gap-3 sm:mb-6 sm:gap-4">
             <span
-              className="inline-flex h-14 w-14 items-center justify-center rounded-full"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full sm:h-14 sm:w-14"
               style={{ background: PRIMARY_LIGHT, color: PRIMARY }}
             >
-              <Heart className="h-7 w-7 fill-current" />
+              <Heart className="h-5 w-5 fill-current sm:h-7 sm:w-7" />
             </span>
             <div>
-              <h3 className="text-[1.9rem] font-semibold text-[#111827]">
+              <h3 className="text-[1.3rem] font-semibold text-[#111827] sm:text-[1.9rem]">
                 2 Premium Masks
               </h3>
               <div className="mt-2 h-[3px] w-14 rounded-full" style={{ background: "#ef4444" }} />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-3 md:gap-6">
             {maskProducts.map((product) => {
               const benefits = maskBenefits[normalizeName(product.name)] || [];
 
               return (
                 <div
                   key={product._id || product.id}
-                  className="transition-all duration-300 hover:scale-[1.01] rounded-[24px] p-4 bg-white"
+                  className="rounded-[20px] bg-white p-4 transition-all duration-300 hover:scale-[1.01] sm:rounded-[24px]"
                   style={{
                     border: "1px solid #e5e7eb",
                     boxShadow: "0 16px 40px rgba(15,23,42,0.08)",
@@ -271,22 +270,22 @@ const MaskDuoOffer = () => {
                 >
                 
 
-                  <div className="h-[290px] flex items-center justify-center">
+                  <div className="flex h-[220px] items-center justify-center sm:h-[290px]">
                     <img
                       src={getImage(product)}
                       alt={product.name}
-                      className="max-h-[265px] object-contain"
+                      className="max-h-[200px] object-contain sm:max-h-[265px]"
                     />
                   </div>
 
                   <div className="mt-4 text-center">
-                    <h4 className="text-[0.98rem] md:text-[1rem] font-bold leading-snug text-[#111827]">
+                    <h4 className="text-[0.92rem] font-bold leading-snug text-[#111827] sm:text-[0.98rem] md:text-[1rem]">
                       {product.name}
                     </h4>
                   </div>
 
                   <div
-                    className="mt-5 grid grid-cols-4 gap-2 rounded-2xl px-3 py-4"
+                    className="mt-4 grid grid-cols-2 gap-3 rounded-2xl px-3 py-4 sm:mt-5 sm:grid-cols-4 sm:gap-2"
                     style={{ background: "#fff8f8" }}
                   >
                     {benefits.map((benefit) => {
@@ -298,7 +297,7 @@ const MaskDuoOffer = () => {
                           style={{ color: PRIMARY }}
                         >
                           <Icon className="h-4 w-4" />
-                          <span className="text-[11px] leading-4">{benefit.label}</span>
+                          <span className="text-[10px] leading-4 sm:text-[11px]">{benefit.label}</span>
                         </div>
                       );
                     })}
@@ -308,7 +307,7 @@ const MaskDuoOffer = () => {
             })}
 
             <div
-              className={`transition-all duration-200 hover:scale-[1.01] rounded-[24px] p-4 bg-white border border-[#e5e7eb] relative overflow-hidden shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition-opacity duration-300 ${
+              className={`relative overflow-hidden rounded-[20px] border border-[#e5e7eb] bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition-all duration-200 transition-opacity duration-300 hover:scale-[1.01] sm:rounded-[24px] ${
                 isFading ? "opacity-0 scale-95" : "opacity-100 scale-100"
               }`}
             >
@@ -317,20 +316,20 @@ const MaskDuoOffer = () => {
                   <span className="absolute top-4 left-4 z-10 bg-green-500 text-white text-[10px] px-4 py-[2px] rounded-full font-bold">
                     FREE
                   </span>
-                  <div className="h-[290px] flex items-center justify-center">
+                  <div className="flex h-[220px] items-center justify-center sm:h-[290px]">
                     <img
                       src={getImage(currentFreeMask)}
                       alt={selectedHydraName}
-                      className="max-h-[265px] object-contain"
+                      className="max-h-[200px] object-contain sm:max-h-[265px]"
                     />
                   </div>
                   <div className="mt-4 text-center">
-                    <h4 className="text-[0.98rem] md:text-[1rem] font-bold leading-snug text-[#111827]">
+                    <h4 className="text-[0.92rem] font-bold leading-snug text-[#111827] sm:text-[0.98rem] md:text-[1rem]">
                       {selectedHydraName}
                     </h4>
                   </div>
                   <div
-                    className="mt-5 grid grid-cols-4 gap-2 rounded-2xl px-3 py-4"
+                    className="mt-4 grid grid-cols-2 gap-3 rounded-2xl px-3 py-4 sm:mt-5 sm:grid-cols-4 sm:gap-2"
                     style={{ background: "#f3fbf5" }}
                   >
                     {freeMaskBenefits.map((benefit) => {
@@ -341,7 +340,7 @@ const MaskDuoOffer = () => {
                           className="flex flex-col items-center gap-2 text-center text-[#166534]"
                         >
                           <Icon className="h-4 w-4" />
-                          <span className="text-[11px] leading-4">{benefit.label}</span>
+                          <span className="text-[10px] leading-4 sm:text-[11px]">{benefit.label}</span>
                         </div>
                       );
                     })}
@@ -355,21 +354,21 @@ const MaskDuoOffer = () => {
         </div>
 
         <div
-          className="rounded-[24px] p-6 shadow-md h-fit sticky top-24"
+          className="order-first h-fit rounded-[20px] p-4 shadow-md sm:rounded-[24px] sm:p-6 lg:order-none lg:sticky lg:top-24"
           style={{
             background: "#ffffff",
             border: "1px solid #e5e7eb",
             boxShadow: "0 18px 45px rgba(15,23,42,0.10)",
           }}
         >
-          <div className="flex items-center gap-3 mb-5">
+          <div className="mb-4 flex items-center gap-3 sm:mb-5">
             <span
-              className="inline-flex h-12 w-12 items-center justify-center rounded-full"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12"
               style={{ background: PRIMARY_LIGHT, color: PRIMARY }}
             >
-              <Heart className="h-6 w-6 fill-current" />
+              <Heart className="h-5 w-5 fill-current sm:h-6 sm:w-6" />
             </span>
-            <h3 className="font-semibold text-[1.8rem] text-[#111827]">
+            <h3 className="text-[1.2rem] font-semibold text-[#111827] sm:text-[1.8rem]">
               Your Mask Duo
             </h3>
           </div>
@@ -382,19 +381,19 @@ const MaskDuoOffer = () => {
               <p className="font-medium text-base text-[#111827]">Masks</p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2.5 sm:gap-3">
               {maskProducts.map((product) => (
-                <div key={product._id || product.id} className="relative text-center w-20">
+                <div key={product._id || product.id} className="relative w-[74px] text-center sm:w-20">
                   <div className="bg-white border rounded-xl p-1 shadow-sm">
-                    <img src={getImage(product)} className="w-full h-16 object-contain" />
+                    <img src={getImage(product)} className="h-14 w-full object-contain sm:h-16" />
                   </div>
 
-                  <p className="text-[10px] mt-1 line-clamp-2">{product.name}</p>
+                  <p className="mt-1 line-clamp-2 text-[9px] sm:text-[10px]">{product.name}</p>
                 </div>
               ))}
 
               {currentFreeMask && (
-                <div className="relative text-center w-20">
+                <div className="relative w-[74px] text-center sm:w-20">
                   <span className="absolute -top-2 left-0 bg-green-500 text-white text-[9px] px-2 rounded-full z-10">
                     FREE
                   </span>
@@ -402,11 +401,11 @@ const MaskDuoOffer = () => {
                   <div className="bg-white border border-green-200 rounded-xl p-1 shadow-sm">
                     <img
                       src={getImage(currentFreeMask)}
-                      className="w-full h-16 object-contain"
+                      className="h-14 w-full object-contain sm:h-16"
                     />
                   </div>
 
-                  <p className="text-[10px] mt-1 line-clamp-2 text-green-700 font-medium">
+                  <p className="mt-1 line-clamp-2 text-[9px] font-medium text-green-700 sm:text-[10px]">
                     Hydra Gel
                   </p>
                 </div>
@@ -418,10 +417,10 @@ const MaskDuoOffer = () => {
             <div className="space-y-4">
               <div className="rounded-2xl border border-[#f0e5e5] bg-[#fffafb] px-4 py-4">
                 
-                <div className=" flex items-end justify-between gap-4">
-                  <p className="text-lg font-semibold text-[#18181b]">Combo Price</p>
+                <div className="flex items-end justify-between gap-4">
+                  <p className="text-base font-semibold text-[#18181b] sm:text-lg">Combo Price</p>
                   <p
-                    className="text-[2rem] font-bold leading-none"
+                    className="text-[1.8rem] font-bold leading-none sm:text-[2rem]"
                     style={{ color: PRIMARY }}
                   >
                     Rs{COMBO_PRICE}
@@ -436,7 +435,7 @@ const MaskDuoOffer = () => {
                   return (
                     <div
                       key={item.title}
-                      className={`flex items-start gap-3 bg-white px-4 py-4 ${
+                      className={`flex items-start gap-3 bg-white px-3.5 py-3.5 sm:px-4 sm:py-4 ${
                         index < featureRows.length - 1 ? "border-b border-[#f0e5e5]" : ""
                       }`}
                     >
@@ -447,8 +446,8 @@ const MaskDuoOffer = () => {
                         <Icon className="h-4 w-4" />
                       </span>
                       <div>
-                        <p className="text-base font-semibold text-[#111827]">{item.title}</p>
-                        <p className="text-sm text-[#52525b]">{item.subtitle}</p>
+                        <p className="text-[0.95rem] font-semibold text-[#111827] sm:text-base">{item.title}</p>
+                        <p className="text-xs text-[#52525b] sm:text-sm">{item.subtitle}</p>
                       </div>
                     </div>
                   );
@@ -459,7 +458,7 @@ const MaskDuoOffer = () => {
             <button
               disabled={loading || maskProducts.length < 2}
               onClick={addComboToCart}
-              className="w-full mt-6 py-3.5 rounded-xl font-semibold tracking-wide transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold tracking-wide text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:text-base"
               style={{
                 background: "#2e2e2e",
               }}
@@ -486,26 +485,26 @@ const MaskDuoOffer = () => {
       </div>
 
       <section
-        className="mt-8 rounded-[24px] bg-white px-6 py-6"
+        className="mt-6 rounded-[20px] bg-white px-4 py-5 sm:mt-8 sm:rounded-[24px] sm:px-6 sm:py-6"
         style={{
           border: "1px solid #e5e7eb",
           boxShadow: "0 16px 40px rgba(15,23,42,0.08)",
         }}
       >
-        <div className="grid gap-6 md:grid-cols-4">
+        <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-4">
           {trustItems.map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.title} className="flex items-center gap-4 md:justify-center">
+              <div key={item.title} className="flex items-center gap-3 sm:gap-4 md:justify-center">
                 <span
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full sm:h-11 sm:w-11"
                   style={{ background: PRIMARY_LIGHT, color: PRIMARY }}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </span>
                 <div>
-                  <p className="text-lg font-semibold text-[#18181b]">{item.title}</p>
-                  <p className="text-sm text-[#52525b]">{item.subtitle}</p>
+                  <p className="text-[0.95rem] font-semibold text-[#18181b] sm:text-lg">{item.title}</p>
+                  <p className="text-xs text-[#52525b] sm:text-sm">{item.subtitle}</p>
                 </div>
               </div>
             );

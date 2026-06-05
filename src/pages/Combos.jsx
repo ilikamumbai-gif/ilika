@@ -193,7 +193,7 @@ const Combos = () => {
         <Header />
         <CartDrawer />
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <section className="max-w-3xl mx-auto">
             <Heading
               heading="Best Offers For You"
@@ -201,44 +201,44 @@ const Combos = () => {
             />
           </section>
 
-          <section className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <section className="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
             {offerCards.map((card) => (
               <Link
                 key={card.title}
                 to={card.link}
-                className="group overflow-hidden rounded-[28px] border border-white/60 shadow-[0_18px_45px_rgba(125,88,92,0.14)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_60px_rgba(125,88,92,0.20)]"
+                className="group overflow-hidden rounded-[24px] border border-white/60 shadow-[0_18px_45px_rgba(125,88,92,0.14)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_60px_rgba(125,88,92,0.20)] sm:rounded-[28px]"
                 style={{ background: card.background }}
               >
-                <div className="min-h-[360px] p-7">
+                <div className="min-h-[290px] p-5 sm:min-h-[330px] sm:p-6 lg:min-h-[360px] lg:p-7">
                   <div className="flex h-full flex-col">
                     <p
-                      className="text-sm font-semibold uppercase tracking-[0.12em]"
+                      className="text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-sm"
                       style={{ color: card.badgeColor }}
                     >
                       {card.category}
                     </p>
 
                     <h2
-                      className="mt-5 text-[2rem] font-semibold leading-[1.02] md:text-[2.25rem]"
+                      className="mt-4 text-[1.65rem] font-semibold leading-[1.02] sm:mt-5 sm:text-[1.95rem] md:text-[2.15rem] lg:text-[2.25rem]"
                       style={{ color: card.textColor }}
                     >
                       {card.title}
                     </h2>
 
                     <p
-                      className="mt-3 text-[2.6rem] font-bold leading-none md:text-[3rem]"
+                      className="mt-2 text-[2.1rem] font-bold leading-none sm:mt-3 sm:text-[2.45rem] md:text-[2.8rem] lg:text-[3rem]"
                       style={{ color: card.textColor }}
                     >
                       {card.highlight}
                     </p>
 
-                    <p className="mt-4 max-w-[240px] text-base leading-7 text-[#433531]">
+                    <p className="mt-3 max-w-none text-[0.95rem] leading-6 text-[#433531] sm:mt-4 sm:max-w-[240px] sm:text-base sm:leading-7">
                       {card.description}
                     </p>
 
-                    <div className="mt-auto pt-8">
+                    <div className="mt-auto pt-6 sm:pt-8">
                       <span
-                        className={`inline-flex items-center rounded-full px-6 py-3 text-base font-semibold transition duration-300 ${
+                        className={`inline-flex items-center rounded-full px-5 py-2.5 text-sm font-semibold transition duration-300 sm:px-6 sm:py-3 sm:text-base ${
                           card.buttonVariant === "dark"
                             ? "bg-[#151312] text-white group-hover:bg-[#000000]"
                             : "bg-white text-[#d65584] group-hover:bg-[#fff3f8]"
@@ -253,23 +253,23 @@ const Combos = () => {
             ))}
           </section>
 
-          <section className="my-10 rounded-[28px] border border-[#f4dfe4] bg-white/90 px-5 py-6 shadow-[0_20px_55px_rgba(135,93,97,0.08)] sm:px-8">
-            <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+          <section className="my-8 rounded-[22px] border border-[#f4dfe4] bg-white/90 px-4 py-5 shadow-[0_20px_55px_rgba(135,93,97,0.08)] sm:my-10 sm:rounded-[28px] sm:px-8 sm:py-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-4">
               {trustItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.title}
-                    className="flex items-center gap-3 md:justify-center"
+                    className="flex items-center gap-3 sm:gap-4 md:justify-center"
                   >
-                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fff1f5] text-[#ea6f98]">
-                      <Icon className="h-6 w-6" />
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#fff1f5] text-[#ea6f98] sm:h-12 sm:w-12">
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                     </span>
                     <div>
-                      <p className="text-base font-semibold text-[#211815]">
+                      <p className="text-[0.95rem] font-semibold text-[#211815] sm:text-base">
                         {item.title}
                       </p>
-                      <p className="text-sm text-[#7b6965]">{item.subtitle}</p>
+                      <p className="text-xs text-[#7b6965] sm:text-sm">{item.subtitle}</p>
                     </div>
                   </div>
                 );

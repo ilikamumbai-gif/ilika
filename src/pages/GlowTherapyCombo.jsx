@@ -161,8 +161,8 @@ const GlowTherapyCombo = () => {
         <Header />
         <CartDrawer />
 
-        <section className="max-w-[1360px] mx-auto px-4 pb-14 pt-4">
-          <div className="text-center mb-4">
+        <section className="max-w-[1360px] mx-auto px-3 pb-10 pt-3 sm:px-4 sm:pb-14 sm:pt-4">
+          <div className="mb-3 text-center sm:mb-4">
            
 
             <div className="flex justify-center">
@@ -198,9 +198,9 @@ const GlowTherapyCombo = () => {
             </div>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_360px] items-start">
+          <div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_360px] lg:gap-8 items-start">
             <div className="lg:col-span-2">
-              <h2 className="text-[1.55rem] font-semibold mb-2" style={{ color: "#111827" }}>
+              <h2 className="mb-2 text-[1.35rem] font-semibold sm:text-[1.55rem]" style={{ color: "#111827" }}>
                 Combo Includes
               </h2>
               <div
@@ -208,12 +208,12 @@ const GlowTherapyCombo = () => {
                 style={{ background: PRIMARY }}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+              <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:gap-8">
                 {comboProducts.map((product, index) => (
                   <Link
                     key={product._id || product.id}
                     to={`/product/${createSlug(product.name || "")}`}
-                    className="transition-all duration-300 hover:scale-[1.012] rounded-[22px] p-5 shadow-sm hover:shadow-xl group"
+                    className="group rounded-[20px] p-4 shadow-sm transition-all duration-300 hover:scale-[1.012] hover:shadow-xl sm:rounded-[22px] sm:p-5"
                     style={{
                       background: "#ffffff",
                       border: "1px solid #e5e7eb",
@@ -236,17 +236,17 @@ const GlowTherapyCombo = () => {
                       </span>
                     )}
 
-                    <div className="h-[215px] flex items-center justify-center">
+                    <div className="flex h-[180px] items-center justify-center sm:h-[215px]">
                       <img
                         src={getImage(product)}
                         alt={product.name}
-                        className="max-h-[200px] object-contain transition-transform duration-500 group-hover:scale-105"
+                        className="max-h-[165px] object-contain transition-transform duration-500 group-hover:scale-105 sm:max-h-[200px]"
                       />
                     </div>
 
                     <div className="mt-4 text-center">
                       <h3
-                        className="text-[1rem] md:text-[1.05rem] font-bold leading-snug"
+                        className="text-[0.95rem] font-bold leading-snug sm:text-[1rem] md:text-[1.05rem]"
                         style={{ color: "#111827" }}
                       >
                         {product.name}
@@ -268,7 +268,7 @@ const GlowTherapyCombo = () => {
                       )}
 
                       <div
-                        className="mt-4 grid grid-cols-3 gap-2 rounded-2xl px-3 py-3"
+                        className="mt-4 grid grid-cols-3 gap-2 rounded-2xl px-2.5 py-3 sm:px-3"
                         style={{
                           background: isHyaluronicSerum(product.name)
                             ? "#f3fbf5"
@@ -279,19 +279,19 @@ const GlowTherapyCombo = () => {
                           <>
                             <div className="flex flex-col items-center gap-2 text-[#166534]">
                               <Droplets className="h-4 w-4" />
-                              <span className="text-[11px] font-medium leading-4">
+                              <span className="text-[10px] font-medium leading-4 sm:text-[11px]">
                                 Intense Hydration
                               </span>
                             </div>
                             <div className="flex flex-col items-center gap-2 text-[#166534]">
                               <Sparkles className="h-4 w-4" />
-                              <span className="text-[11px] font-medium leading-4">
+                              <span className="text-[10px] font-medium leading-4 sm:text-[11px]">
                                 Plumps & Smooths
                               </span>
                             </div>
                             <div className="flex flex-col items-center gap-2 text-[#166534]">
                               <Shield className="h-4 w-4" />
-                              <span className="text-[11px] font-medium leading-4">
+                              <span className="text-[10px] font-medium leading-4 sm:text-[11px]">
                                 Barrier Support
                               </span>
                             </div>
@@ -300,19 +300,19 @@ const GlowTherapyCombo = () => {
                           <>
                             <div className="flex flex-col items-center gap-2" style={{ color: PRIMARY }}>
                               <Sparkles className="h-4 w-4" />
-                              <span className="text-[11px] font-medium leading-4">
+                              <span className="text-[10px] font-medium leading-4 sm:text-[11px]">
                                 Boosts Glow
                               </span>
                             </div>
                             <div className="flex flex-col items-center gap-2" style={{ color: PRIMARY }}>
                               <Heart className="h-4 w-4" />
-                              <span className="text-[11px] font-medium leading-4">
+                              <span className="text-[10px] font-medium leading-4 sm:text-[11px]">
                                 Enhances Elasticity
                               </span>
                             </div>
                             <div className="flex flex-col items-center gap-2" style={{ color: PRIMARY }}>
                               <Droplets className="h-4 w-4" />
-                              <span className="text-[11px] font-medium leading-4">
+                              <span className="text-[10px] font-medium leading-4 sm:text-[11px]">
                                 Deep Nourishment
                               </span>
                             </div>
@@ -326,42 +326,42 @@ const GlowTherapyCombo = () => {
             </div>
 
             <div
-              className="rounded-[22px] p-5 shadow-md h-fit sticky top-24"
+              className="order-first h-fit rounded-[20px] p-4 shadow-md sm:rounded-[22px] sm:p-5 lg:order-none lg:sticky lg:top-24"
               style={{
                 background: "#ffffff",
                 border: "1px solid #e5e7eb",
                 boxShadow: "0 18px 45px rgba(15,23,42,0.10)",
               }}
             >
-              <div className="flex items-start justify-between mb-6">
-                <h2 className="font-semibold text-[1.35rem]" style={{ color: "#111827" }}>
+              <div className="mb-5 flex items-start justify-between sm:mb-6">
+                <h2 className="text-[1.15rem] font-semibold sm:text-[1.35rem]" style={{ color: "#111827" }}>
                 Your Combo
                 </h2>
-                <Heart className="h-6 w-6" style={{ color: PRIMARY }} />
+                <Heart className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: PRIMARY }} />
               </div>
 
-              <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-start mb-6">
+              <div className="mb-5 grid grid-cols-[1fr_auto_1fr] gap-2 sm:mb-6 sm:gap-3 items-start">
                 {comboProducts.map((product, index) => (
                   <React.Fragment key={product._id || product.id}>
                     <div className="text-center">
                       <div
-                        className="bg-white rounded-2xl p-3 shadow-sm"
+                        className="rounded-2xl bg-white p-2 shadow-sm sm:p-3"
                         style={{ border: "1px solid #e5e7eb" }}
                       >
                       <img
                         src={getImage(product)}
                         alt={product.name}
-                          className="w-full h-24 object-contain"
+                          className="h-20 w-full object-contain sm:h-24"
                       />
                     </div>
 
-                      <p className="text-[11px] mt-3 leading-5 text-[#18181b] line-clamp-2">
+                      <p className="mt-2 text-[10px] leading-4 text-[#18181b] line-clamp-2 sm:mt-3 sm:text-[11px] sm:leading-5">
                         {product.name}
                       </p>
                     </div>
                     {index === 0 ? (
                       <div
-                        className="pt-12 text-3xl font-light"
+                        className="pt-9 text-2xl font-light sm:pt-12 sm:text-3xl"
                         style={{ color: PRIMARY }}
                       >
                         +
@@ -373,23 +373,23 @@ const GlowTherapyCombo = () => {
 
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[1.05rem]" style={{ color: "#52525b" }}>Original Price</span>
+                  <span className="text-[0.95rem] sm:text-[1.05rem]" style={{ color: "#52525b" }}>Original Price</span>
                   <span className="line-through text-gray-400">
                     Rs{MASK_MAKER_ORIGINAL_PRICE}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between mb-5">
-                  <span className="text-[1.05rem] font-semibold" style={{ color: "#18181b" }}>
+                  <span className="text-[0.95rem] font-semibold sm:text-[1.05rem]" style={{ color: "#18181b" }}>
                     Combo Price
                   </span>
-                  <span className="text-[2.2rem] font-bold" style={{ color: PRIMARY }}>
+                  <span className="text-[1.8rem] font-bold sm:text-[2.2rem]" style={{ color: PRIMARY }}>
                     Rs{COMBO_PRICE}
                   </span>
                 </div>
 
                 <div
-                  className="text-[0.95rem] font-medium px-4 py-3 rounded-xl"
+                  className="rounded-xl px-3.5 py-3 text-[0.85rem] font-medium sm:px-4 sm:text-[0.95rem]"
                   style={{
                     background: "#fff7f7",
                     color: PRIMARY,
@@ -404,7 +404,7 @@ const GlowTherapyCombo = () => {
                 <button
                   onClick={handleAddCombo}
                   disabled={isAdding}
-                  className="w-full mt-5 py-3.5 rounded-xl font-semibold tracking-wide transition-all text-white flex items-center justify-center gap-3 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="mt-5 flex w-full items-center justify-center gap-3 rounded-xl py-3.5 text-sm font-semibold tracking-wide text-white transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
                   style={{
                     background: BUTTON_DARK,
                     color: "#ffffff",
@@ -432,31 +432,31 @@ const GlowTherapyCombo = () => {
           </div>
 
           <section
-            className="mt-8 rounded-[22px] bg-white px-6 py-6"
+            className="mt-6 rounded-[20px] bg-white px-4 py-5 sm:mt-8 sm:rounded-[22px] sm:px-6 sm:py-6"
             style={{
               border: "1px solid #e5e7eb",
               boxShadow: "0 16px 40px rgba(15,23,42,0.08)",
             }}
           >
-            <div className="grid gap-6 md:grid-cols-4">
+            <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-4">
               {trustItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.title}
-                    className="flex items-center gap-4 md:justify-center"
+                    className="flex items-center gap-3 sm:gap-4 md:justify-center"
                   >
                     <span
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full sm:h-11 sm:w-11"
                       style={{ background: "#fff5f5", color: PRIMARY }}
                     >
-                      <Icon className="h-5 w-5" />
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                     </span>
                     <div>
-                      <p className="text-lg font-semibold text-[#18181b]">
+                      <p className="text-[0.95rem] font-semibold text-[#18181b] sm:text-lg">
                         {item.title}
                       </p>
-                      <p className="text-sm text-[#52525b]">{item.subtitle}</p>
+                      <p className="text-xs text-[#52525b] sm:text-sm">{item.subtitle}</p>
                     </div>
                   </div>
                 );
