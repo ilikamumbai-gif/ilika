@@ -222,9 +222,9 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
   const mobileLinks = [
     { label: "Home", to: "/" },
     { label: "New Arrival", to: "/newarrival" },
-    { label: "Gift Store", to: "/gift-store" },
     { label: "Explore CTM", to: "/ctm" },
     { label: "Social Feed", to: "/social-feed" },
+    { label: "Gift Store", to: "/gift-store" },
     { label: "Blog", to: "/blog" },
   ];
 
@@ -485,12 +485,12 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
               New Arrival
             </Link>
 
-            <Link to="/gift-store" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/gift-store"))}>
-              Gift Store
-            </Link>
 
             <Link to="/ctm" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/ctm"))}>
               Explore CTM
+            </Link>
+            <Link to="/gift-store" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/gift-store"))}>
+              Gift Store
             </Link>
 
             <Link to="/social-feed" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/social-feed"))}>
