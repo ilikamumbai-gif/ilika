@@ -68,7 +68,7 @@ const OFFER_HIGHLIGHTS = [
     lineOne: "Free",
     highlight: "Gift Worth ₹399",
     lineTwo: "On Non-voice Mask Maker Machine",
-    href: "/combo",
+    href: "/offers",
     
     accent: "from-[#d7a24d] to-[#cc8d2a]",
     tone: "from-[#fffaf2] via-[#fffaf4] to-[#fffdf9]",
@@ -195,7 +195,7 @@ const GiftStore = () => {
                
 
                 <Link
-                  to="/offer"
+                  to="/offers"
                   className="mt-6 inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-[#d65a66] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#c64a57] sm:mt-8 sm:w-auto sm:px-6 sm:py-3.5 sm:text-base"
                 >
                   Explore All Offers

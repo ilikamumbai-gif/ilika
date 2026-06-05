@@ -44,6 +44,8 @@ const ShopAll = lazy(() => import("../pages/ShopAll"));
 const About = lazy(() => import("../pages/About"));
 const Combos = lazy(() => import("../pages/Combos"));
 const ComboDetail = lazy(() => import("../pages/ComboDetail"));
+const GlowTherapyCombo = lazy(() => import("../pages/GlowTherapyCombo"));
+const HydrationGlowCombo = lazy(() => import("../pages/HydrationGlowCombo"));
 const Feedback = lazy(() => import("../pages/Feedback"));
 const WarrantyRegistration = lazy(() => import("../pages/WarrantyRegistration"));
 const SupportTicket = lazy(() => import("../pages/SupportTicket"));
@@ -137,7 +139,9 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/high-frequency-therapy-wand") return { title: "High Frequency Therapy Wand", description: "Explore Ilika High Frequency Therapy Wand with 4 Electrodes For Men & Women." };
   if (pathname === "/hot-cold-blackhead-remover") return { title: "Hot & Cold Blackhead Remover", description: "Explore Ilika Hot & Cold Facial Pore Blackhead Remover For Men & Women." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
-  if (pathname === "/combo") return { title: "Combo Deals", description: "Explore combo packs and bundle offers from Ilika." };
+  if (pathname === "/offers") return { title: "Combo Deals", description: "Explore combo packs and bundle offers from Ilika." };
+  if (pathname === "/glow-therapy-combo") return { title: "Glow Therapy Combo", description: "Shop the Ilika Glow Therapy Combo on its dedicated offer page." };
+  if (pathname === "/hydration-glow-combo") return { title: "Hydration + Glow Combo", description: "Shop the Ilika Hydration + Glow Combo on its dedicated offer page." };
   if (pathname === "/mask-combo") return { title: "Mask Combo Offers", description: "Choose from 3 Ilika face mask combo offers at Rs 499." };
   if (pathname.startsWith("/combo/")) return { title: "Combo Details", description: "View combo pack details and savings at Ilika." };
   if (pathname === "/login") return { title: "Login", description: "Login to your Ilika account." };
@@ -308,7 +312,10 @@ const NavRoutes = () => {
         <Route path="/high-frequency-therapy-wand" element={renderLazy(HighFrequencyTherapyWandLanding)} />
         <Route path="/hot-cold-blackhead-remover" element={renderLazy(HotColdBlackheadRemoverLanding)} />
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />
-        <Route path="/combo" element={renderLazy(Combos)} />
+        <Route path="/offers" element={renderLazy(Combos)} />
+        <Route path="/combo" element={<Navigate to="/offers" replace />} />
+        <Route path="/glow-therapy-combo" element={renderLazy(GlowTherapyCombo)} />
+        <Route path="/hydration-glow-combo" element={renderLazy(HydrationGlowCombo)} />
         <Route path="/mask-combo" element={renderLazy(MaskCombo)} />
         <Route path="/combo/:id" element={renderLazy(ComboDetail)} />
 

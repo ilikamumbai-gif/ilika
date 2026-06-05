@@ -5,7 +5,7 @@ export const categoriesData = [
   { name: "Hair Care", icon: "/Images/GirlHair.webp" ,link:"/hair"},
   { name: "Body Care", icon: "/Images/GirlBody.webp" ,link:"skin/body"},
   { name: "Appliances", icon: "/Images/GirlApp.webp" ,link:"/grooming"},
-  { name: "Offers", icon: "/Images/Offer-Cat.webp" ,link:"/combo"},
+  { name: "Offers", icon: "/Images/Offer-Cat.webp" ,link:"/offers"},
 ];
 
 export const IngredientsData =[

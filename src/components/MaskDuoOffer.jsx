@@ -1,45 +1,86 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  BadgeCheck,
+  Droplets,
+  Gift,
+  Headset,
+  Heart,
+  Shield,
+  ShoppingBag,
+  Sparkles,
+  Truck,
+} from "lucide-react";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
-import ComboProductCard from "../components/ComboProductCard";
+import Heading from "./Heading";
+
+const PRIMARY = "#b34140";
+const PRIMARY_LIGHT = "#fff4f3";
+const COMBO_PRICE = 699;
+
+const ALLOWED_PRODUCTS = [
+  "24k gold collagen face mask for anti-aging",
+  "ilika 4 in 1 collagen face mask glow firm & hydrate",
+];
+
+const normalizeName = (name = "") =>
+  name.toLowerCase().replace(/\s+/g, " ").trim();
+
+const getImage = (product) =>
+  product?.variants?.[0]?.images?.[0] ||
+  product?.images?.[0] ||
+  product?.image ||
+  product?.imageUrl ||
+  "/placeholder.webp";
+
+const isHydraFreeMask = (name = "") => {
+  const normalized = normalizeName(name);
+  return (
+    normalized.includes("hydra gel face moisturizer") &&
+    normalized.includes("for dry & dehydrated skin")
+  );
+};
+
+const formatHydraName = (name = "") => {
+  if (!isHydraFreeMask(name)) return name;
+  return name.replace(/\|\s*50\s*g\b/i, "| 25 g").replace(/\|\s*25g\b/i, "| 25 g");
+};
+
+const trustItems = [
+  { icon: Truck, title: "Free Shipping", subtitle: "On all orders" },
+  { icon: BadgeCheck, title: "100% Authentic", subtitle: "Original Products" },
+  { icon: Heart, title: "COD Available", subtitle: "Pay on delivery" },
+  { icon: Headset, title: "Customer Support", subtitle: "We're here to help" },
+];
+
+const featureRows = [
+  {
+    icon: Sparkles,
+    title: "Best Price",
+    subtitle: "Save more with this combo",
+  },
+  {
+    icon: Gift,
+    title: "Free Gift",
+    subtitle: "Hydra Gel (25g) FREE",
+  },
+];
 
 const MaskDuoOffer = () => {
   const { products } = useProducts();
   const { addToCart } = useCart();
   const [loading, setLoading] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
   const [currentFreeMask, setCurrentFreeMask] = useState(null);
   const [isFading, setIsFading] = useState(false);
-
-  const COMBO_PRICE = 699;
-
-  const ALLOWED_PRODUCTS = [
-    "24k gold collagen face mask for anti-aging",
-    "ilika 4 in 1 collagen face mask glow firm & hydrate",
-  ];
-
-  const normalizeName = (name = "") =>
-    name.toLowerCase().replace(/\s+/g, " ").trim();
-
-  const isHydraFreeMask = (name = "") => {
-    const normalized = normalizeName(name);
-    return (
-      normalized.includes("hydra gel face moisturizer") &&
-      normalized.includes("for dry & dehydrated skin")
-    );
-  };
-
-  const formatHydraName = (name = "") => {
-    if (!isHydraFreeMask(name)) return name;
-    return name.replace(/\|\s*50\s*g\b/i, "| 25 g").replace(/\|\s*25g\b/i, "| 25 g");
-  };
 
   const getFreeMaskProducts = () =>
     products
       .filter(
-        (p) =>
-          p.isActive !== false &&
-          isHydraFreeMask(p.name) &&
-          !/\b50\s*g\b/i.test(normalizeName(p.name))
+        (product) =>
+          product.isActive !== false &&
+          isHydraFreeMask(product.name) &&
+          !/\b50\s*g\b/i.test(normalizeName(product.name))
       )
       .sort((a, b) => {
         const aIs25g = normalizeName(a.name).includes("25 g") || normalizeName(a.name).includes("25g");
@@ -49,64 +90,59 @@ const MaskDuoOffer = () => {
       });
 
   const maskProducts = products.filter(
-    (p) =>
-      p.isActive !== false &&
-      ALLOWED_PRODUCTS.includes(p.name?.toLowerCase().trim())
+    (product) =>
+      product.isActive !== false &&
+      ALLOWED_PRODUCTS.includes(product.name?.toLowerCase().trim())
   );
-
-  const [selectedMasks, setSelectedMasks] = useState([]);
-
-  const toggleMask = (product) => {
-    const id = product._id || product.id;
-    setSelectedMasks((prev) => {
-      const exists = prev.find((p) => (p._id || p.id) === id);
-      if (exists) return prev.filter((p) => (p._id || p.id) !== id);
-      if (prev.length === 2) return prev;
-      return [...prev, product];
-    });
-  };
-
-  /* ── pricing ── */
-  const singleMaskPrice =
-    selectedMasks.length === 1
-      ? selectedMasks[0]?.price || selectedMasks[0]?.mrp || 0
-      : 0;
-
-  const originalMRP =
-    selectedMasks.length === 2
-      ? (selectedMasks[0]?.price || selectedMasks[0]?.mrp || 0) +
-      (selectedMasks[1]?.price || selectedMasks[1]?.mrp || 0)
-      : 0;
+  const originalMRP = maskProducts.reduce(
+    (total, product) => total + (product?.price || product?.mrp || 0),
+    0
+  );
 
   const savings = originalMRP > COMBO_PRICE ? originalMRP - COMBO_PRICE : 0;
 
+  const selectedHydraName = currentFreeMask ? formatHydraName(currentFreeMask.name) : "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 25g";
+
+  const maskBenefits = useMemo(
+    () => ({
+      [normalizeName("24k Gold Collagen Face Mask for Anti-aging")]: [
+        { icon: Sparkles, label: "Anti-aging" },
+        { icon: BadgeCheck, label: "Firming" },
+        { icon: Sparkles, label: "Brightening" },
+        { icon: Droplets, label: "Hydrating" },
+      ],
+      [normalizeName("Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate")]: [
+        { icon: Sparkles, label: "Glow" },
+        { icon: Heart, label: "Firm" },
+        { icon: Droplets, label: "Hydrate" },
+        { icon: Shield, label: "Refresh" },
+      ],
+    }),
+    []
+  );
+
+  const freeMaskBenefits = [
+    { icon: Droplets, label: "Deep Hydration" },
+    { icon: Shield, label: "Soothes Skin" },
+    { icon: Sparkles, label: "Lightweight" },
+    { icon: Droplets, label: "Non-Greasy" },
+  ];
+
   useEffect(() => {
     const freeMaskProducts = getFreeMaskProducts();
-
     if (!freeMaskProducts.length) return;
-
 
     let index = 0;
 
     const preloadAndSet = (mask) => {
-      const imgSrc =
-        mask?.variants?.[0]?.images?.[0] ||
-        mask?.images?.[0] ||
-        mask?.image ||
-        mask?.imageUrl ||
-        "/placeholder.webp";
-
       const img = new Image();
-      img.src = imgSrc;
-
+      img.src = getImage(mask);
       img.onload = () => {
-        setIsFading(true); // 🔥 start fade out
-
+        setIsFading(true);
         setTimeout(() => {
-          setCurrentFreeMask(mask); // change content
-
-          setIsFading(false); // 🔥 fade back in
-        }, 250); // timing of fade
+          setCurrentFreeMask(mask);
+          setIsFading(false);
+        }, 250);
       };
     };
 
@@ -120,20 +156,14 @@ const MaskDuoOffer = () => {
     return () => clearInterval(interval);
   }, [products]);
 
-  /* ── add to cart ── */
   const addComboToCart = () => {
-    if (selectedMasks.length !== 2) {
-      alert("Please select 2 masks");
-      return;
-    }
+    if (loading || maskProducts.length < 2) return;
 
-    setLoading(true); // ✅ start loading
+    setIsAdded(false);
+    setLoading(true);
 
     setTimeout(() => {
-      const FREE_MASK_PRICE = 199;
-
       const freeMaskProducts = getFreeMaskProducts();
-
       const freeMask =
         freeMaskProducts[Math.floor(Math.random() * freeMaskProducts.length)];
 
@@ -143,13 +173,6 @@ const MaskDuoOffer = () => {
         return;
       }
 
-      const getImage = (p) =>
-        p?.variants?.[0]?.images?.[0] ||
-        p?.images?.[0] ||
-        p?.image ||
-        p?.imageUrl ||
-        "/placeholder.webp";
-
       const comboItem = {
         id: `mask-duo-custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         baseProductId: "mask-duo-custom",
@@ -157,21 +180,21 @@ const MaskDuoOffer = () => {
         price: COMBO_PRICE,
         quantity: 1,
         isCombo: true,
-        image: getImage(selectedMasks[0]),
+        image: getImage(maskProducts[0]),
         freeMaskOptions: freeMaskProducts.map((mask) => ({
           id: mask._id || mask.id,
           name: formatHydraName(mask.name),
           image: getImage(mask),
         })),
         comboItems: [
-          ...selectedMasks.map((p) => ({
-            id: p._id || p.id,
-            name: p.name,
-            image: getImage(p),
+          ...maskProducts.map((product) => ({
+            id: product._id || product.id,
+            name: product.name,
+            image: getImage(product),
           })),
           {
             id: `free-mask-${freeMask._id || freeMask.id || Date.now()}`,
-            name: formatHydraName(freeMask.name) + " (FREE)",
+            name: `${formatHydraName(freeMask.name)} (FREE)`,
             image: getImage(freeMask),
             isFree: true,
             price: 0,
@@ -180,98 +203,148 @@ const MaskDuoOffer = () => {
       };
 
       addToCart(comboItem);
-      setSelectedMasks([]);
-      setLoading(false); // ✅ stop loading
-    }, 500); // small delay for UX (optional)
+      setLoading(false);
+      setIsAdded(true);
+    }, 500);
   };
 
   if (!maskProducts.length) return null;
 
-
-
   return (
     <section
-      className="max-w-7xl mx-auto px-4 pb-16 pt-4"
-      style={{ background: "#fff8fa" }}
+      className="max-w-[1360px] mx-auto px-4 pb-16 pt-4"
+    
     >
+      <div className="text-center mb-4">
+   
 
-      <div className="text-center mb-10">
-        <span className="inline-block bg-[#FAD4C0] text-[#7A2E3A] text-xs font-semibold px-4 py-1 rounded-full mb-3 tracking-wide uppercase">
-          Limited Time Offer
-        </span>
-
-        <h2 className="text-3xl font-semibold text-[#7A2E3A]">
-          Hydration + Glow Combo
-        </h2>
-
-        <p className="text-sm text-gray-600 mt-2">
-          Buy 2 Premium Gelly Face Masks for
-          <span className="text-[#E96A6A] font-semibold"> ₹699</span>
-          &nbsp;and get <span className="font-semibold text-green-600">Hydra Gel FREE</span>
-        </p>
-
-
+        <div className="flex justify-center">
+          <Heading
+            heading={
+              <>
+                Hydration + <span style={{ color: "#c53f3f" }}>Glow Combo</span>
+              </>
+            }
+            sub={
+              <>
+                Buy 2 Premium Gelly Face Masks for
+                <span className="font-semibold" style={{ color: "#c53f3f" }}> Rs{COMBO_PRICE}</span>
+                {" "}and get
+                <span className="font-semibold text-green-600"> Hydra Gel FREE</span>
+              </>
+            }
+            subVariant="paragraph"
+            subClassName="mt-1 max-w-4xl text-[#454545]"
+          />
+        </div>
       </div>
 
-      {/* ── Grid + Sidebar ── */}
-      <div className="grid lg:grid-cols-4 gap-12 items-start">
-
-        {/* ── Product Cards ── */}
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_350px] items-start">
         <div className="lg:col-span-3">
-          <h3 className="text-xl font-semibold mb-6 text-[#7A2E3A]">
-            💖 2 Premium Masks
-          </h3>
+          <div className="flex items-center gap-4 mb-6">
+            <span
+              className="inline-flex h-14 w-14 items-center justify-center rounded-full"
+              style={{ background: PRIMARY_LIGHT, color: PRIMARY }}
+            >
+              <Heart className="h-7 w-7 fill-current" />
+            </span>
+            <div>
+              <h3 className="text-[1.9rem] font-semibold text-[#111827]">
+                2 Premium Masks
+              </h3>
+              <div className="mt-2 h-[3px] w-14 rounded-full" style={{ background: "#ef4444" }} />
+            </div>
+          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {maskProducts.map((product) => {
-              const id = product._id || product.id;
-              const selected = !!selectedMasks.find(
-                (p) => (p._id || p.id) === id
-              );
+              const benefits = maskBenefits[normalizeName(product.name)] || [];
 
               return (
                 <div
-                  key={id}
-                  className={`
-                    transition-all duration-300 hover:scale-[1.03]
-                    rounded-2xl p-3
-                    ${selected
-                      ? "bg-gradient-to-br from-[#FAD4C0] via-[#FFF4EA] to-white shadow-lg ring-2 ring-[#E96A6A]"
-                      : "bg-white hover:bg-[#FFF4EA] border border-[#FAD4C0]"}
-                  `}
+                  key={product._id || product.id}
+                  className="transition-all duration-300 hover:scale-[1.01] rounded-[24px] p-4 bg-white"
+                  style={{
+                    border: "1px solid #e5e7eb",
+                    boxShadow: "0 16px 40px rgba(15,23,42,0.08)",
+                  }}
                 >
-                  <ComboProductCard
-                    product={product}
-                    selected={selected}
-                    onSelect={toggleMask}
-                  />
+                
+
+                  <div className="h-[290px] flex items-center justify-center">
+                    <img
+                      src={getImage(product)}
+                      alt={product.name}
+                      className="max-h-[265px] object-contain"
+                    />
+                  </div>
+
+                  <div className="mt-4 text-center">
+                    <h4 className="text-[0.98rem] md:text-[1rem] font-bold leading-snug text-[#111827]">
+                      {product.name}
+                    </h4>
+                  </div>
+
+                  <div
+                    className="mt-5 grid grid-cols-4 gap-2 rounded-2xl px-3 py-4"
+                    style={{ background: "#fff8f8" }}
+                  >
+                    {benefits.map((benefit) => {
+                      const Icon = benefit.icon;
+                      return (
+                        <div
+                          key={benefit.label}
+                          className="flex flex-col items-center gap-2 text-center"
+                          style={{ color: PRIMARY }}
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span className="text-[11px] leading-4">{benefit.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
+
             <div
-              className={`
-              transition-all duration-200 hover:scale-[1.03]
-              rounded-2xl p-3
-              bg-white border border-[#FAD4C0]
-              relative
-              transition-opacity duration-300
-              ${isFading ? "opacity-0 scale-95" : "opacity-100 scale-100"}
-            `}
+              className={`transition-all duration-200 hover:scale-[1.01] rounded-[24px] p-4 bg-white border border-[#e5e7eb] relative overflow-hidden shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition-opacity duration-300 ${
+                isFading ? "opacity-0 scale-95" : "opacity-100 scale-100"
+              }`}
             >
               {currentFreeMask ? (
                 <>
-                  {/* FREE badge */}
-                  <span className="absolute top-2 left-2 z-10 bg-green-500 text-white text-[10px] px-4 py-[2px] rounded-full font-bold">
+                  <span className="absolute top-4 left-4 z-10 bg-green-500 text-white text-[10px] px-4 py-[2px] rounded-full font-bold">
                     FREE
                   </span>
-
-                  {/* EXACT SAME CARD */}
-                  <div className="pointer-events-none">
-                    <ComboProductCard
-                      product={currentFreeMask}
-                      selected={false}
-                      onSelect={() => { }}
+                  <div className="h-[290px] flex items-center justify-center">
+                    <img
+                      src={getImage(currentFreeMask)}
+                      alt={selectedHydraName}
+                      className="max-h-[265px] object-contain"
                     />
+                  </div>
+                  <div className="mt-4 text-center">
+                    <h4 className="text-[0.98rem] md:text-[1rem] font-bold leading-snug text-[#111827]">
+                      {selectedHydraName}
+                    </h4>
+                  </div>
+                  <div
+                    className="mt-5 grid grid-cols-4 gap-2 rounded-2xl px-3 py-4"
+                    style={{ background: "#f3fbf5" }}
+                  >
+                    {freeMaskBenefits.map((benefit) => {
+                      const Icon = benefit.icon;
+                      return (
+                        <div
+                          key={benefit.label}
+                          className="flex flex-col items-center gap-2 text-center text-[#166534]"
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span className="text-[11px] leading-4">{benefit.label}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </>
               ) : (
@@ -281,74 +354,54 @@ const MaskDuoOffer = () => {
           </div>
         </div>
 
-        {/* ── Sidebar ── */}
         <div
-          className="rounded-2xl p-6 shadow-md h-fit sticky top-24"
-          style={{ background: "linear-gradient(to bottom, #FFF4EA, #FAD4C0)" }}
+          className="rounded-[24px] p-6 shadow-md h-fit sticky top-24"
+          style={{
+            background: "#ffffff",
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 18px 45px rgba(15,23,42,0.10)",
+          }}
         >
-          <h3 className="font-semibold text-xl mb-6 text-[#7A2E3A]">
-            💛 Your Mask Duo
-          </h3>
+          <div className="flex items-center gap-3 mb-5">
+            <span
+              className="inline-flex h-12 w-12 items-center justify-center rounded-full"
+              style={{ background: PRIMARY_LIGHT, color: PRIMARY }}
+            >
+              <Heart className="h-6 w-6 fill-current" />
+            </span>
+            <h3 className="font-semibold text-[1.8rem] text-[#111827]">
+              Your Mask Duo
+            </h3>
+          </div>
 
-          {/* Selected previews */}
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="bg-[#E96A6A] text-white text-[10px] px-2 py-[2px] rounded-full">
-                Selected
+          <div className="mb-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="bg-[#b34140] text-white text-[10px] px-3 py-1 rounded-full font-semibold">
+                Included
               </span>
-              <p className="font-medium text-sm">Masks</p>
+              <p className="font-medium text-base text-[#111827]">Masks</p>
             </div>
 
-            {selectedMasks.length === 0 && (
-              <p className="text-xs text-gray-500">No masks selected</p>
-            )}
-
             <div className="flex flex-wrap gap-3">
-              {/* Selected Masks */}
-              {selectedMasks.map((p) => {
-                const img =
-                  p?.variants?.[0]?.images?.[0] ||
-                  p?.images?.[0] ||
-                  p?.image ||
-                  p?.imageUrl ||
-                  "/placeholder.webp";
-
-                return (
-                  <div key={p._id || p.id} className="relative text-center w-20">
-
-                    {/* Remove */}
-                    <button
-                      onClick={() => toggleMask(p)}
-                      className="absolute -top-2 -right-2 bg-[#E96A6A] text-white w-5 h-5 rounded-full text-xs z-10"
-                    >
-                      ×
-                    </button>
-
-                    <div className="bg-white border rounded-xl p-1 shadow-sm">
-                      <img src={img} className="w-full h-16 object-contain" />
-                    </div>
-
-                    <p className="text-[10px] mt-1 line-clamp-2">{p.name}</p>
+              {maskProducts.map((product) => (
+                <div key={product._id || product.id} className="relative text-center w-20">
+                  <div className="bg-white border rounded-xl p-1 shadow-sm">
+                    <img src={getImage(product)} className="w-full h-16 object-contain" />
                   </div>
-                );
-              })}
 
-              {/* ✅ FREE HYDRA GEL */}
-              {selectedMasks.length === 2 && currentFreeMask && (
+                  <p className="text-[10px] mt-1 line-clamp-2">{product.name}</p>
+                </div>
+              ))}
+
+              {currentFreeMask && (
                 <div className="relative text-center w-20">
-
-                  {/* FREE badge */}
                   <span className="absolute -top-2 left-0 bg-green-500 text-white text-[9px] px-2 rounded-full z-10">
                     FREE
                   </span>
 
                   <div className="bg-white border border-green-200 rounded-xl p-1 shadow-sm">
                     <img
-                      src={
-                        currentFreeMask?.variants?.[0]?.images?.[0] ||
-                        currentFreeMask?.images?.[0] ||
-                        currentFreeMask?.image
-                      }
+                      src={getImage(currentFreeMask)}
                       className="w-full h-16 object-contain"
                     />
                   </div>
@@ -361,50 +414,104 @@ const MaskDuoOffer = () => {
             </div>
           </div>
 
-          {/* Price */}
           <div className="border-t pt-4 mt-4">
-
-            {selectedMasks.length === 0 && (
-              <p className="text-sm text-gray-400 italic">Select masks to see price</p>
-            )}
-
-            {selectedMasks.length === 1 && (
-              <div>
-                <p className="text-xs text-gray-500 mb-1">1 mask selected</p>
-                <p className="text-xl font-bold text-[#7A2E3A]">₹{singleMaskPrice}</p>
-                <p className="text-xs text-[#E96A6A] mt-1">
-                  ✨ Add 1 more mask to unlock ₹{COMBO_PRICE} duo offer!
-                </p>
-                <p className="text-xs text-green-600 mt-1">
-                  🎁 + Free Hydra Gel on combo!
-                </p>
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-[#f0e5e5] bg-[#fffafb] px-4 py-4">
+                
+                <div className=" flex items-end justify-between gap-4">
+                  <p className="text-lg font-semibold text-[#18181b]">Combo Price</p>
+                  <p
+                    className="text-[2rem] font-bold leading-none"
+                    style={{ color: PRIMARY }}
+                  >
+                    Rs{COMBO_PRICE}
+                  </p>
+                </div>
+               
               </div>
-            )}
 
-
+              <div className="rounded-2xl border border-[#f0e5e5] overflow-hidden">
+                {featureRows.map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={item.title}
+                      className={`flex items-start gap-3 bg-white px-4 py-4 ${
+                        index < featureRows.length - 1 ? "border-b border-[#f0e5e5]" : ""
+                      }`}
+                    >
+                      <span
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full"
+                        style={{ background: PRIMARY_LIGHT, color: PRIMARY }}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <div>
+                        <p className="text-base font-semibold text-[#111827]">{item.title}</p>
+                        <p className="text-sm text-[#52525b]">{item.subtitle}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
             <button
-              disabled={selectedMasks.length !== 2 || loading}
+              disabled={loading || maskProducts.length < 2}
               onClick={addComboToCart}
-              className="w-full mt-5 py-3 rounded-xl font-semibold tracking-wide transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mt-6 py-3.5 rounded-xl font-semibold tracking-wide transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                background: "linear-gradient(to right, #E96A6A, #D45A5A)",
+                background: "#2e2e2e",
               }}
             >
               {loading ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Adding...
                 </>
+              ) : isAdded ? (
+                <>
+                  <ShoppingBag className="h-5 w-5" />
+                  Added to Cart
+                </>
               ) : (
-                "Grab Offer @ ₹699"
+                <>
+                  <ShoppingBag className="h-5 w-5" />
+                  Grab Offer @ Rs699
+                </>
               )}
             </button>
-
           </div>
         </div>
-
       </div>
+
+      <section
+        className="mt-8 rounded-[24px] bg-white px-6 py-6"
+        style={{
+          border: "1px solid #e5e7eb",
+          boxShadow: "0 16px 40px rgba(15,23,42,0.08)",
+        }}
+      >
+        <div className="grid gap-6 md:grid-cols-4">
+          {trustItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className="flex items-center gap-4 md:justify-center">
+                <span
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full"
+                  style={{ background: PRIMARY_LIGHT, color: PRIMARY }}
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-lg font-semibold text-[#18181b]">{item.title}</p>
+                  <p className="text-sm text-[#52525b]">{item.subtitle}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
     </section>
   );
 };

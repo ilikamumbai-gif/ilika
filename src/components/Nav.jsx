@@ -317,7 +317,7 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
                 Jump straight to the current offer and checkout faster.
               </p>
               <Link
-                to="/combo"
+                to="/offers"
                 onClick={onClose}
                 className="mt-4 inline-flex rounded-full bg-[#231815] px-4 py-2 text-sm font-semibold text-white"
               >
@@ -458,7 +458,7 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
 
             <div className="relative inline-block group">
               <Link
-                to="/combo"
+                to="/offers"
                 onClick={onClose}
                 className="
                   whitespace-nowrap font-semibold px-3 py-1 rounded-full

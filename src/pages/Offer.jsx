@@ -7,7 +7,7 @@ const offers = [
     title: "Mother’s Day Glow Therapy Combo",
     description:
       "Gift her radiant skin this Mother’s Day with the Ilika Nonvoice Mask Maker Machine + FREE Hyaluronic Acid Serum. Save ₹2000 + get extra serum value!",
-    link: "/combo"
+    link: "/offers"
   },
   {
     type: "coupon",

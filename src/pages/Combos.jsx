@@ -1,356 +1,187 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
-import { useProducts } from "../admin/context/ProductContext";
-
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { Gift, Percent, ShieldCheck, Truck } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
-import ComboProductCard from "../components/ComboProductCard";
-import { useCart } from "../context/CartProvider";
-import CouponProductBuilder from "../components/CouponProductBuilder";
-import MaskDuoOffer from "../components/MaskDuoOffer";
-import Banner from "../components/Banner";
-import { createSlug } from "../utils/slugify";
-
-import { Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import Heading from "../components/Heading";
 import { useSeo } from "../hooks/useSeo";
+import { useProducts } from "../admin/context/ProductContext";
+import { createSlug } from "../utils/slugify";
 
 const offBanner = "/Images/Tonner.webp";
 
-const mothersDayBanner = "/Images/womens-day-banner.webp";
-const mothersDayBannerMobile = "/Images/womens-day-banner.webp";
-
-/* ================= NEW OFFER SECTION ================= */
-
-const HydrationGlowCombo = () => {
-  const { products } = useProducts();
-  const { addToCart } = useCart();
-
-  const COMBO_PRICE = 3999;
-  const MASK_MAKER_ORIGINAL_PRICE = 5999;
-
-  const PRODUCT_KEYWORDS = [
-    "hyaluronic acid serum",
-    "nonvoice mask maker machine",
-  ];
-
-  const normalizeName = (name = "") =>
-    name.toLowerCase().replace(/\s+/g, " ").trim();
-
-  const getImage = (p) =>
-    p?.variants?.[0]?.images?.[0] ||
-    p?.images?.[0] ||
-    p?.image ||
-    p?.imageUrl ||
-    "/placeholder.webp";
-
-  const isNonVoiceMaskMaker = (name = "") => {
-    const normalized = normalizeName(name);
-    return (
-      normalized.includes("mask maker") &&
-      (normalized.includes("nonvoice") || normalized.includes("non voice"))
-    );
-  };
-
-  const isHyaluronicSerum = (name = "") => {
-    const normalized = normalizeName(name);
-    return normalized.includes("hyaluronic") && normalized.includes("serum");
-  };
-
-  const comboProducts = PRODUCT_KEYWORDS.map((keyword) =>
-    products.find(
-      (p) =>
-        p.isActive !== false &&
-        normalizeName(p.name).includes(normalizeName(keyword))
-    )
-  )
-    .filter(Boolean)
-    .sort((a, b) => {
-      const aIsMaskMaker = isNonVoiceMaskMaker(a?.name);
-      const bIsMaskMaker = isNonVoiceMaskMaker(b?.name);
-      if (aIsMaskMaker === bIsMaskMaker) return 0;
-      return aIsMaskMaker ? -1 : 1;
-    });
-
-  const originalPrice = MASK_MAKER_ORIGINAL_PRICE;
-  const savings = MASK_MAKER_ORIGINAL_PRICE - COMBO_PRICE;
-  const hyaluronicSerumProduct = comboProducts.find((p) =>
-    isHyaluronicSerum(p?.name)
-  );
-  const hyaluronicSerumPrice =
-    hyaluronicSerumProduct?.price || hyaluronicSerumProduct?.mrp || 0;
-
-  const handleAddCombo = () => {
-    const comboItem = {
-      id: `glow-combo-${Date.now()}`,
-      baseProductId: "glow-therapy-combo",
-      name: "Glow Therapy Combo",
-      price: COMBO_PRICE,
-      quantity: 1,
-      isCombo: true,
-
-      image: getImage(comboProducts[0]),
-
-      comboItems: comboProducts.map((p) => ({
-        id: p._id || p.id,
-        name: p.name,
-        image: getImage(p),
-      })),
-    };
-
-    addToCart(comboItem);
-  };
-
-  if (!comboProducts.length) return null;
-
-  return (
-    <section
-      className="max-w-7xl mx-auto px-4 pb-16 pt-4"
-      style={{ background: "#fff8fa" }}
-    >
-      {/* Heading */}
-      <div className="text-center mb-10">
-        <span className="inline-block bg-[#FAD4C0] text-[#7A2E3A] text-xs font-semibold px-4 py-1 rounded-full mb-3 tracking-wide uppercase">
-          New Beauty Offer
-        </span>
-
-        <h2 className="text-3xl font-semibold text-[#7A2E3A]">
-          Glow Therapy Combo
-        </h2>
-
-        <p className="text-sm text-gray-600 mt-2">
-          Get the perfect skincare duo for
-          <span className="text-[#E96A6A] font-semibold">
-            {" "}₹{COMBO_PRICE}
-          </span>
-          , with
-          <span className="font-semibold text-green-600">
-            {" "}FREE Hyaluronic Serum
-          </span>
-          &nbsp;and save
-          <span className="font-semibold text-green-600">
-            {" "}₹{savings}
-          </span>
-          {hyaluronicSerumPrice > 0 && (
-            <span className="font-semibold text-green-600">
-              {" "}+ ₹{hyaluronicSerumPrice}
-            </span>
-          )}
-          {hyaluronicSerumPrice > 0 && (
-            <span className="text-gray-600">
-              {" "}(Serum Value)
-            </span>
-          )}
-        </p>
-      </div>
-
-      {/* Grid */}
-      <div className="grid lg:grid-cols-4 gap-12 items-start">
-
-        {/* Product Cards */}
-        <div className="lg:col-span-3">
-          <h3 className="text-xl font-semibold mb-6 text-[#7A2E3A]">
-            ✨ Combo Includes
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {comboProducts.map((product, index) => (
-              <Link
-                key={product._id || product.id}
-                to={`/product/${createSlug(product.name || "")}`}
-                className="
-                  transition-all duration-300 hover:scale-[1.03]
-                  rounded-2xl p-4
-                  bg-white hover:bg-[#FFF4EA]
-                  border border-[#FAD4C0]
-                  shadow-sm hover:shadow-lg
-                  group
-                "
-              >
-                {/* Tag */}
-                <span className="inline-block bg-[#FFF1EB] text-[#D45A5A] text-[10px] font-bold uppercase tracking-wide px-3 py-1 rounded-full mb-4">
-                  Combo Item {index + 1}
-                </span>
-                {isHyaluronicSerum(product.name) && (
-                  <span className="inline-block ml-2 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide px-3 py-1 rounded-full mb-4">
-                    Free Hyaluronic Serum
-                  </span>
-                )}
-
-                {/* Image */}
-                <div className="h-[240px] flex items-center justify-center">
-                  <img
-                    src={getImage(product)}
-                    alt={product.name}
-                    className="max-h-[220px] object-contain transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-
-                {/* Content */}
-                <div className="mt-5 text-center">
-                  <h3 className="text-lg md:text-xl font-bold text-[#7A2E3A] leading-snug">
-                    {product.name}
-                  </h3>
-
-                  {isNonVoiceMaskMaker(product.name) ? (
-                    <div className="mt-3">
-                      <p className="text-sm text-gray-400 line-through">
-                        ₹{MASK_MAKER_ORIGINAL_PRICE}
-                      </p>
-                      <p className="text-[#E96A6A] font-semibold">
-                        Combo @ ₹{COMBO_PRICE}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="mt-3 text-[#E96A6A] font-semibold text-green-700">
-                      FREE in Combo
-                    </p>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div
-          className="rounded-2xl p-6 shadow-md h-fit sticky top-24"
-          style={{
-            background: "linear-gradient(to bottom, #FFF4EA, #FAD4C0)",
-          }}
-        >
-          <h3 className="font-semibold text-xl mb-6 text-[#7A2E3A]">
-            💛 Your Combo
-          </h3>
-
-          {/* Preview */}
-          <div className="flex flex-wrap gap-3 mb-6">
-            {comboProducts.map((product) => (
-              <div
-                key={product._id || product.id}
-                className="text-center w-24"
-              >
-                <div className="bg-white border rounded-xl p-2 shadow-sm">
-                  <img
-                    src={getImage(product)}
-                    alt={product.name}
-                    className="w-full h-20 object-contain"
-                  />
-                </div>
-
-                <p className="text-[10px] mt-2 line-clamp-2">
-                  {product.name}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* Pricing */}
-          <div className="border-t pt-4">
-
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-500">
-                Original Price
-              </span>
-
-              <span className="line-through text-gray-400">
-                ₹{originalPrice}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-600">
-                Combo Price
-              </span>
-
-              <span className="text-2xl font-bold text-[#7A2E3A]">
-                ₹{COMBO_PRICE}
-              </span>
-            </div>
-
-            <div className="bg-green-100 text-green-700 text-sm font-medium px-3 py-2 rounded-xl">
-              🎉 You save ₹{savings}
-              {hyaluronicSerumPrice > 0 ? ` + ₹${hyaluronicSerumPrice}` : ""}
-              {" "}today
-            </div>
-
-            {/* CTA */}
-            <button
-              onClick={handleAddCombo}
-              className="
-                w-full mt-5 py-3 rounded-xl font-semibold tracking-wide
-                transition-all text-white flex items-center justify-center
-                hover:scale-[1.02]
-              "
-              style={{
-                background:
-                  "linear-gradient(to right, #E96A6A, #D45A5A)",
-              }}
-            >
-              Grab Combo @ ₹{COMBO_PRICE}
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </section>
-  );
+const PRODUCT_NAMES = {
+  voiceMaskMaker:
+    "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
+  airwrap: "Ilika Airwrap All in 1 Multi-Styler Tools with Leather Box",
+  hairDryer: "Ilika High-Speed Leafless Hair Dryer For Men & Women",
+  herbalHairOil: "Herbal Hair Oil | Prevents Dandruff | Strengthens Hair Roots",
+  blackSeedHairOil:
+    "Black Seed Hair Oil | Prevents Premature Graying | Boosts Hair Growth",
 };
 
+const normalizeName = (value = "") =>
+  String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+
+const getProductLink = (product = {}) =>
+  `/product/${createSlug(product?.name || "")}`;
+
+const trustItems = [
+  {
+    icon: Percent,
+    title: "Exclusive Offers",
+    subtitle: "Only for you",
+  },
+  {
+    icon: Gift,
+    title: "Top Picks",
+    subtitle: "Handpicked by Ilika",
+  },
+  {
+    icon: ShieldCheck,
+    title: "100% Genuine",
+    subtitle: "Trusted products",
+  },
+  {
+    icon: Truck,
+    title: "Fast Delivery",
+    subtitle: "Smooth checkout",
+  },
+];
 
 const Combos = () => {
-  const { products } = useProducts();
-  const { addToCart } = useCart();
+  const { products = [] } = useProducts();
 
-  const [selectedToners, setSelectedToners] = useState([]);
-  const [selectedMasks, setSelectedMasks] = useState([]);
-  const [showMaskPopup, setShowMaskPopup] = useState(false);
-  const [loadingCombo, setLoadingCombo] = useState(false);
+  const productMap = useMemo(
+    () =>
+      new Map(
+        products
+          .filter((product) => product?.isActive !== false)
+          .map((product) => [normalizeName(product?.name), product])
+      ),
+    [products]
+  );
 
-  const location = useLocation();
-  const couponRef = useRef(null);
+  const voiceMaskMaker = productMap.get(normalizeName(PRODUCT_NAMES.voiceMaskMaker));
+  const airwrap = productMap.get(normalizeName(PRODUCT_NAMES.airwrap));
+  const hairDryer = productMap.get(normalizeName(PRODUCT_NAMES.hairDryer));
+  const herbalHairOil = productMap.get(normalizeName(PRODUCT_NAMES.herbalHairOil));
+  const blackSeedHairOil = productMap.get(normalizeName(PRODUCT_NAMES.blackSeedHairOil));
 
-  const tonerProducts = useMemo(() => {
-    return products.filter(
-      (p) =>
-        p.isActive !== false &&
-        p.name.toLowerCase().includes("toner")
-    );
-  }, [products]);
-
-  const maskProducts = useMemo(() => {
-    return products.filter(
-      (p) =>
-        p.isActive !== false &&
-        p.name.toLowerCase().includes("sheet mask")
-    );
-  }, [products]);
-
-  useEffect(() => {
-    if (location.state?.scrollToCoupon && couponRef.current) {
-      couponRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-  }, [location]);
+  const offerCards = [
+    {
+      category: "Season Sale",
+      title: "End of Season Sale",
+      highlight: "Up to 40% OFF",
+      description: "Fresh picks across Ilika beauty tools and everyday self-care.",
+      link: "/mask-combo",
+      background: "linear-gradient(135deg, #ffe5ea 0%, #ffd4dc 48%, #fff2f4 100%)",
+      textColor: "#2d1718",
+      badgeColor: "#d44d6b",
+      buttonVariant: "light",
+    },  {
+      category: "Beauty Tech",
+      title: "Ilika Mask Maker Machine",
+      highlight: "15% OFF",
+      description: "Use coupon code ILIKA15 on the Voice Mask Maker Machine.",
+      link: voiceMaskMaker ? getProductLink(voiceMaskMaker) : "/voice-mask-maker",
+      background: "linear-gradient(135deg, #ffeec8 0%, #ffc874 52%, #fff3da 100%)",
+      textColor: "#24150d",
+      badgeColor: "#8e4b11",
+      buttonVariant: "dark",
+    },
+    {
+      category: "Combo",
+      title: "Glow Therapy Combo",
+      highlight: "Free Serum",
+      description: "Get the Nonvoice Mask Maker with Hyaluronic Serum at combo pricing.",
+      link: "/glow-therapy-combo",
+      background: "linear-gradient(135deg, #ffd7df 0%, #ffe9ef 55%, #fff8fa 100%)",
+      textColor: "#2f171d",
+      badgeColor: "#c44269",
+      buttonVariant: "dark",
+    },
+  
+    {
+      category: "Appliances",
+      title: "Ilika Leafless Hairdryer Deal",
+      highlight: "15% OFF",
+      description: "Use code ILIKA15 on the Ilika High-Speed Leafless Hair Dryer today.",
+      link: hairDryer ? getProductLink(hairDryer) : "/leafless-hair-dryer",
+      background: "linear-gradient(135deg, #edf6ff 0%, #cfe7ff 50%, #f4fbff 100%)",
+      textColor: "#18202a",
+      badgeColor: "#4f82c8",
+      buttonVariant: "light",
+    },
+    {
+      category: "Styling",
+      title: "Ilika 5 in 1 Air Wrap Offer",
+      highlight: "15% OFF",
+      description: "Use code ILIKA15 for special savings on the Airwrap multi-styler tool set.",
+      link: airwrap ? getProductLink(airwrap) : "/category/hairstyling",
+      background: "linear-gradient(135deg, #fff0e2 0%, #ffd3b0 52%, #fff8f1 100%)",
+      textColor: "#261610",
+      badgeColor: "#c76d37",
+      buttonVariant: "dark",
+    },
+    {
+      category: "Combo",
+      title: "Hydration + Glow Combo",
+      highlight: "Free Hydra Gel",
+      description: "Pick 2 premium masks and get Hydra Gel free in one bundle.",
+      link: "/hydration-glow-combo",
+      background: "linear-gradient(135deg, #f5dcff 0%, #e7c8ff 48%, #fbf3ff 100%)",
+      textColor: "#281830",
+      badgeColor: "#9d5fbe",
+      buttonVariant: "light",
+    },
+    {
+      category: "Hair Care",
+      title: "Herbal Hair Oil Offer",
+      highlight: "Limited Deal",
+      description: "Discover root-strengthening care with Ilika Herbal Hair Oil.",
+      link: herbalHairOil ? getProductLink(herbalHairOil) : "/herbal-hair-oil",
+      background: "linear-gradient(135deg, #eef8df 0%, #d7efb0 50%, #f8fdef 100%)",
+      textColor: "#182113",
+      badgeColor: "#5f8f35",
+      buttonVariant: "light",
+    },
+    {
+      category: "Hair Care",
+      title: "Blackseed Hair Oil Offer",
+      highlight: "Limited Deal",
+      description: "Boost stronger-looking hair with the Black Seed Hair Oil offer.",
+      link: blackSeedHairOil ? getProductLink(blackSeedHairOil) : "/blackseed-hair-oil",
+      background: "linear-gradient(135deg, #fff1d8 0%, #f2d18c 50%, #fff8eb 100%)",
+      textColor: "#23190d",
+      badgeColor: "#b27b21",
+      buttonVariant: "dark",
+    },
+  ];
 
   useSeo({
     title: "Combo Deals | Ilika",
     description:
-      "Build your Ilika combo packs with toner and sheet mask deals. Save more with curated skincare combos.",
-    path: "/combo",
+      "Explore Ilika offers including combos, seasonal deals, and discounted beauty tools.",
+    path: "/offers",
     image: offBanner,
-    keywords: ["Ilika combos", "skincare combo offers", "sheet mask combo", "toner combo"],
+    keywords: [
+      "Ilika offers",
+      "Ilika combos",
+      "beauty deals",
+      "hair care offers",
+      "mask maker discount",
+    ],
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      name: "Ilika Combos",
-      url: "https://ilika.in/combo",
+      name: "Ilika Offers",
+      url: "https://ilika.in/offers",
       description:
-        "Create skincare combos from toners and sheet masks with combo pricing.",
-      numberOfItems: tonerProducts.length + maskProducts.length,
+        "Browse seasonal discounts, combo offers, and featured beauty deals from Ilika.",
+      numberOfItems: offerCards.length,
     },
   });
 
@@ -358,38 +189,96 @@ const Combos = () => {
     <>
       <MiniDivider />
 
-      <div style={{ background: "#fff8fa" }}>
-
+      <div style={{ background: "#ffffff" }}>
         <Header />
         <CartDrawer />
 
-        {/* TOP BANNER */}
-        {/* <Banner
-          className="mt-0 mb-6"
-          src={mothersDayBanner}
-          mobileSrc={mothersDayBannerMobile}
-          bannerKey="combos-top"
-          imageFit="contain"
-        /> */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <section className="max-w-3xl mx-auto">
+            <Heading
+              heading="Best Offers For You"
+              sub="Handpicked deals to pamper you"
+            />
+          </section>
 
-        {/* NEW OFFER */}
-        <HydrationGlowCombo />
+          <section className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {offerCards.map((card) => (
+              <Link
+                key={card.title}
+                to={card.link}
+                className="group overflow-hidden rounded-[28px] border border-white/60 shadow-[0_18px_45px_rgba(125,88,92,0.14)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_60px_rgba(125,88,92,0.20)]"
+                style={{ background: card.background }}
+              >
+                <div className="min-h-[360px] p-7">
+                  <div className="flex h-full flex-col">
+                    <p
+                      className="text-sm font-semibold uppercase tracking-[0.12em]"
+                      style={{ color: card.badgeColor }}
+                    >
+                      {card.category}
+                    </p>
 
-        {/* OLD COMBO */}
-        <MaskDuoOffer />
+                    <h2
+                      className="mt-5 text-[2rem] font-semibold leading-[1.02] md:text-[2.25rem]"
+                      style={{ color: card.textColor }}
+                    >
+                      {card.title}
+                    </h2>
 
-        {/* DIVIDER */}
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="border-t border-[#FAD4C0] my-4" />
-        </div>
+                    <p
+                      className="mt-3 text-[2.6rem] font-bold leading-none md:text-[3rem]"
+                      style={{ color: card.textColor }}
+                    >
+                      {card.highlight}
+                    </p>
 
-        {/* COUPON SECTION */}
-        <div className="pt-18" ref={couponRef}>
-          <CouponProductBuilder />
-        </div>
+                    <p className="mt-4 max-w-[240px] text-base leading-7 text-[#433531]">
+                      {card.description}
+                    </p>
+
+                    <div className="mt-auto pt-8">
+                      <span
+                        className={`inline-flex items-center rounded-full px-6 py-3 text-base font-semibold transition duration-300 ${
+                          card.buttonVariant === "dark"
+                            ? "bg-[#151312] text-white group-hover:bg-[#000000]"
+                            : "bg-white text-[#d65584] group-hover:bg-[#fff3f8]"
+                        }`}
+                      >
+                        Shop Now
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </section>
+
+          <section className="my-10 rounded-[28px] border border-[#f4dfe4] bg-white/90 px-5 py-6 shadow-[0_20px_55px_rgba(135,93,97,0.08)] sm:px-8">
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+              {trustItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.title}
+                    className="flex items-center gap-3 md:justify-center"
+                  >
+                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fff1f5] text-[#ea6f98]">
+                      <Icon className="h-6 w-6" />
+                    </span>
+                    <div>
+                      <p className="text-base font-semibold text-[#211815]">
+                        {item.title}
+                      </p>
+                      <p className="text-sm text-[#7b6965]">{item.subtitle}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </main>
 
         <Footer />
-
       </div>
     </>
   );

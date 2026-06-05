@@ -169,7 +169,7 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
                 {!open && (
                   <button
                     type="button"
-                    onClick={() => navigate("/combo")}
+                    onClick={() => navigate("/offers")}
                     className="inline-flex h-8 items-center rounded-none border-0 bg-[#231815] px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_24px_rgba(35,24,21,0.18)] appearance-none"
                   >
                     Offer
@@ -228,8 +228,12 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
             )}
 
             <div
-              className="hidden border-b border-[#e2c1c1] lg:block"
-              style={{ backgroundColor: "#2b2a29fc" }}
+              className="hidden lg:block"
+              style={{
+                backgroundColor: "#ffffff",
+                borderTop: "2px solid #b3b3b3",
+                borderBottom: "2px solid #b3b3b3",
+              }}
             >
               <div className="mx-auto flex h-[42px] max-w-[1280px] items-center justify-center gap-1 overflow-visible px-6 xl:px-8">
                 {desktopSubheaderLinks.map((item) => {
@@ -249,7 +253,7 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
                           to={item.to}
                           state={item.state}
                           className={`relative shrink-0 px-4 py-1 text-[14px] font-semibold transition duration-200 ${
-                            isActive ? "text-[#ffffff]" : "text-white/90 hover:text-white"
+                            isActive ? "text-[#231815]" : "text-[#4b4340] hover:text-[#231815]"
                           }`}
                         >
                           <span className="inline-flex items-center gap-1.5">
@@ -317,10 +321,10 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
                       state={item.state}
                       className={`group relative shrink-0 px-4 py-1 text-[14px] font-semibold transition duration-200 ${
                         item.accent
-                          ? "text-white hover:text-white"
+                          ? "text-[#231815] hover:text-[#231815]"
                           : isActive
-                            ? "text-white"
-                            : "text-white/90 hover:text-white"
+                            ? "text-[#231815]"
+                            : "text-[#4b4340] hover:text-[#231815]"
                       }`}
                     >
                       {item.label}

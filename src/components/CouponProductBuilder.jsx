@@ -263,16 +263,6 @@ const CouponProductBuilder = () => {
         }}
       >
         
-        {/* Heading */}
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-semibold text-[#7A2E3A]">
-            Our Special Offer
-          </h2>
-          <p className="text-sm text-gray-500 mt-2">
-            Pick your favorite styling tool and unlock exclusive discounts
-          </p>
-        </div>
-
         {/* Product Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 lg:gap-8 mb-12">
           {filteredProducts.map((product) => {
