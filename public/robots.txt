@@ -21,3 +21,4 @@ Disallow: /api/
 Disallow: /.well-known/
 
 Sitemap: https://ilika.in/sitemap.xml
+LLMS: https://ilika.in/llms.txt
