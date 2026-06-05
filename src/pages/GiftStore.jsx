@@ -54,8 +54,8 @@ const GIFT_AUDIENCES = [
 const OFFER_HIGHLIGHTS = [
   {
     subtitle: "SPECIAL DEAL",
-    lineOne: "Extra",
-    highlight: "15% OFF",
+    lineOne: "Save",
+   highlight: "Extra 15% Today",
     lineTwo: "On Voice-Guided Mask Maker Machine ",
     href: "/product/ilika-automatic-voice-version-face-mask-maker-machine-with-collagen-peptide",
     
