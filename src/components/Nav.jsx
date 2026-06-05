@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, ShoppingBag, User } from "lucide-react";
+import { ChevronDown, Search, ShoppingBag, Sparkles, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { useProducts } from "../admin/context/ProductContext";
@@ -38,6 +38,11 @@ const getProductPreviewPrice = (product = {}) => {
   const numeric = Number(raw);
   return Number.isFinite(numeric) ? numeric : 0;
 };
+
+const getItemVisual = (item = {}) => ({
+  image: item.image || null,
+  icon: item.icon || null,
+});
 
 export const SearchBar = ({ products = [], onClose, className = "", autoFocus = false }) => {
   const [query, setQuery] = useState("");
@@ -212,12 +217,15 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
   const searchWrapRef = useRef();
   const location = useLocation();
   const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState(() => ["Best Seller"]);
   const { products = [] } = useProducts();
   const mobileLinks = [
     { label: "Home", to: "/" },
     { label: "New Arrival", to: "/newarrival" },
+    { label: "Gift Store", to: "/gift-store" },
     { label: "Explore CTM", to: "/ctm" },
-    { label: "Mask Maker Machine", to: "/voice-mask-maker" },
+    { label: "Social Feed", to: "/social-feed" },
+    { label: "Blog", to: "/blog" },
   ];
 
   const desktopNavItemClass = (active) =>
@@ -241,6 +249,30 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
     document.addEventListener("mousedown", handleOutside);
     return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
+
+  useEffect(() => {
+    if (!mobile) return;
+    const activeGroup = subheaderLinks.find((item) =>
+      item.children?.some(
+        (child) =>
+          location.pathname === child.to ||
+          location.pathname.startsWith(`${child.to}/`)
+      )
+    );
+
+    if (!activeGroup?.label) return;
+    setExpandedGroups((prev) =>
+      prev.includes(activeGroup.label) ? prev : [...prev, activeGroup.label]
+    );
+  }, [location.pathname, mobile, subheaderLinks]);
+
+  const toggleGroup = (label) => {
+    setExpandedGroups((prev) =>
+      prev.includes(label)
+        ? prev.filter((item) => item !== label)
+        : [...prev, label]
+    );
+  };
 
   return (
     <div
@@ -271,42 +303,10 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
                     className={mobileNavItemClass(isActivePath(location.pathname, item.to))}
                   >
                     <span>{item.label}</span>
-                    <span className="text-lg leading-none text-[#c4a59a]">&gt;</span>
                   </Link>
                 ))}
               </div>
             </div>
-
-            {!!subheaderLinks.length && (
-              <div className="space-y-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a7b72]">
-                  Shop By Category
-                </p>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {subheaderLinks.map((item) => {
-                    const isActive =
-                      location.pathname === item.to ||
-                      location.pathname.startsWith(`${item.to}/`);
-
-                    return (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        onClick={onClose}
-                        className={`rounded-xl border px-3 py-3 text-center text-[13px] font-semibold transition ${
-                          isActive
-                            ? "border-[#eab7aa] bg-[#fff1ed] text-[#b34140]"
-                            : "border-[#f1dfd9] bg-white text-[#5d4a45]"
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             <div className="rounded-2xl border border-[#f1dfd9] bg-gradient-to-br from-[#fff7f4] to-white p-4 text-[#3c302c] shadow-[0_14px_34px_rgba(35,24,21,0.06)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b34140]">
@@ -324,6 +324,131 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
                 Shop Offer
               </Link>
             </div>
+
+            {!!subheaderLinks.length && (
+              <div className="space-y-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a7b72]">
+                  Shop By Category
+                </p>
+
+                <div className="space-y-3">
+                  {subheaderLinks.map((item) => {
+                    const isActive =
+                      location.pathname === item.to ||
+                      location.pathname.startsWith(`${item.to}/`) ||
+                      item.children?.some(
+                        (child) =>
+                          location.pathname === child.to ||
+                          location.pathname.startsWith(`${child.to}/`)
+                      );
+
+                    if (item.children?.length) {
+                      const isExpanded = expandedGroups.includes(item.label);
+
+                      return (
+                        <div
+                          key={item.to}
+                          className={`overflow-hidden rounded-2xl border transition ${
+                            isActive
+                              ? "border-[#eab7aa] bg-[#fff1ed]"
+                              : "border-[#f1dfd9] bg-white"
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => toggleGroup(item.label)}
+                            className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                          >
+                            <div className="min-w-0">
+                              <p className={`text-[14px] font-semibold ${isActive ? "text-[#b34140]" : "text-[#5d4a45]"}`}>
+                                {item.label}
+                              </p>
+                              <p className="mt-0.5 text-[11px] text-[#9a7b72]">
+                                {item.children.length} item{item.children.length > 1 ? "s" : ""}
+                              </p>
+                            </div>
+                            <ChevronDown
+                              className={`h-4 w-4 shrink-0 transition ${isExpanded ? "rotate-180 text-[#b34140]" : "text-[#b79c93]"}`}
+                            />
+                          </button>
+
+                          {isExpanded ? (
+                            <div className="border-t border-[#f1dfd9] px-3 pb-3 pt-2">
+                              <Link
+                                to={item.to}
+                                state={item.state}
+                                onClick={onClose}
+                                className="mb-2 block rounded-xl bg-white px-3 py-2 text-[12px] font-semibold text-[#7a655f] shadow-[0_6px_20px_rgba(35,24,21,0.04)]"
+                              >
+                                View all {item.label}
+                              </Link>
+
+                              <div className="space-y-2">
+                                {item.children.map((child) => {
+                                  const childActive =
+                                    location.pathname === child.to ||
+                                    location.pathname.startsWith(`${child.to}/`);
+                                  const visual = getItemVisual(child);
+
+                                  return (
+                                    <Link
+                                      key={child.to}
+                                      to={child.to}
+                                      state={child.state}
+                                      onClick={onClose}
+                                      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition ${
+                                        childActive
+                                          ? "bg-[#ffe4dc] text-[#b34140]"
+                                          : "bg-white text-[#6f5a54] shadow-[0_6px_20px_rgba(35,24,21,0.04)]"
+                                      }`}
+                                    >
+                                      {visual.icon === "sparkles" ? (
+                                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff2ea] text-[#b34140]">
+                                          <Sparkles className="h-4 w-4" />
+                                        </span>
+                                      ) : null}
+
+                                      {visual.image ? (
+                                        <img
+                                          loading="lazy"
+                                          src={visual.image}
+                                          alt={child.label}
+                                          className="h-10 w-10 shrink-0 rounded-xl border border-[#f1dfd9] object-cover"
+                                        />
+                                      ) : null}
+
+                                      <span className="min-w-0 truncate text-[12px] font-semibold">
+                                        {child.label}
+                                      </span>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        state={item.state}
+                        onClick={onClose}
+                        className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-[14px] font-semibold transition ${
+                          isActive
+                            ? "border-[#eab7aa] bg-[#fff1ed] text-[#b34140]"
+                            : "border-[#f1dfd9] bg-white text-[#5d4a45]"
+                        }`}
+                      >
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -360,12 +485,20 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
               New Arrival
             </Link>
 
+            <Link to="/gift-store" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/gift-store"))}>
+              Gift Store
+            </Link>
+
             <Link to="/ctm" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/ctm"))}>
               Explore CTM
             </Link>
 
-            <Link to="/voice-mask-maker" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/voice-mask-maker"))}>
-              Mask Maker Machine
+            <Link to="/social-feed" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/social-feed"))}>
+              Social Feed
+            </Link>
+
+            <Link to="/blog" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/blog"))}>
+              Blog
             </Link>
           </>
         )}

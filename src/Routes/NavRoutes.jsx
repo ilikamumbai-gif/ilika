@@ -31,6 +31,7 @@ const OrderSuccess = lazy(() => import("../pages/OrderSuccess"));
 const ShippingPolicy = lazy(() => import("../pages/ShippingPolicy"));
 const Faq = lazy(() => import("../pages/Faq"));
 const NewArrival = lazy(() => import("../pages/NewArrival"));
+const GiftStore = lazy(() => import("../pages/GiftStore"));
 const CreateCtm = lazy(() => import("../pages/CreateCtm"));
 const HairCare = lazy(() => import("../pages/HairCare"));
 const HairStyle = lazy(() => import("../pages/HairStyle"));
@@ -96,6 +97,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/hair") return { title: "Hair Care", description: "Shop Ilika hair care and styling essentials." };
   if (pathname === "/grooming") return { title: "Grooming Tools", description: "Premium grooming tools by Ilika." };
   if (pathname === "/newarrival") return { title: "New Arrivals", description: "See the newest Ilika products and launches." };
+  if (pathname === "/gift-store") return { title: "Gift Store", description: "Shop thoughtful beauty and grooming gifts from Ilika for every occasion." };
   if (pathname === "/products" || pathname === "/product")
     return { title: "All Products", description: "Browse all Ilika beauty and grooming products.", keywords: [...baseKeywords, "all products", "shop products"] };
   if (pathname === "/skin/face") return { title: "Face Care", description: "Face care products from Ilika." };
@@ -256,6 +258,7 @@ const NavRoutes = () => {
         <Route path="/hair" element={renderLazy(Hair)} />
         <Route path="/grooming" element={renderLazy(Grooming)} />
         <Route path="/newarrival" element={renderLazy(NewArrival)} />
+        <Route path="/gift-store" element={renderLazy(GiftStore)} />
         <Route path="/products" element={renderLazy(Products)} />
         <Route path="/product" element={<Navigate to="/products" replace />} />
 

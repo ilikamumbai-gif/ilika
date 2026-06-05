@@ -327,7 +327,7 @@ const Home = () => {
               <ProductList
                 mobileScroll
 
-                priorityNames={["24k Gold Collagen Face Mask is Anti-aging",
+                priorityNames={["24k Gold Collagen Face Mask for Anti-aging",
                   "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate",
                   "Collagen Serum | Firming & Anti-aging | 30 ML",
                   "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML",
@@ -453,7 +453,7 @@ const Home = () => {
                   )}
                   <ProductList
                     mobileScroll
-                    priorityNames={["24k Gold Collagen Face Mask is Anti-aging", "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate", "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin | 25 g", "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide"]}
+                    priorityNames={["24k Gold Collagen Face Mask for Anti-aging", "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate", "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin | 25 g", "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide"]}
                     categoryId={skincareCategory.id}
                     offset={isMobile ? 0 : skinStart}
                     limit={isMobile ? undefined : getVisibleCount(skinTotal)}

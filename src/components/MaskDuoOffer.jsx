@@ -13,7 +13,7 @@ const MaskDuoOffer = () => {
   const COMBO_PRICE = 699;
 
   const ALLOWED_PRODUCTS = [
-    "24k gold collagen face mask is anti-aging",
+    "24k gold collagen face mask for anti-aging",
     "ilika 4 in 1 collagen face mask glow firm & hydrate",
   ];
 

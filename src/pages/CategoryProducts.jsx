@@ -38,6 +38,82 @@ const SERUM_PRODUCT_NAMES = [
   "Collagen Serum | Firming & Anti-aging | 30 ML",
   "Peeling Solution | Clarifying & Blemish Control | 30 ML",
 ];
+const normalizeName = (value = "") =>
+  String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+
+const GIFT_COLLECTIONS = {
+  "gifts-under-999": {
+    label: "Gifts Under ₹999",
+    matcher: (product, price) => price > 0 && price <= 999,
+  },
+  "gifts-under-1499": {
+    label: "Gifts Under ₹1499",
+    matcher: (product, price) => price > 999 && price <= 1499,
+  },
+  "gifts-under-2499": {
+    label: "Gifts Under ₹2499",
+    matcher: (product, price) => price > 1499 && price <= 2499,
+  },
+  "gifts-2999-plus": {
+    label: "Gifts ₹2999+",
+    matcher: (product, price) => price >= 2999,
+  },
+  "gifts-for-her": {
+    label: "Gifts For Her",
+    names: [
+      "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
+      "24k Gold Collagen Face Mask for Anti-aging",
+      "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate",
+      "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
+      "High Frequency Therapy Wand with 4 Electrodes For Men & Women",
+      "Ilika Airwrap All in 1 Multi-Styler Tools with Leather Box",
+    ],
+  },
+  "gifts-for-him": {
+    label: "Gifts For Him",
+    names: [
+      "Beauty Bubble Pro Blackhead Remover For Men & Women",
+      "Hot & Cold Facial Pore Blackhead Remover For Men & Women",
+      "Ilika Nonvoice Mask Maker Machine with Collagen Peptide",
+      "Ilika High-Speed Leafless Hair Dryer For Men & Women",
+      "Herbal Hair Oil | Prevents Dandruff | Strengthens Hair Roots",
+      "Black Seed Hair Oil | Prevents Premature Graying | Boosts Hair Growth",
+    ],
+  },
+  "gifts-for-parents": {
+    label: "Gifts For Parents",
+    names: [
+      "24k Gold Collagen Face Mask for Anti-aging",
+      "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate",
+      "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
+      "High Frequency Therapy Wand with 4 Electrodes For Men & Women",
+      "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
+    ],
+  },
+  "gifts-for-special-occasion": {
+    label: "Gifts For Special Occasion",
+    names: [
+      "Ilika Airwrap All in 1 Multi-Styler Tools with Leather Box",
+      "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
+      "Ilika High-Speed Leafless Hair Dryer For Men & Women",
+      "24k Gold Collagen Face Mask for Anti-aging",
+      "Beauty Bubble Pro Blackhead Remover For Men & Women",
+    ],
+  },
+};
+
+const getComparablePrice = (product = {}) => {
+  const variantPrices = Array.isArray(product?.variants)
+    ? product.variants
+        .map((variant) => Number(variant?.price))
+        .filter((price) => Number.isFinite(price) && price > 0)
+    : [];
+
+  if (variantPrices.length) return Math.min(...variantPrices);
+
+  const productPrice = Number(product?.price);
+  return Number.isFinite(productPrice) ? productPrice : 0;
+};
 
 const CategoryProducts = () => {
   const { categorySlug = "" } = useParams();
@@ -46,6 +122,7 @@ const CategoryProducts = () => {
   const { categories = [] } = useCategories();
   const targetSlug = String(categorySlug || "").trim().toLowerCase();
   const targetLooseSlug = normalizeLooseSlug(targetSlug);
+  const giftCollection = GIFT_COLLECTIONS[targetSlug] || null;
 
   const matchedCategories = useMemo(
     () =>
@@ -93,21 +170,39 @@ const CategoryProducts = () => {
     );
   }, [categories, includeGroupWide, matchedGroups]);
 
-  const categoryLabel = matchedCategories[0]?.name || toReadable(categorySlug) || "Category";
+  const categoryLabel = giftCollection?.label || matchedCategories[0]?.name || toReadable(categorySlug) || "Category";
   const canonicalCategorySlug = useMemo(
-    () => String(matchedCategories[0]?.slug || createSlug(categoryLabel || categorySlug)).trim().toLowerCase(),
-    [matchedCategories, categoryLabel, categorySlug]
+    () =>
+      String(
+        giftCollection ? targetSlug : matchedCategories[0]?.slug || createSlug(categoryLabel || categorySlug)
+      )
+        .trim()
+        .toLowerCase(),
+    [giftCollection, targetSlug, matchedCategories, categoryLabel, categorySlug]
   );
 
   const filtered = useMemo(() => {
+    const activeProducts = products.filter((product) => product?.isActive !== false);
+
+    if (giftCollection) {
+      const giftNameSet = new Set((giftCollection.names || []).map((name) => normalizeName(name)));
+      return activeProducts.filter((product) => {
+        const price = getComparablePrice(product);
+        if (typeof giftCollection.matcher === "function") {
+          return giftCollection.matcher(product, price);
+        }
+        return giftNameSet.has(normalizeName(product?.name));
+      });
+    }
+
     if (SERUM_CATEGORY_SLUGS.has(targetSlug)) {
       const serumNameSet = new Set(SERUM_PRODUCT_NAMES.map((name) => name.trim().toLowerCase()));
-      return products.filter((product) =>
+      return activeProducts.filter((product) =>
         serumNameSet.has(String(product?.name || "").trim().toLowerCase())
       );
     }
 
-    const byCategory = products.filter((product) => {
+    const byCategory = activeProducts.filter((product) => {
       const ids = Array.isArray(product?.categoryIds) ? product.categoryIds.map(String) : [];
       if (ids.some((id) => matchedCategoryIds.has(id))) return true;
       if (ids.some((id) => groupCategoryIds.has(id))) return true;
@@ -125,11 +220,11 @@ const CategoryProducts = () => {
     if (!aliases.length) return byCategory;
 
     const aliasSlugs = aliases.map((entry) => createSlug(entry));
-    return products.filter((product) => {
+    return activeProducts.filter((product) => {
       const productNameSlug = createSlug(product?.name || "");
       return aliasSlugs.some((aliasSlug) => productNameSlug.includes(aliasSlug));
     });
-  }, [products, matchedCategoryIds, groupCategoryIds, targetSlug, targetLooseSlug]);
+  }, [products, giftCollection, matchedCategoryIds, groupCategoryIds, targetSlug, targetLooseSlug]);
 
   useSeo({
     title: `${categoryLabel} Products | Ilika`,
