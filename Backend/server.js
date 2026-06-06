@@ -985,11 +985,22 @@ const syncAllProductsToMerchant = async () => {
   const results = [];
   for (const doc of snapshot.docs) {
     const product = { id: doc.id, ...doc.data() };
-    if (product?.isActive === false) {
-      results.push(await deleteMerchantProduct(doc.id));
-      continue;
+    try {
+      if (product?.isActive === false) {
+        results.push(await deleteMerchantProduct(doc.id));
+        continue;
+      }
+      results.push(await upsertMerchantProduct(product));
+    } catch (error) {
+      const summary = getMerchantErrorSummary(error);
+      console.error(`MERCHANT BULK SYNC ITEM FAILED (${doc.id}):`, summary);
+      results.push({
+        status: "error",
+        offerId: doc.id,
+        productName: String(product?.name || "").trim() || null,
+        ...summary,
+      });
     }
-    results.push(await upsertMerchantProduct(product));
   }
 
   const summary = results.reduce(
