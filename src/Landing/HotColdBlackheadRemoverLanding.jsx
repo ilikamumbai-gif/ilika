@@ -158,7 +158,7 @@ const HotColdBlackheadRemoverLanding = () => {
   const [hideMobileBar, setHideMobileBar] = useState(false);
 
   const targetProduct = useMemo(() => {
-    const targetSlug = "hot-cold-facial-pore-blackhead-remover-for-men-women";
+    const targetSlug = "ilika-hot-cold-facial-pore-cleanser";
     return products.find((product) => {
       const nameSlug = createSlug(product?.name || "");
       const rawSlug = String(product?.productUrl || product?.slug || "").trim().toLowerCase();

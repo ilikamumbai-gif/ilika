@@ -99,7 +99,7 @@ const Blog = () => {
       },
       {
         id: "landing-high-frequency-therapy-wand",
-        title: "Explore High Frequency Therapy Wand",
+        title: "Explore High Frequency Therapy Wand with 4 Electrodes For Men & Women",
         author: "Team Ilika",
         image: hfWandImage,
         linkPath: "/high-frequency-therapy-wand",
@@ -113,14 +113,14 @@ const Blog = () => {
       },
       {
         id: "landing-nonvoice-mask-maker",
-        title: "Explore Nonvoice Mask Maker Machine",
+        title: "Explore Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide",
         author: "Team Ilika",
         image: nonVoiceMaskMakerImage,
         linkPath: "/nonvoice-mask-maker",
       },
       {
         id: "landing-voice-mask-maker",
-        title: "Explore Voice Mask Maker Machine",
+        title: "Explore Ilika Voice Face Mask Maker Machine with Collagen Peptide",
         author: "Team Ilika",
         image: "/Images/MaskMakercard.webp",
         linkPath: "/voice-mask-maker",

@@ -126,7 +126,7 @@ const STEPS = [
   {
     step: "01",
     title: "Take the Required Amount",
-    desc: "Take the required amount of Ilika Herbal Hair Oil into your palm. A little goes a long way — start small for short hair, more for longer hair.",
+    desc: "Take the required amount of Ilika Herbal Hair Growth Oil into your palm. A little goes a long way — start small for short hair, more for longer hair.",
     time: "1 min",
   },
   {
@@ -184,7 +184,7 @@ function StarRating({ n }) {
 }
 
 const Herbalhairoil = () => {
-  useSeo({ title: "Ilika | Herbal Hair Oil — Anti-Dandruff & Root Strengthening" });
+  useSeo({ title: "Ilika | Herbal Hair Growth Oil — Anti-Dandruff & Root Strengthening" });
   const navigate = useNavigate();
   const { activeProducts } = useProducts();
   const { addToCart } = useCart();
@@ -306,7 +306,7 @@ const Herbalhairoil = () => {
                 </h2>
               </div>
               <div className="relative w-full max-w-[520px] sm:h-[470px] sm:max-w-[620px] lg:h-[560px] lg:max-w-[660px]">
-                <img src={heroImage} alt={product?.name || "Black Seed Hair Oil"} className="h-auto w-full object-cover object-center sm:h-full sm:object-contain" />
+                <img src={heroImage} alt={product?.name || "Ilika Herbal Hair Growth Oil"} className="h-auto w-full object-cover object-center sm:h-full sm:object-contain" />
               </div>
               <div className="mt-4 lg:hidden">
                 <button
@@ -407,7 +407,7 @@ const Herbalhairoil = () => {
         <section className="bg-[#1a1a1a] px-4 py-16 text-center text-white sm:px-6 lg:px-[5%] lg:py-24">
           <div className="flex justify-center text-[#C8953A]"><Leaf size={44} /></div>
           <h2 className="mt-4 text-[clamp(28px,4vw,48px)] font-bold leading-[1.15] tracking-[-1px]" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>Your Best Hair Starts<br /><span className="text-[#C8953A]">Today.</span></h2>
-          <p className="mx-auto mb-10 mt-5 max-w-[520px] font-sans text-base leading-8 text-[#ccc] lg:text-lg">Join thousands of happy customers who've said goodbye to dandruff and hello to stronger, healthier hair with Ilika Herbal Hair Oil.</p>
+          <p className="mx-auto mb-10 mt-5 max-w-[520px] font-sans text-base leading-8 text-[#ccc] lg:text-lg">Join thousands of happy customers who've said goodbye to dandruff and hello to stronger, healthier hair with Ilika Herbal Hair Growth Oil.</p>
           <div className="mb-2 flex w-full flex-wrap justify-center gap-4"><button onClick={handleBuyNow} disabled={!product} className="w-full border border-white bg-[#df573f] px-8 py-4 font-sans text-[17px] font-bold text-white transition hover:bg-[#cf4f39] disabled:opacity-60 sm:w-auto sm:min-w-[320px]">Buy Now &nbsp;&nbsp; &gt;&gt; Save {discount}%</button></div>
           <button onClick={handleKnowMore} disabled={!product} className="mb-7 font-sans text-sm font-semibold text-white/85 underline underline-offset-4 disabled:opacity-60">Know More</button>
           <p className="font-sans text-[13px] tracking-[0.05em] text-[#888]">Free shipping - Original price Rs.{mrp} - Limited time offer</p>

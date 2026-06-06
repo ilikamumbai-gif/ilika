@@ -83,7 +83,7 @@ const Combos = () => {
       buttonVariant: "light",
     },  {
       category: "Beauty Tech",
-      title: "Ilika Mask Maker Machine",
+      title: "Ilika Voice Mask Maker Machine",
       highlight: "15% OFF",
       description: "Use coupon code ILIKA15 on the Voice Mask Maker Machine.",
       link: voiceMaskMaker ? getProductLink(voiceMaskMaker) : "/voice-mask-maker",

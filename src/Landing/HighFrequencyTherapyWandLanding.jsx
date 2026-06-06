@@ -242,7 +242,7 @@ const HighFrequencyTherapyWandLanding = () => {
 
   const productName =
     targetProduct?.name ||
-    "High Frequency Therapy Wand with 4 Electrodes For Men & Women";
+    "Ilika High Frequency Therapy Wand with 4 Electrodes For Men & Women";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 5999);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 9999);
   const productImage =

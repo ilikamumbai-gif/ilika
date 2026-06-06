@@ -99,7 +99,7 @@ const NonvoiceMaskMakerLanding = () => {
   }, [secs]);
 
   const targetProduct = useMemo(() => {
-    const targetSlug = "ilika-nonvoice-mask-maker-machine-with-collagen-peptide";
+    const targetSlug = "ilika-non-voice-face-mask-maker-machine-with-collagen-peptide";
     return products.find((p) => {
       const nameSlug = createSlug(p?.name || "");
       const rawSlug = String(p?.productUrl || p?.slug || "").trim().toLowerCase();

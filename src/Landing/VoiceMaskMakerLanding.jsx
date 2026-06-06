@@ -214,7 +214,7 @@ const howItWorksSteps = [
 ];
 
 const boxItems = [
-  { id: "mask-maker", name: "Voice Mask Maker Machine", image: voiceMaskMakerMainImage },
+  { id: "mask-maker", name: "Ilika Voice Face Mask Maker Machine with Collagen Peptide", image: voiceMaskMakerMainImage },
   { id: "beaker", name: "Measuring Beaker", image: voiceMaskMakerBeakerImage },
   { id: "mask-tray", name: "Mask Tray", image: voiceMaskMakerTrayImage },
   { id: "power-cable", name: "Power Cable", image: voiceMaskMakerCordImage },
@@ -255,7 +255,7 @@ const VoiceMaskMakerLanding = () => {
   }, [secs]);
 
   const targetProduct = useMemo(() => {
-    const targetSlug = "ilika-automatic-voice-version-face-mask-maker-machine-with-collagen-peptide";
+    const targetSlug = "ilika-voice-face-mask-maker-machine-with-collagen-peptide";
     return products.find((p) => {
       const nameSlug = createSlug(p?.name || "");
       const rawSlug = String(p?.productUrl || p?.slug || "").trim().toLowerCase();

@@ -101,7 +101,7 @@ const VoiceMaskMakerLanding = () => {
   }, [secs]);
 
   const targetProduct = useMemo(() => {
-    const targetSlug = "ilika-automatic-voice-version-face-mask-maker-machine-with-collagen-peptide";
+    const targetSlug = "ilika-voice-face-mask-maker-machine-with-collagen-peptide";
     return products.find((p) => {
       const nameSlug = createSlug(p?.name || "");
       const rawSlug = String(p?.productUrl || p?.slug || "").trim().toLowerCase();

@@ -109,7 +109,7 @@ const HairDryerLanding = () => {
   const couponPercent = 15;
 
   const targetProduct = useMemo(() => {
-    const targetSlug = "ilika-high-speed-leafless-hair-dryer-for-men-women";
+    const targetSlug = "ilika-high-speed-leafless-hair-dryer";
     return products.find((p) => {
       const nameSlug = createSlug(p?.name || "");
       const rawSlug = String(p?.productUrl || p?.slug || "").trim().toLowerCase();
