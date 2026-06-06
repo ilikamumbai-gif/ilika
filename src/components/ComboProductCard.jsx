@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { createSlug } from "../utils/slugify";
+import { getProductSlug } from "../utils/slugify";
 import OptimizedImage from "./OptimizedImage";
 
 const ComboProductCard = ({ product, selected, onSelect }) => {
 
-  const slug = createSlug(product.name);
+  const slug = getProductSlug(product);
   const productId = product._id || product.id;
 
   const productImage =

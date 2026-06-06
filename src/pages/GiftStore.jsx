@@ -10,18 +10,18 @@ import Banner from "../components/Banner";
 import Heading from "../components/Heading";
 
 const BEST_SELLER_PRODUCT_NAMES = [
-  "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
-  "Ilika Nonvoice Mask Maker Machine with Collagen Peptide",
-  "Hot & Cold Facial Pore Blackhead Remover For Men & Women",
-  "Beauty Bubble Pro Blackhead Remover For Men & Women",
-  "24k Gold Collagen Face Mask for Anti-aging",
-  "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate",
-  "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
+  "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
+  "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide",
+  "Ilika Hot & Cold Facial Pore Cleanser",
+  "Ilika Beauty Bubble Pro Blackhead Remover",
+  "Ilika 24K Gold Collagen Face Mask",
+  "Ilika 4-in-1 Collagen Face Mask",
+  "Ilika Hydra Gel Moisturizer",
   "High Frequency Therapy Wand with 4 Electrodes For Men & Women",
-  "Ilika High-Speed Leafless Hair Dryer For Men & Women",
-  "Ilika Airwrap All in 1 Multi-Styler Tools with Leather Box",
-  "Herbal Hair Oil | Prevents Dandruff | Strengthens Hair Roots",
-  "Black Seed Hair Oil | Prevents Premature Graying | Boosts Hair Growth",
+  "Ilika High-Speed Leafless Hair Dryer",
+  "Ilika Airwrap Multi-Styler Kit",
+  "Ilika Herbal Hair Growth Oil",
+  "Ilika Black Seed Hair Growth Oil",
 ];
 
 const GIFT_AUDIENCES = [

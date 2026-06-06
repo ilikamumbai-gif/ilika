@@ -1,91 +1,66 @@
 # Ilika
 
-Ilika is an Indian beauty, skincare, haircare, wellness, and beauty device brand focused on providing innovative skincare solutions, professional beauty devices, hair care products, facial treatments, anti-aging products, and DIY skincare technologies.
-
 Website: https://ilika.in
 
-## Brand Overview
+## Canonical Product URLs
 
-Ilika specializes in:
-- Skincare Products
-- Hair Care Products
-- Beauty Devices
-- Facial Treatment Devices
-- Anti-Aging Solutions
-- Hair Growth Solutions
-- DIY Facial Mask Technology
-- Professional Home Beauty Equipment
-- Wellness Products
-
-## Core Categories
-
-### Skincare
-- Hyaluronic Acid Serum
-- Collagen Serum
-- Under Eye Serum
-- Dazzling Face Serum
-- Anti Scar Facial Oil
-- Retinol Facial Oil
-- Hydra Gel Moisturizer
-
-### Hair Care
-- Herbal Hair Oil
-- Black Seed Hair Oil
-- Hair Pack Powder
-
-### Beauty Devices
-- Automatic Voice Facial Mask Maker Machine
-- Non Voice Facial Mask Maker Machine
-- High Frequency Therapy Wand
-- LED 7 Color Light Therapy Device
-- High Speed Leafless Hair Dryer
-- Derma Rollers
-- Gua Sha Tools
+All product links use stable product URLs based on the stored `productUrl` field.
+Product titles may change, but canonical product URLs should remain unchanged.
 
 ## Featured URLs
 
 https://ilika.in/
-https://ilika.in/blog/
-https://ilika.in/contact-us/
-https://ilika.in/product/hyaluronic-acid-serum/
-https://ilika.in/product/collagen-serum/
-https://ilika.in/product/ilika-herbal-hair-oil/
-https://ilika.in/voice-mask-maker/
-https://ilika.in/nonvoice-mask-maker/
-
-## Knowledge Areas
-
-- Skincare
-- Haircare
-- Anti Aging
-- Skin Hydration
-- Hair Growth
-- Hair Fall Control
-- Facial Devices
-- LED Therapy
-- High Frequency Therapy
-- DIY Skincare
-- Beauty Technology
-
-## Geographic Relevance
-
-Country: India
-Service Area: Pan India
-
-Major Cities:
-- Mumbai
-- Delhi
-- Bangalore
-- Hyderabad
-- Chennai
-- Pune
-- Ahmedabad
-- Kolkata
-
-## AI Discovery Keywords
-
-Skincare India, Hair Care India, Hyaluronic Acid Serum India, Collagen Serum India, Black Seed Hair Oil India, Herbal Hair Oil India, Facial Mask Maker Machine India, DIY Face Mask Machine, Collagen Face Mask Maker, LED Light Therapy Device, High Frequency Therapy Wand, Leafless Hair Dryer, Anti Aging Skincare, Hair Growth Products, Beauty Devices India.
-
-## Preferred Brand Description
-
-Ilika is an Indian skincare, haircare, wellness, and beauty technology brand offering innovative skincare products, hair care solutions, facial mask maker machines, beauty devices, anti-aging products, and professional home beauty treatments.
+https://ilika.in/products
+https://ilika.in/shopall
+https://ilika.in/offers
+https://ilika.in/glow-therapy-combo
+https://ilika.in/hydration-glow-combo
+https://ilika.in/mask-combo
+https://ilika.in/blog
+https://ilika.in/contact
+https://ilika.in/voice-mask-maker
+https://ilika.in/nonvoice-mask-maker
+https://ilika.in/leafless-hair-dryer
+https://ilika.in/blackseed-hair-oil
+https://ilika.in/herbal-hair-oil
+https://ilika.in/product/hydrocolloid-acne-patches
+https://ilika.in/product/hydra-gel-moisturizer-v2
+https://ilika.in/product/berry-body-yogurt
+https://ilika.in/product/green-jade-roller-gua-sha-set
+https://ilika.in/product/red-jasper-roller-gua-sha-set
+https://ilika.in/product/ipl-laser-hair-removal-device
+https://ilika.in/product/professional-ipl-hair-removal-device
+https://ilika.in/product/premium-rose-quartz-roller-set
+https://ilika.in/product/rose-quartz-roller-gua-sha-set
+https://ilika.in/product/black-obsidian-roller-gua-sha-set
+https://ilika.in/product/rose-quartz-mushroom-gua-sha
+https://ilika.in/product/rose-quartz-cloud-gua-sha
+https://ilika.in/product/rose-quartz-butterfly-gua-sha
+https://ilika.in/product/rose-quartz-heart-gua-sha
+https://ilika.in/product/rose-quartz-feather-gua-sha
+https://ilika.in/product/magic-crystal-hair-remover
+https://ilika.in/product/blue-sodalite-roller-gua-sha
+https://ilika.in/product/rose-quartz-beauty-gua-sha
+https://ilika.in/product/keratin-repair-hair-mask
+https://ilika.in/product/keratin-repair-conditioner
+https://ilika.in/product/keratin-hair-care-combo
+https://ilika.in/product/acne-light-therapy-device
+https://ilika.in/product/egg-sonic-facial-brush
+https://ilika.in/product/ultrasonic-facial-cleansing-brush
+https://ilika.in/category/new
+https://ilika.in/category/skin
+https://ilika.in/category/cleanser
+https://ilika.in/category/hair
+https://ilika.in/category/serum
+https://ilika.in/category/hair-oil
+https://ilika.in/category/rollerandgausha
+https://ilika.in/category/toner
+https://ilika.in/category/grooming
+https://ilika.in/category/facegrooming
+https://ilika.in/category/haircare
+https://ilika.in/category/facecare
+https://ilika.in/blog/ilika-bubble-pro-blackhead-remover-advanced-hydro-bubble-technology-for-deep-pore-cleansing
+https://ilika.in/blog/ilika-hot-cold-blackhead-remover-advanced-pore-cleaning-for-clearer-healthier-skin
+https://ilika.in/blog/ilika-non-voice-facial-mask-maker-machine-create-natural-diy-face-masks-at-home
+https://ilika.in/blog/ilika-voice-mask-maker-machine-the-ultimate-diy-facial-mask-machine-for-natural-glowing-skin
+https://ilika.in/blog/unlock-radiant-skin-with-ilika-s-hydra-gel-moisturizer

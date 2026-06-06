@@ -33,7 +33,7 @@ const HairStyle = () => {
             {hairCategory ? (
             <ProductList
               categoryId={hairCategory.id}
-              priorityNames={[ "Ilika High-Speed Leafless Hair Dryer For Men & Women"]}
+              priorityNames={[ "Ilika High-Speed Leafless Hair Dryer"]}
             />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>

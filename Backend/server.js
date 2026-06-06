@@ -758,7 +758,11 @@ const merchantSlugify = (value = "") =>
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-");
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const normalizeProductUrlValue = (value = "") => merchantSlugify(value);
 
 const stripHtml = (value = "") =>
   String(value || "")
@@ -848,7 +852,7 @@ const mapProductToMerchantPayload = (product = {}) => {
   if (!priceValue) return null;
 
   const siteBaseUrl = getSiteBaseUrl();
-  const slug = merchantSlugify(name);
+  const slug = normalizeProductUrlValue(product.productUrl || product.slug || name);
   const productUrl = normalizeAbsoluteUrl(`/product/${slug}`, siteBaseUrl);
   const normalizedImages = getMerchantImageCandidates(product)
     .map((img) => normalizeAbsoluteUrl(img, siteBaseUrl))
@@ -1651,11 +1655,108 @@ app.delete("/api/coupons/:id", async (req, res) => {
   }
 });
 
+const findProductByProductUrl = async (productUrl, excludeDocId = "") => {
+  const normalized = normalizeProductUrlValue(productUrl);
+  if (!normalized) return null;
+
+  const snapshots = await Promise.all([
+    db.collection("products").where("productUrl", "==", normalized).limit(5).get(),
+    db.collection("products").where("slug", "==", normalized).limit(5).get(),
+    db.collection("products").where("oldUrls", "array-contains", normalized).limit(5).get(),
+  ]);
+
+  for (const snapshot of snapshots) {
+    const match = snapshot.docs.find((doc) => doc.id !== excludeDocId);
+    if (match) return match;
+  }
+
+  return null;
+};
+
+const uniqueOldUrls = (...groups) => {
+  const values = new Set();
+  groups.flat().forEach((value) => {
+    const normalized = normalizeProductUrlValue(value);
+    if (normalized) values.add(normalized);
+  });
+  return Array.from(values);
+};
+
+const generateUniqueProductUrl = async (baseProductUrl, excludeDocId = "") => {
+  const base = normalizeProductUrlValue(baseProductUrl);
+  if (!base) return "";
+
+  let candidate = base;
+  let suffix = 2;
+
+  while (await findProductByProductUrl(candidate, excludeDocId)) {
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+
+  return candidate;
+};
+
+const resolveCreateProductUrl = async ({ requestedProductUrl, name }) => {
+  const base = normalizeProductUrlValue(requestedProductUrl || name || "");
+  if (!base) {
+    return { error: "Product URL must contain lowercase letters, numbers, and hyphens only." };
+  }
+
+  const productUrl = await generateUniqueProductUrl(base);
+  if (!productUrl) {
+    return { error: "Product URL must contain lowercase letters, numbers, and hyphens only." };
+  }
+
+  return { productUrl };
+};
+
+const resolveUpdatedProductUrl = async ({ requestedProductUrl, existingData, excludeDocId = "" }) => {
+  const currentProductUrl = normalizeProductUrlValue(
+    existingData?.productUrl || existingData?.slug || existingData?.name || ""
+  );
+
+  const requestedBase = normalizeProductUrlValue(requestedProductUrl);
+  const nextProductUrl = requestedBase || currentProductUrl;
+
+  if (!nextProductUrl) {
+    return { error: "Product URL must contain lowercase letters, numbers, and hyphens only." };
+  }
+
+  if (!requestedBase || requestedBase === currentProductUrl) {
+    return {
+      productUrl: nextProductUrl,
+      oldUrls: uniqueOldUrls(existingData?.oldUrls || []),
+    };
+  }
+
+  const existing = await findProductByProductUrl(requestedBase, excludeDocId);
+  if (existing) {
+    return {
+      error: "This product URL already exists. Please choose another URL.",
+    };
+  }
+
+  return {
+    productUrl: requestedBase,
+    oldUrls: uniqueOldUrls(existingData?.oldUrls || [], currentProductUrl),
+  };
+};
+
 app.post("/api/products", async (req, res) => {
   try {
     const now = Date.now();
+    const { productUrl, error } = await resolveCreateProductUrl({
+      requestedProductUrl: req.body?.productUrl,
+      name: req.body?.name,
+    });
+    if (error) return res.status(409).json({ error });
+
     const productData = {
       ...req.body,
+      productUrl,
+      slug: productUrl,
+      oldUrls: uniqueOldUrls(req.body?.oldUrls || []),
       videos: normalizeProductVideos(req.body?.videos),
       isActive: req.body.isActive ?? true,
       inStock: req.body.inStock ?? true,
@@ -1707,13 +1808,65 @@ const resolveProductDocByAnyId = async (rawId) => {
 
   const slugSnap = await db
     .collection("products")
-    .where("slug", "==", lookupId)
+    .where("productUrl", "==", lookupId)
     .limit(1)
     .get();
 
   if (!slugSnap.empty) return slugSnap.docs[0].ref;
+
+  const legacySlugSnap = await db
+    .collection("products")
+    .where("slug", "==", lookupId)
+    .limit(1)
+    .get();
+
+  if (!legacySlugSnap.empty) return legacySlugSnap.docs[0].ref;
+
+  const oldUrlsSnap = await db
+    .collection("products")
+    .where("oldUrls", "array-contains", lookupId)
+    .limit(1)
+    .get();
+
+  if (!oldUrlsSnap.empty) return oldUrlsSnap.docs[0].ref;
   return null;
 };
+
+app.get("/api/products/slug/:slug", async (req, res) => {
+  try {
+    const requestedSlug = normalizeProductUrlValue(req.params.slug || "");
+    if (!requestedSlug) return res.status(400).json({ error: "Invalid product slug" });
+
+    const byProductUrl = await db
+      .collection("products")
+      .where("productUrl", "==", requestedSlug)
+      .limit(1)
+      .get();
+
+    if (!byProductUrl.empty) {
+      const doc = byProductUrl.docs[0];
+      return res.json({ id: doc.id, ...doc.data() });
+    }
+
+    const byOldUrls = await db
+      .collection("products")
+      .where("oldUrls", "array-contains", requestedSlug)
+      .limit(1)
+      .get();
+
+    if (!byOldUrls.empty) {
+      const doc = byOldUrls.docs[0];
+      const data = doc.data() || {};
+      return res.json({
+        redirectTo: data.productUrl || "",
+        product: { id: doc.id, ...data },
+      });
+    }
+    return res.status(404).json({ error: "Product not found" });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch product" });
+  }
+});
 
 app.get("/api/products/:id", async (req, res) => {
   try {
@@ -1757,8 +1910,22 @@ app.put("/api/products/:id", async (req, res) => {
     if (!existingDoc.exists) return res.status(404).json({ error: "Product not found" });
 
     const existingData = existingDoc.data();
+    const hasManualProductUrlChange = Object.prototype.hasOwnProperty.call(req.body || {}, "productUrl");
+    const incomingProductUrl = hasManualProductUrlChange
+      ? req.body?.productUrl
+      : "";
+    const { productUrl, oldUrls, error } = await resolveUpdatedProductUrl({
+      requestedProductUrl: incomingProductUrl,
+      existingData,
+      excludeDocId: existingDoc.id,
+    });
+    if (error) return res.status(409).json({ error });
+
     const updateData = {
       ...req.body,
+      productUrl,
+      slug: productUrl,
+      oldUrls,
       videos: normalizeProductVideos(req.body?.videos),
       reviews: (req.body.reviews || []).map(r => {
         const images = normalizeReviewImages(r);
@@ -1813,8 +1980,22 @@ app.put("/admin/products/edit/:id", async (req, res) => {
     if (!existingDoc.exists) return res.status(404).json({ error: "Product not found" });
 
     const existingData = existingDoc.data();
+    const hasManualProductUrlChange = Object.prototype.hasOwnProperty.call(req.body || {}, "productUrl");
+    const incomingProductUrl = hasManualProductUrlChange
+      ? req.body?.productUrl
+      : "";
+    const { productUrl, oldUrls, error } = await resolveUpdatedProductUrl({
+      requestedProductUrl: incomingProductUrl,
+      existingData,
+      excludeDocId: existingDoc.id,
+    });
+    if (error) return res.status(409).json({ error });
+
     const updateData = {
       ...req.body,
+      productUrl,
+      slug: productUrl,
+      oldUrls,
       videos: normalizeProductVideos(req.body?.videos),
       reviews: (req.body.reviews || []).map(r => {
         const images = normalizeReviewImages(r);

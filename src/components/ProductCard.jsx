@@ -5,7 +5,7 @@ import { FiBell } from "react-icons/fi";
 import { FiShoppingCart } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
-import { createSlug } from "../utils/slugify";
+import { getProductSlug } from "../utils/slugify";
 import OptimizedImage from "./OptimizedImage";
 
 const ProductCard = ({
@@ -17,7 +17,7 @@ const ProductCard = ({
   prioritizeImage = false,
 }) => {
   const { addToCart } = useCart();
-  const slug = createSlug(product.name);
+  const slug = getProductSlug(product);
   const productId = product._id || product.id;
 
   /* VARIANT SUPPORT */

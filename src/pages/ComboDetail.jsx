@@ -9,7 +9,7 @@ import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
 import CartDrawer from "../components/CartDrawer";
 
-import { createSlug } from "../utils/slugify";
+import { getProductSlug } from "../utils/slugify";
 import { Truck, ShieldCheck, BadgeCheck } from "lucide-react";
 import { useSeo } from "../hooks/useSeo";
 
@@ -222,7 +222,7 @@ const ComboDetail = () => {
                     const product = getProductById(pid);
                     if (!product) return null;
 
-                    const slug = createSlug(product.name);
+                    const slug = getProductSlug(product);
 
                     return (
                       <li key={pid}>
@@ -252,7 +252,7 @@ const ComboDetail = () => {
 
                 if (!free) return null;
 
-                const slug = createSlug(free.name);
+                const slug = getProductSlug(free);
 
                 return (
 

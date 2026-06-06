@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { createSlug } from "../utils/slugify";
+import { getProductSlug } from "../utils/slugify";
 
 const ComboTab = ({ combo, products }) => {
   const [activeTab, setActiveTab] = useState("description");
@@ -76,7 +76,7 @@ const ComboTab = ({ combo, products }) => {
                 const product = getProductById(pid);
                 if (!product) return null;
 
-                const slug = createSlug(product.name);
+                const slug = getProductSlug(product);
 
                 return (
 
@@ -156,7 +156,7 @@ const ComboTab = ({ combo, products }) => {
               const product = getProductById(pid);
               if (!product) return null;
 
-              const slug = createSlug(product.name);
+              const slug = getProductSlug(product);
 
               return (
 
@@ -207,7 +207,7 @@ const ComboTab = ({ combo, products }) => {
             const free = getProductById(combo.freeProductId);
             if (!free) return null;
 
-            const slug = createSlug(free.name);
+            const slug = getProductSlug(free);
 
             return (
 

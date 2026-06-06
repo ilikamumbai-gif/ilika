@@ -3,7 +3,7 @@ import { ChevronDown, Search, ShoppingBag, Sparkles, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { useProducts } from "../admin/context/ProductContext";
-import { createSlug } from "../utils/slugify";
+import { createSlug, getProductSlug } from "../utils/slugify";
 
 const isActivePath = (pathname = "", target = "") => {
   if (target === "/") return pathname === "/";
@@ -131,7 +131,7 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
               return (
                 <Link
                   key={productId}
-                  to={`/product/${createSlug(product.name)}`}
+                  to={`/product/${getProductSlug(product)}`}
                   state={{ id: productId }}
                   onClick={() => {
                     setQuery("");

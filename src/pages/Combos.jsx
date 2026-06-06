@@ -8,25 +8,25 @@ import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
 import { useSeo } from "../hooks/useSeo";
 import { useProducts } from "../admin/context/ProductContext";
-import { createSlug } from "../utils/slugify";
+import { getProductSlug } from "../utils/slugify";
 
 const offBanner = "/Images/Tonner.webp";
 
 const PRODUCT_NAMES = {
   voiceMaskMaker:
-    "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
-  airwrap: "Ilika Airwrap All in 1 Multi-Styler Tools with Leather Box",
-  hairDryer: "Ilika High-Speed Leafless Hair Dryer For Men & Women",
-  herbalHairOil: "Herbal Hair Oil | Prevents Dandruff | Strengthens Hair Roots",
+    "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
+  airwrap: "Ilika Airwrap Multi-Styler Kit",
+  hairDryer: "Ilika High-Speed Leafless Hair Dryer",
+  herbalHairOil: "Ilika Herbal Hair Growth Oil",
   blackSeedHairOil:
-    "Black Seed Hair Oil | Prevents Premature Graying | Boosts Hair Growth",
+    "Ilika Black Seed Hair Growth Oil",
 };
 
 const normalizeName = (value = "") =>
   String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
 
 const getProductLink = (product = {}) =>
-  `/product/${createSlug(product?.name || "")}`;
+  `/product/${getProductSlug(product)}`;
 
 const trustItems = [
   {

@@ -8,7 +8,7 @@ import Heading from "../components/Heading";
 import ProductCard from "../components/ProductCard";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCategories } from "../admin/context/CategoryContext";
-import { createSlug } from "../utils/slugify";
+import { createSlug, getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
 
 const splitCategoryNames = (value = "") =>
@@ -32,10 +32,10 @@ const CATEGORY_KEYWORD_ALIASES = {
 };
 const SERUM_CATEGORY_SLUGS = new Set(["serum", "serums"]);
 const SERUM_PRODUCT_NAMES = [
-  "Dazzling Face Serum | Radiant & Glowing Skin | 30 ML",
-  "Under Eye Serum | Fast-Absorbing Formula | 30 ML",
-  "Hyaluronic Acid Serum (2%) | Intense hydration | 30ML",
-  "Collagen Serum | Firming & Anti-aging | 30 ML",
+  "Ilika Dazzling Glow Face Serum",
+  "Ilika Under Eye Serum",
+  "Ilika Hyaluronic Acid 2% Serum",
+  "Ilika Collagen Serum",
   "Peeling Solution | Clarifying & Blemish Control | 30 ML",
 ];
 const normalizeName = (value = "") =>
@@ -61,43 +61,43 @@ const GIFT_COLLECTIONS = {
   "gifts-for-her": {
     label: "Gifts For Her",
     names: [
-      "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
-      "24k Gold Collagen Face Mask for Anti-aging",
-      "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate",
-      "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
+      "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
+      "Ilika 24K Gold Collagen Face Mask",
+      "Ilika 4-in-1 Collagen Face Mask",
+      "Ilika Hydra Gel Moisturizer",
       "High Frequency Therapy Wand with 4 Electrodes For Men & Women",
-      "Ilika Airwrap All in 1 Multi-Styler Tools with Leather Box",
+      "Ilika Airwrap Multi-Styler Kit",
     ],
   },
   "gifts-for-him": {
     label: "Gifts For Him",
     names: [
-      "Beauty Bubble Pro Blackhead Remover For Men & Women",
-      "Hot & Cold Facial Pore Blackhead Remover For Men & Women",
-      "Ilika Nonvoice Mask Maker Machine with Collagen Peptide",
-      "Ilika High-Speed Leafless Hair Dryer For Men & Women",
-      "Herbal Hair Oil | Prevents Dandruff | Strengthens Hair Roots",
-      "Black Seed Hair Oil | Prevents Premature Graying | Boosts Hair Growth",
+      "Ilika Beauty Bubble Pro Blackhead Remover",
+      "Ilika Hot & Cold Facial Pore Cleanser",
+      "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide",
+      "Ilika High-Speed Leafless Hair Dryer",
+      "Ilika Herbal Hair Growth Oil",
+      "Ilika Black Seed Hair Growth Oil",
     ],
   },
   "gifts-for-parents": {
     label: "Gifts For Parents",
     names: [
-      "24k Gold Collagen Face Mask for Anti-aging",
-      "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate",
-      "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
+      "Ilika 24K Gold Collagen Face Mask",
+      "Ilika 4-in-1 Collagen Face Mask",
+      "Ilika Hydra Gel Moisturizer",
       "High Frequency Therapy Wand with 4 Electrodes For Men & Women",
-      "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
+      "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
     ],
   },
   "gifts-for-special-occasion": {
     label: "Gifts For Special Occasion",
     names: [
-      "Ilika Airwrap All in 1 Multi-Styler Tools with Leather Box",
-      "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
-      "Ilika High-Speed Leafless Hair Dryer For Men & Women",
-      "24k Gold Collagen Face Mask for Anti-aging",
-      "Beauty Bubble Pro Blackhead Remover For Men & Women",
+      "Ilika Airwrap Multi-Styler Kit",
+      "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
+      "Ilika High-Speed Leafless Hair Dryer",
+      "Ilika 24K Gold Collagen Face Mask",
+      "Ilika Beauty Bubble Pro Blackhead Remover",
     ],
   },
 };
@@ -243,7 +243,7 @@ const CategoryProducts = () => {
         itemListElement: filtered.slice(0, 20).map((product, index) => ({
           "@type": "ListItem",
           position: index + 1,
-          url: `https://ilika.in/product/${createSlug(product?.name || "")}`,
+          url: `https://ilika.in/product/${getProductSlug(product)}`,
           name: product?.name || "Product",
         })),
       },

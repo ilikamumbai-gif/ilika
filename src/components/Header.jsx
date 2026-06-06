@@ -5,7 +5,7 @@ import logo from "/Images/logo2.webp";
 import { useProducts } from "../admin/context/ProductContext";
 import OptimizedImage from "./OptimizedImage";
 import { MiniDividerStrip } from "./MiniDivider";
-import { createSlug } from "../utils/slugify";
+import { getProductSlug } from "../utils/slugify";
 
 const Nav = lazy(() => import("./Nav"));
 const SearchBar = lazy(() =>
@@ -18,18 +18,18 @@ const DESKTOP_SUBHEADER_HEIGHT = 42;
 const MOBILE_MAIN_HEADER_HEIGHT = 72;
 const MOBILE_SEARCH_PANEL_HEIGHT = 76;
 const BEST_SELLER_PRODUCT_NAMES = [
-  "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
-  "Ilika Nonvoice Mask Maker Machine with Collagen Peptide",
-  "Hot & Cold Facial Pore Blackhead Remover For Men & Women",
-  "Beauty Bubble Pro Blackhead Remover For Men & Women",
-  "24k Gold Collagen Face Mask for Anti-aging",
-  "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate",
-  "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
+  "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
+  "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide",
+  "Ilika Hot & Cold Facial Pore Cleanser",
+  "Ilika Beauty Bubble Pro Blackhead Remover",
+  "Ilika 24K Gold Collagen Face Mask",
+  "Ilika 4-in-1 Collagen Face Mask",
+  "Ilika Hydra Gel Moisturizer",
   "High Frequency Therapy Wand with 4 Electrodes For Men & Women",
-  "Ilika High-Speed Leafless Hair Dryer For Men & Women",
-  "Ilika Airwrap All in 1 Multi-Styler Tools with Leather Box",
-  "Herbal Hair Oil | Prevents Dandruff | Strengthens Hair Roots",
-  "Black Seed Hair Oil | Prevents Premature Graying | Boosts Hair Growth",
+  "Ilika High-Speed Leafless Hair Dryer",
+  "Ilika Airwrap Multi-Styler Kit",
+  "Ilika Herbal Hair Growth Oil",
+  "Ilika Black Seed Hair Growth Oil",
 ];
 
 const getProductPreviewImage = (product = {}) =>
@@ -75,7 +75,7 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
       if (!product) return null;
       return {
         label: product.name,
-        to: `/product/${createSlug(product.name || "")}`,
+        to: `/product/${getProductSlug(product)}`,
         state: { id: product._id || product.id },
         image: getProductPreviewImage(product),
       };

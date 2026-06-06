@@ -10,6 +10,7 @@ import Strike from "@tiptap/extension-strike";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { logActivity } from "../Utils/logActivity";
+import { normalizeSlugInput } from "../../utils/slugify";
 
 const storage = getStorage(app);
 const DEFAULT_DETAIL_BG = "#FFFFFF";
@@ -95,6 +96,17 @@ const sanitizePackOptions = (packOptions = []) => {
     })
     .filter(Boolean);
 };
+
+const PRODUCT_URL_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+const sanitizeProductUrlValue = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-\s]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
 
 /* ── Rich Text Editor ── */
 const RichTextEditor = ({ value, onChange }) => {
@@ -182,7 +194,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
   const emptyForm = {
     hsnCode: "", gstRate: "",
-    name: "", shortInfo: "", price: "", mrp: "",
+    name: "", productUrl: "", shortInfo: "", price: "", mrp: "",
     packOptions: [],
     productTag: "",
     hasVariants: false, variants: [], categoryIds: [],
@@ -209,6 +221,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     hsnCode: d.hsnCode || d.hsn || "",
     gstRate: d.gstRate ?? "",
     name: d.name || "",
+    productUrl: d.productUrl || d.slug || "",
     shortInfo: d.shortInfo || "",
     price: d.price || "",
     mrp: d.mrp || "",
@@ -258,6 +271,10 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       : []
   );
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [productUrlTouched, setProductUrlTouched] = useState(
+    Boolean(initialData?.id || initialData?.docId || initialData?._id)
+  );
   const [newBgName, setNewBgName] = useState("");
   const [newBgValue, setNewBgValue] = useState("#FFEFEA");
 
@@ -265,6 +282,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     if (!initialData || Object.keys(initialData).length === 0) return;
     setForm(fromInitial(initialData));
     setPreviewImages(initialData.images || []);
+    setSubmitError("");
+    setProductUrlTouched(Boolean(initialData?.id || initialData?.docId || initialData?._id));
     setPreviewIngredientImages(
       Array.isArray(initialData.ingredients)
         ? initialData.ingredients.map((item) => (typeof item === "string" ? item : item?.image || item?.url || "")).filter(Boolean)
@@ -279,7 +298,34 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     };
   }, [previewImages, previewIngredientImages]);
 
+  const isEditMode = Boolean(initialData?.id || initialData?.docId || initialData?._id);
+  const normalizedProductUrl = sanitizeProductUrlValue(form.productUrl);
+  const productUrlError =
+    form.productUrl && !PRODUCT_URL_PATTERN.test(normalizedProductUrl)
+      ? "Use lowercase letters, numbers, and hyphens only."
+      : "";
+  const saveButtonLabel = loading ? "Saving..." : "Save Product";
+
   /* ── helpers ── */
+  const handleNameChange = (value) => {
+    setForm((prev) => {
+      const next = { ...prev, name: value };
+      if (!isEditMode && !productUrlTouched) {
+        next.productUrl = normalizeSlugInput(value);
+      }
+      return next;
+    });
+  };
+
+  const handleProductUrlChange = (value) => {
+    setProductUrlTouched(true);
+    setSubmitError("");
+    setForm((prev) => ({
+      ...prev,
+      productUrl: sanitizeProductUrlValue(value),
+    }));
+  };
+
   const handleImageSelect = (files) => {
     const arr = Array.from(files);
     setForm(prev => ({ ...prev, images: [...prev.images, ...arr] }));
@@ -434,6 +480,9 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   /* ── submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError("");
+    if (productUrlError) return;
+
     setLoading(true);
     try {
       /* main images */
@@ -510,6 +559,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         hsnCode: String(form.hsnCode || "").trim(),
         gstRate: form.gstRate === "" ? null : Number(form.gstRate),
         name: form.name, shortInfo: form.shortInfo,
+        productUrl: normalizedProductUrl,
         productTag: String(form.productTag || "").trim(),
         hasVariants: form.hasVariants,
         price: form.hasVariants ? null : Number(form.price),
@@ -546,8 +596,10 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       setForm(emptyForm);
       setPreviewImages([]);
       setPreviewIngredientImages([]);
+      setProductUrlTouched(false);
     } catch (err) {
       console.error("PRODUCT SAVE ERROR:", err);
+      setSubmitError(err?.message || "Failed to save product.");
     }
     setLoading(false);
   };
@@ -555,6 +607,17 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   /* ══════════════ JSX ══════════════ */
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-6xl">
+      {isEditMode ? (
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-black text-white px-5 py-2.5 rounded-lg disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {saveButtonLabel}
+          </button>
+        </div>
+      ) : null}
 
       <div className="border rounded-2xl bg-white p-5 space-y-4">
         <h2 className="text-base font-semibold text-gray-900">Basic Details</h2>
@@ -585,9 +648,28 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           <div className="lg:col-span-2">
             <label className="text-xs font-semibold text-gray-600 block mb-1">Product Name</label>
             <input name="name" placeholder="Product Name" value={form.name}
-              onChange={e => setForm({ ...form, name: e.target.value })}
+              onChange={e => handleNameChange(e.target.value)}
               className="w-full border border-gray-200 p-2.5 rounded-lg" required
             />
+          </div>
+          <div className="lg:col-span-2">
+            <label className="text-xs font-semibold text-gray-600 block mb-1">Product URL / Slug</label>
+            <input
+              name="productUrl"
+              placeholder="hot-cold-facial-pore-blackhead-remover"
+              value={form.productUrl}
+              onChange={e => handleProductUrlChange(e.target.value)}
+              className={`w-full border p-2.5 rounded-lg ${productUrlError || submitError.toLowerCase().includes("product url") ? "border-red-300" : "border-gray-200"}`}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Lowercase letters, numbers, and hyphens only. Leave empty to auto-generate from title.
+            </p>
+            {productUrlError ? (
+              <p className="mt-1 text-xs text-red-500">{productUrlError}</p>
+            ) : null}
           </div>
           <div className="lg:col-span-2">
             <label className="text-xs font-semibold text-gray-600 block mb-1">Short Info</label>
@@ -608,6 +690,10 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           </div>
         </div>
       </div>
+
+      {submitError ? (
+        <p className="text-sm text-red-500">{submitError}</p>
+      ) : null}
 
       {/* STATUS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 border p-4 rounded-xl bg-gray-50">
@@ -1342,8 +1428,12 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         )}
       </div>
 
-      <button type="submit" className="bg-black text-white px-5 py-2.5 rounded-lg">
-        {loading ? "Saving..." : "Save Product"}
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-black text-white px-5 py-2.5 rounded-lg disabled:opacity-70 disabled:cursor-not-allowed"
+      >
+        {saveButtonLabel}
       </button>
     </form>
   );

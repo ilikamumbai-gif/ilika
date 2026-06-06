@@ -33,7 +33,7 @@ const HairCare = () => {
           {hairCategory ? (
             <ProductList
               categoryId={hairCategory.id}
-               priorityNames={["Black Seed Hair Oil | Prevents Premature Graying | Boosts Hair Growth", "Herbal Hair Oil | Prevents Dandruff | Strengthens Hair Roots", "Frizz Control Hair Serum | Control Frizz & Detangle Hair | 50 ML ", "Keratin Rich Conditioner | For Normal to Damaged Hair | 200 ML"]}
+               priorityNames={["Ilika Black Seed Hair Growth Oil", "Ilika Herbal Hair Growth Oil", "Ilika Frizz Control Hair Serum", "Ilika Keratin Repair Conditioner"]}
             />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>

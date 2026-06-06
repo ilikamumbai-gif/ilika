@@ -19,7 +19,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
-import { createSlug } from "../utils/slugify";
+import { getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
 
 const pageImage = "/Images/Tonner.webp";
@@ -212,7 +212,7 @@ const GlowTherapyCombo = () => {
                 {comboProducts.map((product, index) => (
                   <Link
                     key={product._id || product.id}
-                    to={`/product/${createSlug(product.name || "")}`}
+                    to={`/product/${getProductSlug(product)}`}
                     className="group rounded-[20px] p-4 shadow-sm transition-all duration-300 hover:scale-[1.012] hover:shadow-xl sm:rounded-[22px] sm:p-5"
                     style={{
                       background: "#ffffff",

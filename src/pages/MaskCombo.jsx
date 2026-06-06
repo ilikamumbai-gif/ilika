@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
 import { useSeo } from "../hooks/useSeo";
-import { createSlug } from "../utils/slugify";
+import { getProductSlug } from "../utils/slugify";
 
 import MiniDivider from "../components/MiniDivider";
 import Heading from "../components/Heading";
@@ -49,7 +49,7 @@ const buildComboItems = (items = []) =>
 
 const ItemTile = ({ entry }) => {
   const productName = entry.product?.name || entry.fallbackName;
-  const productSlug = entry.product ? createSlug(productName || "") : "";
+  const productSlug = entry.product ? getProductSlug(entry.product) : "";
   const productPath = productSlug ? `/product/${productSlug}` : "";
   const isClickable = Boolean(entry.product && productPath);
 
@@ -195,8 +195,8 @@ const MaskCombo = () => {
         description:
           "One 4-in-1 Collagen Mask for glow and hydration, paired with one 24K Gold Anti-aging Mask.",
         items: [
-          { product: fourInOneMask, fallbackName: "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate" },
-          { product: goldMask, fallbackName: "24K Gold Collagen Face Mask Anti-aging" },
+          { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask" },
+          { product: goldMask, fallbackName: "Ilika 24K Gold Collagen Face Mask" },
         ],
       },
       {
@@ -207,8 +207,8 @@ const MaskCombo = () => {
         description:
           "Two Ilika 4-in-1 Collagen Masks for double the glow, firmness, and hydration at one special price.",
         items: [
-          { product: fourInOneMask, fallbackName: "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate" },
-          { product: fourInOneMask, fallbackName: "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate" },
+          { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask" },
+          { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask" },
         ],
       },
       {

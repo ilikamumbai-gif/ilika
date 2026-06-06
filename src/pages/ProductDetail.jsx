@@ -8,7 +8,7 @@ import CartDrawer from "../components/CartDrawer";
 import { useCart } from "../context/CartProvider";
 import { auth, storage } from "../firebase/firebaseConfig";
 import { useProducts } from "../admin/context/ProductContext";
-import { createSlug } from "../utils/slugify";
+import { createSlug, getProductSlug } from "../utils/slugify";
 import { getDownloadURL, ref as storageRef, uploadString } from "firebase/storage";
 import {
   Truck, ShieldCheck, BadgeCheck, Package,
@@ -29,35 +29,8 @@ const COLLAGEN_ADDON_OPTIONS = [
   { id: "pack3", count: 3, label: "3 Collagen Peptide Packs (48 no.s)", tablets: 48, price: 2299 },
 ];
 
-const PRODUCT_SLUG_ALIASES = {
-  "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-25g": [
-    "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-50g",
-    "hydra-gel-face-moisturizer-for-dry-dehydrated-skin-25-g",
-  ],
-};
-
 const normalizeRouteSlug = (value = "") =>
   String(value || "").trim().toLowerCase();
-
-const getCandidateProductSlugs = (value = "") => {
-  const currentSlug = normalizeRouteSlug(value);
-  return [currentSlug, ...(PRODUCT_SLUG_ALIASES[currentSlug] || [])].filter(Boolean);
-};
-
-const getProductRouteSlugs = (product = {}) => {
-  const values = [product?.slug, product?.name, product?.id, product?._id];
-  const slugs = new Set();
-
-  values.forEach((value) => {
-    if (!value) return;
-    const raw = normalizeRouteSlug(value);
-    const generated = normalizeRouteSlug(createSlug(String(value)));
-    if (raw) slugs.add(raw);
-    if (generated) slugs.add(generated);
-  });
-
-  return Array.from(slugs);
-};
 
 const stripHtml = (value = "") =>
   String(value || "")
@@ -1167,7 +1140,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const ProductDetail = () => {
   const { products = [] } = useProducts();
-  const { slug } = useParams();
+  const { productUrl } = useParams();
   const navigate = useNavigate();
   const { addToCart, closeCart, cartItems } = useCart();
   const [isAdding, setIsAdding] = useState(false);
@@ -1368,11 +1341,13 @@ const ProductDetail = () => {
   }, []);// re-register when product loads so ref is valid
 
 
-  /* â”€â”€ Fetch product by slug â”€â”€ */
+  /* Product detail routing uses productUrl only. */
   useEffect(() => {
     let isCurrentRoute = true;
 
-    if (!slug) {
+    const currentProductUrl = normalizeRouteSlug(productUrl);
+
+    if (!currentProductUrl) {
       setProduct(null);
       setLoading(false);
       return () => {
@@ -1387,35 +1362,35 @@ const ProductDetail = () => {
       };
     }
 
-    const candidateSlugs = getCandidateProductSlugs(slug);
-
     const load = async () => {
       setLoading(true);
       setProduct((currentProduct) => {
         if (!currentProduct) return null;
-        const currentProductSlugs = getProductRouteSlugs(currentProduct);
-        return currentProductSlugs.some((productSlug) => candidateSlugs.includes(productSlug))
+        return normalizeRouteSlug(currentProduct?.productUrl) === currentProductUrl
           ? currentProduct
           : null;
       });
 
       try {
         let found = products.find((p) =>
-          candidateSlugs.includes(createSlug(p.name))
+          normalizeRouteSlug(p?.productUrl) === currentProductUrl
         );
         if (!found) {
-          let resolved = null;
-          for (const candidateSlug of candidateSlugs) {
-            const res = await fetch(
-              `${import.meta.env.VITE_API_URL}/api/products/slug/${candidateSlug}`
-            );
-            if (res.ok) {
-              resolved = await res.json();
-              break;
-            }
+          const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/products/slug/${currentProductUrl}`
+          );
+          if (!res.ok) throw new Error();
+
+          const resolved = await res.json();
+          const redirectTo = normalizeRouteSlug(resolved?.redirectTo);
+
+          if (redirectTo && redirectTo !== currentProductUrl) {
+            if (!isCurrentRoute) return;
+            navigate(`/product/${redirectTo}`, { replace: true });
+            return;
           }
-          if (!resolved) throw new Error();
-          found = resolved;
+
+          found = resolved?.product || resolved;
         }
 
         if (!isCurrentRoute) return;
@@ -1435,7 +1410,7 @@ const ProductDetail = () => {
     return () => {
       isCurrentRoute = false;
     };
-  }, [slug, products]);
+  }, [productUrl, products, navigate]);
 
   /* â”€â”€ Set first image - clear stale data immediately, then preload & populate â”€â”€ */
   useEffect(() => {
@@ -2157,24 +2132,17 @@ const ProductDetail = () => {
   const beforeAfterPairs = product?.beforeAfter || [];
   const hasBeforeAfter = Array.isArray(beforeAfterPairs) && beforeAfterPairs.length > 0;
   const currentRouteSlug = useMemo(
-    () => normalizeRouteSlug(slug),
-    [slug]
+    () => normalizeRouteSlug(productUrl),
+    [productUrl]
   );
-  const productRouteSlugs = useMemo(
-    () => getProductRouteSlugs(product),
+  const canonicalProductSlug = useMemo(
+    () => normalizeRouteSlug(getProductSlug(product)),
     [product]
   );
   const productMatchesCurrentRoute = useMemo(() => {
     if (!product || !currentRouteSlug) return false;
-    const candidateSlugs = getCandidateProductSlugs(currentRouteSlug);
-    return productRouteSlugs.some((productSlug) =>
-      candidateSlugs.includes(productSlug)
-    );
-  }, [product, currentRouteSlug, productRouteSlugs]);
-  const canonicalProductSlug = useMemo(
-    () => normalizeRouteSlug(createSlug(product?.name || slug || "")),
-    [product?.name, slug]
-  );
+    return canonicalProductSlug === currentRouteSlug;
+  }, [product, currentRouteSlug, canonicalProductSlug]);
   const seoProductTitle = product?.name
     ? `${product.name} | Ilika`
     : "Product Details | Ilika";
@@ -2184,7 +2152,11 @@ const ProductDetail = () => {
     "Explore product details, benefits, pricing, and offers on Ilika.";
   const seoProductImage =
     images?.[0] || product?.imageUrl || product?.image || "https://ilika.in/Images/logo2.webp";
-  const canonicalPath = `/product/${canonicalProductSlug}`;
+  const canonicalPath = canonicalProductSlug
+    ? `/product/${canonicalProductSlug}`
+    : currentRouteSlug
+      ? `/product/${currentRouteSlug}`
+      : "/products";
   const seoProductKeywords = useMemo(() => {
     const fromCategories = Array.isArray(product?.categoryName)
       ? product.categoryName
@@ -2244,7 +2216,7 @@ const ProductDetail = () => {
       stripHtml(product?.description) ||
       "Buy this product online at Ilika.";
 
-    const productIdValue = String(product?.id || product?._id || slug || "").trim();
+    const productIdValue = String(product?.id || product?._id || productUrl || "").trim();
     const variantId = String(activeVariant?.id || "").trim();
     const sku = variantId ? `${productIdValue}_${variantId}` : productIdValue;
 
@@ -2286,7 +2258,7 @@ const ProductDetail = () => {
     }
 
     return data;
-  }, [product, activeVariant?.id, images, isOutOfStock, price, rating, slug, canonicalPath]);
+  }, [product, activeVariant?.id, images, isOutOfStock, price, rating, productUrl, canonicalPath]);
 
   useEffect(() => {
     if (!product || !currentRouteSlug || !canonicalProductSlug) return;

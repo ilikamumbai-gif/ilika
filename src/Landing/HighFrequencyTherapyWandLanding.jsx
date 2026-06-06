@@ -18,7 +18,7 @@ import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import OptimizedImage from "../components/OptimizedImage";
 import { useProducts } from "../admin/context/ProductContext";
-import { createSlug } from "../utils/slugify";
+import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
 
 const trustItems = [
@@ -231,7 +231,7 @@ const HighFrequencyTherapyWandLanding = () => {
     const targetSlug = "high-frequency-therapy-wand-with-4-electrodes-for-men-women";
     return products.find((product) => {
       const nameSlug = createSlug(product?.name || "");
-      const rawSlug = String(product?.slug || "").trim().toLowerCase();
+      const rawSlug = String(product?.productUrl || product?.slug || "").trim().toLowerCase();
       return nameSlug === targetSlug || rawSlug === targetSlug;
     });
   }, [products]);
@@ -250,8 +250,7 @@ const HighFrequencyTherapyWandLanding = () => {
     targetProduct?.images?.[0] ||
     targetProduct?.imageUrl ||
     "https://placehold.co/720x920/1a1410/f0dfb8?text=Ilika+HF+Wand";
-  const productSlug =
-    createSlug(productName) || "high-frequency-therapy-wand-with-4-electrodes-for-men-women";
+  const productSlug = getProductSlug(targetProduct);
   const productPath = `/product/${productSlug}`;
   const savings = Math.max(productMrp - productPrice, 0);
   const landingVideo = useMemo(() => {

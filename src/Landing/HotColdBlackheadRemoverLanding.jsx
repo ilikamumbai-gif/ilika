@@ -19,7 +19,7 @@ import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import OptimizedImage from "../components/OptimizedImage";
 import { useProducts } from "../admin/context/ProductContext";
-import { createSlug } from "../utils/slugify";
+import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
 
 const trustItems = [
@@ -161,7 +161,7 @@ const HotColdBlackheadRemoverLanding = () => {
     const targetSlug = "hot-cold-facial-pore-blackhead-remover-for-men-women";
     return products.find((product) => {
       const nameSlug = createSlug(product?.name || "");
-      const rawSlug = String(product?.slug || "").trim().toLowerCase();
+      const rawSlug = String(product?.productUrl || product?.slug || "").trim().toLowerCase();
       return nameSlug === targetSlug || rawSlug === targetSlug;
     });
   }, [products]);
@@ -172,7 +172,7 @@ const HotColdBlackheadRemoverLanding = () => {
 
   const productName =
     targetProduct?.name ||
-    "Hot & Cold Facial Pore Blackhead Remover For Men & Women";
+    "Ilika Hot & Cold Facial Pore Cleanser";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 1299);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 2499);
   const productImages = Array.isArray(defaultVariant?.images) && defaultVariant.images.length
@@ -182,8 +182,7 @@ const HotColdBlackheadRemoverLanding = () => {
       : [targetProduct?.imageUrl || "https://placehold.co/900x1200/0A0D14/E8ECF4?text=Ilika+Hot+%26+Cold"];
   const productImage = productImages[0];
   const secondaryImage = productImages[1] || productImages[0];
-  const productSlug =
-    createSlug(productName) || "hot-cold-facial-pore-blackhead-remover-for-men-women";
+  const productSlug = getProductSlug(targetProduct);
   const productPath = `/product/${productSlug}`;
   const savings = Math.max(productMrp - productPrice, 0);
   const productId = String(targetProduct?.id || targetProduct?._id || productSlug);

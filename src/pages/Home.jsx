@@ -246,10 +246,10 @@ const Home = () => {
                   <ProductList
                     mobileScroll
                     priorityNames={[
-                      "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
-                      "Ilika High-Speed Leafless Hair Dryer For Men & Women",
-                      "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
-                      "Hot & Cold Facial Pore Blackhead Remover For Men & Women ",
+                      "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
+                      "Ilika High-Speed Leafless Hair Dryer",
+                      "Ilika Lip Plumper Vacuum Device",
+                      "Ilika Hot & Cold Facial Pore Cleanser",
                     ]}
                     priorityCount={2}
                     limit={4}
@@ -290,10 +290,10 @@ const Home = () => {
                   <ProductList
                     mobileScroll
                     priorityNames={[
-                      "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide",
-                      "Ilika High-Speed Leafless Hair Dryer For Men & Women",
-                      "Lip Plumper Vacuum Suction Device | Soft Silicone Material",
-                      "Hot & Cold Facial Pore Blackhead Remover For Men & Women ",
+                      "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
+                      "Ilika High-Speed Leafless Hair Dryer",
+                      "Ilika Lip Plumper Vacuum Device",
+                      "Ilika Hot & Cold Facial Pore Cleanser",
                     ]}
                     priorityCount={2}
                     limit={4}
@@ -327,10 +327,10 @@ const Home = () => {
               <ProductList
                 mobileScroll
 
-                priorityNames={["24k Gold Collagen Face Mask for Anti-aging",
-                  "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate",
-                  "Collagen Serum | Firming & Anti-aging | 30 ML",
-                  "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML",
+                priorityNames={["Ilika 24K Gold Collagen Face Mask",
+                  "Ilika 4-in-1 Collagen Face Mask",
+                  "Ilika Collagen Serum",
+                  "Ilika Retinol Anti-Aging Facial Oil",
                   ]}
                 limit={4}
               />
@@ -347,7 +347,7 @@ const Home = () => {
                 className="mt-0 md:h-[60vh]"
                 src={bannerHair}
                 mobileSrc={hairMobile}
-                linkUrl="/product/black-seed-hair-oil-prevents-premature-graying-boosts-hair-growth"
+                linkUrl="/product/ilika-black-seed-hair-growth-oil"
                 bannerKey="home-haircare"
                 imageFit={isMobile ? "contain" : "cover"}
               />
@@ -391,7 +391,7 @@ const Home = () => {
                   <ProductList
                     mobileScroll
                     categoryId={haircareCategory.id}
-                    priorityNames={["Black Seed Hair Oil | Prevents Premature Graying | Boosts Hair Growth", "Herbal Hair Oil | Prevents Dandruff | Strengthens Hair Roots", "Frizz Control Hair Serum | Control Frizz & Detangle Hair | 50 ML ", "Keratin Rich Conditioner | For Normal to Damaged Hair | 200 ML"]}
+                    priorityNames={["Ilika Black Seed Hair Growth Oil", "Ilika Herbal Hair Growth Oil", "Ilika Frizz Control Hair Serum", "Ilika Keratin Repair Conditioner"]}
                     offset={isMobile ? 0 : hairStart}
                     limit={isMobile ? undefined : getVisibleCount(hairTotal)}
                   />
@@ -453,7 +453,7 @@ const Home = () => {
                   )}
                   <ProductList
                     mobileScroll
-                    priorityNames={["24k Gold Collagen Face Mask for Anti-aging", "Ilika 4 in 1 Collagen Face Mask Glow Firm & Hydrate", "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin | 25 g", "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide"]}
+                    priorityNames={["Ilika 24K Gold Collagen Face Mask", "Ilika 4-in-1 Collagen Face Mask", "Ilika Hydra Gel Moisturizer", "Ilika Voice Face Mask Maker Machine with Collagen Peptide"]}
                     categoryId={skincareCategory.id}
                     offset={isMobile ? 0 : skinStart}
                     limit={isMobile ? undefined : getVisibleCount(skinTotal)}
@@ -563,6 +563,3 @@ const Home = () => {
 };
 
 export default Home;
-
-
-

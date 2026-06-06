@@ -12,9 +12,9 @@ const coupons = {
 };
 
 const allowedProducts = [
-  "Ilika Airwrap All in 1 Multi-Styler Tools with Leather Box",
+  "Ilika Airwrap Multi-Styler Kit",
   "Ilika Hair Curler Tong Machine | 5 In 1 Multi Function Hair Styler for Women",
-  "Ilika High-Speed Leafless Hair Dryer For Men & Women",
+  "Ilika High-Speed Leafless Hair Dryer",
 ];
 
 /* ─────────────────────────────────────────────────────────

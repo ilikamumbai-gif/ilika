@@ -137,7 +137,7 @@ const mapProductForMerchant = ({ product = {}, productId = "" }) => {
   if (!offerId || !title || !numericPrice) return null;
   if (product?.isActive === false) return null;
 
-  const slug = String(product.slug || slugify(title) || offerId);
+  const slug = String(product.productUrl || product.slug || slugify(title) || offerId);
   const link = toAbsoluteUrl(`/product/${slug}`);
   const imageLink = toAbsoluteUrl(getPrimaryImage(product));
   const normalizedImages = sanitizeMerchantImageCandidates([

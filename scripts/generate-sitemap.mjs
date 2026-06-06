@@ -74,12 +74,40 @@ const STATIC_URLS = [
   { loc: "/herbal-hair-oil", priority: "0.8", changefreq: "weekly" },
 ];
 
+const LLM_STATIC_URLS = [
+  "/",
+  "/products",
+  "/shopall",
+  "/offers",
+  "/glow-therapy-combo",
+  "/hydration-glow-combo",
+  "/mask-combo",
+  "/blog",
+  "/contact",
+  "/voice-mask-maker",
+  "/nonvoice-mask-maker",
+  "/leafless-hair-dryer",
+  "/blackseed-hair-oil",
+  "/herbal-hair-oil",
+];
+
 const createSlug = (text = "") =>
   String(text)
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-");
+
+const PRODUCT_URL_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+const normalizeProductUrl = (value = "") => String(value || "").trim().toLowerCase();
+
+const readProductUrl = (product = {}) => {
+  const productUrl = normalizeProductUrl(product?.productUrl);
+  if (!productUrl) return "";
+  if (!PRODUCT_URL_PATTERN.test(productUrl)) return "";
+  return productUrl;
+};
 
 const escapeXml = (value = "") =>
   String(value)
@@ -168,9 +196,11 @@ const dedupeUrls = (urls) =>
     new Map(
       urls
         .filter((u) => u?.loc)
-        .map((u) => [u.loc, u])
+      .map((u) => [u.loc, u])
     ).values()
   );
+
+const dedupeAbsoluteUrls = (urls) => Array.from(new Set(urls.filter(Boolean)));
 
 async function fetchResource({ label, endpoints, toUrls }) {
   if (!endpoints.length) {
@@ -265,10 +295,65 @@ ${blogLinks}
 `;
 }
 
+function toLlmsTxt({ siteUrl, productAbsoluteUrls, categoryAbsoluteUrls, blogAbsoluteUrls }) {
+  const featuredUrls = dedupeAbsoluteUrls([
+    ...LLM_STATIC_URLS.map((loc) => absolute(siteUrl, loc)),
+    ...productAbsoluteUrls.slice(0, 24),
+    ...categoryAbsoluteUrls.slice(0, 12),
+    ...blogAbsoluteUrls.slice(0, 12),
+  ]);
+
+  return `# Ilika
+
+Website: ${siteUrl}
+
+## Canonical Product URLs
+
+All product links use stable product URLs based on the stored \`productUrl\` field.
+Product titles may change, but canonical product URLs should remain unchanged.
+
+## Featured URLs
+
+${featuredUrls.join("\n")}
+`;
+}
+
+function toLlmsFullTxt({ siteUrl, productAbsoluteUrls, categoryAbsoluteUrls, blogAbsoluteUrls }) {
+  const staticAbsoluteUrls = LLM_STATIC_URLS.map((loc) => absolute(siteUrl, loc));
+
+  return `# Ilika
+
+Website: ${siteUrl}
+
+## Canonical URL Policy
+
+- Product URLs must use only the stored \`productUrl\` field.
+- Product URL format: ${siteUrl}/product/{productUrl}
+- Product titles must not be used to generate canonical product URLs.
+
+## Static URLs
+
+${staticAbsoluteUrls.join("\n")}
+
+## Product URLs
+
+${productAbsoluteUrls.length ? productAbsoluteUrls.join("\n") : "No product URLs generated."}
+
+## Category URLs
+
+${categoryAbsoluteUrls.length ? categoryAbsoluteUrls.join("\n") : "No category URLs generated."}
+
+## Blog URLs
+
+${blogAbsoluteUrls.length ? blogAbsoluteUrls.join("\n") : "No blog URLs generated."}
+`;
+}
+
 async function main() {
   const env = await resolveEnv();
   const siteUrl = String(env.SITE_URL || "https://ilika.in").trim().replace(/\/+$/, "");
   const today = new Date();
+  const skippedProducts = [];
 
   const productsEndpoints = resolveApiEndpoints(env, "/api/products");
   const categoriesEndpoints = resolveApiEndpoints(env, "/api/categories");
@@ -280,13 +365,22 @@ async function main() {
       endpoints: productsEndpoints,
       toUrls: (list) =>
         list
-          .filter((p) => p?.isActive !== false && p?.name)
-          .map((p) => ({
-            loc: `/product/${createSlug(p.slug || p.name)}`,
-            priority: "0.8",
-            changefreq: "weekly",
-            lastmod: toIsoDate(p.updatedAt || p.createdAt, today),
-          })),
+          .flatMap((p) => {
+            if (p?.isActive === false) return [];
+            const productUrl = readProductUrl(p);
+            if (!productUrl) {
+              skippedProducts.push(
+                String(p?.id || p?._id || p?.name || "unknown-product")
+              );
+              return [];
+            }
+            return [{
+              loc: `/product/${productUrl}`,
+              priority: "0.8",
+              changefreq: "weekly",
+              lastmod: toIsoDate(p.updatedAt || p.createdAt, today),
+            }];
+          }),
     }),
     fetchResource({
       label: "Categories",
@@ -322,6 +416,9 @@ async function main() {
   }));
 
   const urls = dedupeUrls([...staticUrls, ...productUrls, ...categoryUrls, ...blogUrls]);
+  const productAbsoluteUrls = productUrls.map((entry) => absolute(siteUrl, entry.loc));
+  const categoryAbsoluteUrls = categoryUrls.map((entry) => absolute(siteUrl, entry.loc));
+  const blogAbsoluteUrls = blogUrls.map((entry) => absolute(siteUrl, entry.loc));
 
   const publicDir = path.resolve(process.cwd(), "public");
   await fs.writeFile(path.join(publicDir, "sitemap.xml"), toSitemapXml(urls, siteUrl), "utf8");
@@ -330,10 +427,25 @@ async function main() {
     toSitemapHtml(staticUrls, productUrls, categoryUrls, blogUrls),
     "utf8"
   );
+  await fs.writeFile(
+    path.join(publicDir, "llms.txt"),
+    toLlmsTxt({ siteUrl, productAbsoluteUrls, categoryAbsoluteUrls, blogAbsoluteUrls }),
+    "utf8"
+  );
+  await fs.writeFile(
+    path.join(publicDir, "llms-full.txt"),
+    toLlmsFullTxt({ siteUrl, productAbsoluteUrls, categoryAbsoluteUrls, blogAbsoluteUrls }),
+    "utf8"
+  );
 
   console.log(
     `[sitemap] Done. Static: ${staticUrls.length}, Products: ${productUrls.length}, Categories: ${categoryUrls.length}, Blogs: ${blogUrls.length}`
   );
+  if (skippedProducts.length) {
+    console.warn(
+      `[sitemap] Skipped ${skippedProducts.length} product(s) without valid productUrl: ${skippedProducts.join(", ")}`
+    );
+  }
   console.log(`[sitemap] SITE_URL=${siteUrl}`);
   console.log(`[sitemap] PRODUCTS_ENDPOINTS=${productsEndpoints.join(", ") || "(not set)"}`);
   console.log(`[sitemap] CATEGORIES_ENDPOINTS=${categoriesEndpoints.join(", ") || "(not set)"}`);

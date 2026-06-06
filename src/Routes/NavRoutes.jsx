@@ -132,12 +132,12 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/track-order") return { title: "Track Order", description: "Track your Ilika shipment with live courier updates." };
   if (pathname === "/social-feed") return { title: "Social Feed", description: "Explore Ilika social media images and videos." };
   if (pathname === "/knowskintype") return { title: "Know Your Skin Type", description: "Get personalized skincare recommendations from Ilika." };
-  if (pathname === "/herbal-hair-oil") return { title: "Herbal Hair Oil", description: "Explore Ilika Herbal Hair Oil benefits, ingredients, and offers." };
-  if (pathname === "/voice-mask-maker") return { title: "Voice Version Face Mask Maker", description: "Explore Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide." };
-  if (pathname === "/nonvoice-mask-maker") return { title: "Nonvoice Face Mask Maker", description: "Explore Ilika Nonvoice Mask Maker Machine with Collagen Peptide." };
-  if (pathname === "/leafless-hair-dryer") return { title: "Leafless Hair Dryer", description: "Explore Ilika High-Speed Leafless Hair Dryer For Men & Women." };
+  if (pathname === "/herbal-hair-oil") return { title: "Herbal Hair Oil", description: "Explore Ilika Herbal Hair Growth Oil benefits, ingredients, and offers." };
+  if (pathname === "/voice-mask-maker") return { title: "Voice Face Mask Maker", description: "Explore Ilika Voice Face Mask Maker Machine with Collagen Peptide." };
+  if (pathname === "/nonvoice-mask-maker") return { title: "Non-Voice Face Mask Maker", description: "Explore Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide." };
+  if (pathname === "/leafless-hair-dryer") return { title: "Leafless Hair Dryer", description: "Explore Ilika High-Speed Leafless Hair Dryer." };
   if (pathname === "/high-frequency-therapy-wand") return { title: "High Frequency Therapy Wand", description: "Explore Ilika High Frequency Therapy Wand with 4 Electrodes For Men & Women." };
-  if (pathname === "/hot-cold-blackhead-remover") return { title: "Hot & Cold Blackhead Remover", description: "Explore Ilika Hot & Cold Facial Pore Blackhead Remover For Men & Women." };
+  if (pathname === "/hot-cold-blackhead-remover") return { title: "Hot & Cold Facial Pore Cleanser", description: "Explore Ilika Hot & Cold Facial Pore Cleanser." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
   if (pathname === "/offers") return { title: "Combo Deals", description: "Explore combo packs and bundle offers from Ilika." };
   if (pathname === "/glow-therapy-combo") return { title: "Glow Therapy Combo", description: "Shop the Ilika Glow Therapy Combo on its dedicated offer page." };
@@ -286,7 +286,7 @@ const NavRoutes = () => {
         />
 
         <Route path="/blog/:slug" element={renderLazy(BlogDetail)} />
-        <Route path="/product/:slug" element={renderLazy(ProductDetail)} />
+        <Route path="/product/:productUrl" element={renderLazy(ProductDetail)} />
         <Route path="/category/:categorySlug" element={renderLazy(CategoryProducts)} />
 
         <Route path="/privacy" element={renderLazy(Privacy)} />

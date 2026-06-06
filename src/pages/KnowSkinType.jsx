@@ -6,7 +6,7 @@ import CartDrawer from "../components/CartDrawer";
 import Footer from "../components/Footer";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
-import { createSlug } from "../utils/slugify";
+import { getProductSlug } from "../utils/slugify";
 
 const rules = {
   skinType: {
@@ -14,35 +14,35 @@ const rules = {
       "Foaming Face Wash | Soft & Smooth Skin | 100 ML",
       "Tea Tree & Avocado Toner | Improves Skin Tone | 100ML",
       "Peeling Solution | Clarifying & Blemish Control | 30 ML",
-      "Hyaluronic Acid Serum (2%) | Intense hydration | 30ML",
-      "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML",
+      "Ilika Hyaluronic Acid 2% Serum",
+      "Ilika Retinol Anti-Aging Facial Oil",
     ],
     dry: [
       "Gentle Cleanser | Prevent Signs of Aging | 100ML",
-      "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
-      "Hyaluronic Acid Serum (2%) | Intense hydration | 30ML",
-      "24k Gold Beauty Oil | Improves Elasticity & Firmness | 15 ML",
+      "Ilika Hydra Gel Moisturizer",
+      "Ilika Hyaluronic Acid 2% Serum",
+      "Ilika 24K Gold Beauty Oil",
       "Belgium Rose Toner | Soothing & Refreshing | 100 ML",
     ],
     combination: [
       "Foaming Face Wash | Soft & Smooth Skin | 100 ML",
       "Peach & Jojoba Toner | Brightening & Revitalizing | 100ML",
-      "Dazzling Face Serum | Radiant & Glowing Skin | 30 ML",
-      "Collagen Serum | Firming & Anti-aging | 30 ML",
+      "Ilika Dazzling Glow Face Serum",
+      "Ilika Collagen Serum",
       "Ceramide Gel Moisturizer | Repairs Sun Damage | 50g",
     ],
     normal: [
       "Gentle Cleanser | Prevent Signs of Aging | 100ML",
       "Blooming Vine Toner | Soothing & Calming |100ML",
-      "Collagen Serum | Firming & Anti-aging | 30 ML",
-      "24k Gold Beauty Oil | Improves Elasticity & Firmness | 15 ML",
+      "Ilika Collagen Serum",
+      "Ilika 24K Gold Beauty Oil",
       "Ceramide Gel Moisturizer | Repairs Sun Damage | 50g",
     ],
     sensitive: [
       "Gentle Cleanser | Prevent Signs of Aging | 100ML",
       "White Lotus Toner | Refreshes & Revitalize | 100ML",
       "Ceramide Gel Moisturizer | Repairs Sun Damage | 50g",
-      "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
+      "Ilika Hydra Gel Moisturizer",
       "Belgium Rose Toner | Soothing & Refreshing | 100 ML",
     ],
   },
@@ -51,18 +51,18 @@ const rules = {
       "Foaming Face Wash | Soft & Smooth Skin | 100 ML",
       "Tea Tree & Avocado Toner | Improves Skin Tone | 100ML",
       "Peeling Solution | Clarifying & Blemish Control | 30 ML",
-      "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML",
+      "Ilika Retinol Anti-Aging Facial Oil",
     ],
     dehydrated: [
-      "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
-      "Hyaluronic Acid Serum (2%) | Intense hydration | 30ML",
+      "Ilika Hydra Gel Moisturizer",
+      "Ilika Hyaluronic Acid 2% Serum",
       "Belgium Rose Toner | Soothing & Refreshing | 100 ML",
-      "24k Gold Beauty Oil | Improves Elasticity & Firmness | 15 ML",
+      "Ilika 24K Gold Beauty Oil",
     ],
     antiaging: [
-      "Collagen Serum | Firming & Anti-aging | 30 ML",
-      "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML",
-      "24k Gold Beauty Oil | Improves Elasticity & Firmness | 15 ML",
+      "Ilika Collagen Serum",
+      "Ilika Retinol Anti-Aging Facial Oil",
+      "Ilika 24K Gold Beauty Oil",
       "Gentle Cleanser | Prevent Signs of Aging | 100ML",
     ],
     enlargedPores: [
@@ -70,34 +70,34 @@ const rules = {
       "Tea Tree & Avocado Toner | Improves Skin Tone | 100ML",
       "Peeling Solution | Clarifying & Blemish Control | 30 ML",
     ],
-    darkCircles: ["Under Eye Serum | Fast-Absorbing Formula | 30 ML"],
+    darkCircles: ["Ilika Under Eye Serum"],
     unevenTexture: [
       "Peeling Solution | Clarifying & Blemish Control | 30 ML",
-      "Dazzling Face Serum | Radiant & Glowing Skin | 30 ML",
-      "Revitalizing Facial Oil | Gently Exfoliates | 15 ML",
+      "Ilika Dazzling Glow Face Serum",
+      "Ilika Revitalizing Facial Oil",
     ],
     darkSpots: [
-      "Brown Spot Corrector | Reduce Hyperpigmentation & Scars | 15 ML",
-      "Dazzling Face Serum | Radiant & Glowing Skin | 30 ML",
-      "Revitalizing Facial Oil | Gently Exfoliates | 15 ML",
+      "Ilika Brown Spot Corrector Oil",
+      "Ilika Dazzling Glow Face Serum",
+      "Ilika Revitalizing Facial Oil",
     ],
     scars: [
-      "Anti Scar Facial Oil | Improves Skin's Elasticity | 15 ML",
-      "Brown Spot Corrector | Reduce Hyperpigmentation & Scars | 15 ML",
+      "Ilika Anti-Scar Facial Oil",
+      "Ilika Brown Spot Corrector Oil",
       "Peeling Solution | Clarifying & Blemish Control | 30 ML",
     ],
   },
   goal: {
     skinLightening: [
-      "Dazzling Face Serum | Radiant & Glowing Skin | 30 ML",
+      "Ilika Dazzling Glow Face Serum",
       "Peach & Jojoba Toner | Brightening & Revitalizing | 100ML",
-      "Brown Spot Corrector | Reduce Hyperpigmentation & Scars | 15 ML",
-      "Revitalizing Facial Oil | Gently Exfoliates | 15 ML",
+      "Ilika Brown Spot Corrector Oil",
+      "Ilika Revitalizing Facial Oil",
     ],
     antiAging: [
-      "Collagen Serum | Firming & Anti-aging | 30 ML",
-      "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML",
-      "24k Gold Beauty Oil | Improves Elasticity & Firmness | 15 ML",
+      "Ilika Collagen Serum",
+      "Ilika Retinol Anti-Aging Facial Oil",
+      "Ilika 24K Gold Beauty Oil",
       "Gentle Cleanser | Prevent Signs of Aging | 100ML",
     ],
   },
@@ -105,26 +105,26 @@ const rules = {
     "15-20": [
       "Foaming Face Wash | Soft & Smooth Skin | 100 ML",
       "Tea Tree & Avocado Toner | Improves Skin Tone | 100ML",
-      "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
+      "Ilika Hydra Gel Moisturizer",
     ],
     "21-30": [
-      "Dazzling Face Serum | Radiant & Glowing Skin | 30 ML",
+      "Ilika Dazzling Glow Face Serum",
       "Peeling Solution | Clarifying & Blemish Control | 30 ML",
-      "Hyaluronic Acid Serum (2%) | Intense hydration | 30ML",
+      "Ilika Hyaluronic Acid 2% Serum",
     ],
     "31-45": [
-      "Collagen Serum | Firming & Anti-aging | 30 ML",
-      "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML",
-      "24k Gold Beauty Oil | Improves Elasticity & Firmness | 15 ML",
+      "Ilika Collagen Serum",
+      "Ilika Retinol Anti-Aging Facial Oil",
+      "Ilika 24K Gold Beauty Oil",
     ],
     "46-55": [
-      "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML",
-      "Collagen Serum | Firming & Anti-aging | 30 ML",
+      "Ilika Retinol Anti-Aging Facial Oil",
+      "Ilika Collagen Serum",
       "Gentle Cleanser | Prevent Signs of Aging | 100ML",
     ],
     above55: [
-      "24k Gold Beauty Oil | Improves Elasticity & Firmness | 15 ML",
-      "Collagen Serum | Firming & Anti-aging | 30 ML",
+      "Ilika 24K Gold Beauty Oil",
+      "Ilika Collagen Serum",
       "Ceramide Gel Moisturizer | Repairs Sun Damage | 50g",
     ],
   },
@@ -141,31 +141,31 @@ const options = {
 const optionProductHints = {
   concerns: {
     acne: "Tea Tree & Avocado Toner | Improves Skin Tone | 100ML, Foaming Face Wash | Soft & Smooth Skin | 100 ML",
-    dehydrated: "Belgium Rose Toner | Soothing & Refreshing | 100 ML, Hyaluronic Acid Serum (2%) | Intense hydration | 30ML",
-    antiaging: "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML, Collagen Serum | Firming & Anti-aging | 30 ML",
+    dehydrated: "Belgium Rose Toner | Soothing & Refreshing | 100 ML, Ilika Hyaluronic Acid 2% Serum",
+    antiaging: "Ilika Retinol Anti-Aging Facial Oil, Ilika Collagen Serum",
     enlargedPores: "Tea Tree & Avocado Toner | Improves Skin Tone | 100ML, Peeling Solution | Clarifying & Blemish Control | 30 ML",
-    darkCircles: "Under Eye Serum | Fast-Absorbing Formula | 30 ML",
+    darkCircles: "Ilika Under Eye Serum",
     unevenTexture: "Peach & Jojoba Toner | Brightening & Revitalizing | 100ML, Peeling Solution | Clarifying & Blemish Control | 30 ML",
-    darkSpots: "Brown Spot Corrector | Reduce Hyperpigmentation & Scars | 15 ML, Dazzling Face Serum | Radiant & Glowing Skin | 30 ML",
-    scars: "Anti Scar Facial Oil | Improves Skin's Elasticity | 15 ML",
+    darkSpots: "Ilika Brown Spot Corrector Oil, Ilika Dazzling Glow Face Serum",
+    scars: "Ilika Anti-Scar Facial Oil",
   },
   skinType: {
-    oily: "Tea Tree & Avocado Toner | Improves Skin Tone | 100ML, Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
+    oily: "Tea Tree & Avocado Toner | Improves Skin Tone | 100ML, Ilika Hydra Gel Moisturizer",
     dry: "Belgium Rose Toner | Soothing & Refreshing | 100 ML, Ceramide Gel Moisturizer | Repairs Sun Damage | 50g",
-    combination: "Peach & Jojoba Toner | Brightening & Revitalizing | 100ML, Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
+    combination: "Peach & Jojoba Toner | Brightening & Revitalizing | 100ML, Ilika Hydra Gel Moisturizer",
     normal: "Blooming Vine Toner | Soothing & Calming |100ML, Ceramide Gel Moisturizer | Repairs Sun Damage | 50g",
     sensitive: "White Lotus Toner | Refreshes & Revitalize | 100ML, Ceramide Gel Moisturizer | Repairs Sun Damage | 50g",
   },
   goal: {
-    skinLightening: "Dazzling Face Serum | Radiant & Glowing Skin | 30 ML, Brown Spot Corrector | Reduce Hyperpigmentation & Scars | 15 ML",
-    antiAging: "Gentle Cleanser | Prevent Signs of Aging | 100ML, Collagen Serum | Firming & Anti-aging | 30 ML",
+    skinLightening: "Ilika Dazzling Glow Face Serum, Ilika Brown Spot Corrector Oil",
+    antiAging: "Gentle Cleanser | Prevent Signs of Aging | 100ML, Ilika Collagen Serum",
   },
   age: {
-    "15-20": "Foaming Face Wash | Soft & Smooth Skin | 100 ML, Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 50g",
-    "21-30": "Hyaluronic Acid Serum (2%) | Intense hydration | 30ML, Dazzling Face Serum | Radiant & Glowing Skin | 30 ML",
-    "31-45": "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML, Collagen Serum | Firming & Anti-aging | 30 ML",
-    "46-55": "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML, Gentle Cleanser | Prevent Signs of Aging | 100ML",
-    above55: "24k Gold Beauty Oil | Improves Elasticity & Firmness | 15 ML, Ceramide Gel Moisturizer | Repairs Sun Damage | 50g",
+    "15-20": "Foaming Face Wash | Soft & Smooth Skin | 100 ML, Ilika Hydra Gel Moisturizer",
+    "21-30": "Ilika Hyaluronic Acid 2% Serum, Ilika Dazzling Glow Face Serum",
+    "31-45": "Ilika Retinol Anti-Aging Facial Oil, Ilika Collagen Serum",
+    "46-55": "Ilika Retinol Anti-Aging Facial Oil, Gentle Cleanser | Prevent Signs of Aging | 100ML",
+    above55: "Ilika 24K Gold Beauty Oil, Ceramide Gel Moisturizer | Repairs Sun Damage | 50g",
   },
 };
 
@@ -232,7 +232,7 @@ const KnowSkinType = () => {
 
     const pickMandatory = (type) => {
       if (type === "oil" && (user.age === "31-45" || user.age === "46-55")) {
-        const forcedOilName = "Retinol Anti-aging Facial Oil | For Fine Lines & Wrinkles | 15 ML";
+        const forcedOilName = "Ilika Retinol Anti-Aging Facial Oil";
         const forcedFromScored = scored.find(
           (x) => normalizeName(x.product) === normalizeName(forcedOilName) || normalizeName(x.matchedProduct?.name || "") === normalizeName(forcedOilName)
         );
@@ -469,7 +469,7 @@ const KnowSkinType = () => {
                             Add to Cart
                           </button>
                           <Link
-                            to={`/product/${createSlug(p?.name || "")}`}
+                            to={`/product/${getProductSlug(p)}`}
                             state={{ id }}
                             className="rounded-lg border border-[#1c371c] text-[#1c371c] py-2 text-xs font-semibold text-center"
                           >

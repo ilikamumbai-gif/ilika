@@ -7,7 +7,7 @@ import CartDrawer from "../components/CartDrawer";
 import MiniDivider from "../components/MiniDivider";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
-import { createSlug } from "../utils/slugify";
+import { getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
 import blackseedImage from "./assets/Herbal1.png";
 import bringrajIngredient from "./assets/bringraj.png";
@@ -253,7 +253,7 @@ const Herbalhairoil = () => {
 
   const handleKnowMore = () => {
     if (!product) return;
-    navigate(`/product/${createSlug(product.name)}`, { state: { id: productId } });
+    navigate(`/product/${getProductSlug(product)}`, { state: { id: productId } });
   };
 
   const handleBuyNow = async () => {

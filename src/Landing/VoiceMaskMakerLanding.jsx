@@ -6,7 +6,7 @@ import MiniDivider from "../components/MiniDivider";
 import OptimizedImage from "../components/OptimizedImage";
 import CartDrawer from "../components/CartDrawer";
 import { useProducts } from "../admin/context/ProductContext";
-import { createSlug } from "../utils/slugify";
+import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
 import voiceVersionMaskMakerImage from "./assets/voicevesion mask maker.jpeg";
 import voiceMaskMakerMainImage from "./assets/voicemaskmaker/machine.jpg";
@@ -258,13 +258,13 @@ const VoiceMaskMakerLanding = () => {
     const targetSlug = "ilika-automatic-voice-version-face-mask-maker-machine-with-collagen-peptide";
     return products.find((p) => {
       const nameSlug = createSlug(p?.name || "");
-      const rawSlug = String(p?.slug || "").trim().toLowerCase();
+      const rawSlug = String(p?.productUrl || p?.slug || "").trim().toLowerCase();
       return nameSlug === targetSlug || rawSlug === targetSlug;
     });
   }, [products]);
 
   const defaultVariant = targetProduct?.variants?.find((v) => v?.isDefault) || targetProduct?.variants?.[0];
-  const productName = targetProduct?.name || "Ilika Automatic Voice Version Face Mask Maker Machine with Collagen Peptide";
+  const productName = targetProduct?.name || "Ilika Voice Face Mask Maker Machine with Collagen Peptide";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 6999);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 8200);
   const productImage =
@@ -274,7 +274,7 @@ const VoiceMaskMakerLanding = () => {
     targetProduct?.imageUrl ||
     "https://ilika.in/cdn/shop/products/mask-maker-machine.jpg";
 
-  const productSlug = createSlug(productName);
+  const productSlug = getProductSlug(targetProduct);
   const productPath = `/product/${productSlug}`;
   const COUPON_FORCED_PRICE = 4999;
   const discountedPrice = couponApplied ? COUPON_FORCED_PRICE : productPrice;

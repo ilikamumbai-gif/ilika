@@ -92,7 +92,7 @@ const Blog = () => {
     () => [
       {
         id: "landing-hot-cold-blackhead-remover",
-        title: "Explore Hot & Cold Blackhead Remover",
+        title: "Explore Ilika Hot & Cold Facial Pore Cleanser",
         author: "Team Ilika",
         image: blackheadRemoverImage,
         linkPath: "/hot-cold-blackhead-remover",
@@ -106,7 +106,7 @@ const Blog = () => {
       },
       {
         id: "landing-leafless-hairdryer",
-        title: "Explore Ilika Leaf Less Hairdryer",
+        title: "Explore Ilika High-Speed Leafless Hair Dryer",
         author: "Team Ilika",
         image: "/Images/HairdrayerCard.webp",
         linkPath: "/leafless-hair-dryer",
@@ -127,14 +127,14 @@ const Blog = () => {
       },
       {
         id: "landing-blackseed-hair-oil",
-        title: "Explore Ilika Blackseed Hair Oil",
+        title: "Explore Ilika Black Seed Hair Growth Oil",
         author: "Team Ilika",
         image: blackSeedLandingImage,
         linkPath: "/blackseed-hair-oil",
       },
       {
         id: "landing-herbal-hair-oil",
-        title: "Explore Ilika Herbal Hair Oil",
+        title: "Explore Ilika Herbal Hair Growth Oil",
         author: "Team Ilika",
         image: herbalLandingImage,
         linkPath: "/herbal-hair-oil",

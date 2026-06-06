@@ -6,7 +6,8 @@
  "main": "server.js",
  "scripts": {
   "start": "node server.js",
-  "dev": "node --watch server.js"
+  "dev": "node --watch server.js",
+  "migrate:product-urls": "node scripts/migrate-product-urls.mjs"
  },
  "keywords": [],
  "author": "",

@@ -6,7 +6,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import { useProducts } from "../admin/context/ProductContext";
-import { createSlug } from "../utils/slugify";
+import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
 import reviewerPriya from "./assets/hairdryerreview1.png";
 import reviewerArjun from "./assets/hairdryerreview2.jpeg";
@@ -112,13 +112,13 @@ const HairDryerLanding = () => {
     const targetSlug = "ilika-high-speed-leafless-hair-dryer-for-men-women";
     return products.find((p) => {
       const nameSlug = createSlug(p?.name || "");
-      const rawSlug = String(p?.slug || "").trim().toLowerCase();
+      const rawSlug = String(p?.productUrl || p?.slug || "").trim().toLowerCase();
       return nameSlug === targetSlug || rawSlug === targetSlug;
     });
   }, [products]);
 
   const defaultVariant = targetProduct?.variants?.find((v) => v?.isDefault) || targetProduct?.variants?.[0];
-  const productName = targetProduct?.name || "Ilika High-Speed Leafless Hair Dryer For Men & Women";
+  const productName = targetProduct?.name || "Ilika High-Speed Leafless Hair Dryer";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 1999);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 3499);
   const productImage =
@@ -127,7 +127,7 @@ const HairDryerLanding = () => {
     targetProduct?.imageUrl ||
     "https://placehold.co/680x760/111111/c9a84c?text=Ilika+Leafless+Hair+Dryer";
 
-  const productSlug = createSlug(productName);
+  const productSlug = getProductSlug(targetProduct);
   const productPath = `/product/${productSlug}`;
   const discountedPrice = couponApplied
     ? Math.max(0, Math.round(productPrice * (100 - couponPercent) / 100))

@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
 import CartDrawer from "../components/CartDrawer";
 import { useProducts } from "../admin/context/ProductContext";
-import { createSlug } from "../utils/slugify";
+import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
 import {
   Touchpad,
@@ -102,7 +102,7 @@ const NonvoiceMaskMakerLanding = () => {
     const targetSlug = "ilika-nonvoice-mask-maker-machine-with-collagen-peptide";
     return products.find((p) => {
       const nameSlug = createSlug(p?.name || "");
-      const rawSlug = String(p?.slug || "").trim().toLowerCase();
+      const rawSlug = String(p?.productUrl || p?.slug || "").trim().toLowerCase();
       return nameSlug === targetSlug || rawSlug === targetSlug;
     });
   }, [products]);
@@ -117,7 +117,7 @@ const NonvoiceMaskMakerLanding = () => {
     targetProduct?.imageUrl ||
     "https://ilika.in/cdn/shop/products/mask-maker-machine.jpg";
 
-  const productSlug = createSlug(productName);
+  const productSlug = getProductSlug(targetProduct);
   const productPath = `/product/${productSlug}`;
   const effectiveSavings = Math.max(productMrp - productPrice, 0);
 
