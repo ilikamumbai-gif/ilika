@@ -131,6 +131,37 @@ export const ProductProvider = ({ children }) => {
     return payload;
   };
 
+  const syncAllMerchantProducts = async (headers = {}) => {
+    const res = await fetch(getApiUrl("/api/merchant/sync-products"), {
+      method: "POST",
+      headers,
+    });
+
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(payload?.error || "Failed to sync products to Merchant");
+    }
+
+    return payload;
+  };
+
+  const syncMerchantProduct = async (id, headers = {}) => {
+    const cleanId = String(id || "").trim();
+    if (!cleanId) throw new Error("Missing product ID");
+
+    const res = await fetch(getApiUrl(`/api/merchant/sync-products/${cleanId}`), {
+      method: "POST",
+      headers,
+    });
+
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(payload?.error || "Failed to sync product to Merchant");
+    }
+
+    return payload;
+  };
+
   const getProductById = (id) =>
     {
       const target = String(id || "").trim().toLowerCase();
@@ -154,6 +185,8 @@ export const ProductProvider = ({ children }) => {
         addProduct,
         updateProduct,
         deleteProduct,
+        syncAllMerchantProducts,
+        syncMerchantProduct,
         getProductById,
         fetchProducts,
       }}

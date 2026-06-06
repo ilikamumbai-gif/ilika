@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Pencil, Plus, Trash2, Search, Package, Eye } from "lucide-react";
+import { Pencil, Plus, Trash2, Search, Package, Eye, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useProducts } from "../../context/ProductContext";
 import { useCategories } from "../../context/CategoryContext";
+import { useAdminAuth } from "../../context/AdminAuthContext";
 
 const FilterSelect = ({ value, onChange, children }) => (
   <div className="relative">
@@ -24,8 +25,11 @@ const ProductList = () => {
   const [statusFilter, setStatus]     = useState("");
   const [stockFilter, setStock]       = useState("");
   const [categoryFilter, setCategory] = useState("");
-  const { products, deleteProduct, fetchProducts } = useProducts();
+  const [syncingMerchant, setSyncingMerchant] = useState(false);
+  const [syncMessage, setSyncMessage] = useState("");
+  const { products, deleteProduct, fetchProducts, syncAllMerchantProducts } = useProducts();
   const { categories } = useCategories();
+  const { admin, getAdminAuthHeaders } = useAdminAuth();
   useEffect(() => { fetchProducts(); }, [categories.length]);
 
   const getCategoryNames = (ids = []) =>
@@ -56,6 +60,31 @@ const ProductList = () => {
     navigate(`/admin/products/view/${id}`);
   };
 
+  const handleMerchantSync = async () => {
+    setSyncingMerchant(true);
+    setSyncMessage("");
+
+    try {
+      const result = await syncAllMerchantProducts({
+        "Content-Type": "application/json",
+        ...getAdminAuthHeaders(),
+      });
+
+      const total = Number(result?.total || 0);
+      const upserted = Number(result?.summary?.upserted || 0);
+      const skipped = Number(result?.summary?.skipped || 0);
+      const deleted = Number(result?.summary?.deleted || 0);
+
+      setSyncMessage(
+        `Merchant updated. Total: ${total}, synced: ${upserted}, skipped: ${skipped}, deleted: ${deleted}.`
+      );
+    } catch (error) {
+      setSyncMessage(error?.message || "Merchant sync failed.");
+    } finally {
+      setSyncingMerchant(false);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
@@ -63,12 +92,31 @@ const ProductList = () => {
           <h1 className="text-xl font-bold text-gray-900">Products</h1>
           <p className="text-sm text-gray-400 mt-0.5">{products.length} products in catalogue</p>
         </div>
-        <button onClick={() => navigate("/admin/products/add")}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition hover:opacity-90"
-          style={{ background: "linear-gradient(135deg,#E91E8C,#FF6B35)" }}>
-          <Plus size={16} /> Add Product
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {admin?.role === "superadmin" && (
+            <button
+              type="button"
+              onClick={handleMerchantSync}
+              disabled={syncingMerchant}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+            >
+              <RefreshCw size={16} className={syncingMerchant ? "animate-spin" : ""} />
+              {syncingMerchant ? "Syncing Merchant..." : "Sync Merchant URLs"}
+            </button>
+          )}
+          <button onClick={() => navigate("/admin/products/add")}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition hover:opacity-90"
+            style={{ background: "linear-gradient(135deg,#E91E8C,#FF6B35)" }}>
+            <Plus size={16} /> Add Product
+          </button>
+        </div>
       </div>
+
+      {syncMessage ? (
+        <div className="mb-4 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700">
+          {syncMessage}
+        </div>
+      ) : null}
 
       {/* Filters */}
       <div className="bg-white rounded-2xl p-4 mb-4 flex flex-wrap gap-3 items-center" style={{ border: "1px solid #EBEBEB" }}>
