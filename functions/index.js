@@ -57,6 +57,8 @@ const slugify = (value = "") =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
+const readMerchantProductUrl = (product = {}) => slugify(product?.productUrl || "");
+
 const stripHtml = (value = "") =>
   String(value || "")
     .replace(/<[^>]*>/g, " ")
@@ -137,7 +139,8 @@ const mapProductForMerchant = ({ product = {}, productId = "" }) => {
   if (!offerId || !title || !numericPrice) return null;
   if (product?.isActive === false) return null;
 
-  const slug = String(product.productUrl || product.slug || slugify(title) || offerId);
+  const slug = readMerchantProductUrl(product);
+  if (!slug) return null;
   const link = toAbsoluteUrl(`/product/${slug}`);
   const imageLink = toAbsoluteUrl(getPrimaryImage(product));
   const normalizedImages = sanitizeMerchantImageCandidates([

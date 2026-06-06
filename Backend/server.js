@@ -763,6 +763,7 @@ const merchantSlugify = (value = "") =>
     .replace(/^-+|-+$/g, "");
 
 const normalizeProductUrlValue = (value = "") => merchantSlugify(value);
+const readMerchantProductUrl = (product = {}) => normalizeProductUrlValue(product?.productUrl || "");
 
 const stripHtml = (value = "") =>
   String(value || "")
@@ -852,7 +853,8 @@ const mapProductToMerchantPayload = (product = {}) => {
   if (!priceValue) return null;
 
   const siteBaseUrl = getSiteBaseUrl();
-  const slug = normalizeProductUrlValue(product.productUrl || product.slug || name);
+  const slug = readMerchantProductUrl(product);
+  if (!slug) return null;
   const productUrl = normalizeAbsoluteUrl(`/product/${slug}`, siteBaseUrl);
   const normalizedImages = getMerchantImageCandidates(product)
     .map((img) => normalizeAbsoluteUrl(img, siteBaseUrl))
