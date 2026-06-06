@@ -825,10 +825,26 @@ const getMerchantImageCandidates = (product = {}) => {
   ]);
 };
 
+const normalizeMerchantSiteBaseUrl = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  try {
+    const url = new URL(raw);
+    const host = String(url.hostname || "").trim().toLowerCase();
+    if (!host || host === "localhost" || host === "127.0.0.1" || host === "::1") {
+      return "";
+    }
+    return url.toString().replace(/\/+$/, "");
+  } catch {
+    return "";
+  }
+};
+
 const getSiteBaseUrl = () =>
-  String(process.env.SITE_URL || process.env.FRONTEND_URL || "https://ilika.in")
-    .trim()
-    .replace(/\/+$/, "");
+  normalizeMerchantSiteBaseUrl(process.env.SITE_URL) ||
+  normalizeMerchantSiteBaseUrl(process.env.FRONTEND_URL) ||
+  "https://ilika.in";
 
 const getMerchantProductId = (offerId = "") =>
   `${MERCHANT_CHANNEL}:${MERCHANT_CONTENT_LANGUAGE}:${MERCHANT_TARGET_COUNTRY}:${offerId}`;

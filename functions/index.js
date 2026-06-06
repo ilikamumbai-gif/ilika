@@ -20,6 +20,22 @@ const toBoolean = (value, fallback = true) => {
   return fallback;
 };
 
+const normalizeMerchantSiteUrl = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  try {
+    const url = new URL(raw);
+    const host = String(url.hostname || "").trim().toLowerCase();
+    if (!host || host === "localhost" || host === "127.0.0.1" || host === "::1") {
+      return "";
+    }
+    return url.toString().replace(/\/+$/, "");
+  } catch {
+    return "";
+  }
+};
+
 const merchantConfig = {
   merchantId: process.env.GOOGLE_MERCHANT_ID || "",
   clientEmail: process.env.GOOGLE_MERCHANT_CLIENT_EMAIL || "",
@@ -29,7 +45,7 @@ const merchantConfig = {
   channel: process.env.GOOGLE_MERCHANT_CHANNEL || "online",
   currency: process.env.GOOGLE_MERCHANT_CURRENCY || "INR",
   brand: process.env.GOOGLE_MERCHANT_BRAND || "Ilika",
-  siteUrl: String(process.env.SITE_URL || "https://ilika.in").replace(/\/+$/, ""),
+  siteUrl: normalizeMerchantSiteUrl(process.env.SITE_URL) || "https://ilika.in",
   syncDelete: toBoolean(process.env.GOOGLE_MERCHANT_SYNC_DELETE, false),
 };
 

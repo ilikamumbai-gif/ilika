@@ -489,6 +489,8 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
             <Link to="/ctm" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/ctm"))}>
               Explore CTM
             </Link>
+
+            
             {/* <Link to="/gift-store" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/gift-store"))}>
               Gift Store
             </Link> */}
