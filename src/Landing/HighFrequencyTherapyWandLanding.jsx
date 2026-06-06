@@ -228,11 +228,15 @@ const HighFrequencyTherapyWandLanding = () => {
   const [hideMobileBar, setHideMobileBar] = useState(false);
 
   const targetProduct = useMemo(() => {
-    const targetSlug = "high-frequency-therapy-wand-with-4-electrodes-for-men-women";
+    const targetSlug = "ilika-high-frequency-therapy-wand";
     return products.find((product) => {
       const nameSlug = createSlug(product?.name || "");
       const rawSlug = String(product?.productUrl || product?.slug || "").trim().toLowerCase();
-      return nameSlug === targetSlug || rawSlug === targetSlug;
+      return (
+        nameSlug === targetSlug ||
+        rawSlug === targetSlug ||
+        String(product?.name || "").toLowerCase().includes("ilika high frequency therapy wand")
+      );
     });
   }, [products]);
 
@@ -242,7 +246,7 @@ const HighFrequencyTherapyWandLanding = () => {
 
   const productName =
     targetProduct?.name ||
-    "Ilika High Frequency Therapy Wand with 4 Electrodes For Men & Women";
+    "Ilika High Frequency Therapy Wand";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 5999);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 9999);
   const productImage =
@@ -315,11 +319,9 @@ const HighFrequencyTherapyWandLanding = () => {
               Ilika Salon-Grade Technology
             </p>
             <h1 className="[font-family:'Cormorant_Garamond',serif] text-[clamp(34px,12vw,66px)] font-light leading-[0.98] tracking-[-0.03em] text-[#1a1410]">
-              High Frequency
+              Ilika High Frequency
               <br />
               Therapy <em className="font-normal italic text-[#8b6e3a]">Wand</em>
-              <br />
-              with 4 Electrodes
             </h1>
             <p className="mt-4 max-w-[520px] text-[14px] leading-7 text-[#7a6757] sm:mt-6 sm:text-base sm:leading-8">
               A high-frequency electrotherapy beauty instrument designed for facial and scalp care. The manual highlights sterilization support, circulation support, anti-aging care, and scalp stimulation in one device for men and women.

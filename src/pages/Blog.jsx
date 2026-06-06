@@ -11,6 +11,20 @@ import { useProducts } from "../admin/context/ProductContext";
 
 const API = import.meta.env.VITE_API_URL;
 
+const normalizeName = (value = "") =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const getProductImage = (product, fallback) =>
+  product?.variants?.[0]?.images?.[0] ||
+  product?.images?.[0] ||
+  product?.image ||
+  product?.imageUrl ||
+  fallback;
+
 const Blog = () => {
   const { products = [] } = useProducts();
   const [blogs, setBlogs] = useState([]);
@@ -39,53 +53,72 @@ const Blog = () => {
   const restBlogs = useMemo(() => (blogs.length > 1 ? blogs.slice(1) : []), [blogs]);
   const nonVoiceMaskMakerImage = useMemo(() => {
     const target = products.find((product) => {
-      const name = String(product?.name || "").toLowerCase();
-      return name.includes("nonvoice") && name.includes("mask maker machine");
+      const name = normalizeName(product?.name);
+      return name.includes("non voice") && name.includes("mask maker");
     });
 
-    return (
-      target?.variants?.[0]?.images?.[0] ||
-      target?.images?.[0] ||
-      target?.image ||
-      target?.imageUrl ||
-      "/Images/MaskMakercard.webp"
-    );
+    return getProductImage(target, "/Images/MaskMakercard.webp");
   }, [products]);
-  const hfWandImage = useMemo(() => {
+  const voiceMaskMakerImage = useMemo(() => {
     const target = products.find((product) => {
-      const name = String(product?.name || "").toLowerCase();
+      const name = normalizeName(product?.name);
       return (
-        name.includes("high frequency") &&
-        name.includes("wand") &&
-        name.includes("electrodes")
+        name.includes("voice face mask maker") &&
+        !name.includes("non voice")
       );
     });
 
-    return (
-      target?.variants?.[0]?.images?.[0] ||
-      target?.images?.[0] ||
-      target?.image ||
-      target?.imageUrl ||
-      "/Images/MaskMakercard.webp"
-    );
+    return getProductImage(target, "/Images/MaskMakercard.webp");
+  }, [products]);
+  const hfWandImage = useMemo(() => {
+    const target = products.find((product) => {
+      const name = normalizeName(product?.name);
+      const productUrl = normalizeName(product?.productUrl);
+      return (
+        name === "ilika high frequency therapy wand" ||
+        productUrl === "ilika high frequency therapy wand" ||
+        productUrl === "ilika high frequency therapy wand".replace(/\s+/g, " ") ||
+        String(product?.productUrl || "").trim().toLowerCase() === "ilika-high-frequency-therapy-wand"
+      );
+    });
+
+    return getProductImage(target, "/Images/MaskMakercard.webp");
+  }, [products]);
+  const hairDryerImage = useMemo(() => {
+    const target = products.find((product) => {
+      const name = normalizeName(product?.name);
+      return name.includes("leafless hair dryer");
+    });
+
+    return getProductImage(target, "/Images/HairdrayerCard.webp");
   }, [products]);
   const blackheadRemoverImage = useMemo(() => {
     const target = products.find((product) => {
-      const name = String(product?.name || "").toLowerCase();
+      const name = normalizeName(product?.name);
       return (
-        name.includes("blackhead remover") &&
+        name.includes("facial pore cleanser") &&
         name.includes("hot") &&
         name.includes("cold")
       );
     });
 
-    return (
-      target?.variants?.[0]?.images?.[0] ||
-      target?.images?.[0] ||
-      target?.image ||
-      target?.imageUrl ||
-      "/Images/MaskMakercard.webp"
-    );
+    return getProductImage(target, "/Images/MaskMakercard.webp");
+  }, [products]);
+  const blackSeedHairOilImage = useMemo(() => {
+    const target = products.find((product) => {
+      const name = normalizeName(product?.name);
+      return name.includes("black seed hair growth oil");
+    });
+
+    return getProductImage(target, blackSeedLandingImage);
+  }, [products]);
+  const herbalHairOilImage = useMemo(() => {
+    const target = products.find((product) => {
+      const name = normalizeName(product?.name);
+      return name.includes("herbal hair growth oil");
+    });
+
+    return getProductImage(target, herbalLandingImage);
   }, [products]);
 
   const LANDING_BLOG_CARDS = useMemo(
@@ -99,7 +132,7 @@ const Blog = () => {
       },
       {
         id: "landing-high-frequency-therapy-wand",
-        title: "Explore High Frequency Therapy Wand with 4 Electrodes For Men & Women",
+        title: "Explore Ilika High Frequency Therapy Wand",
         author: "Team Ilika",
         image: hfWandImage,
         linkPath: "/high-frequency-therapy-wand",
@@ -108,7 +141,7 @@ const Blog = () => {
         id: "landing-leafless-hairdryer",
         title: "Explore Ilika High-Speed Leafless Hair Dryer",
         author: "Team Ilika",
-        image: "/Images/HairdrayerCard.webp",
+        image: hairDryerImage,
         linkPath: "/leafless-hair-dryer",
       },
       {
@@ -122,25 +155,33 @@ const Blog = () => {
         id: "landing-voice-mask-maker",
         title: "Explore Ilika Voice Face Mask Maker Machine with Collagen Peptide",
         author: "Team Ilika",
-        image: "/Images/MaskMakercard.webp",
+        image: voiceMaskMakerImage,
         linkPath: "/voice-mask-maker",
       },
       {
         id: "landing-blackseed-hair-oil",
         title: "Explore Ilika Black Seed Hair Growth Oil",
         author: "Team Ilika",
-        image: blackSeedLandingImage,
+        image: blackSeedHairOilImage,
         linkPath: "/blackseed-hair-oil",
       },
       {
         id: "landing-herbal-hair-oil",
         title: "Explore Ilika Herbal Hair Growth Oil",
         author: "Team Ilika",
-        image: herbalLandingImage,
+        image: herbalHairOilImage,
         linkPath: "/herbal-hair-oil",
       },
     ],
-    [blackheadRemoverImage, hfWandImage, nonVoiceMaskMakerImage]
+    [
+      blackheadRemoverImage,
+      hfWandImage,
+      hairDryerImage,
+      nonVoiceMaskMakerImage,
+      voiceMaskMakerImage,
+      blackSeedHairOilImage,
+      herbalHairOilImage,
+    ]
   );
 
   return (

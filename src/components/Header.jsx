@@ -25,7 +25,7 @@ const BEST_SELLER_PRODUCT_NAMES = [
   "Ilika 24K Gold Collagen Face Mask",
   "Ilika 4-in-1 Collagen Face Mask",
   "Ilika Hydra Gel Moisturizer",
-  "High Frequency Therapy Wand with 4 Electrodes For Men & Women",
+  "Ilika High Frequency Therapy Wand",
   "Ilika High-Speed Leafless Hair Dryer",
   "Ilika Airwrap Multi-Styler Kit",
   "Ilika Herbal Hair Growth Oil",

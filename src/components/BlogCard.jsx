@@ -61,7 +61,7 @@ const BlogCard = ({
             By {blog.author || "Ilika Team"}
           </p>
 
-          <h3 className={`${compact ? "text-lg sm:text-[20px]" : "text-[22px] sm:text-[24px]"} line-clamp-3 font-semibold leading-[1.18] text-[#0f2f17]`}>
+          <h3 className={`${compact ? "text-lg sm:text-[20px]" : "text-[22px] sm:text-[24px]"} line-clamp-2 font-semibold leading-[1.18] text-[#0f2f17]`}>
             {blog.title}
           </h3>
 
