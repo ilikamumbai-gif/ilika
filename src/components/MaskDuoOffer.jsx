@@ -18,13 +18,12 @@ const PRIMARY = "#b34140";
 const PRIMARY_LIGHT = "#fff4f3";
 const COMBO_PRICE = 699;
 
-const ALLOWED_PRODUCTS = [
-  "24k gold collagen face mask for anti-aging",
-  "ilika 4 in 1 collagen face mask glow firm & hydrate",
-];
-
 const normalizeName = (name = "") =>
-  name.toLowerCase().replace(/\s+/g, " ").trim();
+  String(name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const getImage = (product) =>
   product?.variants?.[0]?.images?.[0] ||
@@ -37,7 +36,26 @@ const isHydraFreeMask = (name = "") => {
   const normalized = normalizeName(name);
   return (
     normalized.includes("hydra gel face moisturizer") &&
-    normalized.includes("for dry & dehydrated skin")
+    (
+      normalized.includes("for dry dehydrated skin") ||
+      normalized.includes("for dry and dehydrated skin")
+    )
+  );
+};
+
+const isGoldMask = (name = "") => {
+  const normalized = normalizeName(name);
+  return (
+    normalized.includes("24k gold") &&
+    normalized.includes("collagen face mask")
+  );
+};
+
+const isCollagenMask = (name = "") => {
+  const normalized = normalizeName(name);
+  return (
+    normalized.includes("4 in 1") &&
+    normalized.includes("collagen face mask")
   );
 };
 
@@ -89,11 +107,18 @@ const MaskDuoOffer = () => {
         return aIs25g ? -1 : 1;
       });
 
-  const maskProducts = products.filter(
-    (product) =>
-      product.isActive !== false &&
-      ALLOWED_PRODUCTS.includes(product.name?.toLowerCase().trim())
-  );
+  const maskProducts = products
+    .filter(
+      (product) =>
+        product.isActive !== false &&
+        (isGoldMask(product?.name) || isCollagenMask(product?.name))
+    )
+    .sort((a, b) => {
+      const aIsGold = isGoldMask(a?.name);
+      const bIsGold = isGoldMask(b?.name);
+      if (aIsGold === bIsGold) return 0;
+      return aIsGold ? -1 : 1;
+    });
   const originalMRP = maskProducts.reduce(
     (total, product) => total + (product?.price || product?.mrp || 0),
     0

@@ -30,13 +30,12 @@ const PRIMARY_DARK = "#7d2a2a";
 const PRIMARY_SOFT = "#f4d8d8";
 const PRIMARY_TINT = "#fbf2f2";
 const BUTTON_DARK = "#2e2e2e";
-const PRODUCT_KEYWORDS = [
-  "hyaluronic acid serum",
-  "nonvoice mask maker machine",
-];
-
 const normalizeName = (name = "") =>
-  name.toLowerCase().replace(/\s+/g, " ").trim();
+  String(name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const getImage = (product) =>
   product?.variants?.[0]?.images?.[0] ||
@@ -49,7 +48,7 @@ const isNonVoiceMaskMaker = (name = "") => {
   const normalized = normalizeName(name);
   return (
     normalized.includes("mask maker") &&
-    (normalized.includes("nonvoice") || normalized.includes("non voice"))
+    normalized.includes("non voice")
   );
 };
 
@@ -87,20 +86,14 @@ const GlowTherapyCombo = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
 
-  const comboProducts = PRODUCT_KEYWORDS.map((keyword) =>
-    products.find(
-      (product) =>
-        product.isActive !== false &&
-        normalizeName(product.name).includes(normalizeName(keyword))
-    )
-  )
-    .filter(Boolean)
-    .sort((a, b) => {
-      const aIsMaskMaker = isNonVoiceMaskMaker(a?.name);
-      const bIsMaskMaker = isNonVoiceMaskMaker(b?.name);
-      if (aIsMaskMaker === bIsMaskMaker) return 0;
-      return aIsMaskMaker ? -1 : 1;
-    });
+  const maskMakerProduct = products.find(
+    (product) => product.isActive !== false && isNonVoiceMaskMaker(product?.name)
+  );
+  const serumProduct = products.find(
+    (product) => product.isActive !== false && isHyaluronicSerum(product?.name)
+  );
+
+  const comboProducts = [maskMakerProduct, serumProduct].filter(Boolean);
 
   const savings = MASK_MAKER_ORIGINAL_PRICE - COMBO_PRICE;
   const hyaluronicSerumProduct = comboProducts.find((product) =>

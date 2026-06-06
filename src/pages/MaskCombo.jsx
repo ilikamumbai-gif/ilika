@@ -30,13 +30,14 @@ const getProductImage = (product) =>
   product?.featuredImage ||
   "/placeholder.webp";
 
-const findProductByKeywords = (products = [], keywords = []) => {
-  const keywordList = keywords.map(normalize);
-  return products.find((product) => {
-    if (product?.isActive === false) return false;
-    const name = normalize(product?.name || "");
-    return keywordList.every((keyword) => name.includes(keyword));
-  });
+const isFourInOneMask = (name = "") => {
+  const normalized = normalize(name);
+  return normalized.includes("4 in 1") && normalized.includes("collagen face mask");
+};
+
+const isGoldMask = (name = "") => {
+  const normalized = normalize(name);
+  return normalized.includes("24k gold") && normalized.includes("collagen face mask");
 };
 
 const buildComboItems = (items = []) =>
@@ -160,28 +161,12 @@ const MaskCombo = () => {
   const [addingOfferId, setAddingOfferId] = useState(null);
 
   const fourInOneMask = useMemo(
-    () =>
-      findProductByKeywords(products, [
-        "4",
-        "1",
-        "collagen",
-        "face mask",
-        "glow",
-        "firm",
-        "hydrate",
-      ]),
+    () => products.find((product) => product?.isActive !== false && isFourInOneMask(product?.name)),
     [products]
   );
 
   const goldMask = useMemo(
-    () =>
-      findProductByKeywords(products, [
-        "24k",
-        "gold",
-        "collagen",
-        "face mask",
-        "anti aging",
-      ]),
+    () => products.find((product) => product?.isActive !== false && isGoldMask(product?.name)),
     [products]
   );
 
