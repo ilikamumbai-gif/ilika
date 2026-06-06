@@ -99,7 +99,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/hair") return { title: "Hair Care", description: "Shop Ilika hair care and styling essentials." };
   if (pathname === "/grooming") return { title: "Grooming Tools", description: "Premium grooming tools by Ilika." };
   if (pathname === "/newarrival") return { title: "New Arrivals", description: "See the newest Ilika products and launches." };
-  if (pathname === "/gift-store") return { title: "Gift Store", description: "Shop thoughtful beauty and grooming gifts from Ilika for every occasion." };
+  // if (pathname === "/gift-store") return { title: "Gift Store", description: "Shop thoughtful beauty and grooming gifts from Ilika for every occasion." };
   if (pathname === "/products" || pathname === "/product")
     return { title: "All Products", description: "Browse all Ilika beauty and grooming products.", keywords: [...baseKeywords, "all products", "shop products"] };
   if (pathname === "/skin/face") return { title: "Face Care", description: "Face care products from Ilika." };
