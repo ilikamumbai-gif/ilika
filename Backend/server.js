@@ -1059,6 +1059,32 @@ const normalizeReviewImages = (review = {}) => {
     .slice(0, 2);
 };
 
+const normalizeProductReviews = (reviews = []) => {
+  if (!Array.isArray(reviews)) return [];
+
+  return reviews.map((r = {}) => {
+    const images = normalizeReviewImages(r);
+    const verifiedPurchase = Boolean(r.verifiedPurchase);
+    return {
+      name: r.name || "",
+      rating: r.rating || 0,
+      comment: r.comment || "",
+      image: images[0] || null,
+      images,
+      userId: r.userId || null,
+      userEmail: r.userEmail || null,
+      verifiedPurchase,
+      isGenuine: getReviewUserType({ verifiedPurchase }) === "genuine",
+      userType: getReviewUserType({ verifiedPurchase }),
+      isFeedbackReview: r.isFeedbackReview === true || r.source === "feedback",
+      feedbackId: r.feedbackId || null,
+      createdAt: r.createdAt || new Date(),
+      updatedAt: r.updatedAt || null,
+      source: r.isFeedbackReview === true || r.source === "feedback" ? "feedback" : "review",
+    };
+  });
+};
+
 const createProductReviewEntry = async ({
   productId,
   name = "",
@@ -2004,22 +2030,9 @@ app.put("/api/products/:id", async (req, res) => {
       oldUrls,
       videos: normalizeProductVideos(req.body?.videos),
       whyLoveIt: normalizeWhyLoveItItems(req.body?.whyLoveIt, req.body?.benefits),
-      reviews: (req.body.reviews || []).map(r => {
-        const images = normalizeReviewImages(r);
-        const verifiedPurchase = Boolean(r.verifiedPurchase);
-        return {
-          name: r.name || "",
-          rating: r.rating || 0,
-          comment: r.comment || "",
-          image: images[0] || null,
-          images,
-          userId: r.userId || null,
-          userEmail: r.userEmail || null,
-          verifiedPurchase,
-          isGenuine: getReviewUserType({ verifiedPurchase }) === "genuine",
-          createdAt: r.createdAt || new Date(),
-        };
-      }),
+      reviews: Array.isArray(req.body?.reviews)
+        ? normalizeProductReviews(req.body.reviews)
+        : (Array.isArray(existingData?.reviews) ? existingData.reviews : []),
       isActive: typeof req.body.isActive === "boolean" ? req.body.isActive : existingData.isActive ?? true,
       inStock: typeof req.body.inStock === "boolean" ? req.body.inStock : existingData.inStock ?? true,
       updatedAt: Date.now(),
@@ -2075,22 +2088,9 @@ app.put("/admin/products/edit/:id", async (req, res) => {
       oldUrls,
       videos: normalizeProductVideos(req.body?.videos),
       whyLoveIt: normalizeWhyLoveItItems(req.body?.whyLoveIt, req.body?.benefits),
-      reviews: (req.body.reviews || []).map(r => {
-        const images = normalizeReviewImages(r);
-        const verifiedPurchase = Boolean(r.verifiedPurchase);
-        return {
-          name: r.name || "",
-          rating: r.rating || 0,
-          comment: r.comment || "",
-          image: images[0] || null,
-          images,
-          userId: r.userId || null,
-          userEmail: r.userEmail || null,
-          verifiedPurchase,
-          isGenuine: getReviewUserType({ verifiedPurchase }) === "genuine",
-          createdAt: r.createdAt || new Date(),
-        };
-      }),
+      reviews: Array.isArray(req.body?.reviews)
+        ? normalizeProductReviews(req.body.reviews)
+        : (Array.isArray(existingData?.reviews) ? existingData.reviews : []),
       isActive: typeof req.body.isActive === "boolean" ? req.body.isActive : existingData.isActive ?? true,
       inStock: typeof req.body.inStock === "boolean" ? req.body.inStock : existingData.inStock ?? true,
       updatedAt: Date.now(),

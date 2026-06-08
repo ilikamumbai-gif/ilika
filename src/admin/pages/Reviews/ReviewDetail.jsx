@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { logActivity } from "../../Utils/logActivity";
+import { useProducts } from "../../context/ProductContext";
 
 const getReviewImages = (review = {}) => {
   if (Array.isArray(review.images) && review.images.length) return review.images;
@@ -37,6 +38,7 @@ const ReviewDetail = () => {
 
   const { productId, index } = useParams();
   const navigate = useNavigate();
+  const { products = [], fetchProducts } = useProducts();
 
   const API = import.meta.env.VITE_API_URL;
 
@@ -49,18 +51,44 @@ const ReviewDetail = () => {
   const fetchReview = async () => {
 
     try {
-
       const res = await fetch(
         `${API}/api/reviews/${productId}/${index}`
       );
 
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to fetch review");
+      }
 
       setReview(data);
 
     } catch (err) {
 
       console.error("Review fetch error", err);
+      const foundProduct = (Array.isArray(products) ? products : []).find((item) => {
+        const candidateId = String(item?.docId || item?.id || item?._id || "").trim();
+        return candidateId === String(productId || "").trim();
+      });
+
+      const reviewIndex = Number(index);
+      const fallbackReview = foundProduct?.reviews?.[reviewIndex];
+      if (fallbackReview) {
+        const reviewImages = getReviewImages(fallbackReview);
+        setReview({
+          productId,
+          productName: foundProduct?.name || "",
+          name: fallbackReview?.name || "",
+          rating: fallbackReview?.rating || 0,
+          comment: fallbackReview?.comment || "",
+          image: reviewImages[0] || null,
+          images: reviewImages,
+          userId: fallbackReview?.userId || null,
+          userEmail: fallbackReview?.userEmail || null,
+          verifiedPurchase: fallbackReview?.verifiedPurchase === true,
+          userType: fallbackReview?.userType || (fallbackReview?.verifiedPurchase ? "genuine" : "fake"),
+          createdAt: fallbackReview?.createdAt || null,
+        });
+      }
 
     } finally {
 
@@ -72,8 +100,14 @@ const ReviewDetail = () => {
 
 
   useEffect(() => {
+    if (!products.length) {
+      fetchProducts?.();
+    }
+  }, [products.length, fetchProducts]);
+
+  useEffect(() => {
     fetchReview();
-  }, []);
+  }, [productId, index, products]);
 
 
   /* ================= DELETE ================= */

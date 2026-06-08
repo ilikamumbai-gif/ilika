@@ -12,7 +12,7 @@ import { createSlug, getProductSlug } from "../utils/slugify";
 import { getDownloadURL, ref as storageRef, uploadString } from "firebase/storage";
 import {
   Truck, ShieldCheck, BadgeCheck, Package,
-  X, ChevronLeft, ChevronRight, ChevronDown, Star, Sparkles, Leaf, Heart, Shield, Droplets,
+  X, ChevronLeft, ChevronRight, ChevronDown, Star, Sparkles, Leaf, Heart, Shield, Droplets, ImagePlus,
   ZoomIn, ShoppingCart, Lock,
   Wallet
 } from "lucide-react";
@@ -1075,12 +1075,40 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
               Upload Image (Optional)
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-            />
+            <label
+              className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dashed bg-white px-4 py-3 transition"
+              style={{ borderColor: theme.accentSoft }}
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition"
+                  style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
+                >
+                  <ImagePlus className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold leading-5" style={{ color: theme.heading }}>
+                    {reviewImages.length > 0 ? `${reviewImages.length} image${reviewImages.length > 1 ? "s" : ""} selected` : "Choose images"}
+                  </p>
+                  <p className="truncate text-xs text-gray-400">
+                    JPG, PNG or WEBP
+                  </p>
+                </div>
+              </div>
+              <span
+                className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition group-hover:opacity-90"
+                style={{ backgroundColor: theme.accent, color: "#ffffff" }}
+              >
+                Browse
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
             <p className="text-[11px] text-gray-400 mt-1">
               Upload 1-2 images (Max 2MB each)
             </p>

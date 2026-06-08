@@ -3,6 +3,7 @@ import { Eye, Trash2, Star, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { logActivity } from "../../Utils/logActivity";
+import { useProducts } from "../../context/ProductContext";
 
 const StarRating = ({ rating }) => (
   <div className="flex items-center gap-0.5">
@@ -27,9 +28,46 @@ const getUserType = (review) => {
   return "fake";
 };
 
+const getReviewImages = (review = {}) => {
+  if (Array.isArray(review.images) && review.images.length) return review.images;
+  if (typeof review.image === "string" && review.image.trim()) return [review.image];
+  return [];
+};
+
+const flattenProductReviews = (products = []) =>
+  (Array.isArray(products) ? products : []).flatMap((product) => {
+    const productId = String(product?.docId || product?.id || product?._id || "").trim();
+    const productName = String(product?.name || "").trim();
+    const reviews = Array.isArray(product?.reviews) ? product.reviews : [];
+
+    return reviews.map((review, reviewIndex) => {
+      const images = getReviewImages(review);
+      const verifiedPurchase = review?.verifiedPurchase === true;
+
+      return {
+        id: `${productId}_${reviewIndex}`,
+        productId,
+        reviewIndex,
+        productName,
+        name: review?.name || "",
+        rating: review?.rating || 0,
+        comment: review?.comment || "",
+        image: images[0] || null,
+        images,
+        userId: review?.userId || null,
+        userEmail: review?.userEmail || null,
+        verifiedPurchase,
+        isGenuine: verifiedPurchase,
+        userType: review?.userType || (verifiedPurchase ? "genuine" : "fake"),
+        createdAt: review?.createdAt || null,
+      };
+    });
+  });
+
 const ReviewList = () => {
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
+  const { products = [], fetchProducts } = useProducts();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -41,17 +79,29 @@ const ReviewList = () => {
       setLoading(true);
       const res = await fetch(`${API}/api/reviews`);
       const data = await res.json();
-      setReviews(data);
+      if (Array.isArray(data)) {
+        setReviews(data);
+        return;
+      }
+      throw new Error("Invalid reviews response");
     } catch (err) {
       console.error(err);
+      const fallbackReviews = flattenProductReviews(products);
+      setReviews(fallbackReviews);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    if (!products.length) {
+      fetchProducts?.();
+    }
+  }, [products.length, fetchProducts]);
+
+  useEffect(() => {
     fetchReviews();
-  }, []);
+  }, [products]);
 
   const deleteReview = async (productId, reviewIndex, name, productName) => {
     if (!window.confirm("Delete this review?")) return;
