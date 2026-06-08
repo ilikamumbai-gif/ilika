@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, BadgeDollarSign, ShieldCheck, Truck, LifeBuoy } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Heading from "../components/Heading";
@@ -23,6 +23,7 @@ import bannerHair from "../assets/Images/HairBanner.webp";
 const Carousel = lazy(() => import("../components/Carousel"));
 
 const Menifesto = lazy(() => import("../components/Menifesto"));
+const MyCtmRoutine = lazy(() => import("../components/MyCtmRoutine"));
 const TestimonialList = lazy(() => import("../components/TestimonialList"));
 
 /* public images (use path only) */
@@ -53,6 +54,29 @@ const SKIN_CAROUSEL_ITEMS = [
   { title: "Skin Barrier Repair", image: "/Images/skinc6.webp", bgColor: "", link: "/skin" },
   { title: "Soft & Smooth Skin", image: "/Images/skinc7.webp", bgColor: "", link: "/skin" },
   { title: "Oil Control Care", image: "/Images/skinc8.webp", bgColor: "", link: "/skin" },
+];
+
+const HOME_SUPPORT_ITEMS = [
+  {
+    title: "COD Available",
+    subtitle: "Cash on delivery option",
+    icon: BadgeDollarSign,
+  },
+  {
+    title: "Secure Payment",
+    subtitle: "Protected checkout",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Free Delivery",
+    subtitle: "Fast doorstep shipping",
+    icon: Truck,
+  },
+  {
+    title: "Warranty Support",
+    subtitle: "We’re here to help",
+    icon: LifeBuoy,
+  },
 ];
 
 const LazyMountSection = ({
@@ -249,7 +273,7 @@ const Home = () => {
                       "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
                       "Ilika High-Speed Leafless Hair Dryer",
                       "Ilika Lip Plumper Vacuum Device",
-                      "Ilika Hot & Cold Facial Pore Cleanser",
+                      "Ilika Blackhead Remover - Hot & Cold",
                     ]}
                     priorityCount={2}
                     limit={4}
@@ -293,7 +317,7 @@ const Home = () => {
                       "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
                       "Ilika High-Speed Leafless Hair Dryer",
                       "Ilika Lip Plumper Vacuum Device",
-                      "Ilika Hot & Cold Facial Pore Cleanser",
+                      "Ilika Blackhead Remover - Hot & Cold",
                     ]}
                     priorityCount={2}
                     limit={4}
@@ -334,6 +358,12 @@ const Home = () => {
                   ]}
                 limit={4}
               />
+            </Suspense>
+          </LazyMountSection>
+
+          <LazyMountSection minHeight={340}>
+            <Suspense fallback={<div className="h-32" />}>
+              <MyCtmRoutine />
             </Suspense>
           </LazyMountSection>
 
@@ -534,21 +564,54 @@ const Home = () => {
 
 
 
-          {/* TESTIMONIAL */}
-          <LazyMountSection minHeight={340}>
-            <section className="min-h-[320px] lg:min-h-[340px] flex flex-col justify-center">
-              <Heading heading="COSTUMER'S STORIES" />
-              <Suspense fallback={<div className="h-24" />}>
-                <TestimonialList />
-              </Suspense>
-            </section>
-          </LazyMountSection>
+          
 
           {/* MANIFESTO */}
           <LazyMountSection minHeight={150}>
             <Suspense fallback={<div className="h-24" />}>
               <Menifesto />
             </Suspense>
+          </LazyMountSection>
+{/* TESTIMONIAL */}
+          <LazyMountSection minHeight={340}>
+            <section className="min-h-[320px] lg:min-h-[340px] flex flex-col justify-center">
+              <Heading heading="Loved By Thousands" sub="Real experiences from the Ilika community"/>
+              <Suspense fallback={<div className="h-24" />}>
+                <TestimonialList />
+              </Suspense>
+            </section>
+          </LazyMountSection>
+          <LazyMountSection minHeight={120}>
+            <section className="mx-auto max-w-7xl px-4 pb-3 sm:px-6 lg:px-8">
+              <div className="overflow-hidden bg-white">
+                <div className="grid grid-cols-2 md:grid-cols-4">
+                  {HOME_SUPPORT_ITEMS.map((item, index) => {
+                    const Icon = item.icon;
+
+                    return (
+                      <div
+                        key={item.title}
+                        className={`flex min-h-[92px] flex-col items-center justify-center px-3 py-4 text-center sm:min-h-[108px] sm:px-4 sm:py-5 ${
+                          index < HOME_SUPPORT_ITEMS.length - 1 ? "md:border-r md:border-[#f1e4e4]" : ""
+                        } ${index % 2 === 0 ? "border-r border-[#f7eded] md:border-r md:border-[#f1e4e4]" : ""} ${
+                          index < 2 ? "border-b border-[#f7eded] md:border-b-0" : ""
+                        }`}
+                      >
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fff6f7] text-[#d99aa1] sm:h-10 sm:w-10">
+                          <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+                        </span>
+                        <p className="mt-2.5 text-[12px] font-semibold leading-5 text-[#342927] sm:mt-3 sm:text-sm">
+                          {item.title}
+                        </p>
+                        <p className="mt-1 text-[10px] leading-4 text-[#8a7a76] sm:text-xs">
+                          {item.subtitle}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
           </LazyMountSection>
 
 

@@ -8,20 +8,6 @@ import { useCart } from "../context/CartProvider";
 import { getProductSlug } from "../utils/slugify";
 import OptimizedImage from "./OptimizedImage";
 
-const getTitleSizeClass = (name = "") => {
-  const length = String(name || "").trim().length;
-
-  if (length > 42) {
-    return "text-[11px] sm:text-[13px]";
-  }
-
-  if (length > 30) {
-    return "text-[12px] sm:text-[14px]";
-  }
-
-  return "text-[13px] sm:text-[16px]";
-};
-
 const ProductCard = ({
   product,
   buttonBg = "bg-[#b34140]",
@@ -70,7 +56,6 @@ const ProductCard = ({
     couponCode &&
     couponPercent > 0;
   const couponBadgeText = hasActiveCoupon ? couponCode : couponText;
-  const titleSizeClass = getTitleSizeClass(product?.name);
 
   const showNotifyToast = (message, type = "success") => {
     const styles = {
@@ -207,7 +192,7 @@ const ProductCard = ({
 
             {/* Product name */}
             <h4
-              className={`mb-1.5 h-[33px] w-full overflow-hidden pr-11 text-left font-semibold leading-[1.25] tracking-[0.01em] text-[#1e1e1e] line-clamp-2 sm:mb-2.5 sm:h-[44px] sm:pr-12 sm:leading-[1.35] ${titleSizeClass}`}
+              className="mb-1.5 h-[38px] w-full overflow-hidden pr-11 text-left text-[13px] font-semibold leading-[1.45] tracking-[0.01em] text-[#1e1e1e] line-clamp-2 sm:mb-2.5 sm:h-[48px] sm:pr-12 sm:text-[16px] sm:leading-[1.45]"
               title={product.name}
             >
               {product.name}

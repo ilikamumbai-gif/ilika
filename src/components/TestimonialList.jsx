@@ -54,23 +54,23 @@ const TestimonialList = () => {
   };
 
   return (
-    <section className="w-full py-6 primary-bg-color">
-      <div className="max-w-7xl mx-auto px-4 relative">
+    <section className="w-full py-3 pb-7 sm:py-6 sm:pb-10 primary-bg-color">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
 
         {/* LEFT BUTTON */}
         <button
           onClick={() => scroll("left")}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 secondary-bg-color shadow-md p-2 rounded-full hidden md:flex"
+          className="absolute left-0 sm:left-2 top-1/2 -translate-y-1/2 z-10 hidden h-10 w-10 items-center justify-center rounded-full border border-[#ecdede] bg-white text-[#8b4a4f] shadow-md transition hover:bg-[#fff7f8] md:flex"
         >
-          <ChevronLeft />
+          <ChevronLeft className="h-5 w-5" />
         </button>
 
         {/* RIGHT BUTTON */}
         <button
           onClick={() => scroll("right")}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 secondary-bg-color shadow-md p-2 rounded-full hidden md:flex"
+          className="absolute right-0 sm:right-2 top-1/2 -translate-y-1/2 z-10 hidden h-10 w-10 items-center justify-center rounded-full border border-[#ecdede] bg-white text-[#8b4a4f] shadow-md transition hover:bg-[#fff7f8] md:flex"
         >
-          <ChevronRight />
+          <ChevronRight className="h-5 w-5" />
         </button>
 
         {/* SLIDER */}
@@ -84,11 +84,11 @@ const TestimonialList = () => {
             overflow-x-auto scroll-smooth scrollbar-hide
             cursor-grab
             select-none
-            px-2 sm:px-4
+            px-0.5 sm:px-3
             touch-pan-x
           "
         >
-          <div className="flex gap-4 sm:gap-6">
+          <div className="flex gap-3 sm:gap-5">
             {testimonials.map((item) => (
               <TestimonialCard key={item.id} testimonial={item} />
             ))}

@@ -48,7 +48,7 @@ const NewArrival = () => {
                 "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
                 "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide",
                 "Ilika Lip Plumper Vacuum Device",
-                "Ilika Hot & Cold Facial Pore Cleanser",
+                "Ilika Blackhead Remover - Hot & Cold",
                 "Ilika High-Speed Leafless Hair Dryer",
               ]}
             />

@@ -96,7 +96,7 @@ const Blog = () => {
     const target = products.find((product) => {
       const name = normalizeName(product?.name);
       return (
-        name.includes("facial pore cleanser") &&
+        (name.includes("blackhead remover") || name.includes("facial pore cleanser")) &&
         name.includes("hot") &&
         name.includes("cold")
       );
@@ -125,7 +125,7 @@ const Blog = () => {
     () => [
       {
         id: "landing-hot-cold-blackhead-remover",
-        title: "Explore Ilika Hot & Cold Facial Pore Cleanser",
+        title: "Explore Ilika Blackhead Remover - Hot & Cold",
         author: "Team Ilika",
         image: blackheadRemoverImage,
         linkPath: "/hot-cold-blackhead-remover",

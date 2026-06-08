@@ -12,7 +12,7 @@ import { createSlug, getProductSlug } from "../utils/slugify";
 import { getDownloadURL, ref as storageRef, uploadString } from "firebase/storage";
 import {
   Truck, ShieldCheck, BadgeCheck, Package,
-  X, ChevronLeft, ChevronRight, Star, Sparkles, Leaf,
+  X, ChevronLeft, ChevronRight, ChevronDown, Star, Sparkles, Leaf, Heart, Shield, Droplets,
   ZoomIn, ShoppingCart, Lock,
   Wallet
 } from "lucide-react";
@@ -37,6 +37,108 @@ const stripHtml = (value = "") =>
     .replace(/<[^>]*>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+
+const splitWhyLoveItText = (value = "") => {
+  const text = String(value || "").trim();
+  if (!text) return { title: "", description: "" };
+
+  const match = text.match(/^(.*?)\s*(?:-|–|—|:)\s*(.+)$/);
+  if (match) {
+    return {
+      title: match[1].trim(),
+      description: match[2].trim(),
+    };
+  }
+
+  return { title: text, description: "" };
+};
+
+const normalizeWhyLoveItIconKey = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+
+const WHY_LOVE_IT_ICON_MAP = {
+  sparkles: Sparkles,
+  sparkle: Sparkles,
+  heart: Heart,
+  hearts: Heart,
+  lip: Heart,
+  lips: Heart,
+  shield: Shield,
+  shieldcheck: ShieldCheck,
+  droplet: Droplets,
+  droplets: Droplets,
+  leaf: Leaf,
+  star: Star,
+  badgecheck: BadgeCheck,
+  truck: Truck,
+  package: Package,
+  lock: Lock,
+  wallet: Wallet,
+};
+
+const sanitizeWhyLoveItItems = (items = [], fallbackBenefits = []) => {
+  const source = Array.isArray(items) && items.length ? items : fallbackBenefits;
+  if (!Array.isArray(source)) return [];
+
+  return source
+    .map((item, index) => {
+      if (typeof item === "string") {
+        const parsed = splitWhyLoveItText(item);
+        if (!parsed.title && !parsed.description) return null;
+        return {
+          id: `love-${index + 1}`,
+          title: parsed.title || parsed.description,
+          description: parsed.title ? parsed.description : "",
+          icon: "",
+        };
+      }
+
+      const title = String(item?.title || item?.label || "").trim();
+      const description = String(item?.description || item?.text || "").trim();
+      const icon = String(item?.icon || item?.iconName || "").trim();
+
+      if (!title && !description) return null;
+
+      return {
+        id: String(item?.id || `love-${index + 1}`),
+        title: title || description,
+        description: title ? description : "",
+        icon,
+      };
+    })
+    .filter(Boolean);
+};
+
+const getDetailCtaColors = (theme) => {
+  return {
+    addToCart: {
+      backgroundColor: theme?.pageBg || "#ffffff",
+      color: "#111111",
+      border: "1px solid #111111",
+    },
+    buyNow: {
+      backgroundColor: theme?.isDefaultWhite ? "#b34140" : (theme?.primaryHover || theme?.primary || "#7a2a2a"),
+      color: "#ffffff",
+      border: "none",
+    },
+  };
+};
+
+const buildTrustStripItems = (product = {}) => [
+  { icon: Wallet, title: "COD Available", subtitle: "Pay on Delivery" },
+  { icon: ShieldCheck, title: "Secure Payment", subtitle: "Protected Checkout" },
+  { icon: Package, title: "Free Delivery", subtitle: "Fast Doorstep Shipping" },
+  ...(product?.warranty
+    ? [{
+        icon: BadgeCheck,
+        title: product.warranty === "manufacturer" ? "18 Month Warranty" : "1 Year Import Warranty",
+        subtitle: product.warranty === "manufacturer" ? "Manufacturer Support" : "Warranty Support",
+      }]
+    : []),
+];
 
 const toAbsoluteUrl = (value = "", fallbackOrigin = "https://ilika.in") => {
   const raw = String(value || "").trim();
@@ -269,7 +371,8 @@ const formatIngredientTitle = (src = "", index = 0) => {
   }
 };
 
-const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe }) => {
+const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe, theme }) => {
+  const ctaColors = getDetailCtaColors(theme);
   const mediaItems = useMemo(() => {
     const imageItems = (Array.isArray(images) ? images : []).map((src, index) => ({
       type: "image",
@@ -486,10 +589,10 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
             {/* ATC button */}
             <button
               onClick={isOutOfStock ? onNotifyMe : onAddToCart}
-              className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition
-    ${isOutOfStock
-                  ? "bg-[#b34140] text-white hover:bg-[#8f302f]"
-                  : "bg-[#b34140] text-white hover:bg-[#8f302f]"}`}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition ${
+                isOutOfStock ? "opacity-90" : "hover:opacity-90"
+              }`}
+              style={ctaColors.addToCart}
             >
               {isOutOfStock ? "Notify Me" : "Add to Cart"}
             </button>
@@ -499,7 +602,8 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
               onClick={() => { onBuyNow(); onClose(); }}
               disabled={isOutOfStock}
               className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl text-sm font-semibold transition
-                ${isOutOfStock ? "bg-gray-100 text-gray-400 cursor-not-allowed border" : "border border-[#E7A6A1] text-[#1C371C] hover:bg-[#fff1ef]"}`}
+                ${isOutOfStock ? "bg-gray-100 text-gray-400 cursor-not-allowed border" : "hover:opacity-90"}`}
+              style={isOutOfStock ? undefined : ctaColors.buyNow}
             >
               <Lock className="w-3.5 h-3.5" />
               Buy Now
@@ -1011,6 +1115,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
    STICKY FLOATING ATC BAR
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme, warrantyRegistrationUrl }) => {
+  const ctaColors = getDetailCtaColors(theme);
   return (
     <div
       style={{
@@ -1079,7 +1184,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
     ${isOutOfStock || isAdding
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "shadow-sm"}`}
-              style={isOutOfStock || isAdding ? undefined : { backgroundColor: "#b34140", color: "#ffffff" }}
+              style={isOutOfStock || isAdding ? undefined : ctaColors.addToCart}
             >
               <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>
@@ -1098,8 +1203,8 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
               className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap
     ${isOutOfStock || isBuying
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "border-2 hover:bg-gray-50"}`}
-              style={isOutOfStock || isBuying ? undefined : { borderColor: theme.primary, color: theme.primary }}
+                  : "shadow-sm"}`}
+              style={isOutOfStock || isBuying ? undefined : ctaColors.buyNow}
             >
               <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
               <span>
@@ -1159,6 +1264,7 @@ const ProductDetail = () => {
   const [expandedDesc, setExpandedDesc] = useState(false);
   const [expandedInfo, setExpandedInfo] = useState(false);
   const [activeInfoTab, setActiveInfoTab] = useState("details");
+  const [mobileOpenInfoTab, setMobileOpenInfoTab] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -1175,7 +1281,6 @@ const ProductDetail = () => {
   const [showStickyBar, setShowStickyBar] = useState(false);
   const atcButtonsRef = useRef(null);
   const detailsTabsRef = useRef(null);
-  const reviewsSectionRef = useRef(null);
   const thumbsRef = useRef(null);
   const autoScrollRef = useRef(null);
   // const footerRef = useRef(null);
@@ -1495,6 +1600,14 @@ const ProductDetail = () => {
     if (!packOptions.length) return null;
     return packOptions.find((item) => item.id === selectedPackId) || null;
   }, [packOptions, selectedPackId]);
+  const selectedQuantityLabel = useMemo(() => {
+    if (selectedPack?.label) return selectedPack.label;
+    if (activeVariant?.label) return activeVariant.label;
+    if (product?.packSize) return String(product.packSize);
+    if (product?.size) return String(product.size);
+    if (packOptions[0]?.label) return packOptions[0].label;
+    return "";
+  }, [selectedPack?.label, activeVariant?.label, product?.packSize, product?.size, packOptions]);
   const packBasePrice = selectedPack ? Number(selectedPack.price || 0) : basePrice;
   const packMrp = selectedPack
     ? Number(selectedPack.mrp > 0 ? selectedPack.mrp : selectedPack.price || 0)
@@ -1623,6 +1736,7 @@ const ProductDetail = () => {
 
   const effectiveMrp = Number(packMrp) + addonPrice;
   const discount = effectiveMrp ? Math.max(0, Math.round(((effectiveMrp - price) / effectiveMrp) * 100)) : 0;
+  const savingAmount = Math.max(0, Number((effectiveMrp - price).toFixed(2)));
   const addonCartSuffix = eligibleForCollagenAddon ? `__addon_${selectedCollagenAddon.count}` : "";
   const packCartSuffix = selectedPack ? `__pack_${selectedPack.id}` : "";
   const cartId = activeVariant
@@ -1643,6 +1757,7 @@ const ProductDetail = () => {
     setExpandedDesc(false);
     setExpandedInfo(false);
     setActiveInfoTab("details");
+    setMobileOpenInfoTab(null);
   }, [productId]);
 
   useEffect(() => {
@@ -1679,13 +1794,12 @@ const ProductDetail = () => {
   }, [assignedCoupon]);
 
   useEffect(() => {
-    // Default stays normal pack (no selected pack option).
     if (!packOptions.length) {
       setSelectedPackId("");
       return;
     }
     const stillValid = packOptions.some((item) => item.id === selectedPackId);
-    if (!stillValid) setSelectedPackId("");
+    if (!stillValid) setSelectedPackId(packOptions[0].id);
   }, [productId, packOptions, selectedPackId]);
 
   const handleApplyCoupon = useCallback(() => {
@@ -1985,6 +2099,7 @@ const ProductDetail = () => {
   }, [product?.detailPageDefaultBg]);
 
   const detailTheme = useMemo(() => buildDetailTheme(detailPageBgColor), [detailPageBgColor]);
+  const detailCtaColors = useMemo(() => getDetailCtaColors(detailTheme), [detailTheme]);
   const variantPaletteMap = useMemo(() => {
     const map = new Map();
     const palette = Array.isArray(product?.detailPageBgPalette) ? product.detailPageBgPalette : [];
@@ -2099,6 +2214,12 @@ const ProductDetail = () => {
     return [];
   }, [product?.additionalInfo]);
 
+  const whyLoveItItems = useMemo(
+    () => sanitizeWhyLoveItItems(product?.whyLoveIt, product?.benefits),
+    [product?.whyLoveIt, product?.benefits]
+  );
+  const trustStripItems = useMemo(() => buildTrustStripItems(product), [product]);
+
   const warrantySections = useMemo(() => {
     const raw = Array.isArray(product?.warrantyTerms)
       ? product.warrantyTerms.join("\n")
@@ -2127,6 +2248,16 @@ const ProductDetail = () => {
     if (current) sections.push(current);
     return sections;
   }, [product?.warrantyTerms]);
+
+  const infoTabs = useMemo(
+    () => [
+      { id: "details", label: "Description" },
+      { id: "additional", label: "Additional Detail" },
+      ...(product?.warranty === "import" ? [{ id: "warranty", label: "Warranty Terms" }] : []),
+      { id: "reviews", label: `Reviews${product?.reviews?.length ? ` (${product.reviews.length})` : ""}` },
+    ],
+    [product?.warranty, product?.reviews?.length]
+  );
 
   const rating = product?.rating || 4;
   const beforeAfterPairs = product?.beforeAfter || [];
@@ -2267,6 +2398,168 @@ const ProductDetail = () => {
     navigate(`/product/${canonicalProductSlug}`, { replace: true });
   }, [product, currentRouteSlug, canonicalProductSlug, productMatchesCurrentRoute, navigate]);
 
+  const renderInfoPanel = (tabId) => {
+    if (tabId === "details") {
+      return product.description ? (
+        <>
+          <div
+            className={`prose prose-sm max-w-none text-gray-600 leading-relaxed transition-all duration-300 ${expandedDesc ? "" : "line-clamp-2"}`}
+            dangerouslySetInnerHTML={{ __html: product.description }}
+          />
+          <button
+            onClick={() => setExpandedDesc(!expandedDesc)}
+            className="text-xs font-semibold mt-3 hover:underline"
+            style={{ color: detailTheme.accent }}
+          >
+            {expandedDesc ? "Read Less ▲" : "Read More ▼"}
+          </button>
+        </>
+      ) : (
+        <p className="text-sm text-gray-400">No description available.</p>
+      );
+    }
+
+    if (tabId === "additional") {
+      return additionalInfoArray.length > 0 ? (
+        <>
+          <div className="overflow-hidden transition-all duration-300">
+            <ul className="space-y-1 text-sm text-gray-700">
+              {(expandedInfo ? additionalInfoArray : additionalInfoArray.slice(0, 2)).map((pt, i) => (
+                <li key={i} className="flex gap-3 items-start">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: detailTheme.price }} />
+                  {pt}
+                </li>
+              ))}
+            </ul>
+          </div>
+          {additionalInfoArray.length > 4 && (
+            <button
+              onClick={() => setExpandedInfo(!expandedInfo)}
+              className="text-xs font-semibold mt-3 hover:underline"
+              style={{ color: detailTheme.price }}
+            >
+              {expandedInfo ? "Read Less ▲" : "Read More ▼"}
+            </button>
+          )}
+        </>
+      ) : (
+        <p className="text-sm text-gray-400">No additional information available.</p>
+      );
+    }
+
+    if (tabId === "warranty") {
+      return (
+        <>
+          {warrantySections.length > 0 ? (
+            <div className="space-y-5 text-sm text-gray-700">
+              {warrantySections.map((section, idx) => (
+                <div key={`warranty-section-${idx}`} className="space-y-2">
+                  <h3 className="font-semibold text-[15px]" style={{ color: detailTheme.heading }}>
+                    {section.title}
+                  </h3>
+                  {section.body.length > 0 ? (
+                    <div className="space-y-1.5 text-gray-700">
+                      {section.body.map((line, lineIdx) => (
+                        <p key={`warranty-section-${idx}-line-${lineIdx}`}>{line}</p>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">No warranty terms added yet.</p>
+          )}
+          {warrantyRegistrationUrl && (
+            <div className="mt-4">
+              <Link
+                to={warrantyRegistrationUrl}
+                className="inline-flex items-center rounded-full border px-4 py-2 text-xs font-semibold transition"
+                style={{
+                  color: detailTheme.accent,
+                  borderColor: detailTheme.accentSoft,
+                  backgroundColor: detailTheme.reviewSurface,
+                }}
+              >
+                Register Warranty
+              </Link>
+            </div>
+          )}
+        </>
+      );
+    }
+
+    if (tabId === "reviews") {
+      return product.reviews?.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {product.reviews.map((rev, i) => (
+            <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+              {(() => {
+                const reviewImages = Array.isArray(rev?.images) && rev.images.length
+                  ? rev.images
+                  : rev?.image
+                    ? [rev.image]
+                    : [];
+
+                return (
+                  <>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: detailTheme.reviewSurface, color: detailTheme.accent }}>
+                          {rev.name?.[0]?.toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>{rev.name}</p>
+                          <div className="flex gap-0.5 mt-0.5">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star key={s} className={`w-3 h-3 ${s <= rev.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
+                    {reviewImages.length > 0 && (
+                      <div className="flex gap-2 mt-3">
+                        {reviewImages.map((img, imageIndex) => (
+                          <img
+                            key={imageIndex}
+                            src={img}
+                            loading="lazy"
+                            width="160"
+                            height="160"
+                            className="w-20 h-20 object-cover rounded-lg border"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white border border-gray-100 rounded-3xl p-8 sm:p-12 text-center">
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
+            <Star className="w-7 h-7" style={{ color: detailTheme.accentSoft }} />
+          </div>
+          <p className="text-gray-500 text-sm mb-1">No reviews yet</p>
+          <p className="text-gray-400 text-xs mb-4">Be the first to share your experience!</p>
+          <button
+            onClick={() => setShowReviewModal(true)}
+            className="text-sm font-semibold hover:underline"
+            style={{ color: detailTheme.accent }}
+          >
+            Write a Review
+          </button>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   /* â”€â”€ Loading / not found states â”€â”€ */
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -2322,6 +2615,7 @@ const ProductDetail = () => {
           isAdding={isAdding}
           isBuying={isBuying}
           onNotifyMe={handleNotifyMe}
+          theme={detailTheme}
         />
       )}
 
@@ -2348,14 +2642,82 @@ const ProductDetail = () => {
         <CartDrawer />
 
         {/* â•â•â•â• HERO â•â•â•â• */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-4 sm:pt-14">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+        <section className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 pb-4 sm:pt-14">
+          <div className="grid grid-cols-1 gap-5 sm:gap-7 lg:grid-cols-2 lg:gap-16">
 
             {/* â”€â”€ LEFT: IMAGES â”€â”€ */}
-            <div className="flex flex-col gap-4">
-              {/* Main image */}
+            <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-start">
+              {galleryCount > 1 && (
+                <div
+                  ref={thumbsRef}
+                  className="order-2 flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory lg:order-1 lg:h-[494px] lg:w-[92px] lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0"
+                  style={{ scrollbarWidth: "none" }}
+                >
+                  {displayImages.length > 0 ? (
+                    displayImages.map((img, i) => (
+                      <button
+                        key={img}
+                        onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
+                        className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300
+                          ${selectedImage === img ? "shadow-sm" : "hover:border-gray-200"}`}
+                        style={{
+                          width: "64px",
+                          height: "64px",
+                          borderColor: selectedImage === img ? "#f2b9b3" : "#f3e2df",
+                          backgroundColor: selectedImage === img ? "#fff5f4" : "#ffffff",
+                        }}
+                      >
+                        <img
+                          loading="lazy"
+                          src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                          alt={`${product.name} gallery thumbnail ${i + 1}`}
+                          width="148"
+                          height="148"
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                    ))
+                  ) : (
+                    Array.from({ length: Math.min(images.length, 5) }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex-shrink-0 rounded-[16px] bg-gray-100 animate-pulse"
+                        style={{ width: "64px", height: "64px" }}
+                      />
+                    ))
+                  )}
+                  {productVideos.map((video) => {
+                    const isSelected = selectedVideoUrl === video.embedUrl;
+                    return (
+                      <button
+                        key={video.id}
+                        onClick={() => { stopAuto(); setSelectedVideoUrl(video.embedUrl); setSelectedVideoPlaying(true); }}
+                        className="relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300"
+                        style={{
+                          width: "64px",
+                          height: "64px",
+                          borderColor: isSelected ? "#f2b9b3" : "#f3e2df",
+                          backgroundColor: isSelected ? "#fff5f4" : "#ffffff",
+                        }}
+                        aria-label={`Play ${video.title}`}
+                        title={video.title}
+                      >
+                        {video.thumb ? (
+                          <img loading="lazy" src={video.thumb} alt={video.title} width="148" height="148" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="h-full w-full bg-black/80" />
+                        )}
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-[13px] text-[#1f1f1f] shadow-sm">▶</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               <div
-                className={`relative bg-white rounded-3xl overflow-hidden shadow-lg select-none group ${selectedVideoUrl ? "cursor-default" : "cursor-zoom-in"}`}
+                className={`order-1 relative flex-1 overflow-hidden rounded-[18px] sm:rounded-[24px] border border-[#f4dfdb] bg-[#fff5f4] select-none group ${selectedVideoUrl ? "cursor-default" : "cursor-zoom-in"} lg:order-2`}
                 onTouchStart={e => setTouchStartX(e.targetTouches[0].clientX)}
                 onTouchMove={e => setTouchEndX(e.targetTouches[0].clientX)}
                 onTouchEnd={handleSwipe}
@@ -2365,14 +2727,13 @@ const ProductDetail = () => {
                   openLightbox(idx >= 0 ? idx : 0);
                 }}
               >
-                {/* Image or pulse placeholder */}
                 {selectedVideoUrl ? (
-                  <div className="w-full aspect-square bg-white flex items-center justify-center">
+                  <div className="flex aspect-square w-full items-center justify-center bg-[#fff5f4]">
                     {selectedVideoPlaying ? (
                       <iframe
                         src={selectedVideoUrl}
                         title="Product video preview"
-                        className="w-full aspect-video max-h-full"
+                        className="w-full max-h-full aspect-video"
                         style={{ border: "none" }}
                         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                         allowFullScreen
@@ -2384,7 +2745,7 @@ const ProductDetail = () => {
                           e.stopPropagation();
                           setSelectedVideoPlaying(true);
                         }}
-                        className="relative w-full h-full overflow-hidden"
+                        className="relative h-full w-full overflow-hidden"
                         aria-label="Play product video"
                       >
                         {selectedVideo?.thumb ? (
@@ -2392,13 +2753,13 @@ const ProductDetail = () => {
                             loading="lazy"
                             src={selectedVideo.thumb}
                             alt={selectedVideo.title || "Product video thumbnail"}
-                            className="w-full h-full object-contain bg-white"
+                            className="h-full w-full object-contain bg-[#fff5f4]"
                           />
                         ) : (
-                          <div className="w-full h-full bg-white" />
+                          <div className="h-full w-full bg-[#fff5f4]" />
                         )}
                         <span className="absolute inset-0 flex items-center justify-center">
-                          <span className="w-16 h-16 rounded-full bg-black/70 text-white text-2xl leading-none flex items-center justify-center shadow-lg">
+                          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-black/70 text-2xl leading-none text-white shadow-lg">
                             ▶
                           </span>
                         </span>
@@ -2406,31 +2767,34 @@ const ProductDetail = () => {
                     )}
                   </div>
                 ) : selectedImage ? (
-                  <img
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="sync"
-                    onLoad={() => setIsHeroImageLoaded(true)}
-                    src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-                    alt={product.name}
-                    width="1080"
-                    height="1080"
-                    className="w-full aspect-square sm:aspect-auto sm:h-[400px] lg:h-[540px] object-contain transition-opacity duration-300 ease-out"
-                  />
+                  <div
+                    className="aspect-square w-full overflow-auto [&::-webkit-scrollbar]:hidden"
+                    style={{ scrollbarWidth: "none" }}
+                  >
+                    <img
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="sync"
+                      onLoad={() => setIsHeroImageLoaded(true)}
+                      src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                      alt={product.name}
+                      width="1080"
+                      height="1080"
+                      className="block min-h-full w-full object-contain transition-opacity duration-300 ease-out"
+                    />
+                  </div>
                 ) : (
-                  <div className="w-full aspect-square sm:h-[400px] sm:aspect-auto lg:h-[540px] bg-gray-100 animate-pulse rounded-3xl" />
+                  <div className="w-full aspect-square bg-gray-100 animate-pulse" />
                 )}
 
-                {/* Zoom hint overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
-                  <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all duration-300 group-hover:bg-black/5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/82 opacity-0 shadow-md transition-all duration-300 group-hover:opacity-100">
                     <ZoomIn className="w-5 h-5" style={{ color: detailTheme.heading }} />
                   </div>
                 </div>
 
-                {/* Dot indicators */}
                 {galleryCount > 1 && (
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none">
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none lg:hidden">
                     {Array.from({ length: galleryCount }).map((_, i) => (
                       <span
                         key={i}
@@ -2441,61 +2805,10 @@ const ProductDetail = () => {
                   </div>
                 )}
               </div>
-
-              {/* Thumbnails strip - only renders after async preload completes */}
-              {galleryCount > 1 && (
-                <div ref={thumbsRef} className="flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-                  {displayImages.length > 0 ? (
-                    /* Real thumbnails - shown only after preload */
-                    displayImages.map((img, i) => (
-                      <button
-                        key={img}
-                        onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
-                        className={`flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all duration-300
-                          ${selectedImage === img ? "shadow-md scale-105" : "border-transparent hover:border-gray-200"}`}
-                        style={{ width: "74px", height: "74px", borderColor: selectedImage === img ? detailTheme.accent : undefined }}
-                      >
-                        <img loading="lazy" src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`} alt={`${product.name} gallery thumbnail ${i + 1}`} width="148" height="148" className="w-full h-full object-cover" />
-                      </button>
-                    ))
-                  ) : (
-                    /* Skeleton placeholders shown while new images are loading */
-                    Array.from({ length: Math.min(images.length, 5) }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex-shrink-0 rounded-2xl bg-gray-100 animate-pulse"
-                        style={{ width: "74px", height: "74px" }}
-                      />
-                    ))
-                  )}
-                  {productVideos.map((video) => {
-                    const isSelected = selectedVideoUrl === video.embedUrl;
-                    return (
-                      <button
-                        key={video.id}
-                        onClick={() => { stopAuto(); setSelectedVideoUrl(video.embedUrl); setSelectedVideoPlaying(true); }}
-                        className={`relative flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${isSelected ? "shadow-md scale-105" : "border-transparent hover:border-gray-200"}`}
-                        style={{ width: "74px", height: "74px", borderColor: isSelected ? detailTheme.accent : undefined }}
-                        aria-label={`Play ${video.title}`}
-                        title={video.title}
-                      >
-                        {video.thumb ? (
-                          <img loading="lazy" src={video.thumb} alt={video.title} width="148" height="148" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-black/80" />
-                        )}
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <span className="w-7 h-7 rounded-full bg-black/65 text-white text-[12px] leading-none flex items-center justify-center">▶</span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </div>
 
             {/* â”€â”€ RIGHT: INFO â”€â”€ */}
-            <div className="flex flex-col gap-5 lg:sticky lg:top-24 h-fit">
+            <div className="flex flex-col gap-4 sm:gap-5 lg:sticky lg:top-24 h-fit">
               <button onClick={() => navigate(-1)} className="text-xs text-gray-400 hover:text-gray-700 w-fit flex items-center gap-1 transition">
                 <ChevronLeft className="w-3.5 h-3.5" /> Back
               </button>
@@ -2503,8 +2816,8 @@ const ProductDetail = () => {
               {product.hasVariants && <div className="sm:hidden">{renderVariantSelector()}</div>}
 
               <div>
-                <h1 className="text-2xl sm:text-3xl font-luxury font-bold leading-tight" style={{ color: detailTheme.heading }}>{product.name}</h1>
-                <p className="text-sm text-gray-500 mt-1.5">{product.shortInfo || "Deep nourishment & long lasting hydration"}</p>
+                <h1 className="text-[28px] sm:text-3xl font-luxury font-bold leading-tight" style={{ color: detailTheme.heading }}>{product.name}</h1>
+                <p className="text-sm leading-6 text-gray-500 mt-1.5">{product.shortInfo || "Deep nourishment & long lasting hydration"}</p>
               </div>
 
               <div className="flex items-center gap-3">
@@ -2625,11 +2938,12 @@ const ProductDetail = () => {
               )}
 
               {packOptions.length > 0 && (
-                <div className="rounded-2xl border p-3" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
-                  <p className="text-sm font-semibold mb-2" style={{ color: detailTheme.heading }}>
-                    Choose Pack Size
+                <div className="rounded-[22px] sm:rounded-[26px] border px-3 py-3.5 sm:px-5 sm:py-5" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
+                  <p className="mb-3 text-sm sm:text-base font-semibold leading-snug" style={{ color: detailTheme.heading }}>
+                    Selected Quantity:
+                    <span className="ml-2 font-normal">{selectedQuantityLabel || "Standard pack"}</span>
                   </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="flex flex-wrap gap-2.5 sm:gap-3">
                     {packOptions.map((pack) => {
                       const active = selectedPack?.id === pack.id;
                       return (
@@ -2637,12 +2951,12 @@ const ProductDetail = () => {
                           key={pack.id}
                           type="button"
                           onClick={() => setSelectedPackId(pack.id)}
-                          className={`rounded-xl border px-3 py-2 text-left transition ${active ? "shadow-sm" : ""}`}
+                          className={`min-w-[84px] sm:min-w-[96px] rounded-[14px] border px-3 py-2.5 sm:px-4 sm:py-3 text-left transition ${active ? "shadow-sm" : ""}`}
                           style={
                             active
                               ? {
-                                borderColor: detailTheme.price,
-                                backgroundColor: detailTheme.priceMuted,
+                                borderColor: detailTheme.heading,
+                                backgroundColor: detailTheme.heading,
                               }
                               : {
                                 borderColor: detailTheme.borderSoft,
@@ -2650,8 +2964,18 @@ const ProductDetail = () => {
                               }
                           }
                         >
-                          <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>{pack.label}</p>
-                          <p className="text-xs" style={{ color: detailTheme.price }}>₹{Number(pack.price || 0)}</p>
+                          <p
+                            className="text-[13px] sm:text-[15px] font-semibold leading-none sm:text-base"
+                            style={{ color: active ? "#FFFFFF" : detailTheme.heading }}
+                          >
+                            {pack.label}
+                          </p>
+                          {/* <p
+                            className="mt-2 text-xs leading-none sm:text-[13px]"
+                            style={{ color: active ? "rgba(255,255,255,0.72)" : "#6b7280" }}
+                          >
+                            ₹{Number(pack.price || 0).toLocaleString("en-IN")}
+                          </p> */}
                         </button>
                       );
                     })}
@@ -2663,21 +2987,47 @@ const ProductDetail = () => {
 
 
               {/* Price box */}
-              <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
+              <div className="rounded-[22px] sm:rounded-[26px] px-4 py-4 sm:px-6 sm:py-5" style={{ backgroundColor: detailTheme.reviewSurface }}>
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                   <div>
-                    <div className="flex items-baseline flex-wrap gap-3">
-                      <span className="text-3xl font-bold" style={{ color: detailTheme.price }}>₹{price}</span>
-                      {effectiveMrp > 0 && <span className="text-sm text-gray-400 line-through">MRP ₹{effectiveMrp}</span>}
-                      {effectiveMrp > 0 && <span className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ backgroundColor: detailTheme.price, color: detailTheme.onPrice }}>{discount}% OFF</span>}
+                    {effectiveMrp > price && savingAmount > 0 ? (
+                      <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
+                        <span className="text-[26px] sm:text-[36px] font-bold leading-none" style={{ color: detailTheme.heading }}>
+                          ₹{price.toLocaleString("en-IN")}
+                        </span>
+                        <span className="text-[14px] sm:text-[18px] font-semibold leading-none text-gray-400 line-through">
+                          ₹{effectiveMrp.toLocaleString("en-IN")}
+                        </span>
+                        <span className="text-[16px] sm:text-[24px] font-bold leading-none" style={{ color: "#0a8f45" }}>⬇︎
+                          ₹{savingAmount.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-baseline flex-wrap gap-2 sm:gap-3">
+                        <span className="text-[28px] sm:text-3xl font-bold" style={{ color: detailTheme.price }}>
+                          ₹{price.toLocaleString("en-IN")}
+                        </span>
+                        {effectiveMrp > 0 && (
+                          <span className="text-xs sm:text-sm text-gray-400 line-through">
+                            MRP ₹{effectiveMrp.toLocaleString("en-IN")}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
+                      <span>Inclusive of all taxes</span>
+                      {effectiveMrp > price && savingAmount > 0 ? (
+                        <span className="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold" style={{ borderColor: detailTheme.borderSoft, color: detailTheme.price }}>
+                          Price dropped
+                        </span>
+                      ) : null}
                     </div>
-                    <p className="text-[11px] text-gray-400 mt-1">Inclusive of all taxes</p>
                   </div>
 
                   {product?.warranty === "import" && warrantyRegistrationUrl && (
                     <Link
                       to={warrantyRegistrationUrl}
-                      className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border self-start sm:self-auto"
+                      className="inline-flex w-full sm:w-auto items-center justify-center gap-2 text-xs font-semibold px-3 py-2.5 rounded-xl border self-start sm:self-auto"
                       style={{
                         color: detailTheme.accent,
                         borderColor: detailTheme.accentLine,
@@ -2752,15 +3102,15 @@ const ProductDetail = () => {
               )}
 
               {/* ATC + Buy Now — observed by IntersectionObserver for sticky bar */}
-              <div ref={atcButtonsRef} className="flex flex-col sm:flex-row gap-3">
+              <div ref={atcButtonsRef} className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
 
                 <button
                   onClick={product.inStock ? handleAddToCart : handleNotifyMe}
                   disabled={isAdding}
-                  className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition
+                  className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition min-h-[54px]
                 ${isAdding ? 
                   "bg-gray-300 text-gray-500" : ""}`}
-                  style={isAdding ? undefined : product.inStock ? { backgroundColor: detailTheme.primary, color: detailTheme.onPrimary } : { backgroundColor: detailTheme.accent, color: getContrastText(detailTheme.accent) }}
+                  style={isAdding ? undefined : detailCtaColors.addToCart}
                 >
                   {isAdding
                     ? "Adding..."
@@ -2773,89 +3123,134 @@ const ProductDetail = () => {
                 <button
                   onClick={handleBuyNow}
                   disabled={isOutOfStock || isBuying}
-                  className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition
+                  className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition min-h-[54px]
                     ${isOutOfStock || 
                       isBuying
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "hover:opacity-90 shadow-sm"}`}
-                  style={isOutOfStock || isBuying ? undefined : { backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
+                  style={isOutOfStock || isBuying ? undefined : detailCtaColors.buyNow}
                 >
                   {isBuying ? "Processing..." : product.inStock ? "Buy Now" : "Out of Stock"}
                 </button>
 
               </div>
 
-              {/* Benefits */}
-              <div
-                className="rounded-2xl p-[1.5px]"
-                style={{
-                  background: detailTheme.isDefaultWhite
-                    ? "#000000"
-                    : detailTheme.benefitGradient,
-                }}
-              >
-
-                <div
-                  className="rounded-2xl p-6 space-y-4 border"
-                  style={{
-                    backgroundColor: detailTheme.isDefaultWhite ? "#FFFFFF" : "rgba(255,255,255,0.10)",
-                    borderColor: detailTheme.isDefaultWhite ? "#000000" : "rgba(255,255,255,0.20)",
-                    backdropFilter: detailTheme.isDefaultWhite ? "none" : "blur(12px)",
-                  }}
-                >
-
-                  <div className="flex items-center gap-2 font-extrabold text-xl" style={{ color: detailTheme.benefitTitle }}>
-                    <Sparkles className="w-4 h-4 font-extrabold" style={{ color: detailTheme.benefitTitle }} />
-                    Why You'll Love It
-                  </div>
-
-                  <ul className="space-y-2">
-                    {(product.benefits || [
-                      "Instant Lip Plumping Effect - Visible volume in 1-2 minutes.",
-                      "Soft Silicone Material  Comfortable & skin-safe.",
-                      "Non-Invasive & Needle-Free  No fillers required.",
-                      "Enhances Lip Shape  Defines natural lip contour.",
-                      "Reusable & Easy to Clean  Durable design."
-                    ]).map((b, i) => (
-                      <li
-                        key={i}
-                        className="flex gap-2 items-start text-sm font-semibold"
-                        style={{ color: detailTheme.isDefaultWhite ? detailTheme.benefitTitle : "rgba(255,255,255,0.90)" }}
-                      >
-                        <span
-                          className="font-bold mt-0.5"
-                          style={{ color: detailTheme.isDefaultWhite ? "#16A34A" : "#FFFFFF" }}
-                        >
-                          ✔
-                        </span>
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-
-                </div>
-              </div>
-
-              {/* Trust badges */}
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { icon: <Wallet className="w-4 h-4" />, label: "COD Available" },
-                  { icon: <ShieldCheck className="w-4 h-4" />, label: "Secure Payment" },
-                  { icon: <Package className="w-4 h-4" />, label: "Free Delivery" },
-                  ...(product.warranty ? [{
-                    icon: <BadgeCheck className="w-4 h-4" />,
-                    label: product.warranty === "manufacturer" ? "18 Month Manufacturer Warranty" : "1 Year Import Warranty"
-                  }] : []),
-                ].map(({ icon, label }) => (
-                  <div key={label} className="flex items-center gap-2 border border-gray-100 rounded-xl px-3 py-2.5 bg-white text-xs text-gray-600 font-medium">
-                    <span style={{ color: detailTheme.price }}>{icon}</span> {label}
-                  </div>
-                ))}
-              </div>
             </div>
 
           </div>
         </section>
+
+        {trustStripItems.length > 0 && (
+          <DeferredSection minHeight={110}>
+            <section className="max-w-7xl mx-auto px-3 sm:px-6 mb-4 sm:mb-5">
+              <div
+                className="overflow-hidden rounded-[18px] border"
+                style={{
+                  backgroundColor: detailTheme.isDefaultWhite ? "#fff7f6" : detailTheme.reviewSurface,
+                  borderColor: detailTheme.borderSoft,
+                }}
+              >
+                <div className="grid grid-cols-2 lg:grid-cols-4">
+                  {trustStripItems.map(({ icon: Icon, title, subtitle }, index) => (
+                    <div
+                      key={title}
+                      className={`flex items-center gap-2.5 px-3 py-3.5 sm:px-5 sm:py-4 ${index % 2 === 1 ? "border-l" : ""} ${index >= 2 ? "border-t lg:border-t-0" : ""} ${index > 0 ? "lg:border-l" : ""}`}
+                      style={{ borderColor: detailTheme.borderSoft }}
+                    >
+                      <span
+                        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full"
+                        style={{
+                          color: detailTheme.accent,
+                          backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : hexToRgba(detailTheme.accentSoft, 0.18),
+                        }}
+                      >
+                        <Icon className="h-4.5 w-4.5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[13px] sm:text-sm font-semibold leading-5" style={{ color: detailTheme.heading }}>
+                          {title}
+                        </p>
+                        <p className="mt-0.5 text-[11px] sm:text-xs leading-4 sm:leading-5" style={{ color: detailTheme.isDefaultWhite ? "#6b7280" : hexToRgba(detailTheme.heading, 0.7) }}>
+                          {subtitle}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </DeferredSection>
+        )}
+
+        {/* {whyLoveItItems.length > 0 && (
+          <DeferredSection minHeight={220}>
+            <section className="max-w-7xl mx-auto px-3 sm:px-6 mb-6 sm:mb-8">
+              <div
+                className="overflow-hidden rounded-[22px]"
+                style={{
+                  backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : detailTheme.pageBg,
+                }}
+              >
+                <div className="px-3 pt-2 pb-2 text-center sm:px-4 sm:pb-3">
+                  <h2
+                    className="text-[24px] sm:text-[32px] font-luxury font-semibold"
+                    style={{ color: detailTheme.heading }}
+                  >
+                    Why You'll Love It
+                  </h2>
+                </div>
+
+                <div
+                  className={`grid ${whyLoveItItems.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"}`}
+                >
+                  {whyLoveItItems.map((item, index) => {
+                    const IconComponent = WHY_LOVE_IT_ICON_MAP[normalizeWhyLoveItIconKey(item.icon)];
+                    const borderClass = `
+                      ${index > 0 ? "border-t" : ""}
+                      ${index % 2 === 1 ? "sm:border-l" : ""}
+                      ${index >= 2 ? "sm:border-t lg:border-t-0" : ""}
+                      ${index > 0 ? "lg:border-l" : ""}
+                    `;
+
+                    return (
+                      <div
+                        key={item.id || index}
+                        className={`flex h-full flex-col items-center justify-start px-4 py-5 text-center sm:px-5 ${borderClass}`}
+                        style={{ borderColor: detailTheme.borderSoft }}
+                      >
+                        {IconComponent ? (
+                          <span
+                            className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full"
+                            style={{
+                              color: detailTheme.accent,
+                              backgroundColor: detailTheme.isDefaultWhite ? "#fff6f5" : hexToRgba(detailTheme.accentSoft, 0.16),
+                            }}
+                          >
+                            <IconComponent className="h-5 w-5" />
+                          </span>
+                        ) : null}
+                        <h3
+                          className={`font-semibold ${IconComponent ? "text-[16px] sm:text-[15px]" : "text-[16px] sm:text-base"}`}
+                          style={{ color: detailTheme.heading }}
+                        >
+                          {item.title}
+                        </h3>
+                        {item.description ? (
+                          <p
+                            className="mt-1.5 max-w-[260px] text-[14px] sm:text-sm leading-7 sm:leading-6"
+                            style={{ color: detailTheme.isDefaultWhite ? "#4b5563" : hexToRgba(detailTheme.heading, 0.78) }}
+                          >
+                            {item.description}
+                          </p>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          </DeferredSection>
+        )} */}
 
         {/* BEFORE / AFTER */}
         {hasBeforeAfter && (
@@ -2900,121 +3295,102 @@ const ProductDetail = () => {
         {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
         <DeferredSection minHeight={360}>
           <section ref={detailsTabsRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-10">
-            <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
-              {[
-                { id: "details", label: "Product Detail" },
-                { id: "additional", label: "Additional Information" },
-                ...(product?.warranty === "import" ? [{ id: "warranty", label: "Warranty Terms" }] : []),
-                { id: "reviews", label: `Reviews${product.reviews?.length ? ` (${product.reviews.length})` : ""}` },
-              ].map((tab) => {
-                const isActive = activeInfoTab === tab.id;
+            <div className="hidden md:block overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
+              <div className="grid auto-cols-fr grid-flow-col border-b border-gray-100 bg-[#fcf7f7]">
+                {infoTabs.map((tab) => {
+                  const isActive = activeInfoTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveInfoTab(tab.id)}
+                      className="relative px-5 py-5 text-center text-sm font-semibold uppercase tracking-[0.03em] transition"
+                      style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
+                    >
+                      {tab.label}
+                      <span
+                        className={`absolute bottom-0 left-0 h-[3px] w-full origin-left transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0"}`}
+                        style={{ backgroundColor: detailTheme.accent }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="p-7 lg:p-8">
+                <div className="min-w-0">
+                  {activeInfoTab === "reviews" ? (
+                    <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
+                      <div>
+                        <h2 className="text-lg font-semibold" style={{ color: detailTheme.heading }}>
+                          Customer Reviews
+                        </h2>
+                        <p className="text-xs text-gray-400 mt-1">Real reviews from real customers</p>
+                      </div>
+                      <button
+                        onClick={() => setShowReviewModal(true)}
+                        data-track-event="write_review_click"
+                        data-track-label={product.name}
+                        className="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium shadow-sm transition"
+                        style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
+                      >
+                        <Star className="w-4 h-4 fill-white" /> Write a Review
+                      </button>
+                    </div>
+                  ) : null}
+                  {renderInfoPanel(activeInfoTab)}
+                </div>
+              </div>
+            </div>
+
+            <div className="md:hidden space-y-3">
+              {infoTabs.map((tab) => {
+                const isActive = mobileOpenInfoTab === tab.id;
+
                 return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveInfoTab(tab.id)}
-                    className="px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold border transition"
-                    style={
-                      isActive
-                        ? { backgroundColor: detailTheme.primary, color: detailTheme.onPrimary, borderColor: detailTheme.primary }
-                        : { backgroundColor: detailTheme.reviewSurface, color: detailTheme.heading, borderColor: detailTheme.borderSoft }
-                    }
-                  >
-                    {tab.label}
-                  </button>
+                  <div key={tab.id} className="overflow-hidden rounded-[22px] border border-gray-100 bg-white shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => setMobileOpenInfoTab(isActive ? null : tab.id)}
+                      className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                    >
+                      <span className="text-sm font-semibold uppercase tracking-[0.05em]" style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}>
+                        {tab.label}
+                      </span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ${isActive ? "rotate-180" : ""}`}
+                        style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
+                      />
+                    </button>
+
+                    {isActive ? (
+                      <div className="border-t border-gray-100 px-4 py-4">
+                        {tab.id === "reviews" ? (
+                          <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+                            <div>
+                              <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>
+                                Customer Reviews
+                              </h2>
+                              <p className="text-xs text-gray-400 mt-1">Real reviews from real customers</p>
+                            </div>
+                            <button
+                              onClick={() => setShowReviewModal(true)}
+                              data-track-event="write_review_click"
+                              data-track-label={product.name}
+                              className="flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-medium shadow-sm transition"
+                              style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
+                            >
+                              <Star className="w-3.5 h-3.5 fill-white" /> Write a Review
+                            </button>
+                          </div>
+                        ) : null}
+
+                        {renderInfoPanel(tab.id)}
+                      </div>
+                    ) : null}
+                  </div>
                 );
               })}
-            </div>
-            <div className="grid grid-cols-1 gap-6">
-              <div className={`bg-white rounded-3xl border border-gray-100 p-7 shadow-sm ${activeInfoTab === "details" ? "" : "hidden"}`}>
-                <div className="flex items-center gap-2 mb-5">
-                  <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
-                  <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Product Detail</h2>
-                </div>
-                {product.description ? (
-                  <>
-                    <div
-                      className={`prose prose-sm max-w-none text-gray-600 leading-relaxed transition-all duration-300 ${expandedDesc ? "" : "line-clamp-2"}`}
-                      dangerouslySetInnerHTML={{ __html: product.description }}
-                    />
-                    <button onClick={() => setExpandedDesc(!expandedDesc)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.accent }}>
-                      {expandedDesc ? "Read Less ▲" : "Read More ▼"}
-                    </button>
-                  </>
-                ) : <p className="text-sm text-gray-400">No description available.</p>}
-              </div>
-
-              <div className={`bg-white rounded-3xl border border-gray-100 p-7 shadow-sm ${activeInfoTab === "additional" ? "" : "hidden"}`}>
-                <div className="flex items-center gap-2 mb-5">
-                  <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
-                  <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Additional Information</h2>
-                </div>
-                {additionalInfoArray.length > 0 ? (
-                  <>
-                    <div className="overflow-hidden transition-all duration-300">
-                      <ul className="space-y-1 text-sm text-gray-700">
-                        {(expandedInfo ? additionalInfoArray : additionalInfoArray.slice(0, 2)).map((pt, i) => (
-                          <li key={i} className="flex gap-3 items-start">
-                            <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: detailTheme.price }} />
-                            {pt}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    {additionalInfoArray.length > 4 && (
-                      <button onClick={() => setExpandedInfo(!expandedInfo)} className="text-xs font-semibold mt-3 hover:underline" style={{ color: detailTheme.price }}>
-                        {expandedInfo ? "Read Less ▲" : "Read More ▼"}
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-sm text-gray-400">No additional information available.</p>
-                )}
-              </div>
-
-              {product?.warranty === "import" && (
-                <div className={`bg-white rounded-3xl border border-gray-100 p-7 shadow-sm ${activeInfoTab === "warranty" ? "" : "hidden"}`}>
-                  <div className="flex items-center gap-2 mb-5">
-                    <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
-                    <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>Warranty Terms</h2>
-                  </div>
-                  {warrantySections.length > 0 ? (
-                    <div className="space-y-5 text-sm text-gray-700">
-                      {warrantySections.map((section, idx) => (
-                        <div key={`warranty-section-${idx}`} className="space-y-2">
-                          <h3 className="font-semibold text-[15px]" style={{ color: detailTheme.heading }}>
-                            {section.title}
-                          </h3>
-                          {section.body.length > 0 ? (
-                            <div className="space-y-1.5 text-gray-700">
-                              {section.body.map((line, lineIdx) => (
-                                <p key={`warranty-section-${idx}-line-${lineIdx}`}>{line}</p>
-                              ))}
-                            </div>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-400">No warranty terms added yet.</p>
-                  )}
-                  {warrantyRegistrationUrl && (
-                    <div className="mt-4">
-                      <Link
-                        to={warrantyRegistrationUrl}
-                        className="inline-flex items-center rounded-full border px-4 py-2 text-xs font-semibold transition"
-                        style={{
-                          color: detailTheme.accent,
-                          borderColor: detailTheme.accentSoft,
-                          backgroundColor: detailTheme.reviewSurface,
-                        }}
-                      >
-                        Register Warranty
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </section>
         </DeferredSection>
@@ -3152,92 +3528,6 @@ const ProductDetail = () => {
                   />
                 </div>
               ))}
-            </section>
-          </DeferredSection>
-        )}
-
-        {/* â•â•â•â• REVIEWS â•â•â•â• */}
-        {activeInfoTab === "reviews" && (
-          <DeferredSection minHeight={420}>
-            <section ref={reviewsSectionRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-14">
-              <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-                <div>
-                  <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>
-                    Customer Reviews
-                    {product.reviews?.length > 0 && <span className="text-sm font-normal text-gray-400 ml-2">({product.reviews.length})</span>}
-                  </h2>
-                  <p className="text-xs text-gray-400 mt-0.5">Real reviews from real customers</p>
-                </div>
-                <button
-                  onClick={() => setShowReviewModal(true)}
-                  data-track-event="write_review_click"
-                  data-track-label={product.name}
-                  className="flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-2xl transition shadow-sm"
-                  style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
-                >
-                  <Star className="w-4 h-4 fill-white" /> Write a Review
-                </button>
-              </div>
-
-              {product.reviews?.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {product.reviews.map((rev, i) => (
-                    <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                      {(() => {
-                        const isGenuine = rev?.verifiedPurchase === true || rev?.userType === "genuine" || rev?.isGenuine === true;
-                        const reviewImages = Array.isArray(rev?.images) && rev.images.length
-                          ? rev.images
-                          : rev?.image
-                            ? [rev.image]
-                            : [];
-
-                        return (
-                          <>
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: detailTheme.reviewSurface, color: detailTheme.accent }}>{rev.name?.[0]?.toUpperCase()}</div>
-                                <div>
-                                  <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>{rev.name}</p>
-                                  <div className="flex gap-0.5 mt-0.5">
-                                    {[1, 2, 3, 4, 5].map(s => (
-                                      <Star key={s} className={`w-3 h-3 ${s <= rev.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} />
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-
-                            </div>
-                            <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
-                            {reviewImages.length > 0 && (
-                              <div className="flex gap-2 mt-3">
-                                {reviewImages.map((img, i) => (
-                                  <img
-                                    key={i}
-                                    src={img}
-                                    loading="lazy"
-                                    width="160"
-                                    height="160"
-                                    className="w-20 h-20 object-cover rounded-lg border"
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="bg-white border border-gray-100 rounded-3xl p-12 text-center">
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
-                    <Star className="w-7 h-7" style={{ color: detailTheme.accentSoft }} />
-                  </div>
-                  <p className="text-gray-500 text-sm mb-1">No reviews yet</p>
-                  <p className="text-gray-400 text-xs mb-4">Be the first to share your experience!</p>
-                  <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold hover:underline" style={{ color: detailTheme.accent }}>Write a Review</button>
-                </div>
-              )}
             </section>
           </DeferredSection>
         )}

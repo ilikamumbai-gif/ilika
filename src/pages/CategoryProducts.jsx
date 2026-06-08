@@ -72,8 +72,8 @@ const GIFT_COLLECTIONS = {
   "gifts-for-him": {
     label: "Gifts For Him",
     names: [
-      "Ilika Beauty Bubble Pro Blackhead Remover",
-      "Ilika Hot & Cold Facial Pore Cleanser",
+      "Ilika Blackhead Remover - Bubble Pro",
+      "Ilika Blackhead Remover - Hot & Cold",
       "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide",
       "Ilika High-Speed Leafless Hair Dryer",
       "Ilika Herbal Hair Growth Oil",
@@ -97,7 +97,7 @@ const GIFT_COLLECTIONS = {
       "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
       "Ilika High-Speed Leafless Hair Dryer",
       "Ilika 24K Gold Collagen Face Mask",
-      "Ilika Beauty Bubble Pro Blackhead Remover",
+      "Ilika Blackhead Remover - Bubble Pro",
     ],
   },
 };

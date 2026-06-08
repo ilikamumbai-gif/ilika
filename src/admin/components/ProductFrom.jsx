@@ -97,6 +97,53 @@ const sanitizePackOptions = (packOptions = []) => {
     .filter(Boolean);
 };
 
+const splitBenefitText = (value = "") => {
+  const text = String(value || "").trim();
+  if (!text) return { title: "", description: "" };
+
+  const dividerMatch = text.match(/^(.*?)\s*(?:-|:)\s*(.+)$/);
+  if (dividerMatch) {
+    return {
+      title: dividerMatch[1].trim(),
+      description: dividerMatch[2].trim(),
+    };
+  }
+
+  return { title: text, description: "" };
+};
+
+const sanitizeWhyLoveItItems = (items = []) => {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((item, index) => {
+      if (typeof item === "string") {
+        const parsed = splitBenefitText(item);
+        if (!parsed.title && !parsed.description) return null;
+        return {
+          id: `love-${index + 1}`,
+          title: parsed.title || parsed.description,
+          description: parsed.title ? parsed.description : "",
+          icon: "",
+        };
+      }
+
+      const title = String(item?.title || item?.label || "").trim();
+      const description = String(item?.description || item?.text || "").trim();
+      const icon = String(item?.icon || item?.iconName || "").trim();
+
+      if (!title && !description) return null;
+
+      return {
+        id: String(item?.id || `love-${index + 1}`),
+        title: title || description,
+        description: title ? description : "",
+        icon,
+      };
+    })
+    .filter(Boolean);
+};
+
 const PRODUCT_URL_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const sanitizeProductUrlValue = (value = "") =>
@@ -198,7 +245,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     packOptions: [],
     productTag: "",
     hasVariants: false, variants: [], categoryIds: [],
-    description: "", additionalInfo: "", tagline: "", points: "",
+    description: "", additionalInfo: "", tagline: "", points: "", whyLoveIt: [],
     images: [], isActive: true, inStock: true,
     beforeAfter: [], hasBeforeAfter: false,
     ingredients: [],
@@ -236,6 +283,11 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       : d.additionalInfo || "",
     tagline: d.tagline || "",
     points: d.benefits ? d.benefits.join(", ") : "",
+    whyLoveIt: sanitizeWhyLoveItItems(
+      Array.isArray(d.whyLoveIt) && d.whyLoveIt.length
+        ? d.whyLoveIt
+        : (Array.isArray(d.benefits) ? d.benefits : [])
+    ),
     images: d.images || [],
     isActive: d.isActive ?? true,
     inStock: d.inStock ?? true,
@@ -275,6 +327,11 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   const [productUrlTouched, setProductUrlTouched] = useState(
     Boolean(initialData?.id || initialData?.docId || initialData?._id)
   );
+  const [newWhyLoveItItem, setNewWhyLoveItItem] = useState({
+    title: "",
+    description: "",
+    icon: "",
+  });
   const [newBgName, setNewBgName] = useState("");
   const [newBgValue, setNewBgValue] = useState("#FFEFEA");
 
@@ -289,6 +346,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         ? initialData.ingredients.map((item) => (typeof item === "string" ? item : item?.image || item?.url || "")).filter(Boolean)
         : []
     );
+    setNewWhyLoveItItem({ title: "", description: "", icon: "" });
   }, [initialData]);
 
   useEffect(() => {
@@ -394,6 +452,23 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       vs[vi] = { ...vs[vi], images: imgs, preview: prvs };
       return { ...prev, variants: vs };
     });
+  };
+
+  const addWhyLoveItItem = () => {
+    const nextItem = {
+      id: crypto.randomUUID(),
+      title: String(newWhyLoveItItem.title || "").trim(),
+      description: String(newWhyLoveItItem.description || "").trim(),
+      icon: String(newWhyLoveItItem.icon || "").trim(),
+    };
+
+    if (!nextItem.title && !nextItem.description) return;
+
+    setForm((prev) => ({
+      ...prev,
+      whyLoveIt: [...(prev.whyLoveIt || []), nextItem],
+    }));
+    setNewWhyLoveItItem({ title: "", description: "", icon: "" });
   };
 
   const addDetailBgColor = () => {
@@ -555,6 +630,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       if (initialData?.mrp && Number(initialData.mrp) !== Number(form.mrp))
         await logActivity(`${admin?.username || "Admin"} changed MRP of ${form.name} from ₹${initialData.mrp} to ₹${form.mrp}`);
 
+      const whyLoveItData = sanitizeWhyLoveItItems(form.whyLoveIt);
+
       await onSubmit({
         hsnCode: String(form.hsnCode || "").trim(),
         gstRate: form.gstRate === "" ? null : Number(form.gstRate),
@@ -571,7 +648,10 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           ? form.additionalInfo.split(",").map(i => i.trim())
           : [],
         tagline: form.tagline,
-        benefits: form.points.split(",").map(p => p.trim()),
+        benefits: whyLoveItData.map((item) =>
+          item.description ? `${item.title} - ${item.description}` : item.title
+        ),
+        whyLoveIt: whyLoveItData,
         images: imageUrls,
         isActive: form.isActive, inStock: form.inStock,
         beforeAfter: beforeAfterData,
@@ -597,6 +677,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       setPreviewImages([]);
       setPreviewIngredientImages([]);
       setProductUrlTouched(false);
+      setNewWhyLoveItItem({ title: "", description: "", icon: "" });
     } catch (err) {
       console.error("PRODUCT SAVE ERROR:", err);
       setSubmitError(err?.message || "Failed to save product.");
@@ -889,7 +970,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <input placeholder="Tagline (comma separated)" value={form.tagline}
           onChange={e => setForm({ ...form, tagline: e.target.value })}
           className="w-full border border-gray-200 p-2.5 rounded-lg"
@@ -898,10 +979,128 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           onChange={e => setForm({ ...form, additionalInfo: e.target.value })}
           className="w-full border border-gray-200 p-2.5 rounded-lg"
         />
-        <input placeholder="Benefits (comma separated)" value={form.points}
-          onChange={e => setForm({ ...form, points: e.target.value })}
-          className="w-full border border-gray-200 p-2.5 rounded-lg"
-        />
+      </div>
+
+      <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+        <div>
+          <p className="font-semibold text-sm">Why You'll Love It</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Add each point separately. Icon name is optional. Examples: Heart, Sparkles, Shield, Leaf, Star, Droplets, Truck.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_2fr_1fr_auto] gap-3 items-end">
+          <div>
+            <label className="text-xs font-semibold text-gray-600 block mb-1">Title</label>
+            <input
+              type="text"
+              placeholder="Instant Volume"
+              value={newWhyLoveItItem.title}
+              onChange={(e) => setNewWhyLoveItItem((prev) => ({ ...prev, title: e.target.value }))}
+              className="w-full border border-gray-200 p-2.5 rounded-lg bg-white text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-600 block mb-1">Description</label>
+            <input
+              type="text"
+              placeholder="Get visibly fuller lips in a few seconds."
+              value={newWhyLoveItItem.description}
+              onChange={(e) => setNewWhyLoveItItem((prev) => ({ ...prev, description: e.target.value }))}
+              className="w-full border border-gray-200 p-2.5 rounded-lg bg-white text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-600 block mb-1">Icon Name (Optional)</label>
+            <input
+              type="text"
+              placeholder="Heart"
+              value={newWhyLoveItItem.icon}
+              onChange={(e) => setNewWhyLoveItItem((prev) => ({ ...prev, icon: e.target.value }))}
+              className="w-full border border-gray-200 p-2.5 rounded-lg bg-white text-sm"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={addWhyLoveItItem}
+            className="h-[42px] rounded-lg bg-[#1f4f8c] px-4 text-sm font-medium text-white hover:bg-[#1a4377]"
+          >
+            + Add Why You Love It
+          </button>
+        </div>
+
+        {(form.whyLoveIt || []).length > 0 ? (
+          <div className="space-y-3">
+            {form.whyLoveIt.map((item, index) => (
+              <div
+                key={item.id || index}
+                className="grid grid-cols-1 lg:grid-cols-[1.2fr_2fr_1fr_auto] gap-3 items-end rounded-xl border border-gray-200 bg-white p-3"
+              >
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Title</label>
+                  <input
+                    type="text"
+                    value={item.title || ""}
+                    onChange={(e) =>
+                      setForm((prev) => {
+                        const updated = [...(prev.whyLoveIt || [])];
+                        updated[index] = { ...updated[index], title: e.target.value };
+                        return { ...prev, whyLoveIt: updated };
+                      })
+                    }
+                    className="w-full border border-gray-200 p-2.5 rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Description</label>
+                  <input
+                    type="text"
+                    value={item.description || ""}
+                    onChange={(e) =>
+                      setForm((prev) => {
+                        const updated = [...(prev.whyLoveIt || [])];
+                        updated[index] = { ...updated[index], description: e.target.value };
+                        return { ...prev, whyLoveIt: updated };
+                      })
+                    }
+                    className="w-full border border-gray-200 p-2.5 rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Icon Name</label>
+                  <input
+                    type="text"
+                    value={item.icon || ""}
+                    onChange={(e) =>
+                      setForm((prev) => {
+                        const updated = [...(prev.whyLoveIt || [])];
+                        updated[index] = { ...updated[index], icon: e.target.value };
+                        return { ...prev, whyLoveIt: updated };
+                      })
+                    }
+                    className="w-full border border-gray-200 p-2.5 rounded-lg text-sm"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      whyLoveIt: (prev.whyLoveIt || []).filter((_, itemIndex) => itemIndex !== index),
+                    }))
+                  }
+                  className="h-[42px] rounded-lg border border-red-200 px-4 text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-sm text-gray-400">
+            No Why You'll Love It points added yet.
+          </div>
+        )}
       </div>
 
       <RichTextEditor value={form.description} onChange={html => setForm({ ...form, description: html })} />

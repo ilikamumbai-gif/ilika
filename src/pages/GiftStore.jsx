@@ -12,8 +12,8 @@ import Heading from "../components/Heading";
 const BEST_SELLER_PRODUCT_NAMES = [
   "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
   "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide",
-  "Ilika Hot & Cold Facial Pore Cleanser",
-  "Ilika Beauty Bubble Pro Blackhead Remover",
+  "Ilika Blackhead Remover - Hot & Cold",
+  "Ilika Blackhead Remover - Bubble Pro",
   "Ilika 24K Gold Collagen Face Mask",
   "Ilika 4-in-1 Collagen Face Mask",
   "Ilika Hydra Gel Moisturizer",

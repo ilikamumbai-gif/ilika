@@ -1342,6 +1342,52 @@ const normalizeProductVideos = (videos = []) => {
     .filter((video) => Boolean(video.url));
 };
 
+const parseWhyLoveItText = (value = "") => {
+  const text = String(value || "").trim();
+  if (!text) return { title: "", description: "" };
+
+  const match = text.match(/^(.*?)\s*(?:-|:)\s*(.+)$/);
+  if (match) {
+    return {
+      title: match[1].trim(),
+      description: match[2].trim(),
+    };
+  }
+
+  return { title: text, description: "" };
+};
+
+const normalizeWhyLoveItItems = (items = [], fallbackBenefits = []) => {
+  const source = Array.isArray(items) && items.length ? items : fallbackBenefits;
+  if (!Array.isArray(source)) return [];
+
+  return source
+    .map((item) => {
+      if (typeof item === "string") {
+        const parsed = parseWhyLoveItText(item);
+        if (!parsed.title && !parsed.description) return null;
+        return {
+          title: parsed.title || parsed.description,
+          description: parsed.title ? parsed.description : "",
+          icon: "",
+        };
+      }
+
+      const title = String(item?.title || item?.label || "").trim();
+      const description = String(item?.description || item?.text || "").trim();
+      const icon = String(item?.icon || item?.iconName || "").trim();
+
+      if (!title && !description) return null;
+
+      return {
+        title: title || description,
+        description: title ? description : "",
+        icon,
+      };
+    })
+    .filter(Boolean);
+};
+
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -1787,6 +1833,7 @@ app.post("/api/products", async (req, res) => {
       slug: productUrl,
       oldUrls: uniqueOldUrls(req.body?.oldUrls || []),
       videos: normalizeProductVideos(req.body?.videos),
+      whyLoveIt: normalizeWhyLoveItItems(req.body?.whyLoveIt, req.body?.benefits),
       isActive: req.body.isActive ?? true,
       inStock: req.body.inStock ?? true,
       createdAt: now,
@@ -1956,6 +2003,7 @@ app.put("/api/products/:id", async (req, res) => {
       slug: productUrl,
       oldUrls,
       videos: normalizeProductVideos(req.body?.videos),
+      whyLoveIt: normalizeWhyLoveItItems(req.body?.whyLoveIt, req.body?.benefits),
       reviews: (req.body.reviews || []).map(r => {
         const images = normalizeReviewImages(r);
         const verifiedPurchase = Boolean(r.verifiedPurchase);
@@ -2026,6 +2074,7 @@ app.put("/admin/products/edit/:id", async (req, res) => {
       slug: productUrl,
       oldUrls,
       videos: normalizeProductVideos(req.body?.videos),
+      whyLoveIt: normalizeWhyLoveItItems(req.body?.whyLoveIt, req.body?.benefits),
       reviews: (req.body.reviews || []).map(r => {
         const images = normalizeReviewImages(r);
         const verifiedPurchase = Boolean(r.verifiedPurchase);

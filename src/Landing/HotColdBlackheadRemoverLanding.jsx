@@ -158,11 +158,14 @@ const HotColdBlackheadRemoverLanding = () => {
   const [hideMobileBar, setHideMobileBar] = useState(false);
 
   const targetProduct = useMemo(() => {
-    const targetSlug = "ilika-hot-cold-facial-pore-cleanser";
+    const targetSlugs = [
+      "ilika-blackhead-remover-hot-cold",
+      "ilika-hot-cold-facial-pore-cleanser",
+    ];
     return products.find((product) => {
       const nameSlug = createSlug(product?.name || "");
       const rawSlug = String(product?.productUrl || product?.slug || "").trim().toLowerCase();
-      return nameSlug === targetSlug || rawSlug === targetSlug;
+      return targetSlugs.includes(nameSlug) || targetSlugs.includes(rawSlug);
     });
   }, [products]);
 
@@ -172,7 +175,7 @@ const HotColdBlackheadRemoverLanding = () => {
 
   const productName =
     targetProduct?.name ||
-    "Ilika Hot & Cold Facial Pore Cleanser";
+    "Ilika Blackhead Remover - Hot & Cold";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 1299);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 2499);
   const productImages = Array.isArray(defaultVariant?.images) && defaultVariant.images.length
