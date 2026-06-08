@@ -59,9 +59,9 @@ const OFFER_HIGHLIGHTS = [
     lineTwo: "On Voice-Guided Mask Maker Machine ",
     href: "/product/ilika-automatic-voice-version-face-mask-maker-machine-with-collagen-peptide",
     
-    accent: "from-[#e86c78] to-[#df5968]",
+    accent: "from-[#b34140] to-[#b34140]",
     tone: "from-[#fff7f8] via-[#fff5f6] to-[#fffafb]",
-    textColor: "text-[#d65f6b]",
+    textColor: "text-[#b34140]",
   },
   {
     subtitle: "SPECIAL DEAL",
@@ -70,9 +70,9 @@ const OFFER_HIGHLIGHTS = [
     lineTwo: "On Non-voice Mask Maker Machine",
     href: "/offers",
     
-    accent: "from-[#d7a24d] to-[#cc8d2a]",
+    accent: "from-[#b34140] to-[#b34140]",
     tone: "from-[#fffaf2] via-[#fffaf4] to-[#fffdf9]",
-    textColor: "text-[#cf9438]",
+    textColor: "text-[#b34140]",
   },
   {
     subtitle: "LIMITED TIME",
@@ -81,9 +81,9 @@ const OFFER_HIGHLIGHTS = [
     lineTwo: "24k Gold and 4in1 Collegen Mask",
     href: "/mask-combo",
    
-    accent: "from-[#6b9674] to-[#5c8965]",
+    accent: "from-[#b34140] to-[#b34140]",
     tone: "from-[#f7fbf4] via-[#fbfdf8] to-[#f4faef]",
-    textColor: "text-[#6b9674]",
+    textColor: "text-[#b34140]",
   },
 ];
 
@@ -172,7 +172,7 @@ const GiftStore = () => {
                     {card.subtitle}
                   </p>
 
-                  <span className="mt-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#f3b5bb] text-[#e16d78] transition group-hover:bg-[#e16d78] group-hover:text-white sm:mt-5 sm:h-11 sm:w-11">
+                  <span className="mt-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#f3b5bb] text-[#e16d78] transition group-hover:bg-[#b34140] group-hover:text-white sm:mt-5 sm:h-11 sm:w-11">
                     <span aria-hidden="true" className="text-base leading-none sm:text-lg">
                       &rarr;
                     </span>
@@ -185,18 +185,18 @@ const GiftStore = () => {
           <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-6 lg:px-8">
             <div className="rounded-[26px] border border-[#f3e2da] bg-[linear-gradient(135deg,_rgba(255,249,247,0.98),_rgba(255,239,241,0.94))] px-4 py-6 shadow-[0_20px_45px_rgba(69,39,34,0.07)] sm:rounded-[34px] sm:px-8 sm:py-8 lg:grid lg:grid-cols-[1.05fr_1.15fr] lg:items-start lg:gap-10">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#d07167] sm:text-xs sm:tracking-[0.22em]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b34140] sm:text-xs sm:tracking-[0.22em]">
                   Gift Store Benefits
                 </p>
                 <h2 className="mt-3 font-serif text-[2.5rem] leading-[0.92] text-[#221816] sm:mt-4 sm:text-5xl lg:text-[4.5rem]">
                   Exciting Offers,
-                  <span className="mt-2 block text-[#d76170]">Thoughtful Gifting!</span>
+                  <span className="mt-2 block text-[#221816]">Thoughtful Gifting!</span>
                 </h2>
                
 
                 <Link
                   to="/offers"
-                  className="mt-6 inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-[#d65a66] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#c64a57] sm:mt-8 sm:w-auto sm:px-6 sm:py-3.5 sm:text-base"
+                  className="mt-6 inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-[#b34140] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#b72c3a] sm:mt-8 sm:w-auto sm:px-6 sm:py-3.5 sm:text-base"
                 >
                   Explore All Offers
                   <span aria-hidden="true" className="text-lg leading-none">
