@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useBlog } from "../../context/BlogProvider";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -52,6 +52,14 @@ const RichTextEditor = ({ value, onChange }) => {
       onChange(editor.getHTML());
     },
   });
+
+  useEffect(() => {
+    if (!editor) return;
+    const nextValue = value || "<p>Write blog content...</p>";
+    if (editor.getHTML() !== nextValue) {
+      editor.commands.setContent(nextValue, { emitUpdate: false });
+    }
+  }, [editor, value]);
 
   if (!editor) return null;
 
@@ -153,13 +161,17 @@ const RichTextEditor = ({ value, onChange }) => {
 
 const AddBlog = () => {
 
+  const API = import.meta.env.VITE_API_URL;
+  const { id } = useParams();
   const navigate = useNavigate();
+  const isEditMode = Boolean(id);
 
-  const { addBlog } = useBlog();
+  const { blogs, addBlog, updateBlog } = useBlog();
 
   const [uploading, setUploading] = useState(false);
+  const [loadingBlog, setLoadingBlog] = useState(isEditMode);
 
-  const [blog, setBlog] = useState({
+  const createInitialBlog = () => ({
     title: "",
     image: "",
     author: "",
@@ -173,8 +185,69 @@ const AddBlog = () => {
     ],
   });
 
+  const normalizeSections = (sections = []) => {
+    if (!Array.isArray(sections) || sections.length === 0) {
+      return createInitialBlog().contentSections;
+    }
+
+    return sections.map((section, index) => ({
+      id: section?.id || Date.now() + index,
+      type: section?.type || "content-full",
+      content: section?.content || "",
+      image: section?.image || "",
+    }));
+  };
+
+  const [blog, setBlog] = useState(createInitialBlog);
   const [preview, setPreview] = useState(null);
 
+  useEffect(() => {
+    if (!isEditMode) {
+      setLoadingBlog(false);
+      return;
+    }
+
+    const applyBlog = (entry) => {
+      if (!entry) return false;
+
+      setBlog({
+        title: entry.title || "",
+        image: entry.image || "",
+        author: entry.author || "",
+        internalLink: entry.internalLink || "",
+        shortDesc: entry.shortDesc || entry.excerpt || "",
+        content: entry.content || "",
+        contentSections: normalizeSections(entry.contentSections),
+      });
+      setPreview(entry.image || null);
+      return true;
+    };
+
+    const existing = blogs.find((item) => item.id === id);
+    if (applyBlog(existing)) {
+      setLoadingBlog(false);
+      return;
+    }
+
+    const loadBlog = async () => {
+      try {
+        const res = await fetch(`${API}/api/blogs/${id}`);
+        if (!res.ok) {
+          setLoadingBlog(false);
+          return;
+        }
+
+        const data = await res.json();
+        applyBlog(data);
+      } catch (error) {
+        console.error("Failed to load blog for edit:", error);
+      } finally {
+        setLoadingBlog(false);
+      }
+    };
+
+    loadBlog();
+  }, [API, blogs, id, isEditMode]);
 
 
   const handleChange = (e) =>
@@ -298,14 +371,21 @@ const AddBlog = () => {
       ),
     };
 
-    await addBlog(payload);
-
-    await logActivity(`Created blog: ${blog.title}`);
+    if (isEditMode) {
+      await updateBlog(id, payload);
+      await logActivity(`Updated blog: ${blog.title}`);
+    } else {
+      await addBlog(payload);
+      await logActivity(`Created blog: ${blog.title}`);
+    }
 
     navigate("/admin/blogs");
 
   };
 
+  if (loadingBlog) {
+    return <AdminLayout>Loading...</AdminLayout>;
+  }
 
 
   return (
@@ -315,7 +395,7 @@ const AddBlog = () => {
       <div className="max-w-3xl mx-auto p-6">
 
         <h1 className="text-2xl font-semibold mb-6">
-          Create Blog
+          {isEditMode ? "Edit Blog" : "Create Blog"}
         </h1>
 
 
@@ -328,6 +408,7 @@ const AddBlog = () => {
             name="title"
             placeholder="Blog Title"
             className="w-full border p-3 rounded"
+            value={blog.title}
             onChange={handleChange}
             required
           />
@@ -341,7 +422,7 @@ const AddBlog = () => {
               type="file"
               onChange={handleImageUpload}
               className="w-full border p-2"
-              required
+              required={!isEditMode && !blog.image}
             />
 
             {preview && (
@@ -359,6 +440,7 @@ const AddBlog = () => {
             name="author"
             placeholder="Author"
             className="w-full border p-3"
+            value={blog.author}
             onChange={handleChange}
             required
           />
@@ -367,6 +449,7 @@ const AddBlog = () => {
             name="internalLink"
             placeholder="Internal Link (example: /product/your-product-slug)"
             className="w-full border p-3"
+            value={blog.internalLink}
             onChange={handleChange}
           />
 
@@ -375,6 +458,7 @@ const AddBlog = () => {
             name="shortDesc"
             placeholder="Short Description"
             className="w-full border p-3"
+            value={blog.shortDesc}
             onChange={handleChange}
             required
           />
@@ -494,7 +578,9 @@ const AddBlog = () => {
           >
             {uploading
               ? "Uploading..."
-              : "Publish Blog"}
+              : isEditMode
+                ? "Update Blog"
+                : "Publish Blog"}
           </button>
 
         </form>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, Eye, BookOpen, Search } from "lucide-react";
+import { Plus, Trash2, Eye, BookOpen, Search, Pencil } from "lucide-react";
 import AdminLayout from "../../components/AdminLayout";
 import { useBlog } from "../../context/BlogProvider";
 import { logActivity } from "../../Utils/logActivity";
@@ -103,6 +103,12 @@ const BlogList = () => {
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2" style={{ borderTop: "1px solid #F5F5F5" }}>
+                  <Link
+                    to={`/admin/blogs/edit/${blog.id}`}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-amber-600 bg-amber-50 rounded-xl hover:bg-amber-100 transition"
+                  >
+                    <Pencil size={13} /> Edit
+                  </Link>
                   <Link
                     to={`/admin/blogs/${blog.id}`}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition"

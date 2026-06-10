@@ -104,6 +104,7 @@ const AdminRoutes = () => {
 
                         <Route path="blogs" element={withPermission("blogs", <BlogList />)} />
                         <Route path="blogs/create" element={withPermission("blogs", <AddBlog />)} />
+                        <Route path="blogs/edit/:id" element={withPermission("blogs", <AddBlog />)} />
                         <Route path="blogs/:id" element={withPermission("blogs", <ViewBlogDetails />)} />
                         <Route path="blog-comments" element={withPermission("blogs", <BlogComments />)} />
 

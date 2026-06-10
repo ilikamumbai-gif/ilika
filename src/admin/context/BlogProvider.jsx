@@ -67,6 +67,47 @@ const BlogProvider = ({ children }) => {
 
   };
 
+  /* ================= UPDATE BLOG ================= */
+
+  const updateBlog = async (id, blog) => {
+
+    try {
+
+      const res = await fetch(`${API}/api/blogs/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(blog),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update blog");
+      }
+
+      setBlogs((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                ...blog,
+                id,
+                excerpt: blog.shortDesc ?? blog.excerpt ?? item.excerpt,
+                updatedAt: Date.now(),
+              }
+            : item
+        )
+      );
+
+    } catch (err) {
+
+      console.error("Update blog failed:", err);
+      throw err;
+
+    }
+
+  };
+
   /* ================= DELETE BLOG ================= */
 
   const deleteBlog = async (id) => {
@@ -94,6 +135,7 @@ const BlogProvider = ({ children }) => {
         blogs,
         loadingBlogs,
         addBlog,
+        updateBlog,
         deleteBlog,
         fetchBlogs,
       }}

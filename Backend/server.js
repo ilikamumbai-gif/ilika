@@ -2255,13 +2255,36 @@ app.put("/api/blogs/:id", async (req, res) => {
     const doc = await blogRef.get();
     if (!doc.exists) return res.status(404).json({ error: "Blog not found" });
 
-    const nextTitle = String(req.body?.title || doc.data()?.title || "");
-    await blogRef.update({
-      ...req.body,
+    const existing = doc.data() || {};
+    const nextTitle = String(req.body?.title || existing.title || "").trim();
+    if (!nextTitle) return res.status(400).json({ error: "Title required" });
+
+    const nextShortDesc = String(
+      req.body?.shortDesc ?? req.body?.excerpt ?? existing.shortDesc ?? existing.excerpt ?? ""
+    );
+    const normalizedInternalLink = String(
+      req.body?.internalLink ?? existing.internalLink ?? ""
+    ).trim();
+    const updatedBlog = {
+      title: nextTitle,
+      image: req.body?.image ?? existing.image ?? "",
+      author: req.body?.author ?? existing.author ?? "",
+      excerpt: nextShortDesc,
+      shortDesc: nextShortDesc,
+      content: req.body?.content ?? existing.content ?? "",
+      internalLink: normalizedInternalLink,
+      contentSections: Array.isArray(req.body?.contentSections)
+        ? req.body.contentSections
+        : Array.isArray(existing.contentSections)
+          ? existing.contentSections
+          : [],
       slug: createBlogSlug(nextTitle),
+      createdAt: existing.createdAt || Date.now(),
       updatedAt: Date.now(),
-    });
-    res.json({ message: "Blog updated successfully" });
+    };
+
+    await blogRef.update(updatedBlog);
+    res.json({ id: doc.id, ...updatedBlog });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to update blog" });
