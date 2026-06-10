@@ -151,7 +151,7 @@ const Footer = ({ theme = "default" }) => {
         <div className="space-y-3 pb-1 pt-4 text-sm leading-6">
           <div>
             <p className={isBlackTheme ? "font-semibold text-white" : "font-semibold text-[#6f1e1e]"}>
-              ILIKA
+              ilikä
             </p>
             <p className={`mt-1 ${mutedText}`}>
               Office no. 201-202, Hirubai Residency

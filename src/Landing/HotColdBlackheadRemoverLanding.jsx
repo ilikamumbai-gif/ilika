@@ -581,7 +581,7 @@ const HotColdBlackheadRemoverLanding = () => {
 
       <section className="cv-auto relative overflow-hidden bg-[#060912] px-4 py-12 text-center sm:px-[6%] sm:py-28">
         <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap [font-family:'Cormorant_Garamond',serif] text-[34vw] font-semibold tracking-[0.05em] text-[#1e6fd9]/[0.05] sm:text-[28vw]">
-          ILIKA
+          ilikä
         </div>
         <div className="relative mx-auto max-w-[860px]">
           <p className="text-[10px] uppercase tracking-[0.28em] text-[#e63946]">Ilika Skintech - Limited Offer</p>

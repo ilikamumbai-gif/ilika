@@ -180,7 +180,7 @@ const TrackOrder = () => {
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div>
                   <p className="text-xs uppercase tracking-widest text-[#A36B5D] font-semibold">
-                    Ilika Shipment Tracker
+                    ilikä Shipment Tracker
                   </p>
                   <h3 className="mt-1 text-xl sm:text-2xl font-semibold text-[#5D2D2D]">
                     {currentStyle.title}

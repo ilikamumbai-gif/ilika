@@ -227,7 +227,7 @@ const OrderDetail = () => {
       doc.setFont(undefined, "normal");
       doc.setTextColor(80, 80, 120);
       doc.text(
-        "Thank you for shopping with ILIKA  |  www.ilika.in  |  ilika.official4vs@gmail.com",
+        "Thank you for shopping with ilikä  |  www.ilika.in  |  ilika.official4vs@gmail.com",
         pageWidth / 2,
         pageHeight - 7,
         { align: "center" }

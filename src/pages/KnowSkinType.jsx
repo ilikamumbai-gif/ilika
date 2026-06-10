@@ -318,7 +318,7 @@ const KnowSkinType = () => {
               </div>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-semibold text-[#7a1f1f]">Welcome To ILIKA</h1>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-[#7a1f1f]">Welcome To ilikä</h1>
             <p className="text-sm text-gray-500 mt-1">Answer quick questions to build your routine.</p>
 
             {step < 5 && (
