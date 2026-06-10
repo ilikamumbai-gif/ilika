@@ -227,7 +227,7 @@ const OrderDetail = () => {
       doc.setFont(undefined, "normal");
       doc.setTextColor(80, 80, 120);
       doc.text(
-        "Thank you for shopping with ilikä  |  www.ilika.in  |  ilika.official4vs@gmail.com",
+        "Thank you for shopping with ilikä  |  www.ilika.in  |  customersupport.ilika@gmail.com",
         pageWidth / 2,
         pageHeight - 7,
         { align: "center" }
@@ -301,7 +301,7 @@ const OrderDetail = () => {
         "Virar (West) - 401303, Maharashtra, India",
         "+91 91208 79879",
         "GSTIN: 27AALCP9913F1Z2",
-        "ilika.official4vs@gmail.com",
+        "customersupport.ilika@gmail.com",
       ];
       // label row (5.2) + company name (4.8) + lines + top padding (8) + bottom padding (5)
       const soldByHeight = 8 + 5.2 + 4.8 + soldByLines.length * 4.2 + 5;

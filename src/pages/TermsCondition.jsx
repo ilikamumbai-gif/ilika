@@ -175,7 +175,7 @@ const TermsCondition = () => {
               <strong>SECTION 20 – CONTACT INFORMATION</strong><br />
               Questions about these Terms and Conditions should be sent to:
               <br />
-              <strong>ilika.official4vs@gmail.com</strong>
+              <strong>customersupport.ilika@gmail.com</strong>
               <br />
               Phone: <strong>+91 91208 79879</strong>
             </p>

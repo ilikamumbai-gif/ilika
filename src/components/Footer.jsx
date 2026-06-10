@@ -160,9 +160,9 @@ const Footer = ({ theme = "default" }) => {
             </p>
           </div>
 
-          <a href="mailto:support@ilika.in" className="flex items-start gap-3 transition hover:opacity-80">
+          <a href="mailto:customersupport.ilika@gmail.com" className="flex items-start gap-3 transition hover:opacity-80">
             <Mail size={16} className="mt-1 shrink-0" />
-            <span>support@ilika.in</span>
+            <span>customersupport.ilika@gmail.com</span>
           </a>
 
           <a href="tel:+919120879879" className="flex items-start gap-3 transition hover:opacity-80">
@@ -344,9 +344,9 @@ const Footer = ({ theme = "default" }) => {
                 </p>
               </div>
 
-              <a href="mailto:support@ilika.in" className="flex items-center gap-2 transition hover:opacity-80">
+              <a href="mailto:customersupport.ilika@gmail.com" className="flex items-center gap-2 transition hover:opacity-80">
                 <Mail size={13} className="shrink-0" />
-                <span>support@ilika.in</span>
+                <span>customersupport.ilika@gmail.com</span>
               </a>
 
               <a href="tel:+919120879879" className="flex items-center gap-2 transition hover:opacity-80">
