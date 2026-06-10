@@ -41,6 +41,13 @@ const flattenImages = (product) => {
         group: "Ingredient Images",
       }))
     : [];
+  const inTheBoxImages = Array.isArray(product?.inTheBox)
+    ? product.inTheBox.map((item, index) => ({
+        url: typeof item === "string" ? item : item?.image || item?.url || "",
+        label: item?.title || `Box Item ${index + 1}`,
+        group: "What's In The Box",
+      }))
+    : [];
   const beforeAfterImages = Array.isArray(product?.beforeAfter)
     ? product.beforeAfter.flatMap((pair, index) => [
         {
@@ -64,6 +71,7 @@ const flattenImages = (product) => {
     })),
     ...variantImages,
     ...ingredientImages,
+    ...inTheBoxImages,
     ...beforeAfterImages,
   ].filter((entry) => String(entry?.url || "").trim());
 };

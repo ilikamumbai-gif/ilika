@@ -1383,8 +1383,12 @@ const parseWhyLoveItText = (value = "") => {
   return { title: text, description: "" };
 };
 
-const normalizeWhyLoveItItems = (items = [], fallbackBenefits = []) => {
-  const source = Array.isArray(items) && items.length ? items : fallbackBenefits;
+const normalizeWhyYouLoveItItems = (items = [], fallbackItems = [], fallbackBenefits = []) => {
+  const source = Array.isArray(items)
+    ? items
+    : Array.isArray(fallbackItems) && fallbackItems.length
+      ? fallbackItems
+      : fallbackBenefits;
   if (!Array.isArray(source)) return [];
 
   return source
@@ -1403,7 +1407,7 @@ const normalizeWhyLoveItItems = (items = [], fallbackBenefits = []) => {
       const description = String(item?.description || item?.text || "").trim();
       const icon = String(item?.icon || item?.iconName || "").trim();
 
-      if (!title && !description) return null;
+      if (!title && !description && !icon) return null;
 
       return {
         title: title || description,
@@ -1411,7 +1415,8 @@ const normalizeWhyLoveItItems = (items = [], fallbackBenefits = []) => {
         icon,
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, 4);
 };
 
 app.use(
@@ -1847,6 +1852,8 @@ const resolveUpdatedProductUrl = async ({ requestedProductUrl, existingData, exc
 app.post("/api/products", async (req, res) => {
   try {
     const now = Date.now();
+    const hasWhyYouLoveIt = Object.prototype.hasOwnProperty.call(req.body || {}, "whyYouLoveIt");
+    const hasLegacyWhyLoveIt = Object.prototype.hasOwnProperty.call(req.body || {}, "whyLoveIt");
     const { productUrl, error } = await resolveCreateProductUrl({
       requestedProductUrl: req.body?.productUrl,
       name: req.body?.name,
@@ -1859,7 +1866,11 @@ app.post("/api/products", async (req, res) => {
       slug: productUrl,
       oldUrls: uniqueOldUrls(req.body?.oldUrls || []),
       videos: normalizeProductVideos(req.body?.videos),
-      whyLoveIt: normalizeWhyLoveItItems(req.body?.whyLoveIt, req.body?.benefits),
+      whyYouLoveIt: hasWhyYouLoveIt
+        ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
+        : hasLegacyWhyLoveIt
+          ? normalizeWhyYouLoveItItems(req.body?.whyLoveIt, [], req.body?.benefits)
+          : [],
       isActive: req.body.isActive ?? true,
       inStock: req.body.inStock ?? true,
       createdAt: now,
@@ -2012,6 +2023,8 @@ app.put("/api/products/:id", async (req, res) => {
     if (!existingDoc.exists) return res.status(404).json({ error: "Product not found" });
 
     const existingData = existingDoc.data();
+    const hasWhyYouLoveIt = Object.prototype.hasOwnProperty.call(req.body || {}, "whyYouLoveIt");
+    const hasLegacyWhyLoveIt = Object.prototype.hasOwnProperty.call(req.body || {}, "whyLoveIt");
     const hasManualProductUrlChange = Object.prototype.hasOwnProperty.call(req.body || {}, "productUrl");
     const incomingProductUrl = hasManualProductUrlChange
       ? req.body?.productUrl
@@ -2029,7 +2042,11 @@ app.put("/api/products/:id", async (req, res) => {
       slug: productUrl,
       oldUrls,
       videos: normalizeProductVideos(req.body?.videos),
-      whyLoveIt: normalizeWhyLoveItItems(req.body?.whyLoveIt, req.body?.benefits),
+      whyYouLoveIt: hasWhyYouLoveIt
+        ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
+        : hasLegacyWhyLoveIt
+          ? normalizeWhyYouLoveItItems(req.body?.whyLoveIt, [], req.body?.benefits)
+          : normalizeWhyYouLoveItItems(existingData?.whyYouLoveIt, existingData?.whyLoveIt, existingData?.benefits),
       reviews: Array.isArray(req.body?.reviews)
         ? normalizeProductReviews(req.body.reviews)
         : (Array.isArray(existingData?.reviews) ? existingData.reviews : []),
@@ -2070,6 +2087,8 @@ app.put("/admin/products/edit/:id", async (req, res) => {
     if (!existingDoc.exists) return res.status(404).json({ error: "Product not found" });
 
     const existingData = existingDoc.data();
+    const hasWhyYouLoveIt = Object.prototype.hasOwnProperty.call(req.body || {}, "whyYouLoveIt");
+    const hasLegacyWhyLoveIt = Object.prototype.hasOwnProperty.call(req.body || {}, "whyLoveIt");
     const hasManualProductUrlChange = Object.prototype.hasOwnProperty.call(req.body || {}, "productUrl");
     const incomingProductUrl = hasManualProductUrlChange
       ? req.body?.productUrl
@@ -2087,7 +2106,11 @@ app.put("/admin/products/edit/:id", async (req, res) => {
       slug: productUrl,
       oldUrls,
       videos: normalizeProductVideos(req.body?.videos),
-      whyLoveIt: normalizeWhyLoveItItems(req.body?.whyLoveIt, req.body?.benefits),
+      whyYouLoveIt: hasWhyYouLoveIt
+        ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
+        : hasLegacyWhyLoveIt
+          ? normalizeWhyYouLoveItItems(req.body?.whyLoveIt, [], req.body?.benefits)
+          : normalizeWhyYouLoveItItems(existingData?.whyYouLoveIt, existingData?.whyLoveIt, existingData?.benefits),
       reviews: Array.isArray(req.body?.reviews)
         ? normalizeProductReviews(req.body.reviews)
         : (Array.isArray(existingData?.reviews) ? existingData.reviews : []),

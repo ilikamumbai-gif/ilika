@@ -4,12 +4,14 @@ import { trackViewContent, trackAddToCart } from "../utils/pixel";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
+import Heading from "../components/Heading";
 import CartDrawer from "../components/CartDrawer";
 import { useCart } from "../context/CartProvider";
 import { auth, storage } from "../firebase/firebaseConfig";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { getDownloadURL, ref as storageRef, uploadString } from "firebase/storage";
+import * as LucideIcons from "lucide-react";
 import {
   Truck, ShieldCheck, BadgeCheck, Package,
   X, ChevronLeft, ChevronRight, ChevronDown, Star, Sparkles, Leaf, Heart, Shield, Droplets, ImagePlus,
@@ -59,28 +61,62 @@ const normalizeWhyLoveItIconKey = (value = "") =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "");
 
-const WHY_LOVE_IT_ICON_MAP = {
-  sparkles: Sparkles,
-  sparkle: Sparkles,
-  heart: Heart,
-  hearts: Heart,
-  lip: Heart,
-  lips: Heart,
-  shield: Shield,
-  shieldcheck: ShieldCheck,
-  droplet: Droplets,
-  droplets: Droplets,
-  leaf: Leaf,
-  star: Star,
-  badgecheck: BadgeCheck,
-  truck: Truck,
-  package: Package,
-  lock: Lock,
-  wallet: Wallet,
+const WHY_LOVE_IT_ICON_ALIASES = {
+  sparkle: "Sparkles",
+  sparkles: "Sparkles",
+  heart: "Heart",
+  hearts: "Heart",
+  lip: "Heart",
+  lips: "Heart",
+  shield: "Shield",
+  shieldcheck: "ShieldCheck",
+  droplet: "Droplets",
+  droplets: "Droplets",
+  leaf: "Leaf",
+  star: "Star",
+  badgecheck: "BadgeCheck",
+  truck: "Truck",
+  package: "Package",
+  lock: "Lock",
+  wallet: "Wallet",
 };
 
-const sanitizeWhyLoveItItems = (items = [], fallbackBenefits = []) => {
-  const source = Array.isArray(items) && items.length ? items : fallbackBenefits;
+const toPascalCaseIconName = (value = "") =>
+  String(value || "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
+
+const resolveWhyLoveItIcon = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+
+  const normalized = normalizeWhyLoveItIconKey(raw);
+  const candidates = [
+    raw,
+    raw.replace(/\s+/g, ""),
+    toPascalCaseIconName(raw),
+    WHY_LOVE_IT_ICON_ALIASES[normalized],
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    const IconComponent = LucideIcons[candidate];
+    if (IconComponent && (typeof IconComponent === "function" || typeof IconComponent === "object")) {
+      return IconComponent;
+    }
+  }
+
+  return null;
+};
+
+const sanitizeWhyYouLoveItItems = (items = [], legacyItems = [], fallbackBenefits = []) => {
+  const source = Array.isArray(items) && items.length
+    ? items
+    : Array.isArray(legacyItems) && legacyItems.length
+      ? legacyItems
+      : fallbackBenefits;
   if (!Array.isArray(source)) return [];
 
   return source
@@ -100,13 +136,45 @@ const sanitizeWhyLoveItItems = (items = [], fallbackBenefits = []) => {
       const description = String(item?.description || item?.text || "").trim();
       const icon = String(item?.icon || item?.iconName || "").trim();
 
-      if (!title && !description) return null;
+      if (!title && !description && !icon) return null;
 
       return {
         id: String(item?.id || `love-${index + 1}`),
         title: title || description,
         description: title ? description : "",
         icon,
+      };
+    })
+    .filter(Boolean);
+};
+
+const sanitizeInTheBoxItems = (items = []) => {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((item, index) => {
+      if (typeof item === "string") {
+        const image = String(item || "").trim();
+        if (!image) return null;
+        return {
+          id: `box-${index + 1}`,
+          image,
+          title: "",
+          subtitle: "",
+        };
+      }
+
+      const image = String(item?.image || item?.url || "").trim();
+      const title = String(item?.title || item?.name || item?.label || "").trim();
+      const subtitle = String(item?.subtitle || item?.description || item?.text || "").trim();
+
+      if (!image && !title && !subtitle) return null;
+
+      return {
+        id: String(item?.id || `box-${index + 1}`),
+        image,
+        title,
+        subtitle,
       };
     })
     .filter(Boolean);
@@ -133,10 +201,10 @@ const buildTrustStripItems = (product = {}) => [
   { icon: Package, title: "Free Delivery", subtitle: "Fast Doorstep Shipping" },
   ...(product?.warranty
     ? [{
-        icon: BadgeCheck,
-        title: product.warranty === "manufacturer" ? "18 Month Warranty" : "1 Year Import Warranty",
-        subtitle: product.warranty === "manufacturer" ? "Manufacturer Support" : "Warranty Support",
-      }]
+      icon: BadgeCheck,
+      title: product.warranty === "manufacturer" ? "18 Month Warranty" : "1 Year Import Warranty",
+      subtitle: product.warranty === "manufacturer" ? "Manufacturer Support" : "Warranty Support",
+    }]
     : []),
 ];
 
@@ -589,9 +657,8 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
             {/* ATC button */}
             <button
               onClick={isOutOfStock ? onNotifyMe : onAddToCart}
-              className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition ${
-                isOutOfStock ? "opacity-90" : "hover:opacity-90"
-              }`}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition ${isOutOfStock ? "opacity-90" : "hover:opacity-90"
+                }`}
               style={ctaColors.addToCart}
             >
               {isOutOfStock ? "Notify Me" : "Add to Cart"}
@@ -1251,17 +1318,6 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
             </span>
           </div>
         )}
-        {/* {product?.warranty === "import" && warrantyRegistrationUrl && (
-          <div className="border-t px-3 py-2 text-center" style={{ borderColor: theme.borderSoft }}>
-            <Link
-              to={warrantyRegistrationUrl}
-              className="text-[11px] font-semibold underline underline-offset-2"
-              style={{ color: theme.accent }}
-            >
-              Register Import Warranty
-            </Link>
-          </div>
-        )} */}
       </div>
     </div>
   );
@@ -1700,6 +1756,7 @@ const ProductDetail = () => {
       })
       .filter(Boolean);
   }, [product?.ingredients]);
+  const inTheBoxItems = useMemo(() => sanitizeInTheBoxItems(product?.inTheBox), [product?.inTheBox]);
   const getIngredientCardsPerView = useCallback(() => {
     if (typeof window === "undefined") return 4;
     if (window.innerWidth >= 1024) return 4;
@@ -2212,6 +2269,7 @@ const ProductDetail = () => {
   );
 
   const hasIngredients = ingredients.length > 0;
+  const hasInTheBox = inTheBoxItems.length > 0;
 
   useEffect(() => {
     if (!ingredients.length) return;
@@ -2243,8 +2301,8 @@ const ProductDetail = () => {
   }, [product?.additionalInfo]);
 
   const whyLoveItItems = useMemo(
-    () => sanitizeWhyLoveItItems(product?.whyLoveIt, product?.benefits),
-    [product?.whyLoveIt, product?.benefits]
+    () => sanitizeWhyYouLoveItItems(product?.whyYouLoveIt, product?.whyLoveIt, product?.benefits),
+    [product?.whyYouLoveIt, product?.whyLoveIt, product?.benefits]
   );
   const trustStripItems = useMemo(() => buildTrustStripItems(product), [product]);
 
@@ -2320,9 +2378,9 @@ const ProductDetail = () => {
     const fromCategories = Array.isArray(product?.categoryName)
       ? product.categoryName
       : String(product?.categoryName || "")
-          .split(/[,/|&>]+/)
-          .map((item) => item.trim())
-          .filter(Boolean);
+        .split(/[,/|&>]+/)
+        .map((item) => item.trim())
+        .filter(Boolean);
     return [
       "Ilika",
       "buy online",
@@ -3136,8 +3194,8 @@ const ProductDetail = () => {
                   onClick={product.inStock ? handleAddToCart : handleNotifyMe}
                   disabled={isAdding}
                   className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition min-h-[54px]
-                ${isAdding ? 
-                  "bg-gray-300 text-gray-500" : ""}`}
+                ${isAdding ?
+                      "bg-gray-300 text-gray-500" : ""}`}
                   style={isAdding ? undefined : detailCtaColors.addToCart}
                 >
                   {isAdding
@@ -3152,7 +3210,7 @@ const ProductDetail = () => {
                   onClick={handleBuyNow}
                   disabled={isOutOfStock || isBuying}
                   className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition min-h-[54px]
-                    ${isOutOfStock || 
+                    ${isOutOfStock ||
                       isBuying
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "hover:opacity-90 shadow-sm"}`}
@@ -3210,7 +3268,8 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-        {/* {whyLoveItItems.length > 0 && (
+
+        {whyLoveItItems.length > 0 && (
           <DeferredSection minHeight={220}>
             <section className="max-w-7xl mx-auto px-3 sm:px-6 mb-6 sm:mb-8">
               <div
@@ -3219,22 +3278,17 @@ const ProductDetail = () => {
                   backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : detailTheme.pageBg,
                 }}
               >
-                <div className="px-3 pt-2 pb-2 text-center sm:px-4 sm:pb-3">
-                  <h2
-                    className="text-[24px] sm:text-[32px] font-luxury font-semibold"
-                    style={{ color: detailTheme.heading }}
-                  >
-                    Why You'll Love It
-                  </h2>
+                <div className="px-3 pt-2 pb-2 sm:px-4 sm:pb-3">
+                  <Heading heading="Why You Love It" style={{ color: detailTheme.heading }} />
                 </div>
 
                 <div
                   className={`grid ${whyLoveItItems.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"}`}
                 >
                   {whyLoveItItems.map((item, index) => {
-                    const IconComponent = WHY_LOVE_IT_ICON_MAP[normalizeWhyLoveItIconKey(item.icon)];
+                    const IconComponent = resolveWhyLoveItIcon(item.icon);
                     const borderClass = `
-                      ${index > 0 ? "border-t" : ""}
+                      ${index > 0 ? "" : ""}
                       ${index % 2 === 1 ? "sm:border-l" : ""}
                       ${index >= 2 ? "sm:border-t lg:border-t-0" : ""}
                       ${index > 0 ? "lg:border-l" : ""}
@@ -3278,7 +3332,8 @@ const ProductDetail = () => {
               </div>
             </section>
           </DeferredSection>
-        )} */}
+        )}
+
 
         {/* BEFORE / AFTER */}
         {hasBeforeAfter && (
@@ -3423,17 +3478,51 @@ const ProductDetail = () => {
           </section>
         </DeferredSection>
 
+        {activeInfoTab !== "reviews" && hasInTheBox && (
+          <DeferredSection minHeight={280}>
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
+              <div className="mb-4 sm:mb-5">
+                <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }}/>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-5 sm:gap-x-5">
+                {inTheBoxItems.map((item, index) => (
+                  <div key={item.id || index} className="flex w-[112px] sm:w-[128px] flex-col items-center text-center">
+                    {item.image ? (
+                      <img
+                        loading={index < 2 ? "eager" : "lazy"}
+                        src={item.image}
+                        alt={item.title || `Box item ${index + 1}`}
+                        className="h-28 w-auto max-w-full rounded-[18px] object-contain sm:h-32"
+                      />
+                    ) : null}
+                    {item.title ? (
+                      <p className="mt-3 text-sm font-medium leading-5" style={{ color: detailTheme.heading }}>
+                        {item.title}
+                      </p>
+                    ) : null}
+                    {item.subtitle ? (
+                      <p className="mt-1 text-xs leading-5 text-gray-500">
+                        {item.subtitle}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </section>
+          </DeferredSection>
+        )}
         {/* INGREDIENTS SECTION */}
         {activeInfoTab !== "reviews" && hasIngredients && (
           <DeferredSection minHeight={420}>
             <section
               className="max-w-7xl mx-auto px-4 sm:px-4 mb-6 py-6 sm:py-6"
               style={{
-                
+
                 borderRadius: "20px",
                 border: detailTheme.isDefaultWhite
-                    ? "linear-gradient(135deg,#e91e8c 0%,#ff6b35 100%)"
-                    : detailTheme.benefitGradient,
+                  ? "linear-gradient(135deg,#e91e8c 0%,#ff6b35 100%)"
+                  : detailTheme.benefitGradient,
               }}
             >
               <div className="text-center mb-7 sm:mb-8 px-2">
@@ -3494,7 +3583,7 @@ const ProductDetail = () => {
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           draggable={false}
                         />
-                       
+
                       </div>
                     ))}
                   </div>
@@ -3537,6 +3626,8 @@ const ProductDetail = () => {
             </section>
           </DeferredSection>
         )}
+
+
 
         {/* â•â•â•â• PRODUCT BANNERS â•â•â•â• */}
         {activeInfoTab !== "reviews" && ((product.banners?.length > 0) || product.bannerImage) && (

@@ -112,16 +112,15 @@ const splitBenefitText = (value = "") => {
   return { title: text, description: "" };
 };
 
-const sanitizeWhyLoveItItems = (items = []) => {
+const sanitizeWhyYouLoveItItems = (items = []) => {
   if (!Array.isArray(items)) return [];
 
   return items
-    .map((item, index) => {
+    .map((item) => {
       if (typeof item === "string") {
         const parsed = splitBenefitText(item);
         if (!parsed.title && !parsed.description) return null;
         return {
-          id: `love-${index + 1}`,
           title: parsed.title || parsed.description,
           description: parsed.title ? parsed.description : "",
           icon: "",
@@ -132,13 +131,55 @@ const sanitizeWhyLoveItItems = (items = []) => {
       const description = String(item?.description || item?.text || "").trim();
       const icon = String(item?.icon || item?.iconName || "").trim();
 
-      if (!title && !description) return null;
+      if (!title && !description && !icon) return null;
 
       return {
-        id: String(item?.id || `love-${index + 1}`),
         title: title || description,
         description: title ? description : "",
         icon,
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 4);
+};
+
+const buildWhyYouLoveItDraft = (...sources) => {
+  const items = sources.find((source) => Array.isArray(source) && source.length) || [];
+  const clean = sanitizeWhyYouLoveItItems(items);
+  return Array.from({ length: 4 }, (_, index) => ({
+    title: String(clean[index]?.title || "").trim(),
+    description: String(clean[index]?.description || "").trim(),
+    icon: String(clean[index]?.icon || "").trim(),
+  }));
+};
+
+const sanitizeInTheBoxItems = (items = []) => {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((item, index) => {
+      if (typeof item === "string") {
+        const image = String(item || "").trim();
+        if (!image) return null;
+        return {
+          id: `box-${index + 1}`,
+          image,
+          title: "",
+          subtitle: "",
+        };
+      }
+
+      const image = String(item?.image || item?.url || "").trim();
+      const title = String(item?.title || item?.name || item?.label || "").trim();
+      const subtitle = String(item?.subtitle || item?.description || item?.text || "").trim();
+
+      if (!image && !title && !subtitle) return null;
+
+      return {
+        id: String(item?.id || `box-${index + 1}`),
+        image,
+        title,
+        subtitle,
       };
     })
     .filter(Boolean);
@@ -245,10 +286,11 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     packOptions: [],
     productTag: "",
     hasVariants: false, variants: [], categoryIds: [],
-    description: "", additionalInfo: "", tagline: "", points: "", whyLoveIt: [],
+    description: "", additionalInfo: "", tagline: "", points: "", whyYouLoveIt: buildWhyYouLoveItDraft(),
     images: [], isActive: true, inStock: true,
     beforeAfter: [], hasBeforeAfter: false,
     ingredients: [],
+    inTheBox: [],
     hasVideo: false,
     videos: [],
     warranty: "",   // ✅ NEW
@@ -283,11 +325,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       : d.additionalInfo || "",
     tagline: d.tagline || "",
     points: d.benefits ? d.benefits.join(", ") : "",
-    whyLoveIt: sanitizeWhyLoveItItems(
-      Array.isArray(d.whyLoveIt) && d.whyLoveIt.length
-        ? d.whyLoveIt
-        : (Array.isArray(d.benefits) ? d.benefits : [])
-    ),
+    whyYouLoveIt: buildWhyYouLoveItDraft(d.whyYouLoveIt, d.whyLoveIt, d.benefits),
     images: d.images || [],
     isActive: d.isActive ?? true,
     inStock: d.inStock ?? true,
@@ -301,6 +339,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         })
         .filter(Boolean)
       : [],
+    inTheBox: sanitizeInTheBoxItems(d.inTheBox),
     videos: (d.videos || []).map(v => ({ ...v })),
     hasVideo: !!(d.videos?.length),
     warranty: d.warranty || "",   // ✅ NEW
@@ -327,11 +366,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   const [productUrlTouched, setProductUrlTouched] = useState(
     Boolean(initialData?.id || initialData?.docId || initialData?._id)
   );
-  const [newWhyLoveItItem, setNewWhyLoveItItem] = useState({
-    title: "",
-    description: "",
-    icon: "",
-  });
   const [newBgName, setNewBgName] = useState("");
   const [newBgValue, setNewBgValue] = useState("#FFEFEA");
 
@@ -346,7 +380,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         ? initialData.ingredients.map((item) => (typeof item === "string" ? item : item?.image || item?.url || "")).filter(Boolean)
         : []
     );
-    setNewWhyLoveItItem({ title: "", description: "", icon: "" });
   }, [initialData]);
 
   useEffect(() => {
@@ -454,23 +487,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     });
   };
 
-  const addWhyLoveItItem = () => {
-    const nextItem = {
-      id: crypto.randomUUID(),
-      title: String(newWhyLoveItItem.title || "").trim(),
-      description: String(newWhyLoveItItem.description || "").trim(),
-      icon: String(newWhyLoveItItem.icon || "").trim(),
-    };
-
-    if (!nextItem.title && !nextItem.description) return;
-
-    setForm((prev) => ({
-      ...prev,
-      whyLoveIt: [...(prev.whyLoveIt || []), nextItem],
-    }));
-    setNewWhyLoveItItem({ title: "", description: "", icon: "" });
-  };
-
   const addDetailBgColor = () => {
     const normalized = normalizeHexColor(newBgValue);
     if (!normalized) return;
@@ -552,6 +568,12 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     return getDownloadURL(r);
   };
 
+  const uploadInTheBoxImage = async (file) => {
+    const r = ref(storage, `products/in-the-box/${crypto.randomUUID()}-${file.name}`);
+    await uploadBytes(r, file);
+    return getDownloadURL(r);
+  };
+
   /* ── submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -624,13 +646,32 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         }
       }
 
+      const inTheBoxData = [];
+      for (const item of (form.inTheBox || [])) {
+        let image = typeof item?.image === "string" ? item.image.trim() : "";
+        if (item?._imageFile instanceof File) {
+          image = await uploadInTheBoxImage(item._imageFile);
+        }
+
+        const title = String(item?.title || "").trim();
+        const subtitle = String(item?.subtitle || "").trim();
+        if (!image && !title && !subtitle) continue;
+
+        inTheBoxData.push({
+          id: String(item?.id || crypto.randomUUID()),
+          image,
+          title,
+          subtitle,
+        });
+      }
+
       /* change log */
       if (initialData?.price && Number(initialData.price) !== Number(form.price))
         await logActivity(`${admin?.username || "Admin"} changed price of ${form.name} from ₹${initialData.price} to ₹${form.price}`);
       if (initialData?.mrp && Number(initialData.mrp) !== Number(form.mrp))
         await logActivity(`${admin?.username || "Admin"} changed MRP of ${form.name} from ₹${initialData.mrp} to ₹${form.mrp}`);
 
-      const whyLoveItData = sanitizeWhyLoveItItems(form.whyLoveIt);
+      const whyYouLoveItData = sanitizeWhyYouLoveItItems(form.whyYouLoveIt);
 
       await onSubmit({
         hsnCode: String(form.hsnCode || "").trim(),
@@ -648,14 +689,12 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           ? form.additionalInfo.split(",").map(i => i.trim())
           : [],
         tagline: form.tagline,
-        benefits: whyLoveItData.map((item) =>
-          item.description ? `${item.title} - ${item.description}` : item.title
-        ),
-        whyLoveIt: whyLoveItData,
+        whyYouLoveIt: whyYouLoveItData,
         images: imageUrls,
         isActive: form.isActive, inStock: form.inStock,
         beforeAfter: beforeAfterData,
         ingredients: ingredientsData,
+        inTheBox: sanitizeInTheBoxItems(inTheBoxData),
         videos: videoData,
         warranty: form.warranty || "",   // ✅ NEW
         warrantyTerms: form.warranty === "import"
@@ -677,7 +716,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       setPreviewImages([]);
       setPreviewIngredientImages([]);
       setProductUrlTouched(false);
-      setNewWhyLoveItItem({ title: "", description: "", icon: "" });
     } catch (err) {
       console.error("PRODUCT SAVE ERROR:", err);
       setSubmitError(err?.message || "Failed to save product.");
@@ -983,58 +1021,37 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
       <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
         <div>
-          <p className="font-semibold text-sm">Why You'll Love It</p>
+          <p className="font-semibold text-sm">Why You Love It</p>
           <p className="text-xs text-gray-500 mt-0.5">
-            Add each point separately. Icon name is optional. Examples: Heart, Sparkles, Shield, Leaf, Star, Droplets, Truck.
+            Add up to 4 cards manually from your Excel sheet. Use Lucide icon names like Shield, Sun, Sparkles, Search, Zap, Briefcase, Moon, Activity, Heart, or ShieldCheck.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_2fr_1fr_auto] gap-3 items-end">
-          <div>
-            <label className="text-xs font-semibold text-gray-600 block mb-1">Title</label>
-            <input
-              type="text"
-              placeholder="Instant Volume"
-              value={newWhyLoveItItem.title}
-              onChange={(e) => setNewWhyLoveItItem((prev) => ({ ...prev, title: e.target.value }))}
-              className="w-full border border-gray-200 p-2.5 rounded-lg bg-white text-sm"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-gray-600 block mb-1">Description</label>
-            <input
-              type="text"
-              placeholder="Get visibly fuller lips in a few seconds."
-              value={newWhyLoveItItem.description}
-              onChange={(e) => setNewWhyLoveItItem((prev) => ({ ...prev, description: e.target.value }))}
-              className="w-full border border-gray-200 p-2.5 rounded-lg bg-white text-sm"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-gray-600 block mb-1">Icon Name (Optional)</label>
-            <input
-              type="text"
-              placeholder="Heart"
-              value={newWhyLoveItItem.icon}
-              onChange={(e) => setNewWhyLoveItItem((prev) => ({ ...prev, icon: e.target.value }))}
-              className="w-full border border-gray-200 p-2.5 rounded-lg bg-white text-sm"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={addWhyLoveItItem}
-            className="h-[42px] rounded-lg bg-[#1f4f8c] px-4 text-sm font-medium text-white hover:bg-[#1a4377]"
-          >
-            + Add Why You Love It
-          </button>
-        </div>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {(form.whyYouLoveIt || buildWhyYouLoveItDraft()).map((item, index) => (
+            <div
+              key={index}
+              className="space-y-3 rounded-xl border border-gray-200 bg-white p-4"
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-gray-800">Card {index + 1}</p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => {
+                      const updated = [...(prev.whyYouLoveIt || buildWhyYouLoveItDraft())];
+                      updated[index] = { title: "", description: "", icon: "" };
+                      return { ...prev, whyYouLoveIt: updated };
+                    })
+                  }
+                  className="text-xs font-medium text-red-600 hover:text-red-700"
+                >
+                  Clear
+                </button>
+              </div>
 
-        {(form.whyLoveIt || []).length > 0 ? (
-          <div className="space-y-3">
-            {form.whyLoveIt.map((item, index) => (
               <div
-                key={item.id || index}
-                className="grid grid-cols-1 lg:grid-cols-[1.2fr_2fr_1fr_auto] gap-3 items-end rounded-xl border border-gray-200 bg-white p-3"
+                className="grid grid-cols-1 gap-3"
               >
                 <div>
                   <label className="text-xs font-semibold text-gray-600 block mb-1">Title</label>
@@ -1043,27 +1060,29 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                     value={item.title || ""}
                     onChange={(e) =>
                       setForm((prev) => {
-                        const updated = [...(prev.whyLoveIt || [])];
+                        const updated = [...(prev.whyYouLoveIt || buildWhyYouLoveItDraft())];
                         updated[index] = { ...updated[index], title: e.target.value };
-                        return { ...prev, whyLoveIt: updated };
+                        return { ...prev, whyYouLoveIt: updated };
                       })
                     }
                     className="w-full border border-gray-200 p-2.5 rounded-lg text-sm"
+                    placeholder="Deep Repair"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-600 block mb-1">Description</label>
-                  <input
-                    type="text"
+                  <textarea
                     value={item.description || ""}
                     onChange={(e) =>
                       setForm((prev) => {
-                        const updated = [...(prev.whyLoveIt || [])];
+                        const updated = [...(prev.whyYouLoveIt || buildWhyYouLoveItDraft())];
                         updated[index] = { ...updated[index], description: e.target.value };
-                        return { ...prev, whyLoveIt: updated };
+                        return { ...prev, whyYouLoveIt: updated };
                       })
                     }
                     className="w-full border border-gray-200 p-2.5 rounded-lg text-sm"
+                    rows={3}
+                    placeholder="Restores damaged moisture barrier instantly"
                   />
                 </div>
                 <div>
@@ -1073,34 +1092,19 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                     value={item.icon || ""}
                     onChange={(e) =>
                       setForm((prev) => {
-                        const updated = [...(prev.whyLoveIt || [])];
+                        const updated = [...(prev.whyYouLoveIt || buildWhyYouLoveItDraft())];
                         updated[index] = { ...updated[index], icon: e.target.value };
-                        return { ...prev, whyLoveIt: updated };
+                        return { ...prev, whyYouLoveIt: updated };
                       })
                     }
                     className="w-full border border-gray-200 p-2.5 rounded-lg text-sm"
+                    placeholder="Shield"
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setForm((prev) => ({
-                      ...prev,
-                      whyLoveIt: (prev.whyLoveIt || []).filter((_, itemIndex) => itemIndex !== index),
-                    }))
-                  }
-                  className="h-[42px] rounded-lg border border-red-200 px-4 text-sm font-medium text-red-600 hover:bg-red-50"
-                >
-                  Remove
-                </button>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-sm text-gray-400">
-            No Why You'll Love It points added yet.
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
 
       <RichTextEditor value={form.description} onChange={html => setForm({ ...form, description: html })} />
@@ -1414,6 +1418,123 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             ))}
           </div>
         )}
+      </div>
+
+      {/* WHAT'S IN THE BOX */}
+      <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+        <div>
+          <p className="font-semibold text-sm">What's In The Box? (Optional)</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Add included items here. This section will only appear on the public product page when at least one item is added.
+          </p>
+        </div>
+
+        {(form.inTheBox || []).map((item, idx) => (
+          <div key={item.id || idx} className="border rounded-xl p-4 bg-white space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-700">Box Item {idx + 1}</span>
+              <button
+                type="button"
+                onClick={() => setForm((prev) => ({
+                  ...prev,
+                  inTheBox: (prev.inTheBox || []).filter((_, i) => i !== idx),
+                }))}
+                className="text-red-500 text-xs hover:underline"
+              >
+                Remove
+              </button>
+            </div>
+
+            {item.image ? (
+              <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                <img
+                  loading="lazy"
+                  src={item.image}
+                  alt={item.title || `Box item ${idx + 1}`}
+                  className="h-32 w-full object-contain"
+                  onError={e => { e.target.style.display = "none"; }}
+                />
+              </div>
+            ) : null}
+
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Upload Item Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="block w-full text-sm"
+                onChange={async (e) => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  try {
+                    const url = await uploadInTheBoxImage(file);
+                    setForm((prev) => {
+                      const updated = [...(prev.inTheBox || [])];
+                      updated[idx] = { ...updated[idx], image: url, _imageFile: null };
+                      return { ...prev, inTheBox: updated };
+                    });
+                  } catch (err) {
+                    console.error("What's in the box image upload failed:", err);
+                  }
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Or Paste Image URL</label>
+              <input
+                type="text"
+                placeholder="https://..."
+                value={item.image || ""}
+                onChange={e => setForm((prev) => {
+                  const updated = [...(prev.inTheBox || [])];
+                  updated[idx] = { ...updated[idx], image: e.target.value, _imageFile: null };
+                  return { ...prev, inTheBox: updated };
+                })}
+                className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Item title"
+                value={item.title || ""}
+                onChange={e => setForm((prev) => {
+                  const updated = [...(prev.inTheBox || [])];
+                  updated[idx] = { ...updated[idx], title: e.target.value };
+                  return { ...prev, inTheBox: updated };
+                })}
+                className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              />
+              <input
+                type="text"
+                placeholder="Subtitle (optional)"
+                value={item.subtitle || ""}
+                onChange={e => setForm((prev) => {
+                  const updated = [...(prev.inTheBox || [])];
+                  updated[idx] = { ...updated[idx], subtitle: e.target.value };
+                  return { ...prev, inTheBox: updated };
+                })}
+                className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              />
+            </div>
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => setForm((prev) => ({
+            ...prev,
+            inTheBox: [
+              ...(prev.inTheBox || []),
+              { id: crypto.randomUUID(), image: "", title: "", subtitle: "" },
+            ],
+          }))}
+          className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+        >
+          + Add Box Item
+        </button>
       </div>
 
       {/* PRODUCT VIDEOS */}
