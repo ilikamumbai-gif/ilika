@@ -108,7 +108,7 @@ const NonvoiceMaskMakerLanding = () => {
   }, [products]);
 
   const defaultVariant = targetProduct?.variants?.find((v) => v?.isDefault) || targetProduct?.variants?.[0];
-  const productName = targetProduct?.name || "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide";
+  const productName = targetProduct?.name || "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 5999);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 7200);
   const productImage =

@@ -260,7 +260,7 @@ const Blackseedhairoil = () => {
                 </h2>
               </div>
               <div className="relative w-full max-w-[520px] sm:h-[470px] sm:max-w-[620px] lg:h-[560px] lg:max-w-[660px]">
-                <img src={heroImage} alt={product?.name || "Ilika Black Seed Hair Growth Oil"} className="h-auto w-full object-cover object-center sm:h-full sm:object-contain" />
+                <img src={heroImage} alt={product?.name || "Ilika Black Seed Hair Oil | For Premature Grey Hair & Hair Fall Control | Nourishing Scalp Care"} className="h-auto w-full object-cover object-center sm:h-full sm:object-contain" />
               </div>
               <div className="mt-4 lg:hidden">
                 <button

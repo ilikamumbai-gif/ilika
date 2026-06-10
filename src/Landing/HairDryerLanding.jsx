@@ -118,7 +118,7 @@ const HairDryerLanding = () => {
   }, [products]);
 
   const defaultVariant = targetProduct?.variants?.find((v) => v?.isDefault) || targetProduct?.variants?.[0];
-  const productName = targetProduct?.name || "Ilika High-Speed Leafless Hair Dryer";
+  const productName = targetProduct?.name || "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 1999);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 3499);
   const productImage =

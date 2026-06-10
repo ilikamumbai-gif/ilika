@@ -15,12 +15,12 @@ const offerCardImage = "/Images/MaskMakercard.webp";
 
 const PRODUCT_NAMES = {
   voiceMaskMaker:
-    "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
-  airwrap: "Ilika Airwrap Multi-Styler Kit",
-  hairDryer: "Ilika High-Speed Leafless Hair Dryer",
-  herbalHairOil: "Ilika Herbal Hair Growth Oil",
+    "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
+  airwrap: "Ilika Airwrap Multi-Styler Kit | 5-in-1 Hair Styling Tool for Curling, Straightening, Volumizing & Drying",
+  hairDryer: "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
+  herbalHairOil: "Ilika 10 Herbs Herbal Hair Growth Oil | For Hair Fall Control, Hair Growth & Strong Healthy Hair",
   blackSeedHairOil:
-    "Ilika Black Seed Hair Growth Oil",
+    "Ilika Black Seed Hair Oil | For Premature Grey Hair & Hair Fall Control | Nourishing Scalp Care",
 };
 
 const normalizeName = (value = "") =>

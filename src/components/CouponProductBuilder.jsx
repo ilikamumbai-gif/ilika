@@ -12,9 +12,9 @@ const coupons = {
 };
 
 const allowedProducts = [
-  "Ilika Airwrap Multi-Styler Kit",
+  "Ilika Airwrap Multi-Styler Kit | 5-in-1 Hair Styling Tool for Curling, Straightening, Volumizing & Drying",
   "Ilika Hair Curler Tong Machine | 5 In 1 Multi Function Hair Styler for Women",
-  "Ilika High-Speed Leafless Hair Dryer",
+  "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
 ];
 
 /* ─────────────────────────────────────────────────────────

@@ -136,8 +136,8 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/voice-mask-maker") return { title: "Voice Face Mask Maker", description: "Explore Ilika Voice Face Mask Maker Machine with Collagen Peptide." };
   if (pathname === "/nonvoice-mask-maker") return { title: "Non-Voice Face Mask Maker", description: "Explore Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide." };
   if (pathname === "/leafless-hair-dryer") return { title: "Leafless Hair Dryer", description: "Explore Ilika High-Speed Leafless Hair Dryer." };
-  if (pathname === "/high-frequency-therapy-wand") return { title: "Ilika High Frequency Therapy Wand", description: "Explore Ilika High Frequency Therapy Wand." };
-  if (pathname === "/hot-cold-blackhead-remover") return { title: "Ilika Blackhead Remover - Hot & Cold", description: "Explore Ilika Blackhead Remover - Hot & Cold." };
+  if (pathname === "/high-frequency-therapy-wand") return { title: "Ilika High Frequency Therapy Wand | For Acne Treatment, Skin Rejuvenation, Hair Growth & Scalp Care", description: "Explore Ilika High Frequency Therapy Wand." };
+  if (pathname === "/hot-cold-blackhead-remover") return { title: "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening", description: "Explore Ilika Blackhead Remover - Hot & Cold." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
   if (pathname === "/offers") return { title: "Combo Deals", description: "Explore combo packs and bundle offers from Ilika." };
   if (pathname === "/glow-therapy-combo") return { title: "Glow Therapy Combo", description: "Shop the Ilika Glow Therapy Combo on its dedicated offer page." };

@@ -180,8 +180,8 @@ const MaskCombo = () => {
         description:
           "One 4-in-1 Collagen Mask for glow and hydration, paired with one 24K Gold Anti-aging Mask.",
         items: [
-          { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask" },
-          { product: goldMask, fallbackName: "Ilika 24K Gold Collagen Face Mask" },
+          { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask" },
+          { product: goldMask, fallbackName: "Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow" },
         ],
       },
       {
@@ -192,8 +192,8 @@ const MaskCombo = () => {
         description:
           "Two Ilika 4-in-1 Collagen Masks for double the glow, firmness, and hydration at one special price.",
         items: [
-          { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask" },
-          { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask" },
+          { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask" },
+          { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask" },
         ],
       },
       {

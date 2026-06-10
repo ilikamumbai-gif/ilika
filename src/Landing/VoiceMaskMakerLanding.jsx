@@ -214,7 +214,7 @@ const howItWorksSteps = [
 ];
 
 const boxItems = [
-  { id: "mask-maker", name: "Ilika Voice Face Mask Maker Machine with Collagen Peptide", image: voiceMaskMakerMainImage },
+  { id: "mask-maker", name: "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin", image: voiceMaskMakerMainImage },
   { id: "beaker", name: "Measuring Beaker", image: voiceMaskMakerBeakerImage },
   { id: "mask-tray", name: "Mask Tray", image: voiceMaskMakerTrayImage },
   { id: "power-cable", name: "Power Cable", image: voiceMaskMakerCordImage },
@@ -264,7 +264,7 @@ const VoiceMaskMakerLanding = () => {
   }, [products]);
 
   const defaultVariant = targetProduct?.variants?.find((v) => v?.isDefault) || targetProduct?.variants?.[0];
-  const productName = targetProduct?.name || "Ilika Voice Face Mask Maker Machine with Collagen Peptide";
+  const productName = targetProduct?.name || "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 6999);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 8200);
   const productImage =

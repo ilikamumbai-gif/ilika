@@ -130,13 +130,13 @@ const MaskDuoOffer = () => {
 
   const maskBenefits = useMemo(
     () => ({
-      [normalizeName("Ilika 24K Gold Collagen Face Mask")]: [
+      [normalizeName("Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow")]: [
         { icon: Sparkles, label: "Anti-aging" },
         { icon: BadgeCheck, label: "Firming" },
         { icon: Sparkles, label: "Brightening" },
         { icon: Droplets, label: "Hydrating" },
       ],
-      [normalizeName("Ilika 4-in-1 Collagen Face Mask")]: [
+      [normalizeName("Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask")]: [
         { icon: Sparkles, label: "Glow" },
         { icon: Heart, label: "Firm" },
         { icon: Droplets, label: "Hydrate" },

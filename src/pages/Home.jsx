@@ -270,10 +270,10 @@ const Home = () => {
                   <ProductList
                     mobileScroll
                     priorityNames={[
-                      "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
-                      "Ilika High-Speed Leafless Hair Dryer",
-                      "Ilika Lip Plumper Vacuum Device",
-                      "Ilika Blackhead Remover - Hot & Cold",
+                      "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
+                      "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
+                      "Ilika Lip Plumper Vacuum Device | For Fuller Looking Lips | Lip Enhancement, Lip Massage & Beauty Tool",
+                      "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening",
                     ]}
                     priorityCount={2}
                     limit={4}
@@ -314,10 +314,10 @@ const Home = () => {
                   <ProductList
                     mobileScroll
                     priorityNames={[
-                      "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
-                      "Ilika High-Speed Leafless Hair Dryer",
-                      "Ilika Lip Plumper Vacuum Device",
-                      "Ilika Blackhead Remover - Hot & Cold",
+                      "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
+                      "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
+                      "Ilika Lip Plumper Vacuum Device | For Fuller Looking Lips | Lip Enhancement, Lip Massage & Beauty Tool",
+                      "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal",
                     ]}
                     priorityCount={2}
                     limit={4}
@@ -351,8 +351,8 @@ const Home = () => {
               <ProductList
                 mobileScroll
 
-                priorityNames={["Ilika 24K Gold Collagen Face Mask",
-                  "Ilika 4-in-1 Collagen Face Mask",
+                priorityNames={["Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow",
+                  "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask",
                   "Ilika Collagen Serum",
                   "Ilika Retinol Anti-Aging Facial Oil",
                   ]}
@@ -421,7 +421,7 @@ const Home = () => {
                   <ProductList
                     mobileScroll
                     categoryId={haircareCategory.id}
-                    priorityNames={["Ilika Black Seed Hair Growth Oil", "Ilika Herbal Hair Growth Oil", "Ilika Frizz Control Hair Serum", "Ilika Keratin Repair Conditioner"]}
+                    priorityNames={["Ilika Black Seed Hair Oil | For Premature Grey Hair & Hair Fall Control | Nourishing Scalp Care", "Ilika 10 Herbs Herbal Hair Growth Oil | For Hair Fall Control, Hair Growth & Strong Healthy Hair", "Ilika Frizz Control Hair Serum", "Ilika Keratin Repair Conditioner"]}
                     offset={isMobile ? 0 : hairStart}
                     limit={isMobile ? undefined : getVisibleCount(hairTotal)}
                   />
@@ -483,7 +483,7 @@ const Home = () => {
                   )}
                   <ProductList
                     mobileScroll
-                    priorityNames={["Ilika 24K Gold Collagen Face Mask", "Ilika 4-in-1 Collagen Face Mask", "Ilika Hydra Gel Moisturizer", "Ilika Voice Face Mask Maker Machine with Collagen Peptide"]}
+                    priorityNames={["Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow", "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask", "Ilika Hydra Gel Moisturizer | | Lightweight Face Gel for Hydration, Glow & Skin Barrier Support", "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin"]}
                     categoryId={skincareCategory.id}
                     offset={isMobile ? 0 : skinStart}
                     limit={isMobile ? undefined : getVisibleCount(skinTotal)}

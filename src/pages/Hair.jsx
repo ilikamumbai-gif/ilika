@@ -29,7 +29,7 @@ const Hair = () => {
 
           {hairCategory ? (
             <ProductList categoryId={hairCategory.id}
-              priorityNames={["Ilika Black Seed Hair Growth Oil", "Ilika Herbal Hair Growth Oil", "Ilika Frizz Control Hair Serum", "Ilika High-Speed Leafless Hair Dryer", "Ilika Airwrap Multi-Styler Kit"]}
+              priorityNames={["Ilika Black Seed Hair Oil | For Premature Grey Hair & Hair Fall Control | Nourishing Scalp Care", "Ilika 10 Herbs Herbal Hair Growth Oil | For Hair Fall Control, Hair Growth & Strong Healthy Hair", "Ilika Frizz Control Hair Serum", "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control", "Ilika Airwrap Multi-Styler Kit | 5-in-1 Hair Styling Tool for Curling, Straightening, Volumizing & Drying"]}
             />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>

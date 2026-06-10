@@ -19,7 +19,7 @@ const rules = {
     ],
     dry: [
       "Gentle Cleanser | Prevent Signs of Aging | 100ML",
-      "Ilika Hydra Gel Moisturizer",
+      "Ilika Hydra Gel Moisturizer | | Lightweight Face Gel for Hydration, Glow & Skin Barrier Support",
       "Ilika Hyaluronic Acid 2% Serum",
       "Ilika 24K Gold Beauty Oil",
       "Belgium Rose Toner | Soothing & Refreshing | 100 ML",
@@ -42,7 +42,7 @@ const rules = {
       "Gentle Cleanser | Prevent Signs of Aging | 100ML",
       "White Lotus Toner | Refreshes & Revitalize | 100ML",
       "Ceramide Gel Moisturizer | Repairs Sun Damage | 50g",
-      "Ilika Hydra Gel Moisturizer",
+      "Ilika Hydra Gel Moisturizer | | Lightweight Face Gel for Hydration, Glow & Skin Barrier Support",
       "Belgium Rose Toner | Soothing & Refreshing | 100 ML",
     ],
   },
@@ -54,7 +54,7 @@ const rules = {
       "Ilika Retinol Anti-Aging Facial Oil",
     ],
     dehydrated: [
-      "Ilika Hydra Gel Moisturizer",
+      "Ilika Hydra Gel Moisturizer | | Lightweight Face Gel for Hydration, Glow & Skin Barrier Support",
       "Ilika Hyaluronic Acid 2% Serum",
       "Belgium Rose Toner | Soothing & Refreshing | 100 ML",
       "Ilika 24K Gold Beauty Oil",
@@ -105,7 +105,7 @@ const rules = {
     "15-20": [
       "Foaming Face Wash | Soft & Smooth Skin | 100 ML",
       "Tea Tree & Avocado Toner | Improves Skin Tone | 100ML",
-      "Ilika Hydra Gel Moisturizer",
+      "Ilika Hydra Gel Moisturizer | | Lightweight Face Gel for Hydration, Glow & Skin Barrier Support",
     ],
     "21-30": [
       "Ilika Dazzling Glow Face Serum",

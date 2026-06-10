@@ -45,11 +45,11 @@ const NewArrival = () => {
             <ProductList
               categoryId={hairCategory.id}
               priorityNames={[
-                "Ilika Voice Face Mask Maker Machine with Collagen Peptide",
-                "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide",
-                "Ilika Lip Plumper Vacuum Device",
-                "Ilika Blackhead Remover - Hot & Cold",
-                "Ilika High-Speed Leafless Hair Dryer",
+                "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
+                "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
+                "Ilika Lip Plumper Vacuum Device | For Fuller Looking Lips | Lip Enhancement, Lip Massage & Beauty Tool",
+                "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening",
+                "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
               ]}
             />
           ) : (

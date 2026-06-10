@@ -175,7 +175,7 @@ const HotColdBlackheadRemoverLanding = () => {
 
   const productName =
     targetProduct?.name ||
-    "Ilika Blackhead Remover - Hot & Cold";
+    "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 1299);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 2499);
   const productImages = Array.isArray(defaultVariant?.images) && defaultVariant.images.length

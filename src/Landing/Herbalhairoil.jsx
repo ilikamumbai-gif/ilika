@@ -306,7 +306,7 @@ const Herbalhairoil = () => {
                 </h2>
               </div>
               <div className="relative w-full max-w-[520px] sm:h-[470px] sm:max-w-[620px] lg:h-[560px] lg:max-w-[660px]">
-                <img src={heroImage} alt={product?.name || "Ilika Herbal Hair Growth Oil"} className="h-auto w-full object-cover object-center sm:h-full sm:object-contain" />
+                <img src={heroImage} alt={product?.name || "Ilika 10 Herbs Herbal Hair Growth Oil | For Hair Fall Control, Hair Growth & Strong Healthy Hair"} className="h-auto w-full object-cover object-center sm:h-full sm:object-contain" />
               </div>
               <div className="mt-4 lg:hidden">
                 <button

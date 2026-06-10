@@ -235,7 +235,7 @@ const HighFrequencyTherapyWandLanding = () => {
       return (
         nameSlug === targetSlug ||
         rawSlug === targetSlug ||
-        String(product?.name || "").toLowerCase().includes("ilika high frequency therapy wand")
+        String(product?.name || "").toLowerCase().includes("Ilika High Frequency Therapy Wand | For Acne Treatment, Skin Rejuvenation, Hair Growth & Scalp Care")
       );
     });
   }, [products]);
@@ -246,7 +246,7 @@ const HighFrequencyTherapyWandLanding = () => {
 
   const productName =
     targetProduct?.name ||
-    "Ilika High Frequency Therapy Wand";
+    "Ilika High Frequency Therapy Wand | For Acne Treatment, Skin Rejuvenation, Hair Growth & Scalp Care";
   const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 5999);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 9999);
   const productImage =
