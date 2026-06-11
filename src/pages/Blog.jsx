@@ -74,11 +74,14 @@ const Blog = () => {
     const target = products.find((product) => {
       const name = normalizeName(product?.name);
       const productUrl = normalizeName(product?.productUrl);
+
       return (
-        name === "ilika high frequency therapy wand" ||
-        productUrl === "ilika high frequency therapy wand" ||
-        productUrl === "ilika high frequency therapy wand".replace(/\s+/g, " ") ||
-        String(product?.productUrl || "").trim().toLowerCase() === "ilika-high-frequency-therapy-wand"
+        name ===
+        "ilika high frequency therapy wand for acne treatment skin rejuvenation hair growth scalp care" ||
+        productUrl ===
+        "ilika high frequency therapy wand for acne treatment skin rejuvenation hair growth scalp care" ||
+        String(product?.productUrl || "").trim().toLowerCase() ===
+        "ilika-high-frequency-therapy-wand"
       );
     });
 
@@ -115,7 +118,12 @@ const Blog = () => {
   const herbalHairOilImage = useMemo(() => {
     const target = products.find((product) => {
       const name = normalizeName(product?.name);
-      return name.includes("herbal hair growth oil");
+
+      return (
+        name.includes("10 herbs herbal hair growth oil") ||
+        name.includes("hair fall control") ||
+        name.includes("strong healthy hair")
+      );
     });
 
     return getProductImage(target, herbalLandingImage);

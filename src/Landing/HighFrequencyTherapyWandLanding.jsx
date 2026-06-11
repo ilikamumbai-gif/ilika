@@ -227,18 +227,29 @@ const HighFrequencyTherapyWandLanding = () => {
   const footerTriggerRef = useRef(null);
   const [hideMobileBar, setHideMobileBar] = useState(false);
 
-  const targetProduct = useMemo(() => {
-    const targetSlug = "ilika-high-frequency-therapy-wand";
-    return products.find((product) => {
-      const nameSlug = createSlug(product?.name || "");
-      const rawSlug = String(product?.productUrl || product?.slug || "").trim().toLowerCase();
-      return (
-        nameSlug === targetSlug ||
-        rawSlug === targetSlug ||
-        String(product?.name || "").toLowerCase().includes("Ilika High Frequency Therapy Wand | For Acne Treatment, Skin Rejuvenation, Hair Growth & Scalp Care")
-      );
-    });
-  }, [products]);
+const targetProduct = useMemo(() => {
+  const targetSlug =
+    "ilika-high-frequency-therapy-wand-for-acne-treatment-skin-rejuvenation-hair-growth-scalp-care";
+
+  return products.find((product) => {
+    const nameSlug = createSlug(product?.name || "");
+    const rawSlug = String(
+      product?.productUrl || product?.slug || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    return (
+      nameSlug === targetSlug ||
+      rawSlug === targetSlug ||
+      String(product?.name || "")
+        .toLowerCase()
+        .includes(
+          "ilika high frequency therapy wand | for acne treatment, skin rejuvenation, hair growth & scalp care"
+        )
+    );
+  });
+}, [products]);
 
   const defaultVariant =
     targetProduct?.variants?.find((variant) => variant?.isDefault) ||

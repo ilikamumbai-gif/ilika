@@ -108,14 +108,19 @@ const HairDryerLanding = () => {
   const couponCode = "ILIKADIY";
   const couponPercent = 15;
 
-  const targetProduct = useMemo(() => {
-    const targetSlug = "ilika-high-speed-leafless-hair-dryer";
-    return products.find((p) => {
-      const nameSlug = createSlug(p?.name || "");
-      const rawSlug = String(p?.productUrl || p?.slug || "").trim().toLowerCase();
-      return nameSlug === targetSlug || rawSlug === targetSlug;
-    });
-  }, [products]);
+ const targetProduct = useMemo(() => {
+  const targetSlug =
+    "ilika-high-speed-bldc-hair-dryer-fast-drying-professional-hair-dryer-with-ionic-technology-temperature-control";
+
+  return products.find((p) => {
+    const nameSlug = createSlug(p?.name || "");
+    const rawSlug = String(p?.productUrl || p?.slug || "")
+      .trim()
+      .toLowerCase();
+
+    return nameSlug === targetSlug || rawSlug === targetSlug;
+  });
+}, [products]);
 
   const defaultVariant = targetProduct?.variants?.find((v) => v?.isDefault) || targetProduct?.variants?.[0];
   const productName = targetProduct?.name || "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control";
