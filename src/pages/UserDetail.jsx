@@ -619,6 +619,7 @@ const UserDetail = () => {
                           const courierName = String(tracking.courierName || "").trim();
                           const trackingUrl = String(tracking.trackingUrl || "").trim();
                           const shippingMeta = shippingStatusMeta(tracking.shippingStatus || "Processing");
+                          const trackOrderLink = `/track-order?order=${encodeURIComponent(order.id || "")}&trackingId=${encodeURIComponent(trackingId)}&courier=${encodeURIComponent(courierName)}&trackingUrl=${encodeURIComponent(trackingUrl)}&shippingStatus=${encodeURIComponent(tracking.shippingStatus || "")}`;
 
                           return (
                             <article
@@ -643,13 +644,21 @@ const UserDetail = () => {
                               {/* Bottom row */}
                               <div className="flex items-center justify-between mt-3">
                                 <p className="text-xs text-gray-400">{totalItems} item{totalItems !== 1 ? "s" : ""}</p>
-                                <button
-                                  type="button"
-                                  onClick={() => setExpandedOrderId(prev => prev === order.id ? "" : order.id)}
-                                  className="flex items-center gap-1.5 text-xs font-semibold text-violet-500 bg-violet-50 hover:bg-violet-100 rounded-lg px-3 py-1.5 transition-colors"
-                                >
-                                  {isExpanded ? "Hide" : "Details"} <IconChevron open={isExpanded} />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <Link
+                                    to={trackOrderLink}
+                                    className="inline-flex items-center justify-center text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg px-3 py-1.5 transition-colors"
+                                  >
+                                    Track Order
+                                  </Link>
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedOrderId(prev => prev === order.id ? "" : order.id)}
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-violet-500 bg-violet-50 hover:bg-violet-100 rounded-lg px-3 py-1.5 transition-colors"
+                                  >
+                                    {isExpanded ? "Hide" : "Details"} <IconChevron open={isExpanded} />
+                                  </button>
+                                </div>
                               </div>
 
                               {/* Expanded detail */}
@@ -712,16 +721,11 @@ const UserDetail = () => {
                                           <p className="text-sm font-medium text-gray-800 mt-1">{courierName || "Not assigned yet"}</p>
                                         </div>
                                         <div className="rounded-lg bg-white border border-blue-100 p-2.5 flex items-center">
-                                          {trackingUrl ? (
-                                            <Link
-                                              to={`/track-order?order=${encodeURIComponent(order.id || "")}&trackingId=${encodeURIComponent(trackingId)}&courier=${encodeURIComponent(courierName)}&trackingUrl=${encodeURIComponent(trackingUrl)}&shippingStatus=${encodeURIComponent(tracking.shippingStatus || "")}`}
-                                              className="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-xs font-semibold transition-colors"
-                                            >
-                                              Track Order
-                                            </Link>
-                                          ) : (
-                                            <p className="text-xs text-gray-400">Tracking link will appear after shipment.</p>
-                                          )}
+                                          <p className="text-xs text-gray-400">
+                                            {trackingUrl
+                                              ? "Use the Track Order button to view live shipment updates."
+                                              : "Tracking link will appear after shipment."}
+                                          </p>
                                         </div>
                                       </div>
                                     </div>
