@@ -139,8 +139,8 @@ const GiftStore = () => {
         <main className="overflow-x-hidden">
           <Banner
             className="mt-0"
-            src="/Images/giftstore.png"
-            mobileSrc="/Images/giftstore.png"
+            src="/Images/giftstore.jpeg"
+            mobileSrc="/Images/giftstore.jpeg"
             alt="Gift Store banner"
             bannerKey="gift-store-hero"
             imageFit="cover"

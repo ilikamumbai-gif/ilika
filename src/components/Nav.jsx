@@ -219,14 +219,14 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
   const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState(() => ["Best Seller"]);
   const { products = [] } = useProducts();
-  const mobileLinks = [
-    { label: "Home", to: "/" },
-    { label: "New Arrival", to: "/newarrival" },
-    { label: "Explore CTM", to: "/ctm" },
-    { label: "Social Feed", to: "/social-feed" },
-    // { label: "Gift Store", to: "/gift-store" },
-    { label: "Blog", to: "/blog" },
-  ];
+ const mobileLinks = [
+  { label: "Home", to: "/" },
+  { label: "New Arrival", to: "/newarrival" },
+  { label: "Explore CTM", to: "/ctm" },
+  { label: "Social Feed", to: "/social-feed" },
+  { label: "Blog", to: "/blog" },
+  { label: "Gift Store", to: "/gift-store", image: "/Images/giftnav.png" },
+];
 
   const desktopNavItemClass = (active) =>
     `relative inline-flex items-center whitespace-nowrap pb-1 text-[#3c302c] transition duration-300 hover:text-[#b34140] ${
@@ -296,15 +296,19 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
 
               <div className="rounded-2xl border border-[#f1dfd9] bg-white p-2 shadow-[0_12px_28px_rgba(35,24,21,0.06)]">
                 {mobileLinks.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={onClose}
-                    className={mobileNavItemClass(isActivePath(location.pathname, item.to))}
-                  >
-                    <span>{item.label}</span>
-                  </Link>
-                ))}
+  <Link
+    key={item.to}
+    to={item.to}
+    onClick={onClose}
+    className={mobileNavItemClass(isActivePath(location.pathname, item.to))}
+  >
+    {item.image ? (
+      <img src={item.image} alt={item.label} className="h-6 w-auto object-contain" />
+    ) : (
+      <span>{item.label}</span>
+    )}
+  </Link>
+))}
               </div>
             </div>
 
@@ -491,9 +495,7 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
             </Link>
 
             
-            {/* <Link to="/gift-store" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/gift-store"))}>
-              Gift Store
-            </Link> */}
+       
 
             <Link to="/social-feed" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/social-feed"))}>
               Social Feed
@@ -502,6 +504,13 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
             <Link to="/blog" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/blog"))}>
               Blog
             </Link>
+                 <Link to="/gift-store" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/gift-store"))}>
+  <img
+    src="/Images/giftnav.png"
+    alt="Gift Gallery"
+    className="h-7 w-auto object-contain"
+  />
+</Link>
           </>
         )}
       </nav>
