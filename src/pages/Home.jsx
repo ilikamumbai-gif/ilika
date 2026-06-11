@@ -9,6 +9,7 @@ import SkinTypeBanner from "../components/SkinTypeBanner";
 
 import { CategoryContext } from "../admin/context/CategoryContext";
 import { ProductContext } from "../admin/context/ProductContext";
+import { getProductSlug } from "../utils/slugify";
 
 const ProductList = lazy(() => import("../components/ProductList"));
 import Banner from "../components/Banner";
@@ -153,6 +154,15 @@ const Home = () => {
       haircareCategory: byName.get("haircare"),
     };
   }, [categories]);
+  const hairBannerProductLink = useMemo(() => {
+    const targetProduct = activeProducts.find((item) => {
+      const name = String(item?.name || "").toLowerCase();
+      return name.includes("black seed") || name.includes("hair oil");
+    });
+
+    if (!targetProduct) return "/hair/care";
+    return `/product/${getProductSlug(targetProduct)}`;
+  }, [activeProducts]);
   const skinTotal = useMemo(
     () =>
       skincareCategory
@@ -377,7 +387,7 @@ const Home = () => {
                 className="mt-0 md:h-[60vh]"
                 src={bannerHair}
                 mobileSrc={hairMobile}
-                linkUrl="/product/ilika-black-seed-hair-growth-oil"
+                linkUrl={hairBannerProductLink}
                 bannerKey="home-haircare"
                 imageFit={isMobile ? "contain" : "cover"}
               />
