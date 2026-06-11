@@ -195,6 +195,58 @@ const getDetailCtaColors = (theme) => {
   };
 };
 
+const normalizeExternalUrl = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith("//")) return `https:${raw}`;
+  return `https://${raw}`;
+};
+
+const getMarketplaceLinks = (product = {}) => {
+  const source = product?.marketplaceLinks || product || {};
+  return [
+    { key: "amazon", label: "Amazon", url: normalizeExternalUrl(source?.amazon || source?.amazonLink || "") },
+    { key: "flipkart", label: "Flipkart", url: normalizeExternalUrl(source?.flipkart || source?.flipkartLink || "") },
+    { key: "meesho", label: "Meesho", url: normalizeExternalUrl(source?.meesho || source?.meeshoLink || "") },
+  ].filter((item) => item.url);
+};
+
+const MARKETPLACE_LOGOS = {
+  amazon: "/Images/Amazon.webp",
+  flipkart: "/Images/Flipcart.webp",
+  meesho: "/Images/Meesho.webp",
+};
+
+const MarketplaceButtons = ({ links = [], theme, className = "" }) => {
+  if (!Array.isArray(links) || !links.length) return null;
+
+  return (
+    <div className={className}>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Also available on</p>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        {links.map((item) => (
+          <a
+            key={item.key}
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-md bg-white p-1 shadow-sm transition hover:-translate-y-0.5 hover:scale-105"
+            aria-label={`Buy on ${item.label}`}
+          >
+            <img
+              src={MARKETPLACE_LOGOS[item.key]}
+              alt={item.label}
+              loading="lazy"
+              className="h-9 w-9 object-contain"
+            />
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const buildTrustStripItems = (product = {}) => [
   { icon: Wallet, title: "COD Available", subtitle: "Pay on Delivery" },
   { icon: ShieldCheck, title: "Secure Payment", subtitle: "Protected Checkout" },
@@ -2185,6 +2237,7 @@ const ProductDetail = () => {
 
   const detailTheme = useMemo(() => buildDetailTheme(detailPageBgColor), [detailPageBgColor]);
   const detailCtaColors = useMemo(() => getDetailCtaColors(detailTheme), [detailTheme]);
+  const marketplaceLinks = useMemo(() => getMarketplaceLinks(product), [product]);
   const variantPaletteMap = useMemo(() => {
     const map = new Map();
     const palette = Array.isArray(product?.detailPageBgPalette) ? product.detailPageBgPalette : [];
@@ -3221,6 +3274,12 @@ const ProductDetail = () => {
 
               </div>
 
+              <MarketplaceButtons
+                links={marketplaceLinks}
+                theme={detailTheme}
+                className="pt-1"
+              />
+
             </div>
 
           </div>
@@ -3684,7 +3743,4 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
-
-
-
 

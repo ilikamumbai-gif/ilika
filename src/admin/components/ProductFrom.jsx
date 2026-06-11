@@ -97,6 +97,20 @@ const sanitizePackOptions = (packOptions = []) => {
     .filter(Boolean);
 };
 
+const normalizeExternalUrl = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith("//")) return `https:${raw}`;
+  return `https://${raw}`;
+};
+
+const sanitizeMarketplaceLinks = (value = {}) => ({
+  amazon: normalizeExternalUrl(value?.amazon || value?.amazonLink || ""),
+  flipkart: normalizeExternalUrl(value?.flipkart || value?.flipkartLink || ""),
+  meesho: normalizeExternalUrl(value?.meesho || value?.meeshoLink || ""),
+});
+
 const splitBenefitText = (value = "") => {
   const text = String(value || "").trim();
   if (!text) return { title: "", description: "" };
@@ -284,6 +298,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     hsnCode: "", gstRate: "",
     name: "", productUrl: "", shortInfo: "", price: "", mrp: "",
     packOptions: [],
+    marketplaceLinks: { amazon: "", flipkart: "", meesho: "" },
     productTag: "",
     hasVariants: false, variants: [], categoryIds: [],
     description: "", additionalInfo: "", tagline: "", points: "", whyYouLoveIt: buildWhyYouLoveItDraft(),
@@ -306,6 +321,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     const detailBg = buildDetailBgConfig(d.detailPageBgPalette, d.detailPageDefaultBg);
     const initialCouponId = d.couponId || d.couponSnapshot?.id || "";
     const initialCouponSnapshot = sanitizeCouponSnapshot(d.couponSnapshot) || sanitizeCouponSnapshot(d.coupon);
+    const marketplaceLinks = sanitizeMarketplaceLinks(d.marketplaceLinks || d);
     return {
     hsnCode: d.hsnCode || d.hsn || "",
     gstRate: d.gstRate ?? "",
@@ -315,6 +331,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     price: d.price || "",
     mrp: d.mrp || "",
     packOptions: sanitizePackOptions(d.packOptions),
+    marketplaceLinks,
     productTag: d.productTag || "",
     hasVariants: d.hasVariants || false,
     variants: (d.variants || []).map(v => ({ ...v, preview: v.images || [] })),
@@ -414,6 +431,16 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     setForm((prev) => ({
       ...prev,
       productUrl: sanitizeProductUrlValue(value),
+    }));
+  };
+
+  const handleMarketplaceLinkChange = (platform, value) => {
+    setForm((prev) => ({
+      ...prev,
+      marketplaceLinks: {
+        ...(prev.marketplaceLinks || { amazon: "", flipkart: "", meesho: "" }),
+        [platform]: value,
+      },
     }));
   };
 
@@ -678,6 +705,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         gstRate: form.gstRate === "" ? null : Number(form.gstRate),
         name: form.name, shortInfo: form.shortInfo,
         productUrl: normalizedProductUrl,
+        marketplaceLinks: sanitizeMarketplaceLinks(form.marketplaceLinks),
         productTag: String(form.productTag || "").trim(),
         hasVariants: form.hasVariants,
         price: form.hasVariants ? null : Number(form.price),
@@ -796,6 +824,39 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               onChange={e => setForm({ ...form, shortInfo: e.target.value })}
               className="w-full border border-gray-200 p-2.5 rounded-lg" rows={2}
             />
+          </div>
+          <div className="lg:col-span-2">
+            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-600 block mb-1">Marketplace Links (Optional)</label>
+                <p className="text-xs text-gray-500">
+                  Add Amazon, Flipkart, and Meesho product URLs. They will appear on the public product detail page only when filled.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <input
+                  type="url"
+                  placeholder="Amazon product URL"
+                  value={form.marketplaceLinks?.amazon || ""}
+                  onChange={e => handleMarketplaceLinkChange("amazon", e.target.value)}
+                  className="w-full border border-gray-200 p-2.5 rounded-lg"
+                />
+                <input
+                  type="url"
+                  placeholder="Flipkart product URL"
+                  value={form.marketplaceLinks?.flipkart || ""}
+                  onChange={e => handleMarketplaceLinkChange("flipkart", e.target.value)}
+                  className="w-full border border-gray-200 p-2.5 rounded-lg"
+                />
+                <input
+                  type="url"
+                  placeholder="Meesho product URL"
+                  value={form.marketplaceLinks?.meesho || ""}
+                  onChange={e => handleMarketplaceLinkChange("meesho", e.target.value)}
+                  className="w-full border border-gray-200 p-2.5 rounded-lg"
+                />
+              </div>
+            </div>
           </div>
           <div className="lg:col-span-2">
             <label className="text-xs font-semibold text-gray-600 block mb-1">Product Tag (Optional)</label>
