@@ -313,6 +313,7 @@ const emptyIpLocation = () => ({
   country: null,
   state: null,
   city: null,
+  postalCode: null,
 });
 
 const normalizeLocationValue = (value) => optionalTrimmed(value, 120);
@@ -340,6 +341,11 @@ const getGeoHeaderLocation = (req) => {
         headers["x-city"] ||
         headers["cloudfront-viewer-city"]
     ),
+    postalCode: normalizeLocationValue(
+      headers["x-vercel-ip-postal-code"] ||
+        headers["x-postal-code"] ||
+        headers["cloudfront-viewer-postal-code"]
+    ),
   };
 
   return location;
@@ -349,8 +355,22 @@ const hasResolvedIpLocation = (location = {}) =>
   Boolean(
     normalizeLocationValue(location?.country) ||
       normalizeLocationValue(location?.state) ||
-      normalizeLocationValue(location?.city)
+      normalizeLocationValue(location?.city) ||
+      normalizeLocationValue(location?.postalCode)
   );
+
+const hasPreciseIpLocation = (location = {}) =>
+  Boolean(
+    normalizeLocationValue(location?.city) ||
+      normalizeLocationValue(location?.postalCode)
+  );
+
+const mergeIpLocations = (primary = {}, fallback = {}) => ({
+  country: normalizeLocationValue(primary?.country || fallback?.country),
+  state: normalizeLocationValue(primary?.state || fallback?.state),
+  city: normalizeLocationValue(primary?.city || fallback?.city),
+  postalCode: normalizeLocationValue(primary?.postalCode || fallback?.postalCode),
+});
 
 const buildVisitorAnalyticsFingerprint = (event = {}) => {
   return [
@@ -422,6 +442,7 @@ const fetchIpLocation = async (ipAddress = "") => {
         country: optionalTrimmed(json?.country_name, 120),
         state: optionalTrimmed(json?.region, 120),
         city: optionalTrimmed(json?.city, 120),
+        postalCode: optionalTrimmed(json?.postal || json?.postal_code || json?.zip, 40),
       }),
       isValid: (json) => !json?.error,
     },
@@ -434,6 +455,7 @@ const fetchIpLocation = async (ipAddress = "") => {
         country: optionalTrimmed(json?.country, 120),
         state: optionalTrimmed(json?.region, 120),
         city: optionalTrimmed(json?.city, 120),
+        postalCode: optionalTrimmed(json?.postal || json?.postal_code || json?.zip, 40),
       }),
       isValid: (json) => json?.success !== false,
     },
@@ -446,6 +468,7 @@ const fetchIpLocation = async (ipAddress = "") => {
         country: optionalTrimmed(json?.location?.country, 120),
         state: optionalTrimmed(json?.location?.state, 120),
         city: optionalTrimmed(json?.location?.city, 120),
+        postalCode: optionalTrimmed(json?.location?.postal_code || json?.location?.zip || json?.postal || json?.zip, 40),
       }),
       isValid: (json) => !json?.error,
     },
@@ -521,6 +544,7 @@ const mapVisitorAnalyticsDoc = (doc) => {
       country: normalizeLocationValue(data.locationCountry ?? data.ipLocation?.country),
       state: normalizeLocationValue(data.locationState ?? data.ipLocation?.state),
       city: normalizeLocationValue(data.locationCity ?? data.ipLocation?.city),
+      postalCode: normalizeLocationValue(data.locationPostalCode ?? data.ipLocation?.postalCode),
     },
     locationDebug: {
       clientIp: normalizeDebugIp(data.locationDebug?.clientIp ?? data.clientIp),
@@ -529,16 +553,19 @@ const mapVisitorAnalyticsDoc = (doc) => {
         country: normalizeLocationValue(data.locationDebug?.headerLocation?.country),
         state: normalizeLocationValue(data.locationDebug?.headerLocation?.state),
         city: normalizeLocationValue(data.locationDebug?.headerLocation?.city),
+        postalCode: normalizeLocationValue(data.locationDebug?.headerLocation?.postalCode),
       },
       clientIpLocation: {
         country: normalizeLocationValue(data.locationDebug?.clientIpLocation?.country),
         state: normalizeLocationValue(data.locationDebug?.clientIpLocation?.state),
         city: normalizeLocationValue(data.locationDebug?.clientIpLocation?.city),
+        postalCode: normalizeLocationValue(data.locationDebug?.clientIpLocation?.postalCode),
       },
       resolvedLocation: {
         country: normalizeLocationValue(data.locationDebug?.resolvedLocation?.country),
         state: normalizeLocationValue(data.locationDebug?.resolvedLocation?.state),
         city: normalizeLocationValue(data.locationDebug?.resolvedLocation?.city),
+        postalCode: normalizeLocationValue(data.locationDebug?.resolvedLocation?.postalCode),
       },
       locationSource: optionalTrimmed(data.locationDebug?.locationSource, 80),
     },
@@ -3669,6 +3696,7 @@ app.post("/api/visitor-analytics", async (req, res) => {
       country: normalizeLocationValue(clientIpLocation?.country),
       state: normalizeLocationValue(clientIpLocation?.state),
       city: normalizeLocationValue(clientIpLocation?.city),
+      postalCode: normalizeLocationValue(clientIpLocation?.postalCode || clientIpLocation?.pincode || clientIpLocation?.postal || clientIpLocation?.zip),
     };
 
     if (!normalizedVisitorId) {
@@ -3711,28 +3739,46 @@ app.post("/api/visitor-analytics", async (req, res) => {
     const headerLocation = getGeoHeaderLocation(req);
     let locationSource = "backend-ip-lookup";
     let ipLocation;
+    const lookupIp =
+      normalizedClientIp && !isPrivateIpAddress(normalizedClientIp)
+        ? normalizedClientIp
+        : clientIpAddress;
 
-    if (hasResolvedIpLocation(headerLocation)) {
+    if (hasPreciseIpLocation(normalizedClientLocation)) {
+      ipLocation = mergeIpLocations(normalizedClientLocation, headerLocation);
+      locationSource = "client-location";
+    } else if (hasPreciseIpLocation(headerLocation)) {
       ipLocation = headerLocation;
       locationSource = "header-location";
-    } else if (hasResolvedIpLocation(normalizedClientLocation)) {
-      ipLocation = normalizedClientLocation;
-      locationSource = "client-location";
     } else {
-      ipLocation = await fetchIpLocation(
-        normalizedClientIp && !isPrivateIpAddress(normalizedClientIp)
-          ? normalizedClientIp
-          : clientIpAddress
-      );
-      if (!hasResolvedIpLocation(ipLocation)) {
+      const lookedUpLocation = await fetchIpLocation(lookupIp);
+
+      if (hasResolvedIpLocation(lookedUpLocation)) {
+        ipLocation = mergeIpLocations(
+          lookedUpLocation,
+          hasResolvedIpLocation(normalizedClientLocation)
+            ? normalizedClientLocation
+            : headerLocation
+        );
+        locationSource =
+          normalizedClientIp && !isPrivateIpAddress(normalizedClientIp)
+            ? "client-ip-lookup"
+            : "backend-ip-lookup";
+      } else if (hasResolvedIpLocation(normalizedClientLocation)) {
+        ipLocation = mergeIpLocations(normalizedClientLocation, headerLocation);
+        locationSource = "client-location";
+      } else if (hasResolvedIpLocation(headerLocation)) {
+        ipLocation = headerLocation;
+        locationSource = "header-location";
+      } else {
+        ipLocation = emptyIpLocation();
         locationSource = "lookup-empty";
-      } else if (normalizedClientIp && !isPrivateIpAddress(normalizedClientIp)) {
-        locationSource = "client-ip-lookup";
       }
     }
     const locationCountry = normalizeLocationValue(ipLocation.country);
     const locationState = normalizeLocationValue(ipLocation.state);
     const locationCity = normalizeLocationValue(ipLocation.city);
+    const locationPostalCode = normalizeLocationValue(ipLocation.postalCode);
     const eventRef = db.collection("visitorAnalytics").doc();
 
     const eventData = {
@@ -3751,11 +3797,13 @@ app.post("/api/visitor-analytics", async (req, res) => {
         country: locationCountry,
         state: locationState,
         city: locationCity,
+        postalCode: locationPostalCode,
       },
       clientIp: normalizeDebugIp(normalizedClientIp),
       locationCountry,
       locationState,
       locationCity,
+      locationPostalCode,
       locationDebug: {
         clientIp: normalizeDebugIp(normalizedClientIp),
         requestIp: normalizeDebugIp(clientIpAddress),
@@ -3763,16 +3811,19 @@ app.post("/api/visitor-analytics", async (req, res) => {
           country: normalizeLocationValue(headerLocation.country),
           state: normalizeLocationValue(headerLocation.state),
           city: normalizeLocationValue(headerLocation.city),
+          postalCode: normalizeLocationValue(headerLocation.postalCode),
         },
         clientIpLocation: {
           country: normalizeLocationValue(normalizedClientLocation.country),
           state: normalizeLocationValue(normalizedClientLocation.state),
           city: normalizeLocationValue(normalizedClientLocation.city),
+          postalCode: normalizeLocationValue(normalizedClientLocation.postalCode),
         },
         resolvedLocation: {
           country: locationCountry,
           state: locationState,
           city: locationCity,
+          postalCode: locationPostalCode,
         },
         locationSource,
       },
@@ -3923,8 +3974,14 @@ app.get("/api/visitor-analytics", async (req, res) => {
         .sort((a, b) => b.visitors - a.visitors || b.events - a.events || a.label.localeCompare(b.label));
     };
 
-    const buildLocationLabel = (location = {}) =>
-      [location?.city, location?.state, location?.country].filter(Boolean).join(", ") || "Unknown";
+    const buildLocationLabel = (location = {}) => {
+      const city = trimToLength(location?.city, 120);
+      const postalCode = trimToLength(location?.postalCode, 40);
+      if (city && postalCode) return `${city} - ${postalCode}`;
+      if (city) return city;
+      if (postalCode) return `PIN ${postalCode}`;
+      return [location?.state, location?.country].filter(Boolean).join(", ") || "Unknown";
+    };
 
     const locationActivityMap = new Map();
     filteredEvents.forEach((event) => {
@@ -3961,6 +4018,7 @@ app.get("/api/visitor-analytics", async (req, res) => {
           event.ipLocation?.country || "Unknown",
           event.ipLocation?.state || "Unknown",
           event.ipLocation?.city || "Unknown",
+          event.ipLocation?.postalCode || "Unknown",
           event.productId || event.productName || "Unknown Product",
         ].join("::");
 
@@ -3969,6 +4027,7 @@ app.get("/api/visitor-analytics", async (req, res) => {
             country: event.ipLocation?.country || "Unknown",
             state: event.ipLocation?.state || "Unknown",
             city: event.ipLocation?.city || "Unknown",
+            postalCode: event.ipLocation?.postalCode || null,
             productId: event.productId || null,
             productName: event.productName || "Unknown Product",
             eventCount: 0,

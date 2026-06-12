@@ -28,7 +28,17 @@ const getForwardedIp = (headers = {}) => {
 };
 
 const hasLocation = (location = {}) =>
-  Boolean(location?.country || location?.state || location?.city);
+  Boolean(location?.country || location?.state || location?.city || location?.postalCode);
+
+const hasPreciseLocation = (location = {}) =>
+  Boolean(location?.city || location?.postalCode);
+
+const mergeLocations = (primary = {}, fallback = {}) => ({
+  country: primary?.country || fallback?.country || null,
+  state: primary?.state || fallback?.state || null,
+  city: primary?.city || fallback?.city || null,
+  postalCode: primary?.postalCode || fallback?.postalCode || null,
+});
 
 const fetchLookup = async (url, mapper) => {
   const response = await fetch(url, {
@@ -51,6 +61,7 @@ const fetchLocationFromIp = async (ipAddress = "") => {
         country: normalize(data?.country),
         state: normalize(data?.region),
         city: normalize(data?.city),
+        postalCode: normalize(data?.postal || data?.postal_code || data?.zip),
         source: "vercel-ipwhois",
       })),
     async () =>
@@ -58,6 +69,7 @@ const fetchLocationFromIp = async (ipAddress = "") => {
         country: normalize(data?.country_name),
         state: normalize(data?.region),
         city: normalize(data?.city),
+        postalCode: normalize(data?.postal || data?.postal_code || data?.zip),
         source: "vercel-ipapi",
       })),
   ];
@@ -98,19 +110,20 @@ export default async function handler(req, res) {
       headers["x-city"],
       headers["cloudfront-viewer-city"]
     ),
+    postalCode: pickFirst(
+      headers["x-vercel-ip-postal-code"],
+      headers["x-postal-code"],
+      headers["cloudfront-viewer-postal-code"]
+    ),
   };
 
   let location = headerLocation;
-  let source = "vercel-headers";
+  let source = hasLocation(headerLocation) ? "vercel-headers" : "unresolved";
 
-  if (!hasLocation(location) && forwardedIp) {
+  if ((!hasPreciseLocation(headerLocation) || !hasLocation(headerLocation)) && forwardedIp) {
     const lookedUp = await fetchLocationFromIp(forwardedIp);
     if (lookedUp) {
-      location = {
-        country: lookedUp.country,
-        state: lookedUp.state,
-        city: lookedUp.city,
-      };
+      location = mergeLocations(lookedUp, headerLocation);
       source = lookedUp.source;
     }
   }
@@ -122,4 +135,3 @@ export default async function handler(req, res) {
     source: hasLocation(location) ? source : "unresolved",
   });
 }
-

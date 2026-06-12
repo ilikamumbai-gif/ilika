@@ -43,11 +43,23 @@ const formatDateTime = (value) => {
 const formatCurrency = (value) =>
   `₹${Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 
-const formatLocationLabel = (location = {}) =>
-  [location?.city, location?.state, location?.country].filter(Boolean).join(", ") || "Unknown";
+const formatLocationLabel = (location = {}) => {
+  const city = String(location?.city || "").trim();
+  const postalCode = String(location?.postalCode || location?.pincode || "").trim();
+  if (city && postalCode) return `${city} - ${postalCode}`;
+  if (city) return city;
+  if (postalCode) return `PIN ${postalCode}`;
+  return [location?.state, location?.country].filter(Boolean).join(", ") || "Unknown";
+};
 
-const formatDebugLocation = (location = {}) =>
-  [location?.city, location?.state, location?.country].filter(Boolean).join(", ") || "none";
+const formatDebugLocation = (location = {}) => {
+  const city = String(location?.city || "").trim();
+  const postalCode = String(location?.postalCode || "").trim();
+  if (city && postalCode) return `${city} - ${postalCode}`;
+  if (city) return city;
+  if (postalCode) return `PIN ${postalCode}`;
+  return [location?.state, location?.country].filter(Boolean).join(", ") || "none";
+};
 
 const StatCard = ({ title, value, hint, icon: Icon, tone = "pink" }) => {
   const tones = {
@@ -419,7 +431,12 @@ const LocationAnalytics = () => {
                     <div className="min-w-0">
                       <p className="break-words text-sm font-semibold text-gray-800">{row.productName || "Unknown Product"}</p>
                       <p className="mt-1 text-xs text-gray-500">
-                        {formatLocationLabel({ city: row.city, state: row.state, country: row.country })}
+                        {formatLocationLabel({
+                          city: row.city,
+                          state: row.state,
+                          country: row.country,
+                          postalCode: row.postalCode,
+                        })}
                       </p>
                       {row.productId ? <p className="mt-1 break-all text-[11px] text-gray-400">{row.productId}</p> : null}
                     </div>

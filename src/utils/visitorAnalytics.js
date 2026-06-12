@@ -14,6 +14,7 @@ const ADD_TO_CART_DEBOUNCE_MS = 1500;
 const isBrowser = typeof window !== "undefined";
 let pendingLocationPromise = null;
 let pendingPublicIpPromise = null;
+let pendingServerNetworkContextPromise = null;
 
 const createId = () => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -175,9 +176,10 @@ const normalizeLocationObject = (location = {}) => {
     country: normalizeLocationValue(location?.country),
     state: normalizeLocationValue(location?.state),
     city: normalizeLocationValue(location?.city),
+    postalCode: normalizeLocationValue(location?.postalCode || location?.pincode || location?.postal || location?.zip),
   };
 
-  if (!normalized.country && !normalized.state && !normalized.city) {
+  if (!normalized.country && !normalized.state && !normalized.city && !normalized.postalCode) {
     return null;
   }
 
@@ -231,6 +233,7 @@ const fetchExternalApproxLocation = async () => {
           country: data?.country,
           state: data?.region,
           city: data?.city,
+          postalCode: data?.postal || data?.postal_code || data?.zip,
         })
       ),
     () =>
@@ -239,6 +242,7 @@ const fetchExternalApproxLocation = async () => {
           country: data?.country_name,
           state: data?.region,
           city: data?.city,
+          postalCode: data?.postal || data?.postal_code || data?.zip,
         })
       ),
   ];
@@ -266,6 +270,7 @@ const fetchExternalNetworkContext = async () => {
           country: data?.country,
           state: data?.region,
           city: data?.city,
+          postalCode: data?.postal || data?.postal_code || data?.zip,
         }),
       })),
     () =>
@@ -275,6 +280,7 @@ const fetchExternalNetworkContext = async () => {
           country: data?.country_name,
           state: data?.region,
           city: data?.city,
+          postalCode: data?.postal || data?.postal_code || data?.zip,
         }),
       })),
   ];
@@ -293,6 +299,38 @@ const fetchExternalNetworkContext = async () => {
   }
 
   return { ip: "", location: null };
+};
+
+const fetchServerNetworkContext = async () => {
+  if (!isBrowser) return { ip: "", location: null };
+
+  if (pendingServerNetworkContextPromise) {
+    return pendingServerNetworkContextPromise;
+  }
+
+  pendingServerNetworkContextPromise = fetch("/api/geo-location", {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+    credentials: "omit",
+  })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      const ip = normalizeIpValue(data?.ip);
+      const location = normalizeLocationObject(data?.location);
+
+      if (ip) writeCachedPublicIp(ip);
+      if (location) writeCachedLocation(location);
+
+      return { ip, location };
+    })
+    .catch(() => ({ ip: "", location: null }))
+    .finally(() => {
+      pendingServerNetworkContextPromise = null;
+    });
+
+  return pendingServerNetworkContextPromise;
 };
 
 const fetchPublicIpAddress = async () => {
@@ -432,13 +470,16 @@ const postVisitorAnalytics = (payload) => {
 };
 
 export const trackVisitorEvent = async (event = {}) => {
+  const serverContext = await fetchServerNetworkContext().catch(() => ({ ip: "", location: null }));
   const browserContext = await fetchExternalNetworkContext().catch(() => ({ ip: "", location: null }));
   const clientIp =
     event.clientIp ||
+    serverContext.ip ||
     browserContext.ip ||
     (await fetchPublicIpAddress().catch(() => ""));
   const approximateLocation =
     event.ipLocation ||
+    serverContext.location ||
     browserContext.location ||
     (await fetchApproxLocation().catch(() => null));
   const payload = buildVisitorEventPayload({
