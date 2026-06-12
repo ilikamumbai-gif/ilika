@@ -109,6 +109,16 @@ const normalizeIndianPhone = (phone = "") =>
   String(phone).replace(/\D/g, "").slice(-10);
 const guestAddressStorageKey = "guest_checkout_addresses";
 const guestVerifiedPhonesStorageKey = "guest_verified_phones";
+const GIFT_WRAP_FEE = 99;
+
+const emptyAddressDraft = () => ({
+  name: "",
+  phone: "",
+  pincode: "",
+  city: "",
+  state: "",
+  addressLine: "",
+});
 
 const getPhoneVerificationAuth = () => {
   const existingApp = getApps().find((appInstance) => appInstance.name === "checkout-phone-verification");
@@ -415,12 +425,37 @@ const Checkout = () => {
     // Note: the useEffect above handles OTP reset automatically
   };
 
-  const [address, setAddress] = useState({
-    name: "", phone: "", pincode: "", city: "", state: "", addressLine: "",
-  });
+  const [address, setAddress] = useState(emptyAddressDraft);
+  const [isGiftOrder, setIsGiftOrder] = useState(false);
+  const [wantsGiftWrap, setWantsGiftWrap] = useState(false);
+  const [giftRecipientAddress, setGiftRecipientAddress] = useState(emptyAddressDraft);
+  const [giftPincodeLoading, setGiftPincodeLoading] = useState(false);
+  const [giftPincodeVerified, setGiftPincodeVerified] = useState(false);
+  const [giftPincodeError, setGiftPincodeError] = useState("");
 
   const handleChange = (e) =>
     setAddress({ ...address, [e.target.name]: e.target.value });
+
+  const handleGiftRecipientChange = (e) =>
+    setGiftRecipientAddress((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const fetchPincodeDetails = async (pin) => {
+    const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+    const data = await res.json();
+    if (data?.[0]?.Status !== "Success") {
+      throw new Error("Invalid pincode");
+    }
+
+    const post = data[0].PostOffice?.[0];
+    if (!post) {
+      throw new Error("Could not verify pincode");
+    }
+
+    return {
+      city: post.District || post.Name || "",
+      state: post.State || "",
+    };
+  };
 
   const handlePincodeChange = async (e) => {
     const pin = e.target.value.replace(/\D/g, "").slice(0, 6);
@@ -431,28 +466,43 @@ const Checkout = () => {
     if (pin.length === 6) {
       setPincodeLoading(true);
       try {
-        const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
-        const data = await res.json();
-        if (data?.[0]?.Status === "Success") {
-          const post = data[0].PostOffice?.[0];
-          if (post) {
-            setAddress((prev) => ({
-              ...prev,
-              pincode: pin,
-              city: post.District || post.Name || "",
-              state: post.State || "",
-            }));
-            setPincodeVerified(true);
-          } else {
-            setPincodeError("Could not verify pincode. Please try another one.");
-          }
-        } else {
-          setPincodeError("Invalid pincode. Please enter a valid 6-digit pincode.");
-        }
+        const details = await fetchPincodeDetails(pin);
+        setAddress((prev) => ({
+          ...prev,
+          pincode: pin,
+          city: details.city,
+          state: details.state,
+        }));
+        setPincodeVerified(true);
       } catch (_) {
-        setPincodeError("Could not verify pincode right now. Please try again.");
+        setPincodeError("Invalid pincode. Please enter a valid 6-digit pincode.");
       } finally {
         setPincodeLoading(false);
+      }
+    }
+  };
+
+  const handleGiftPincodeChange = async (e) => {
+    const pin = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setGiftRecipientAddress((prev) => ({ ...prev, pincode: pin, city: "", state: "" }));
+    setGiftPincodeVerified(false);
+    setGiftPincodeError("");
+
+    if (pin.length === 6) {
+      setGiftPincodeLoading(true);
+      try {
+        const details = await fetchPincodeDetails(pin);
+        setGiftRecipientAddress((prev) => ({
+          ...prev,
+          pincode: pin,
+          city: details.city,
+          state: details.state,
+        }));
+        setGiftPincodeVerified(true);
+      } catch (_) {
+        setGiftPincodeError("Invalid recipient pincode. Please enter a valid 6-digit pincode.");
+      } finally {
+        setGiftPincodeLoading(false);
       }
     }
   };
@@ -462,7 +512,11 @@ const Checkout = () => {
     (acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1),
     0
   );
-  const total = parseFloat(subtotal.toFixed(2));
+  const hasGiftStoreItems = cartItems.some(
+    (item) => String(item?.checkoutContext?.source || "").trim().toLowerCase() === "gift-store"
+  );
+  const giftWrapFee = isGiftOrder && wantsGiftWrap ? GIFT_WRAP_FEE : 0;
+  const total = parseFloat((subtotal + giftWrapFee).toFixed(2));
   const source = localStorage.getItem("traffic_source") || "WEBSITE";
 
   useEffect(() => {
@@ -503,6 +557,15 @@ const Checkout = () => {
       setSelectedAddressId(addresses[0]?.id || null);
     }
   }, [addresses, selectedAddressId]);
+
+  useEffect(() => {
+    if (hasGiftStoreItems) return;
+    setIsGiftOrder(false);
+    setWantsGiftWrap(false);
+    setGiftRecipientAddress(emptyAddressDraft());
+    setGiftPincodeVerified(false);
+    setGiftPincodeError("");
+  }, [hasGiftStoreItems]);
 
   // ─── LOAD RAZORPAY SCRIPT ─────────────────────────────────────────────────
   useEffect(() => {
@@ -615,6 +678,41 @@ const Checkout = () => {
     Boolean(otpSent && otpRequestedPhone) &&
     normalizeIndianPhone(otpPhone) !== otpRequestedPhone;
 
+  const validateGiftRecipientAddress = () => {
+    const phoneRegex = /^[6-9]\d{9}$/;
+    const pincodeRegex = /^\d{6}$/;
+
+    if (!giftRecipientAddress.name.trim()) {
+      alert("Please enter the recipient's full name");
+      return false;
+    }
+    if (!phoneRegex.test(giftRecipientAddress.phone)) {
+      alert("Please enter a valid 10-digit recipient mobile number");
+      return false;
+    }
+    if (!pincodeRegex.test(giftRecipientAddress.pincode)) {
+      alert("Please enter a valid 6-digit recipient pincode");
+      return false;
+    }
+    if (!giftPincodeVerified) {
+      alert("Please verify a valid recipient pincode to auto-fill city and state.");
+      return false;
+    }
+    if (!giftRecipientAddress.city.trim()) {
+      alert("Please enter the recipient city");
+      return false;
+    }
+    if (!giftRecipientAddress.state.trim()) {
+      alert("Please enter the recipient state");
+      return false;
+    }
+    if (!giftRecipientAddress.addressLine.trim()) {
+      alert("Please enter the recipient full address");
+      return false;
+    }
+    return true;
+  };
+
   // ─── PLACE ORDER ──────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
     if (loading) return;
@@ -630,6 +728,9 @@ const Checkout = () => {
 
     if (!isPhoneVerified) {
       alert("Please verify your phone number before placing the order");
+      return;
+    }
+    if (hasGiftStoreItems && isGiftOrder && !validateGiftRecipientAddress()) {
       return;
     }
 
@@ -656,6 +757,16 @@ const Checkout = () => {
         isCombo: item.isCombo || false,
         comboItems: item.comboItems || item.items || [],
       }));
+      const giftOptionsPayload = {
+        isGiftOrder: Boolean(hasGiftStoreItems && isGiftOrder),
+        wantsGiftWrap: Boolean(hasGiftStoreItems && isGiftOrder && wantsGiftWrap),
+        giftWrapFee,
+        buyerAddress: selectedAddress || null,
+        recipientAddress:
+          hasGiftStoreItems && isGiftOrder
+            ? { ...giftRecipientAddress }
+            : null,
+      };
 
       /* ── COD FLOW ── */
       if (paymentMethod === "COD") {
@@ -669,6 +780,7 @@ const Checkout = () => {
             totalAmount: total,
             shippingAddressId: currentUser ? selectedAddressId : null,
             shippingAddress: selectedAddress || null,
+            giftOptions: giftOptionsPayload,
             paymentMethod: "COD",
             source,
           }),
@@ -724,6 +836,7 @@ const Checkout = () => {
                   totalAmount: total,
                   shippingAddressId: currentUser ? selectedAddressId : null,
                   shippingAddress: selectedAddress || null,
+                  giftOptions: giftOptionsPayload,
                   source,
                 },
               }),
@@ -915,6 +1028,122 @@ const Checkout = () => {
               </div>
             )}
 
+            {hasGiftStoreItems && (
+              <div className="rounded-xl border border-[#f1dfd9] bg-white p-4">
+                <h3 className="font-semibold text-[#231815]">Gift Options</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  This cart includes a product from Gift Gallery. Tell us if this order is a gift.
+                </p>
+
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="gift-order"
+                      checked={!isGiftOrder}
+                      onChange={() => {
+                        setIsGiftOrder(false);
+                        setWantsGiftWrap(false);
+                      }}
+                    />
+                    No, this is for me
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="gift-order"
+                      checked={isGiftOrder}
+                      onChange={() => setIsGiftOrder(true)}
+                    />
+                    Yes, this is a gift
+                  </label>
+                </div>
+
+                {isGiftOrder ? (
+                  <div className="mt-4 space-y-4">
+                    <label className="flex items-center justify-between gap-3 rounded-xl border border-[#f1dfd9] bg-[#fff8f6] px-4 py-3 text-sm">
+                      <span className="font-medium text-[#231815]">Add gift wrapping</span>
+                      <span className="flex items-center gap-3">
+                        <span className="font-semibold text-[#b34140]">+ ₹{GIFT_WRAP_FEE}</span>
+                        <input
+                          type="checkbox"
+                          checked={wantsGiftWrap}
+                          onChange={(e) => setWantsGiftWrap(e.target.checked)}
+                        />
+                      </span>
+                    </label>
+
+                    <div className="rounded-xl border border-[#f1dfd9] p-4">
+                      <h4 className="font-medium text-[#231815]">Recipient Address</h4>
+                      <p className="mt-1 text-xs text-gray-500">
+                        We will ship the gift to this person instead of your own address.
+                      </p>
+
+                      <div className="mt-4 grid sm:grid-cols-2 gap-4">
+                        <input
+                          name="name"
+                          placeholder="Recipient Full Name *"
+                          className="border p-3 rounded-lg"
+                          onChange={handleGiftRecipientChange}
+                          value={giftRecipientAddress.name}
+                        />
+                        <input
+                          name="phone"
+                          placeholder="Recipient Phone Number *"
+                          maxLength={10}
+                          inputMode="numeric"
+                          className="border p-3 rounded-lg"
+                          onChange={handleGiftRecipientChange}
+                          value={giftRecipientAddress.phone}
+                        />
+                        <div className="relative">
+                          <input
+                            name="pincode"
+                            placeholder="Recipient Pincode *"
+                            maxLength={6}
+                            inputMode="numeric"
+                            className="border p-3 rounded-lg w-full"
+                            onChange={handleGiftPincodeChange}
+                            value={giftRecipientAddress.pincode}
+                          />
+                          {giftPincodeLoading && (
+                            <span className="absolute right-3 top-3.5 text-xs text-gray-400">
+                              Fetching...
+                            </span>
+                          )}
+                        </div>
+                        {giftPincodeError ? (
+                          <p className="text-xs text-rose-600 sm:col-span-2">{giftPincodeError}</p>
+                        ) : null}
+                        <input
+                          name="city"
+                          placeholder="Recipient City *"
+                          className="border p-3 rounded-lg bg-gray-50"
+                          value={giftRecipientAddress.city}
+                          readOnly
+                        />
+                        <input
+                          name="state"
+                          placeholder="Recipient State *"
+                          className="border p-3 rounded-lg sm:col-span-2 bg-gray-50"
+                          value={giftRecipientAddress.state}
+                          readOnly
+                        />
+                        <textarea
+                          name="addressLine"
+                          placeholder="Recipient House No., Street, Area, Landmark *"
+                          rows="3"
+                          className="border p-3 rounded-lg sm:col-span-2"
+                          onChange={handleGiftRecipientChange}
+                          value={giftRecipientAddress.addressLine}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
+
             {/* PAYMENT METHOD */}
             <div className="bg-white border rounded-xl p-4">
               <h3 className="font-semibold mb-3">Payment Method</h3>
@@ -989,6 +1218,11 @@ const Checkout = () => {
               <div className="flex justify-between">
                 <span>Subtotal</span><span>{subtotal}</span>
               </div>
+              {isGiftOrder && wantsGiftWrap ? (
+                <div className="flex justify-between">
+                  <span>Gift wrapping</span><span>₹{giftWrapFee}</span>
+                </div>
+              ) : null}
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span className="text-green-900">Free</span>
@@ -1017,5 +1251,3 @@ const Checkout = () => {
 };
 
 export default Checkout;
-
-

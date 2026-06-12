@@ -284,6 +284,11 @@ const GiftStore = () => {
                   key={product._id || product.id}
                   product={product}
                   prioritizeImage={index < 3}
+                  cartMetadata={{
+                    checkoutContext: {
+                      source: "gift-store",
+                    },
+                  }}
                 />
               ))}
             </div>

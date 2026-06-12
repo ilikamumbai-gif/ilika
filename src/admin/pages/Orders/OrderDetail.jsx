@@ -150,6 +150,10 @@ const OrderDetail = () => {
   const isPaid     = order.paymentStatus === "Paid";
   const itemCount  = order.items?.length || 0;
   const addr       = order.shippingAddress || {};
+  const giftOrder  = order.giftOrder || {};
+  const giftRecipientAddress = giftOrder.recipientAddress || {};
+  const giftBuyerAddress = giftOrder.buyerAddress || {};
+  const giftWrapFee = Number(giftOrder.giftWrapFee || 0);
 
   const handleStatusChange = async (newStatus) => {
     setStatusUpdating(true);
@@ -623,6 +627,32 @@ const OrderDetail = () => {
           {order.paidAt && <InfoRow label="Paid At" value={formatDateTime(order.paidAt)} />}
         </SectionCard>
       </div>
+
+      {giftOrder?.isGiftOrder && (
+        <div className="grid lg:grid-cols-2 gap-4 mb-5">
+          <SectionCard icon={<Tag size={15} />} title="Gift Details">
+            <InfoRow
+              label="Gift Order"
+              value={
+                <span className="inline-flex rounded-full bg-pink-100 px-2 py-0.5 text-xs font-semibold text-pink-700">
+                  Yes
+                </span>
+              }
+            />
+            <InfoRow label="Gift Wrap" value={giftOrder?.wantsGiftWrap ? `Yes (+₹${giftWrapFee.toLocaleString("en-IN")})` : "No"} />
+            <InfoRow label="Wrap Fee" value={giftWrapFee > 0 ? `₹${giftWrapFee.toLocaleString("en-IN")}` : "₹0"} />
+          </SectionCard>
+
+          <SectionCard icon={<MapPin size={15} />} title="Gift Delivery Address">
+            <InfoRow label="Recipient" value={giftRecipientAddress.name} />
+            <InfoRow label="Address" value={giftRecipientAddress.addressLine || giftRecipientAddress.line} />
+            <InfoRow label="City" value={giftRecipientAddress.city} />
+            <InfoRow label="State" value={giftRecipientAddress.state} />
+            <InfoRow label="Pincode" value={giftRecipientAddress.pincode} />
+            <InfoRow label="Phone" value={giftRecipientAddress.phone} />
+          </SectionCard>
+        </div>
+      )}
 
       <SectionCard icon={<Truck size={15} />} title="Shipping Tracking">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">

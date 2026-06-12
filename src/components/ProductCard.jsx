@@ -15,6 +15,7 @@ const ProductCard = ({
   productNames = [],
   couponText = "",
   prioritizeImage = false,
+  cartMetadata = null,
 }) => {
   const { addToCart } = useCart();
   const slug = getProductSlug(product);
@@ -136,8 +137,9 @@ const ProductCard = ({
           price: defaultVariant.price,
           mrp: defaultVariant.mrp,
           image: defaultVariant.images?.[0],
+          ...(cartMetadata || {}),
         }
-      : { ...product, id: productId };
+      : { ...product, id: productId, ...(cartMetadata || {}) };
 
     addToCart(item);
   };

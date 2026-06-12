@@ -797,6 +797,20 @@ const normalizeShippingAddress = (address = {}) => ({
   pincode: String(address?.pincode || "").trim(),
 });
 
+const normalizeGiftOptions = (giftOptions = {}) => {
+  const giftWrapFee = Number(giftOptions?.giftWrapFee || 0);
+  return {
+    isGiftOrder: Boolean(giftOptions?.isGiftOrder),
+    wantsGiftWrap: Boolean(giftOptions?.isGiftOrder && giftOptions?.wantsGiftWrap),
+    giftWrapFee:
+      Boolean(giftOptions?.isGiftOrder && giftOptions?.wantsGiftWrap) && Number.isFinite(giftWrapFee) && giftWrapFee > 0
+        ? giftWrapFee
+        : 0,
+    buyerAddress: normalizeShippingAddress(giftOptions?.buyerAddress || {}),
+    recipientAddress: normalizeShippingAddress(giftOptions?.recipientAddress || {}),
+  };
+};
+
 const getItemDiscountMeta = (item = {}) => {
   const raw = item?.discountApplied;
   if (!raw) return null;
@@ -880,6 +894,16 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
   const discountAmount = Number(orderPayload?.discountAmount || 0);
   const source = String(orderPayload?.source || "WEBSITE");
   const paymentStatus = String(orderPayload?.paymentStatus || "Unpaid");
+  const giftOrder = orderPayload?.giftOrder || {};
+  const giftWrapFee = Number(giftOrder?.giftWrapFee || 0);
+  const recipientAddressText =
+    giftOrder?.isGiftOrder && giftOrder?.recipientAddress
+      ? formatAddressForEmail(giftOrder.recipientAddress)
+      : "";
+  const buyerAddressText =
+    giftOrder?.isGiftOrder && giftOrder?.buyerAddress
+      ? formatAddressForEmail(giftOrder.buyerAddress)
+      : "";
 
   const subject = `New Order Received: ${String(orderId || "").toUpperCase()}`;
   const text = [
@@ -892,6 +916,8 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
     `Payment Status: ${paymentStatus}`,
     `Subtotal (Before Discount): Rs ${originalSubtotal.toFixed(2)}`,
     `Discount: Rs ${discountAmount.toFixed(2)}`,
+    giftOrder?.isGiftOrder ? `Gift Order: Yes` : `Gift Order: No`,
+    giftOrder?.isGiftOrder ? `Gift Wrap: ${giftOrder?.wantsGiftWrap ? `Yes (+Rs ${giftWrapFee.toFixed(2)})` : "No"}` : null,
     `Grand Total: Rs ${totalAmount.toFixed(2)}`,
     "",
     "Customer Details:",
@@ -901,10 +927,12 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
     "",
     "Shipping Address:",
     addressText,
+    giftOrder?.isGiftOrder && recipientAddressText ? ["", "Gift Recipient Address:", recipientAddressText].join("\n") : null,
+    giftOrder?.isGiftOrder && buyerAddressText ? ["", "Buyer Address:", buyerAddressText].join("\n") : null,
     "",
     "Ordered Items:",
     itemsText,
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 
   await transporter.sendMail({
     from: SMTP_FROM,
@@ -2850,7 +2878,8 @@ app.post("/api/payments/verify", async (req, res) => {
     if (expectedSignature !== razorpay_signature)
       return res.status(400).json({ error: "Invalid signature" });
 
-    let resolvedShippingAddress = null;
+    const normalizedGiftOptions = normalizeGiftOptions(orderData?.giftOptions || {});
+    let resolvedBuyerAddress = null;
     if (orderData?.userId && orderData?.shippingAddressId) {
       const addressDoc = await db
         .collection("users").doc(orderData.userId)
@@ -2859,12 +2888,19 @@ app.post("/api/payments/verify", async (req, res) => {
       if (!addressDoc.exists) {
         return res.status(400).json({ error: "Invalid address" });
       }
-      resolvedShippingAddress = normalizeShippingAddress(addressDoc.data());
+      resolvedBuyerAddress = normalizeShippingAddress(addressDoc.data());
     } else {
-      resolvedShippingAddress = normalizeShippingAddress(orderData?.shippingAddress || {});
-      if (!isValidShippingAddress(resolvedShippingAddress)) {
+      resolvedBuyerAddress = normalizeShippingAddress(orderData?.shippingAddress || {});
+      if (!isValidShippingAddress(resolvedBuyerAddress)) {
         return res.status(400).json({ error: "Invalid address" });
       }
+    }
+    const resolvedRecipientAddress = normalizeShippingAddress(normalizedGiftOptions.recipientAddress || {});
+    const resolvedShippingAddress = normalizedGiftOptions.isGiftOrder
+      ? resolvedRecipientAddress
+      : resolvedBuyerAddress;
+    if (!isValidShippingAddress(resolvedShippingAddress)) {
+      return res.status(400).json({ error: normalizedGiftOptions.isGiftOrder ? "Invalid gift recipient address" : "Invalid address" });
     }
 
     let totalAmount = 0;
@@ -2926,14 +2962,22 @@ app.post("/api/payments/verify", async (req, res) => {
     }
 
     const pricing = calculateOrderPricing(validatedItems);
+    const giftWrapFee = normalizedGiftOptions.wantsGiftWrap ? Number(normalizedGiftOptions.giftWrapFee || 0) : 0;
     const orderPayload = {
       userId: orderData.userId,
       userEmail: orderData.userEmail,
       items: validatedItems,
-      totalAmount: pricing.grandTotal,
+      totalAmount: Number((pricing.grandTotal + giftWrapFee).toFixed(2)),
       originalSubtotal: pricing.originalSubtotal,
       discountAmount: pricing.discountAmount,
       shippingAddress: resolvedShippingAddress,
+      giftOrder: {
+        isGiftOrder: normalizedGiftOptions.isGiftOrder,
+        wantsGiftWrap: normalizedGiftOptions.wantsGiftWrap,
+        giftWrapFee,
+        buyerAddress: resolvedBuyerAddress,
+        recipientAddress: normalizedGiftOptions.isGiftOrder ? resolvedRecipientAddress : null,
+      },
       status: "Placed",
       paymentStatus: "Paid",
       source: orderData.source || "WEBSITE",
@@ -2974,7 +3018,8 @@ app.post("/api/orders", async (req, res) => {
     const { userId, userEmail, items, shippingAddressId, shippingAddress, source } = req.body;
     if (!items?.length) return res.status(400).json({ error: "Invalid order data" });
 
-    let resolvedShippingAddress = null;
+    const normalizedGiftOptions = normalizeGiftOptions(req.body?.giftOptions || {});
+    let resolvedBuyerAddress = null;
     if (userId && shippingAddressId) {
       const addressDoc = await db
         .collection("users").doc(userId)
@@ -2985,12 +3030,19 @@ app.post("/api/orders", async (req, res) => {
         console.error(`Address ${shippingAddressId} not found under user ${userId}`);
         return res.status(400).json({ error: "Invalid address" });
       }
-      resolvedShippingAddress = normalizeShippingAddress(addressDoc.data());
+      resolvedBuyerAddress = normalizeShippingAddress(addressDoc.data());
     } else {
-      resolvedShippingAddress = normalizeShippingAddress(shippingAddress || {});
-      if (!isValidShippingAddress(resolvedShippingAddress)) {
+      resolvedBuyerAddress = normalizeShippingAddress(shippingAddress || {});
+      if (!isValidShippingAddress(resolvedBuyerAddress)) {
         return res.status(400).json({ error: "Invalid address" });
       }
+    }
+    const resolvedRecipientAddress = normalizeShippingAddress(normalizedGiftOptions.recipientAddress || {});
+    const resolvedShippingAddress = normalizedGiftOptions.isGiftOrder
+      ? resolvedRecipientAddress
+      : resolvedBuyerAddress;
+    if (!isValidShippingAddress(resolvedShippingAddress)) {
+      return res.status(400).json({ error: normalizedGiftOptions.isGiftOrder ? "Invalid gift recipient address" : "Invalid address" });
     }
 
     let totalAmount = 0;
@@ -3052,14 +3104,22 @@ app.post("/api/orders", async (req, res) => {
     }
 
     const pricing = calculateOrderPricing(validatedItems);
+    const giftWrapFee = normalizedGiftOptions.wantsGiftWrap ? Number(normalizedGiftOptions.giftWrapFee || 0) : 0;
     const orderPayload = {
       userId,
       userEmail,
       items: validatedItems,
-      totalAmount: pricing.grandTotal,
+      totalAmount: Number((pricing.grandTotal + giftWrapFee).toFixed(2)),
       originalSubtotal: pricing.originalSubtotal,
       discountAmount: pricing.discountAmount,
       shippingAddress: resolvedShippingAddress,
+      giftOrder: {
+        isGiftOrder: normalizedGiftOptions.isGiftOrder,
+        wantsGiftWrap: normalizedGiftOptions.wantsGiftWrap,
+        giftWrapFee,
+        buyerAddress: resolvedBuyerAddress,
+        recipientAddress: normalizedGiftOptions.isGiftOrder ? resolvedRecipientAddress : null,
+      },
       status: "Placed",
       paymentStatus: "Unpaid",
       source: detectSource(source),
