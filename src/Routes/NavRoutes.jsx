@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { markCurrentPageAsLastVisited, trackVisitorEvent } from "../utils/visitorAnalytics";
 import { trackPageView } from "../utils/pixel";
 import AdminProtectedRoute from "../admin/components/AdminProtectedRoute";
 import ProtectedRoute from "../components/ProtectedRoute";
@@ -68,6 +69,24 @@ const PixelPageTracker = () => {
   useEffect(() => {
     trackPageView(pathname);
   }, [pathname]);
+
+  return null;
+};
+
+const VisitorPageTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/admin")) {
+      markCurrentPageAsLastVisited();
+      return;
+    }
+
+    trackVisitorEvent({
+      eventType: "page_view",
+    });
+    markCurrentPageAsLastVisited();
+  }, [location.pathname, location.search, location.hash]);
 
   return null;
 };
@@ -244,6 +263,7 @@ const NavRoutes = () => {
   return (
     <>
       <PixelPageTracker />
+      <VisitorPageTracker />
       <UrlCanonicalizer />
       <RouteSeo />
       <Routes>

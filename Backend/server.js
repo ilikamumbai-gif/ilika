@@ -220,6 +220,246 @@ const fetchGoogleAdsAccessToken = async () => {
   return data.access_token;
 };
 
+const VISITOR_ANALYTICS_EVENT_TYPES = new Set(["page_view", "product_view", "add_to_cart"]);
+const VISITOR_LOCATION_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
+const VISITOR_ANALYTICS_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const VISITOR_ANALYTICS_RATE_LIMIT_MAX = 120;
+const VISITOR_ANALYTICS_EVENT_DEDUPE_MS = 2000;
+const VISITOR_ANALYTICS_FILTER_OPTIONS_TTL_MS = 10 * 60 * 1000;
+const visitorLocationCache = new Map();
+const visitorAnalyticsRateLimitCache = new Map();
+const visitorAnalyticsEventFingerprintCache = new Map();
+let visitorAnalyticsFilterOptionsCache = {
+  expiresAt: 0,
+  data: null,
+};
+
+const trimToLength = (value, max = 500) => {
+  const text = String(value ?? "").trim();
+  return text ? text.slice(0, max) : "";
+};
+
+const optionalTrimmed = (value, max = 500) => {
+  const text = trimToLength(value, max);
+  return text || null;
+};
+
+const normalizeAnalyticsNumber = (value, { min = null, max = null } = {}) => {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  if (min !== null && parsed < min) return null;
+  if (max !== null && parsed > max) return null;
+  return parsed;
+};
+
+const normalizeAnalyticsUrl = (value) => {
+  const text = trimToLength(value, 2000);
+  if (!text) return "";
+
+  try {
+    return new URL(text).toString();
+  } catch {
+    if (text.startsWith("/")) return text;
+    return "";
+  }
+};
+
+const stripIpv6Prefix = (ip = "") => String(ip || "").replace(/^::ffff:/i, "").trim();
+
+const getClientIpAddress = (req) => {
+  const forwardedFor = String(req.headers["x-forwarded-for"] || "")
+    .split(",")
+    .map((part) => stripIpv6Prefix(part))
+    .find(Boolean);
+
+  const candidate =
+    forwardedFor ||
+    stripIpv6Prefix(req.headers["cf-connecting-ip"]) ||
+    stripIpv6Prefix(req.ip) ||
+    stripIpv6Prefix(req.socket?.remoteAddress);
+
+  return candidate || "";
+};
+
+const isPrivateIpAddress = (ip = "") => {
+  const normalized = stripIpv6Prefix(ip).toLowerCase();
+  if (!normalized) return true;
+
+  if (normalized === "127.0.0.1" || normalized === "::1" || normalized === "localhost") {
+    return true;
+  }
+
+  if (normalized.includes(":")) {
+    return normalized.startsWith("fc") || normalized.startsWith("fd") || normalized.startsWith("fe80:");
+  }
+
+  return (
+    normalized.startsWith("10.") ||
+    normalized.startsWith("192.168.") ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(normalized)
+  );
+};
+
+const emptyIpLocation = () => ({
+  country: null,
+  state: null,
+  city: null,
+});
+
+const normalizeLocationValue = (value) => optionalTrimmed(value, 120);
+
+const buildVisitorAnalyticsFingerprint = (event = {}) => {
+  return [
+    trimToLength(event.visitorId, 120),
+    trimToLength(event.sessionId, 120),
+    trimToLength(event.eventType, 50),
+    trimToLength(event.pageUrl, 500),
+    trimToLength(event.productId || event.productName, 200),
+    normalizeAnalyticsNumber(event.quantity, { min: 1, max: 9999 }) || 0,
+  ].join("::");
+};
+
+const isVisitorAnalyticsRateLimited = (ipAddress = "") => {
+  const key = stripIpv6Prefix(ipAddress) || "unknown";
+  const now = Date.now();
+  const history = visitorAnalyticsRateLimitCache.get(key) || [];
+  const recent = history.filter((timestamp) => now - timestamp < VISITOR_ANALYTICS_RATE_LIMIT_WINDOW_MS);
+
+  if (recent.length >= VISITOR_ANALYTICS_RATE_LIMIT_MAX) {
+    visitorAnalyticsRateLimitCache.set(key, recent);
+    return true;
+  }
+
+  recent.push(now);
+  visitorAnalyticsRateLimitCache.set(key, recent);
+  return false;
+};
+
+const isDuplicateVisitorAnalyticsEvent = (event = {}) => {
+  const fingerprint = buildVisitorAnalyticsFingerprint(event);
+  if (!fingerprint) return false;
+
+  const now = Date.now();
+  const lastSeenAt = Number(visitorAnalyticsEventFingerprintCache.get(fingerprint) || 0);
+  if (lastSeenAt && now - lastSeenAt < VISITOR_ANALYTICS_EVENT_DEDUPE_MS) {
+    return true;
+  }
+
+  visitorAnalyticsEventFingerprintCache.set(fingerprint, now);
+
+  if (visitorAnalyticsEventFingerprintCache.size > 5000) {
+    for (const [key, value] of visitorAnalyticsEventFingerprintCache.entries()) {
+      if (now - Number(value || 0) > VISITOR_ANALYTICS_EVENT_DEDUPE_MS * 4) {
+        visitorAnalyticsEventFingerprintCache.delete(key);
+      }
+    }
+  }
+
+  return false;
+};
+
+const fetchIpLocation = async (ipAddress = "") => {
+  const ip = stripIpv6Prefix(ipAddress);
+  if (!ip || isPrivateIpAddress(ip)) {
+    return emptyIpLocation();
+  }
+
+  const cached = visitorLocationCache.get(ip);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
+
+  try {
+    const response = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`, {
+      signal: controller.signal,
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    const json = await response.json();
+
+    const location = {
+      country: optionalTrimmed(json?.country_name, 120),
+      state: optionalTrimmed(json?.region, 120),
+      city: optionalTrimmed(json?.city, 120),
+    };
+
+    visitorLocationCache.set(ip, {
+      data: location,
+      expiresAt: Date.now() + VISITOR_LOCATION_CACHE_TTL_MS,
+    });
+
+    return location;
+  } catch (error) {
+    console.error("VISITOR LOCATION LOOKUP ERROR:", error?.message || error);
+    return emptyIpLocation();
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const mapVisitorAnalyticsDoc = (doc) => {
+  const data = doc.data() || {};
+  const createdAt =
+    typeof data.createdAt?.toDate === "function"
+      ? data.createdAt.toDate()
+      : data.createdAt?._seconds
+        ? new Date(data.createdAt._seconds * 1000)
+        : new Date(data.createdAt || Date.now());
+
+  return {
+    id: doc.id,
+    visitorId: trimToLength(data.visitorId, 120),
+    sessionId: trimToLength(data.sessionId, 120),
+    eventType: trimToLength(data.eventType, 50),
+    pageUrl: trimToLength(data.pageUrl, 2000),
+    productId: optionalTrimmed(data.productId, 200),
+    productName: optionalTrimmed(data.productName, 300),
+    quantity: normalizeAnalyticsNumber(data.quantity, { min: 1, max: 9999 }),
+    price: normalizeAnalyticsNumber(data.price, { min: 0, max: 10000000 }),
+    referrer: optionalTrimmed(data.referrer, 2000),
+    device: optionalTrimmed(data.device, 80),
+    browser: optionalTrimmed(data.browser, 120),
+    ipLocation: {
+      country: normalizeLocationValue(data.locationCountry ?? data.ipLocation?.country),
+      state: normalizeLocationValue(data.locationState ?? data.ipLocation?.state),
+      city: normalizeLocationValue(data.locationCity ?? data.ipLocation?.city),
+    },
+    createdAt: createdAt.toISOString(),
+  };
+};
+
+const getVisitorAnalyticsFilterOptions = async () => {
+  if (
+    visitorAnalyticsFilterOptionsCache.data &&
+    visitorAnalyticsFilterOptionsCache.expiresAt > Date.now()
+  ) {
+    return visitorAnalyticsFilterOptionsCache.data;
+  }
+
+  const snapshot = await db.collection("visitorAnalytics").orderBy("createdAt", "desc").limit(5000).get();
+  const events = snapshot.docs.map(mapVisitorAnalyticsDoc);
+  const options = {
+    countries: Array.from(new Set(events.map((event) => event.ipLocation?.country).filter(Boolean))).sort(),
+    states: Array.from(new Set(events.map((event) => event.ipLocation?.state).filter(Boolean))).sort(),
+    cities: Array.from(new Set(events.map((event) => event.ipLocation?.city).filter(Boolean))).sort(),
+    products: Array.from(
+      new Set(events.map((event) => event.productName || event.productId).filter(Boolean))
+    ).sort(),
+  };
+
+  visitorAnalyticsFilterOptionsCache = {
+    data: options,
+    expiresAt: Date.now() + VISITOR_ANALYTICS_FILTER_OPTIONS_TTL_MS,
+  };
+
+  return options;
+};
+
 const fetchGoogleAdsInsights = async (days = 30) => {
   if (
     !GOOGLE_ADS_DEVELOPER_TOKEN ||
@@ -3273,6 +3513,298 @@ app.get("/api/cart-events", async (req, res) => {
     res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   } catch {
     res.status(500).json({ error: "Failed to fetch cart events" });
+  }
+});
+
+/* ============================== VISITOR ANALYTICS ============================== */
+app.post("/api/visitor-analytics", async (req, res) => {
+  try {
+    const {
+      visitorId,
+      sessionId,
+      eventType,
+      pageUrl,
+      productId,
+      productName,
+      quantity,
+      price,
+      referrer,
+      device,
+      browser,
+    } = req.body || {};
+
+    const clientIpAddress = getClientIpAddress(req);
+    if (isVisitorAnalyticsRateLimited(clientIpAddress)) {
+      return res.status(202).json({ success: false, ignored: true, reason: "rate_limited" });
+    }
+
+    const normalizedEventType = trimToLength(eventType, 50);
+    const normalizedPageUrl = normalizeAnalyticsUrl(pageUrl);
+    const normalizedReferrer = normalizeAnalyticsUrl(referrer) || optionalTrimmed(referrer, 2000);
+    const normalizedVisitorId = trimToLength(visitorId, 120);
+    const normalizedSessionId = trimToLength(sessionId, 120);
+    const normalizedProductId = optionalTrimmed(productId, 200);
+    const normalizedProductName = optionalTrimmed(productName, 300);
+    const normalizedQuantity = normalizeAnalyticsNumber(quantity, { min: 1, max: 9999 });
+    const normalizedPrice = normalizeAnalyticsNumber(price, { min: 0, max: 10000000 });
+    const normalizedDevice = optionalTrimmed(device, 80);
+    const normalizedBrowser = optionalTrimmed(browser, 120);
+
+    if (!normalizedVisitorId) {
+      return res.status(400).json({ error: "visitorId is required" });
+    }
+
+    if (!normalizedSessionId) {
+      return res.status(400).json({ error: "sessionId is required" });
+    }
+
+    if (!VISITOR_ANALYTICS_EVENT_TYPES.has(normalizedEventType)) {
+      return res.status(400).json({ error: "Invalid eventType" });
+    }
+
+    if (!normalizedPageUrl) {
+      return res.status(400).json({ error: "pageUrl is required" });
+    }
+
+    if (normalizedEventType !== "page_view" && !normalizedProductId && !normalizedProductName) {
+      return res.status(400).json({ error: "productId or productName is required for this eventType" });
+    }
+
+    if (normalizedEventType === "add_to_cart" && !normalizedQuantity) {
+      return res.status(400).json({ error: "quantity is required for add_to_cart" });
+    }
+
+    const dedupeCandidate = {
+      visitorId: normalizedVisitorId,
+      sessionId: normalizedSessionId,
+      eventType: normalizedEventType,
+      pageUrl: normalizedPageUrl,
+      productId: normalizedProductId,
+      productName: normalizedProductName,
+      quantity: normalizedQuantity,
+    };
+    if (isDuplicateVisitorAnalyticsEvent(dedupeCandidate)) {
+      return res.status(202).json({ success: false, ignored: true, reason: "duplicate" });
+    }
+
+    const ipLocation = await fetchIpLocation(clientIpAddress);
+    const locationCountry = normalizeLocationValue(ipLocation.country);
+    const locationState = normalizeLocationValue(ipLocation.state);
+    const locationCity = normalizeLocationValue(ipLocation.city);
+    const eventRef = db.collection("visitorAnalytics").doc();
+
+    const eventData = {
+      visitorId: normalizedVisitorId,
+      sessionId: normalizedSessionId,
+      eventType: normalizedEventType,
+      pageUrl: normalizedPageUrl,
+      productId: normalizedProductId,
+      productName: normalizedProductName,
+      quantity: normalizedQuantity,
+      price: normalizedPrice,
+      referrer: normalizedReferrer,
+      device: normalizedDevice,
+      browser: normalizedBrowser,
+      ipLocation: {
+        country: locationCountry,
+        state: locationState,
+        city: locationCity,
+      },
+      locationCountry,
+      locationState,
+      locationCity,
+      createdAt: new Date(),
+    };
+
+    await eventRef.set(eventData);
+    visitorAnalyticsFilterOptionsCache = {
+      data: null,
+      expiresAt: 0,
+    };
+
+    res.status(201).json({
+      eventId: eventRef.id,
+      success: true,
+    });
+  } catch (error) {
+    console.error("VISITOR ANALYTICS ERROR:", error);
+    res.status(500).json({ error: "Failed to save visitor analytics event" });
+  }
+});
+
+app.get("/api/visitor-analytics", async (req, res) => {
+  try {
+    const requester = await getRequesterAdmin(req);
+    if (!requester) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const {
+      dateFrom = "",
+      dateTo = "",
+      eventType = "",
+      country = "",
+      state = "",
+      city = "",
+      product = "",
+    } = req.query || {};
+
+    const normalizedEventType = trimToLength(eventType, 50);
+    const normalizedCountry = trimToLength(country, 120);
+    const normalizedState = trimToLength(state, 120);
+    const normalizedCity = trimToLength(city, 120);
+    const normalizedProduct = trimToLength(product, 300).toLowerCase();
+
+    const startDate = dateFrom ? new Date(`${dateFrom}T00:00:00.000Z`) : null;
+    const endDate = dateTo ? new Date(`${dateTo}T23:59:59.999Z`) : null;
+
+    if (normalizedEventType && !VISITOR_ANALYTICS_EVENT_TYPES.has(normalizedEventType)) {
+      return res.status(400).json({ error: "Invalid eventType filter" });
+    }
+
+    if (startDate && Number.isNaN(startDate.getTime())) {
+      return res.status(400).json({ error: "Invalid dateFrom filter" });
+    }
+
+    if (endDate && Number.isNaN(endDate.getTime())) {
+      return res.status(400).json({ error: "Invalid dateTo filter" });
+    }
+
+    let query = db.collection("visitorAnalytics");
+
+    if (normalizedEventType) {
+      query = query.where("eventType", "==", normalizedEventType);
+    }
+
+    if (normalizedCountry) {
+      query = query.where("locationCountry", "==", normalizedCountry);
+    }
+
+    if (normalizedState) {
+      query = query.where("locationState", "==", normalizedState);
+    }
+
+    if (normalizedCity) {
+      query = query.where("locationCity", "==", normalizedCity);
+    }
+
+    if (startDate) {
+      query = query.where("createdAt", ">=", startDate);
+    }
+
+    if (endDate) {
+      query = query.where("createdAt", "<=", endDate);
+    }
+
+    query = query.orderBy("createdAt", "desc").limit(5000);
+
+    const snapshot = await query.get();
+    const queriedEvents = snapshot.docs.map(mapVisitorAnalyticsDoc);
+
+    const filteredEvents = queriedEvents.filter((event) => {
+      const createdAtDate = new Date(event.createdAt);
+      const eventProductValue = String(event.productName || event.productId || "").toLowerCase();
+
+      if (startDate && createdAtDate < startDate) return false;
+      if (endDate && createdAtDate > endDate) return false;
+      if (normalizedProduct && eventProductValue !== normalizedProduct) return false;
+      return true;
+    });
+
+    const buildLocationCounts = (key) => {
+      const groups = new Map();
+
+      filteredEvents.forEach((event) => {
+        const label = trimToLength(event.ipLocation?.[key], 120) || "Unknown";
+        if (!groups.has(label)) {
+          groups.set(label, {
+            label,
+            visitors: new Set(),
+            events: 0,
+          });
+        }
+
+        const entry = groups.get(label);
+        entry.events += 1;
+        if (event.visitorId) {
+          entry.visitors.add(event.visitorId);
+        }
+      });
+
+      return Array.from(groups.values())
+        .map((entry) => ({
+          label: entry.label,
+          visitors: entry.visitors.size,
+          events: entry.events,
+        }))
+        .sort((a, b) => b.visitors - a.visitors || b.events - a.events || a.label.localeCompare(b.label));
+    };
+
+    const cartByLocationMap = new Map();
+    filteredEvents
+      .filter((event) => event.eventType === "add_to_cart")
+      .forEach((event) => {
+        const key = [
+          event.ipLocation?.country || "Unknown",
+          event.ipLocation?.state || "Unknown",
+          event.ipLocation?.city || "Unknown",
+          event.productId || event.productName || "Unknown Product",
+        ].join("::");
+
+        if (!cartByLocationMap.has(key)) {
+          cartByLocationMap.set(key, {
+            country: event.ipLocation?.country || "Unknown",
+            state: event.ipLocation?.state || "Unknown",
+            city: event.ipLocation?.city || "Unknown",
+            productId: event.productId || null,
+            productName: event.productName || "Unknown Product",
+            eventCount: 0,
+            totalQuantity: 0,
+            totalRevenue: 0,
+          });
+        }
+
+        const entry = cartByLocationMap.get(key);
+        entry.eventCount += 1;
+        entry.totalQuantity += Number(event.quantity || 0);
+        entry.totalRevenue += Number(event.price || 0) * Number(event.quantity || 0);
+      });
+
+    const eventCounts = filteredEvents.reduce(
+      (acc, event) => {
+        acc[event.eventType] = (acc[event.eventType] || 0) + 1;
+        return acc;
+      },
+      { page_view: 0, product_view: 0, add_to_cart: 0 }
+    );
+
+    const uniqueVisitors = new Set(filteredEvents.map((event) => event.visitorId).filter(Boolean));
+    const uniqueSessions = new Set(filteredEvents.map((event) => event.sessionId).filter(Boolean));
+
+    const filterOptions = await getVisitorAnalyticsFilterOptions();
+
+    res.json({
+      events: filteredEvents,
+      summary: {
+        totalVisitors: uniqueVisitors.size,
+        totalSessions: uniqueSessions.size,
+        totalEvents: filteredEvents.length,
+        eventCounts,
+        byCountry: buildLocationCounts("country"),
+        byState: buildLocationCounts("state"),
+        byCity: buildLocationCounts("city"),
+        cartByLocation: Array.from(cartByLocationMap.values())
+          .map((entry) => ({
+            ...entry,
+            totalRevenue: Number(entry.totalRevenue.toFixed(2)),
+          }))
+          .sort((a, b) => b.totalQuantity - a.totalQuantity || b.totalRevenue - a.totalRevenue),
+      },
+      filterOptions,
+    });
+  } catch (error) {
+    console.error("VISITOR ANALYTICS FETCH ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch visitor analytics" });
   }
 });
 

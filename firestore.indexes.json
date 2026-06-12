@@ -1,0 +1,70 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "visitorAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "visitorAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "locationCountry", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "visitorAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "locationCountry", "order": "ASCENDING" },
+        { "fieldPath": "locationState", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "visitorAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "locationCountry", "order": "ASCENDING" },
+        { "fieldPath": "locationState", "order": "ASCENDING" },
+        { "fieldPath": "locationCity", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "visitorAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "locationCountry", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "visitorAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "locationCountry", "order": "ASCENDING" },
+        { "fieldPath": "locationState", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "visitorAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "locationCountry", "order": "ASCENDING" },
+        { "fieldPath": "locationState", "order": "ASCENDING" },
+        { "fieldPath": "locationCity", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

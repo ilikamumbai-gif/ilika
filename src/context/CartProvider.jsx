@@ -1,6 +1,7 @@
 import React from "react";
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useAuth } from "./AuthContext";
+import { trackVisitorEvent } from "../utils/visitorAnalytics";
 
 const CartContext = createContext(null);
 
@@ -298,6 +299,8 @@ export const CartProvider = ({ children }) => {
 
   /* ADD TO CART (guest allowed) */
   const addToCart = async (product) => {
+    const existing = cartItems.find((item) => item.id === product.id);
+    const quantityToTrack = existing ? existing.quantity + 1 : 1;
 
     // SAVE CART EVENT
     try {
@@ -325,6 +328,14 @@ export const CartProvider = ({ children }) => {
       console.log("cart event error", err);
     }
 
+    trackVisitorEvent({
+      eventType: "add_to_cart",
+      productId: product?.baseProductId || product?.id || "",
+      productName: product?.name || "",
+      quantity: quantityToTrack,
+      price: product?.price ?? null,
+    });
+
     const isMaskDuo = isMaskDuoCustom(product);
 
     // ---------- GUEST ----------
@@ -340,9 +351,9 @@ export const CartProvider = ({ children }) => {
       }
 
       setCartItems((prev) => {
-        const existing = prev.find((item) => item.id === product.id);
+        const existingGuestItem = prev.find((item) => item.id === product.id);
 
-        if (existing) {
+        if (existingGuestItem) {
           return prev.map((item) =>
             item.id === product.id
               ? { ...item, quantity: item.quantity + 1 }
@@ -373,7 +384,6 @@ export const CartProvider = ({ children }) => {
       return;
     }
 
-    const existing = cartItems.find((item) => item.id === product.id);
     const newQuantity = existing ? existing.quantity + 1 : 1;
     const { db, doc, setDoc } = await loadFirestoreDeps();
 

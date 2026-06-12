@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { trackViewContent, trackAddToCart } from "../utils/pixel";
+import { markCurrentPageAsLastVisited, trackVisitorEvent } from "../utils/visitorAnalytics";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
@@ -1637,6 +1638,13 @@ const ProductDetail = () => {
         if (!isCurrentRoute) return;
         setProduct(found);
         trackViewContent(found.id || found._id, found.name, found.variants?.[0]?.price ?? found.price ?? 0);
+        trackVisitorEvent({
+          eventType: "product_view",
+          productId: found.id || found._id || "",
+          productName: found.name || "",
+          price: found.variants?.[0]?.price ?? found.price ?? null,
+        });
+        markCurrentPageAsLastVisited();
       } catch (error) {
         if (!isCurrentRoute) return;
         console.error("product not found", error);
@@ -3743,4 +3751,3 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
-
