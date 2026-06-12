@@ -53,7 +53,13 @@ const AdminHeader = ({ onMenuClick, onRefresh }) => {
       ]);
 
       onRefresh?.();
-      sessionStorage.setItem("ilika.refresh.at", String(Date.now()));
+      const refreshedAt = String(Date.now());
+      sessionStorage.setItem("ilika.refresh.at", refreshedAt);
+      window.dispatchEvent(
+        new CustomEvent("ilika:admin-refresh", {
+          detail: { at: refreshedAt },
+        })
+      );
     } finally {
       setRefreshing(false);
     }

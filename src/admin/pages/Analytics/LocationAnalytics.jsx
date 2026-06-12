@@ -169,6 +169,7 @@ const LocationActivityCard = ({ rows = [], loading }) => (
 
 const LocationAnalytics = () => {
   const { getAdminAuthHeaders } = useAdminAuth();
+  const [refreshSignal, setRefreshSignal] = useState(() => sessionStorage.getItem("ilika.refresh.at") || "");
   const [filters, setFilters] = useState({
     ...createDefaultDateRange(),
     eventType: "",
@@ -199,6 +200,41 @@ const LocationAnalytics = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const syncRefreshSignal = (nextValue) => {
+      const latestValue =
+        typeof nextValue === "string" && nextValue.trim()
+          ? nextValue
+          : sessionStorage.getItem("ilika.refresh.at") || "";
+
+      setRefreshSignal((currentValue) => (currentValue === latestValue ? currentValue : latestValue));
+    };
+
+    const handleAdminRefresh = (event) => {
+      syncRefreshSignal(event?.detail?.at);
+    };
+
+    const handleFocusRefresh = () => {
+      syncRefreshSignal();
+    };
+
+    const handleVisibilityRefresh = () => {
+      if (document.visibilityState === "visible") {
+        syncRefreshSignal();
+      }
+    };
+
+    window.addEventListener("ilika:admin-refresh", handleAdminRefresh);
+    window.addEventListener("focus", handleFocusRefresh);
+    document.addEventListener("visibilitychange", handleVisibilityRefresh);
+
+    return () => {
+      window.removeEventListener("ilika:admin-refresh", handleAdminRefresh);
+      window.removeEventListener("focus", handleFocusRefresh);
+      document.removeEventListener("visibilitychange", handleVisibilityRefresh);
+    };
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -239,7 +275,7 @@ const LocationAnalytics = () => {
     };
 
     load();
-  }, [filters, getAdminAuthHeaders]);
+  }, [filters, getAdminAuthHeaders, refreshSignal]);
 
   const recentEvents = useMemo(() => payload.events.slice(0, 25), [payload.events]);
   const countrySummaryRows = useMemo(
