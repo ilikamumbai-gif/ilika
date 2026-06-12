@@ -309,6 +309,7 @@ const LocationAnalytics = () => {
               className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none transition focus:border-pink-400"
             >
               <option value="">All events</option>
+              <option value="page_view">page_view</option>
               <option value="product_view">product_view</option>
               <option value="add_to_cart">add_to_cart</option>
             </select>
