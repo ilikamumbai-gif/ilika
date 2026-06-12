@@ -225,7 +225,7 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
   { label: "Explore CTM", to: "/ctm" },
   { label: "Social Feed", to: "/social-feed" },
   { label: "Blog", to: "/blog" },
-  { label: "Gift Store", to: "/gift-store", image: "/Images/giftnav.png" },
+  { label: "Gift Gallery", to: "/gift-store" },
 ];
 
   const desktopNavItemClass = (active) =>
@@ -504,13 +504,9 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
             <Link to="/blog" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/blog"))}>
               Blog
             </Link>
-                 <Link to="/gift-store" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/gift-store"))}>
-  <img
-    src="/Images/giftnav.png"
-    alt="Gift Gallery"
-    className="h-7 w-auto object-contain"
-  />
-</Link>
+            <Link to="/gift-store" onClick={onClose} className={desktopNavItemClass(isActivePath(location.pathname, "/gift-store"))}>
+              Gift Gallery
+            </Link>
           </>
         )}
       </nav>

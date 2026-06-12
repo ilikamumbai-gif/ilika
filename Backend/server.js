@@ -318,6 +318,10 @@ const emptyIpLocation = () => ({
 
 const normalizeLocationValue = (value) => optionalTrimmed(value, 120);
 const normalizeDebugIp = (value) => optionalTrimmed(stripIpv6Prefix(value), 120);
+const isIndiaLocationValue = (value) => {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized === "india" || normalized === "in";
+};
 
 const getGeoHeaderLocation = (req) => {
   const headers = req?.headers || {};
@@ -3869,6 +3873,8 @@ app.get("/api/visitor-analytics", async (req, res) => {
     const normalizedCity = trimToLength(city, 120);
     const normalizedProduct = trimToLength(product, 300).toLowerCase();
 
+    const isIndiaCountryFilter = isIndiaLocationValue(normalizedCountry);
+
     const startDate = dateFrom ? new Date(`${dateFrom}T00:00:00.000Z`) : null;
     const endDate = dateTo ? new Date(`${dateTo}T23:59:59.999Z`) : null;
 
@@ -3890,7 +3896,7 @@ app.get("/api/visitor-analytics", async (req, res) => {
       query = query.where("eventType", "==", normalizedEventType);
     }
 
-    if (normalizedCountry) {
+    if (normalizedCountry && !isIndiaCountryFilter) {
       query = query.where("locationCountry", "==", normalizedCountry);
     }
 
@@ -3938,9 +3944,18 @@ app.get("/api/visitor-analytics", async (req, res) => {
     const filteredEvents = queriedEvents.filter((event) => {
       const createdAtDate = new Date(event.createdAt);
       const eventProductValue = String(event.productName || event.productId || "").toLowerCase();
+      const eventCountryValue = trimToLength(event.ipLocation?.country, 120);
+      const matchesCountry = !normalizedCountry
+        ? true
+        : isIndiaCountryFilter
+          ? isIndiaLocationValue(eventCountryValue)
+          : eventCountryValue === normalizedCountry;
 
       if (startDate && createdAtDate < startDate) return false;
       if (endDate && createdAtDate > endDate) return false;
+      if (!matchesCountry) return false;
+      if (normalizedState && trimToLength(event.ipLocation?.state, 120) !== normalizedState) return false;
+      if (normalizedCity && trimToLength(event.ipLocation?.city, 120) !== normalizedCity) return false;
       if (normalizedProduct && eventProductValue !== normalizedProduct) return false;
       return true;
     });

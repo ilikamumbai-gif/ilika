@@ -61,6 +61,13 @@ const formatDebugLocation = (location = {}) => {
   return [location?.state, location?.country].filter(Boolean).join(", ") || "none";
 };
 
+const isIndiaLabel = (label = "") => {
+  const normalized = String(label || "").trim().toLowerCase();
+  return normalized === "india" || normalized === "in";
+};
+
+const DEFAULT_LOCATION_LIST_LIMIT = 5;
+
 const StatCard = ({ title, value, hint, icon: Icon, tone = "pink" }) => {
   const tones = {
     pink: "bg-pink-50 text-pink-600",
@@ -165,7 +172,7 @@ const LocationAnalytics = () => {
   const [filters, setFilters] = useState({
     ...createDefaultDateRange(),
     eventType: "",
-    country: "",
+    country: "India",
     state: "",
     city: "",
     product: "",
@@ -235,6 +242,10 @@ const LocationAnalytics = () => {
   }, [filters, getAdminAuthHeaders]);
 
   const recentEvents = useMemo(() => payload.events.slice(0, 25), [payload.events]);
+  const countrySummaryRows = useMemo(
+    () => payload.summary.byCountry.filter((row) => isIndiaLabel(row.label)),
+    [payload.summary.byCountry]
+  );
 
   return (
     <AdminLayout>
@@ -257,7 +268,7 @@ const LocationAnalytics = () => {
               setFilters({
                 ...createDefaultDateRange(),
                 eventType: "",
-                country: "",
+                country: "India",
                 state: "",
                 city: "",
                 product: "",
@@ -269,7 +280,7 @@ const LocationAnalytics = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           <label className="block">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Date from</span>
             <input
@@ -298,23 +309,8 @@ const LocationAnalytics = () => {
               className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none transition focus:border-pink-400"
             >
               <option value="">All events</option>
-              <option value="page_view">page_view</option>
               <option value="product_view">product_view</option>
               <option value="add_to_cart">add_to_cart</option>
-            </select>
-          </label>
-
-          <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Country</span>
-            <select
-              value={filters.country}
-              onChange={(e) => setFilters((prev) => ({ ...prev, country: e.target.value, state: "", city: "" }))}
-              className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none transition focus:border-pink-400"
-            >
-              <option value="">All countries</option>
-              {payload.filterOptions.countries.map((item) => (
-                <option key={item} value={item}>{item}</option>
-              ))}
             </select>
           </label>
 
@@ -400,7 +396,7 @@ const LocationAnalytics = () => {
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-3">
-        <LocationSummaryCard title="Visitors by Country" rows={payload.summary.byCountry} icon={MapPinned} />
+        <LocationSummaryCard title="Visitors by Country" rows={countrySummaryRows} icon={MapPinned} />
         <LocationSummaryCard title="Visitors by State" rows={payload.summary.byState} icon={Map} />
         <LocationSummaryCard title="Visitors by City" rows={payload.summary.byCity} icon={Navigation} />
       </div>
