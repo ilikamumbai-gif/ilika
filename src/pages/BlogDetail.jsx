@@ -5,7 +5,9 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
-import { createSlug } from "../utils/slugify";
+import { useCart } from "../context/CartProvider";
+import { useProducts } from "../admin/context/ProductContext";
+import { createSlug, getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
 
 const removeInlineImagesFromHtml = (html = "") =>
@@ -18,6 +20,51 @@ const normalizeInternalLink = (value = "") => {
   return raw.startsWith("/") ? raw : `/${raw}`;
 };
 
+const normalizeRoutePath = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\/+$/, "");
+
+const normalizeLookupValue = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase();
+
+const LANDING_ROUTE_PRODUCT_MATCHERS = {
+  "/voice-mask-maker": [
+    "ilika-voice-face-mask-maker-machine-with-collagen-peptide",
+  ],
+  "/nonvoice-mask-maker": [
+    "ilika-non-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
+  ],
+  "/leafless-hair-dryer": [
+    "ilika-high-speed-bldc-hair-dryer-fast-drying-professional-hair-dryer-with-ionic-technology-temperature-control",
+  ],
+  "/high-frequency-therapy-wand": [
+    "ilika-high-frequency-therapy-wand-for-acne-treatment-skin-rejuvenation-hair-growth-scalp-care",
+  ],
+  "/hot-cold-blackhead-remover": [
+    "ilika-blackhead-remover-hot-cold-for-deep-pore-cleansing-blackhead-removal",
+    "ilika-blackhead-remover-hot-cold",
+  ],
+};
+
+const matchesProductLookup = (product, lookups = []) => {
+  if (!product || !Array.isArray(lookups) || !lookups.length) return false;
+
+  const productSlug = normalizeLookupValue(product?.productUrl || product?.slug || "");
+  const nameSlug = createSlug(product?.name || "");
+
+  return lookups.some((lookup) => {
+    const normalizedLookup = normalizeLookupValue(lookup);
+    return (
+      productSlug === normalizedLookup ||
+      nameSlug === normalizedLookup
+    );
+  });
+};
+
 const renderSectionBlock = (section, index) => {
   if (!section) return null;
 
@@ -26,7 +73,7 @@ const renderSectionBlock = (section, index) => {
   if (section.type === "content-full") {
     return (
       <div key={`${section.id || "section"}_${index}`} className="py-1">
-        <div className="prose prose-lg max-w-none prose-headings:text-[#1C371C] prose-p:text-[#385238] prose-p:leading-8 prose-li:text-[#385238] prose-a:text-[#801f1f]">
+        <div className="prose max-w-none prose-sm sm:prose-lg prose-headings:text-[#1C371C] prose-p:text-[#385238] prose-p:leading-7 sm:prose-p:leading-8 prose-li:text-[#385238] prose-a:text-[#801f1f]">
           <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
         </div>
       </div>
@@ -40,24 +87,24 @@ const renderSectionBlock = (section, index) => {
           loading="lazy"
           src={section.image}
           alt={`Blog section ${index + 1}`}
-          className="h-full min-h-[220px] w-full object-cover"
+          className="h-full min-h-[200px] w-full object-cover sm:min-h-[220px]"
         />
       ) : (
-        <div className="h-full min-h-[220px] w-full" />
+        <div className="h-full min-h-[200px] w-full sm:min-h-[220px]" />
       )}
     </figure>
   );
 
   const contentEl = (
     <div className="py-1">
-      <div className="prose prose-lg max-w-none prose-headings:text-[#1C371C] prose-p:text-[#385238] prose-p:leading-8 prose-li:text-[#385238] prose-a:text-[#801f1f]">
+      <div className="prose max-w-none prose-sm sm:prose-lg prose-headings:text-[#1C371C] prose-p:text-[#385238] prose-p:leading-7 sm:prose-p:leading-8 prose-li:text-[#385238] prose-a:text-[#801f1f]">
         <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
       </div>
     </div>
   );
 
   return (
-    <div key={`${section.id || "section"}_${index}`} className="grid gap-8 md:grid-cols-2 md:items-start">
+    <div key={`${section.id || "section"}_${index}`} className="grid gap-5 sm:gap-6 md:grid-cols-2 md:items-start md:gap-8">
       {section.type === "image-content" ? (
         <>
           {imageEl}
@@ -74,6 +121,8 @@ const renderSectionBlock = (section, index) => {
 };
 
 const BlogDetail = () => {
+  const { addToCart } = useCart();
+  const { products = [] } = useProducts();
   const { state: locationBlog } = useLocation();
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -104,8 +153,6 @@ const BlogDetail = () => {
 
       if (locationBlog?.id && stateSlug === String(slug).trim().toLowerCase()) {
         setBlog(locationBlog);
-        setLoadingBlog(false);
-        return;
       }
 
       try {
@@ -240,6 +287,50 @@ const BlogDetail = () => {
     [blog?.internalLink]
   );
 
+  const linkedProduct = useMemo(() => {
+    if (!blogInternalLink || !Array.isArray(products) || products.length === 0) return null;
+
+    const targetPath = normalizeRoutePath(blogInternalLink);
+    const landingLookups = LANDING_ROUTE_PRODUCT_MATCHERS[targetPath] || [];
+
+    return (
+      products.find((product) => {
+        const productSlug = getProductSlug(product);
+        const productDetailPath = productSlug ? normalizeRoutePath(`/product/${productSlug}`) : "";
+
+        return (
+          productDetailPath === targetPath ||
+          matchesProductLookup(product, landingLookups)
+        );
+      }) || null
+    );
+  }, [blogInternalLink, products]);
+
+  const handleAddLinkedProductToCart = () => {
+    if (!linkedProduct) return;
+
+    const productId = linkedProduct._id || linkedProduct.id;
+    const defaultVariant =
+      linkedProduct.hasVariants && linkedProduct.variants?.length
+        ? linkedProduct.variants[0]
+        : null;
+
+    const cartItem = defaultVariant
+      ? {
+          ...linkedProduct,
+          id: `${productId}_${defaultVariant.id}`,
+          baseProductId: productId,
+          variantId: defaultVariant.id,
+          variantLabel: defaultVariant.label,
+          price: defaultVariant.price,
+          mrp: defaultVariant.mrp,
+          image: defaultVariant.images?.[0],
+        }
+      : { ...linkedProduct, id: productId };
+
+    addToCart(cartItem);
+  };
+
   const blogSlug = useMemo(
     () => String(blog?.slug || createSlug(blog?.title || slug || "blog")).trim().toLowerCase(),
     [blog?.slug, blog?.title, slug]
@@ -345,7 +436,7 @@ const BlogDetail = () => {
         <Header />
         <CartDrawer />
 
-        <main className="mx-auto max-w-6xl px-3 py-8 sm:px-4 sm:py-10">
+        <main className="mx-auto max-w-6xl px-3 py-6 sm:px-4 sm:py-10">
           <Link
             to="/blog"
             className="inline-flex items-center gap-1 rounded-full border border-[#d3ddd3] bg-white px-4 py-2 text-sm font-medium text-[#1C371C] transition hover:bg-[#f2f7f2]"
@@ -353,20 +444,39 @@ const BlogDetail = () => {
              Back to blogs
           </Link>
 
-          <article className="mt-6 space-y-10">
-            <header className="border-b border-[#e2ece2] pb-8">
+          <article className="mt-5 space-y-8 sm:mt-6 sm:space-y-10">
+            <header className="border-b border-[#e2ece2] pb-6 sm:pb-8">
               <Heading level="h1" heading={blog.title} align="left" />
-              <p className="mt-4 text-sm text-[#5f705f]">
+              <p className="mt-3 text-xs leading-6 text-[#5f705f] sm:mt-4 sm:text-sm">
                 {formattedDate || "Latest"} | {blog.author || "Ilika Team"} | {comments.length} comments
               </p>
             </header>
 
-            <div className="grid gap-8 md:grid-cols-2 md:items-start">
+            <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:items-start md:gap-8">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#801f1f]">Article Intro</p>
-                <p className="mt-3 text-[15px] leading-7 text-[#4a5f4a] sm:text-base">
+                <p className="mt-3 text-[15px] leading-7 text-[#4a5f4a] sm:text-base sm:leading-8">
                   {blog.excerpt || "Discover practical beauty routines and ingredient insights curated for better self-care."}
                 </p>
+                {blogInternalLink ? (
+                  <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:flex-wrap sm:gap-4">
+                    {linkedProduct ? (
+                      <button
+                        type="button"
+                        onClick={handleAddLinkedProductToCart}
+                        className="inline-flex w-full items-center justify-center rounded-[10px] border border-[#b94343] bg-[#b94343] px-6 py-3.5 text-[15px] font-bold text-white transition hover:bg-[#a83b3b] sm:min-w-[200px] sm:w-auto sm:py-4 sm:text-base"
+                      >
+                        Add To Cart
+                      </button>
+                    ) : null}
+                    <Link
+                      to={blogInternalLink}
+                      className="inline-flex w-full items-center justify-center rounded-[10px] border border-[#1f1f1f] bg-white px-6 py-3.5 text-[15px] font-bold text-[#1f1f1f] transition hover:bg-[#f6f2ef] sm:min-w-[200px] sm:w-auto sm:py-4 sm:text-base"
+                    >
+                      Visit Product
+                    </Link>
+                  </div>
+                ) : null}
               </div>
 
               <figure className="overflow-hidden rounded-2xl bg-[#f8fbf8]">
@@ -378,28 +488,16 @@ const BlogDetail = () => {
                   height="800"
                   src={blog.image}
                   alt={blog.title}
-                  className="h-full min-h-[260px] w-full object-cover"
+                  className="h-full min-h-[220px] w-full object-cover sm:min-h-[260px]"
                 />
               </figure>
             </div>
 
             {contentSections.map((section, index) => renderSectionBlock(section, index))}
-
-            {blogInternalLink ? (
-              <div className="rounded-2xl border border-[#d3ddd3] bg-[#f8fbf8] p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#801f1f]">Related Internal Link</p>
-                <Link
-                  to={blogInternalLink}
-                  className="mt-3 inline-flex rounded-xl bg-[#1C371C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163016]"
-                >
-                  Visit Link
-                </Link>
-              </div>
-            ) : null}
           </article>
 
-          <section ref={commentsSectionRef} className="mt-12 border-t border-[#e2ece2] pt-8">
-            <h2 className="text-2xl font-semibold text-[#1C371C]">Comments ({comments.length})</h2>
+          <section ref={commentsSectionRef} className="mt-10 border-t border-[#e2ece2] pt-6 sm:mt-12 sm:pt-8">
+            <h2 className="text-xl font-semibold text-[#1C371C] sm:text-2xl">Comments ({comments.length})</h2>
 
             <form onSubmit={submitComment} className="mt-5 space-y-3 rounded-2xl border border-[#e2ece2] bg-white p-4 sm:p-5">
               <input
@@ -437,7 +535,7 @@ const BlogDetail = () => {
               ) : (
                 comments.map((c) => (
                   <div key={c.id} className="rounded-2xl bg-white p-4">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                       <p className="text-sm font-semibold text-[#1C371C]">{c.name}</p>
                       <p className="text-xs text-[#688068]">{new Date(c.createdAt).toLocaleDateString("en-GB")}</p>
                     </div>
