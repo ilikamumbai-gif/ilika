@@ -56,6 +56,9 @@ const ProductCard = ({
     couponCode &&
     couponPercent > 0;
   const couponBadgeText = hasActiveCoupon ? couponCode : couponText;
+  const couponOfferText = hasActiveCoupon
+    ? `Extra ${couponPercent}% OFF with ${couponCode}`
+    : "";
 
   const showNotifyToast = (message, type = "success") => {
     const styles = {
@@ -161,15 +164,22 @@ const ProductCard = ({
             )}
 
             {/* Badges */}
-            <div className="absolute bottom-1 left-2 z-20 flex max-w-[calc(100%-12px)] items-center gap-1 sm:bottom-3 sm:left-3 sm:gap-1.5">
-              <span className="inline-flex h-5 min-w-[44px] items-center justify-center rounded-md border border-[#2f2f2f]/60 bg-white/30 px-1 text-[8px] font-bold uppercase leading-none tracking-[0.05em] text-[#111] backdrop-blur-md shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] sm:h-[22px] sm:min-w-[52px] sm:px-2 sm:text-[10px]">
+            <div className="absolute bottom-2 left-2 right-2 z-20 flex items-end gap-2 sm:bottom-3 sm:left-3 sm:right-3 sm:gap-2.5">
+              <span className="inline-flex min-h-[28px] min-w-[56px] items-center justify-center rounded-[10px] border border-[#2f2f2f]/45 bg-[rgba(255,255,255,0.82)] px-2 py-1 text-[8px] font-bold uppercase leading-[1.05] tracking-[0.04em] text-[#111] backdrop-blur-md shadow-[0_4px_10px_rgba(0,0,0,0.08)] sm:min-h-[30px] sm:min-w-[62px] sm:text-[10px]">
                 {calculatedDiscount ? `${calculatedDiscount}% Off` : "Off"}
               </span>
-              {couponBadgeText && (
-                <span className="inline-flex h-5 max-w-[72px] items-center justify-center rounded-md border border-[#2f2f2f]/60 bg-white/30 px-1 text-[8px] font-bold leading-none tracking-[0.05em] text-[#111] backdrop-blur-md shadow-[inset_0_0_0_1px_rgba(255,255,255,0.3)] truncate sm:h-[22px] sm:max-w-[110px] sm:px-2 sm:text-[10px]">
-                  {couponBadgeText}
-                </span>
-              )}
+              {couponOfferText && (
+              <div className="max-w-[calc(100%-64px)] sm:max-w-[calc(100%-72px)]">
+                <div className="relative overflow-hidden rounded-[10px] border border-[#f3c7bf] bg-[linear-gradient(135deg,_#fff6f2_0%,_#ffe9df_100%)] px-3 py-2 shadow-[0_8px_18px_rgba(179,65,64,0.08)] sm:px-3.5 sm:py-2.5">
+                  <span className="pointer-events-none absolute inset-y-0 left-[-18%] w-[28%] -skew-x-12 bg-white/40 blur-[1px]" />
+                  <div className="relative flex items-center">
+                    <p className="line-clamp-2 text-[8px] font-bold leading-[1.05] tracking-[0.04em] text-[#8f2f2e] sm:text-[10px]">
+                      {couponOfferText}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             </div>
 
             <OptimizedImage
@@ -209,6 +219,8 @@ const ProductCard = ({
                 </span>
               )}
             </div>
+
+            
 
             {/* Cart / Notify button */}
             <button
