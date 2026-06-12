@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -39,28 +39,28 @@ const electrodes = [
   {
     number: "01",
     name: "Mushroom Tube",
-    target: "Face · Forehead · Cheeks",
+    target: "Face Â· Forehead Â· Cheeks",
     desc: "Used for broader facial coverage during direct or indirect treatment to support circulation, tightening, and facial massage.",
     icon: ScanFace,
   },
   {
     number: "02",
     name: "Bend Tube",
-    target: "Contour Areas · Spot Zones",
+    target: "Contour Areas Â· Spot Zones",
     desc: "Helps reach smaller or shaped areas where more controlled movement is needed during facial treatment.",
     icon: MoveRight,
   },
   {
     number: "03",
     name: "Tongue Tube",
-    target: "Sensitive Areas · Inflammation Care",
+    target: "Sensitive Areas Â· Inflammation Care",
     desc: "Useful for smaller-contact treatment on delicate or inflamed areas where a compact electrode shape is preferred.",
     icon: Eye,
   },
   {
     number: "04",
     name: "Comb Tube",
-    target: "Scalp · Hair Care · Folliculitis",
+    target: "Scalp Â· Hair Care Â· Folliculitis",
     desc: "Moved in the direction of the hair to stimulate the scalp surface, reduce folliculitis, and support healthy hair growth.",
     icon: Waves,
   },
@@ -149,17 +149,17 @@ const boxItems = [
 const reviews = [
   {
     name: "Ritika S.",
-    detail: "Verified Buyer · Mumbai",
+    detail: "Verified Buyer Â· Mumbai",
     text: "I use the mushroom and tongue tubes in my weekly skincare routine and the device feels easy to manage at home.",
   },
   {
     name: "Anjali K.",
-    detail: "Verified Buyer · Delhi",
+    detail: "Verified Buyer Â· Delhi",
     text: "The comb tube is what made me buy it. The full set feels useful because each electrode has a different purpose.",
   },
   {
     name: "Pooja M.",
-    detail: "Verified Buyer · Pune",
+    detail: "Verified Buyer Â· Pune",
     text: "The machine looks premium, the controls are simple, and the treatment steps become very easy once you understand the routine.",
   },
 ];
@@ -258,8 +258,16 @@ const targetProduct = useMemo(() => {
   const productName =
     targetProduct?.name ||
     "Ilika High Frequency Therapy Wand | For Acne Treatment, Skin Rejuvenation, Hair Growth & Scalp Care";
-  const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 5999);
-  const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 9999);
+  const rawProductPrice = defaultVariant?.price ?? targetProduct?.price;
+  const rawProductMrp = defaultVariant?.mrp ?? targetProduct?.mrp;
+  const productPrice =
+    rawProductPrice === undefined || rawProductPrice === null || rawProductPrice === ""
+      ? null
+      : Number(rawProductPrice);
+  const productMrp =
+    rawProductMrp === undefined || rawProductMrp === null || rawProductMrp === ""
+      ? null
+      : Number(rawProductMrp);
   const productImage =
     defaultVariant?.images?.[0] ||
     targetProduct?.images?.[0] ||
@@ -267,7 +275,12 @@ const targetProduct = useMemo(() => {
     "https://placehold.co/720x920/1a1410/f0dfb8?text=Ilika+HF+Wand";
   const productSlug = getProductSlug(targetProduct);
   const productPath = `/product/${productSlug}`;
-  const savings = Math.max(productMrp - productPrice, 0);
+  const hasLivePrice = Number.isFinite(productPrice);
+  const hasLiveMrp = Number.isFinite(productMrp);
+  const savings =
+    hasLivePrice && hasLiveMrp ? Math.max(productMrp - productPrice, 0) : 0;
+  const priceLabel = hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price...";
+  const mrpLabel = hasLiveMrp ? `₹${productMrp.toLocaleString("en-IN")}` : "MRP unavailable";
   const landingVideo = useMemo(() => {
     const productVideos = Array.isArray(targetProduct?.videos) ? targetProduct.videos : [];
     const firstVideo = productVideos.find((video) => String(video?.url || "").trim());
@@ -284,11 +297,15 @@ const targetProduct = useMemo(() => {
   }, [targetProduct]);
 
   const handleBuyNow = async () => {
+    if (!targetProduct || !hasLivePrice) {
+      return;
+    }
+
     const cartPayload = {
       id: String(targetProduct?.id || targetProduct?._id || productSlug),
       name: productName,
       price: productPrice,
-      originalPrice: productMrp,
+      originalPrice: hasLiveMrp ? productMrp : productPrice,
       image: productImage,
       images: [productImage],
     };
@@ -342,10 +359,11 @@ const targetProduct = useMemo(() => {
               <button
                 type="button"
                 onClick={handleBuyNow}
-                className="group relative inline-flex min-h-[62px] w-full max-w-[420px] items-center justify-center overflow-hidden rounded-sm bg-[linear-gradient(135deg,_#1a1410_0%,_#2a1f14_55%,_#3d2b1f_100%)] px-6 text-[12px] font-medium uppercase tracking-[0.18em] text-[#f0dfb8] shadow-[0_18px_40px_rgba(26,20,16,0.16)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_54px_rgba(26,20,16,0.22)] sm:min-h-[74px] sm:px-8 sm:text-[13px] sm:tracking-[0.2em]"
+                disabled={!targetProduct || !hasLivePrice}
+                className="group relative inline-flex min-h-[62px] w-full max-w-[420px] items-center justify-center overflow-hidden rounded-sm bg-[linear-gradient(135deg,_#1a1410_0%,_#2a1f14_55%,_#3d2b1f_100%)] px-6 text-[12px] font-medium uppercase tracking-[0.18em] text-[#f0dfb8] shadow-[0_18px_40px_rgba(26,20,16,0.16)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_54px_rgba(26,20,16,0.22)] disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-[74px] sm:px-8 sm:text-[13px] sm:tracking-[0.2em]"
               >
                 <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[24%] -skew-x-12 bg-[rgba(255,255,255,0.2)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
-                <span className="relative z-[1]">Buy Now</span>
+                <span className="relative z-[1]">Buy Now · {priceLabel}</span>
               </button>
               <a
                 href={productPath}
@@ -358,14 +376,16 @@ const targetProduct = useMemo(() => {
 
             <div className="mt-6 flex flex-wrap items-end gap-2 sm:mt-8 sm:gap-3">
               <span className="text-4xl font-semibold leading-none text-[#1a1410] sm:text-5xl">
-                ₹{productPrice.toLocaleString("en-IN")}
+                {priceLabel}
               </span>
               <span className="pb-1 text-base text-[#7a6757] line-through sm:text-lg">
-                ₹{productMrp.toLocaleString("en-IN")}
+                {mrpLabel}
               </span>
-              <span className="rounded-sm bg-[#fff0e0] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.06em] text-[#ff7a20] sm:px-3 sm:text-[11px] sm:tracking-[0.08em]">
-                Save ₹{savings.toLocaleString("en-IN")}
-              </span>
+              {savings > 0 && (
+                <span className="rounded-sm bg-[#fff0e0] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.06em] text-[#ff7a20] sm:px-3 sm:text-[11px] sm:tracking-[0.08em]">
+                  Save ₹{savings.toLocaleString("en-IN")}
+                </span>
+              )}
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-2.5 border-t border-[#c9a96e]/20 pt-5 sm:mt-10 sm:flex sm:flex-wrap sm:gap-x-7 sm:gap-y-4 sm:pt-7">
@@ -380,8 +400,8 @@ const targetProduct = useMemo(() => {
               })}
             </div>
 
-            {loading && !targetProduct ? (
-              <p className="mt-4 text-sm text-[#8b6e3a]">Loading live product details...</p>
+            {!targetProduct || !hasLivePrice ? (
+              <p className="mt-4 text-sm text-[#8b6e3a]">{loading ? "Loading live product details..." : "Live product price unavailable right now."}</p>
             ) : null}
           </div>
 
@@ -714,7 +734,7 @@ const targetProduct = useMemo(() => {
                 key={review.name}
                 className="rounded-[20px] border border-[#c9a96e]/15 bg-white px-5 py-6 shadow-[0_12px_34px_rgba(26,20,16,0.06)] sm:rounded-[24px] sm:px-7 sm:py-8"
               >
-                <div className="text-[18px] tracking-[0.18em] text-[#c9a96e]">★★★★★</div>
+                <div className="text-[18px] tracking-[0.18em] text-[#c9a96e]">â˜…â˜…â˜…â˜…â˜…</div>
                 <p className="mt-4 text-[13px] leading-6 text-[#7a6757] sm:mt-5 sm:text-sm sm:leading-7">&quot;{review.text}&quot;</p>
                 <div className="mt-6 border-t border-[#c9a96e]/10 pt-4">
                   <p className="text-sm font-semibold text-[#1a1410]">{review.name}</p>
@@ -741,14 +761,16 @@ const targetProduct = useMemo(() => {
 
           <div className="mt-10">
             <p className="text-5xl font-semibold leading-none text-[#c9a96e] sm:text-6xl">
-              ₹{productPrice.toLocaleString("en-IN")}
+              {priceLabel}
             </p>
             <p className="mt-3 text-base text-[#f2ede4]/40 line-through">
-              MRP ₹{productMrp.toLocaleString("en-IN")}
+              {hasLiveMrp ? `MRP ₹${productMrp.toLocaleString("en-IN")}` : "MRP unavailable"}
             </p>
-            <p className="mt-2 text-[13px] uppercase tracking-[0.06em] text-[#ff7a20]">
-              You save ₹{savings.toLocaleString("en-IN")}
-            </p>
+            {savings > 0 && (
+              <p className="mt-2 text-[13px] uppercase tracking-[0.06em] text-[#ff7a20]">
+                You save ₹{savings.toLocaleString("en-IN")}
+              </p>
+            )}
           </div>
 
           <div className="mt-10 flex justify-center">
@@ -784,7 +806,7 @@ const targetProduct = useMemo(() => {
           onClick={handleBuyNow}
           className="inline-flex min-h-[56px] w-full items-center justify-center rounded-xl bg-[linear-gradient(135deg,_#c9a96e_0%,_#b89254_50%,_#a57a39_100%)] px-5 text-[12px] font-medium uppercase tracking-[0.16em] text-[#1a1410] shadow-[0_16px_30px_rgba(0,0,0,0.22)]"
         >
-          Buy Now · ₹{productPrice.toLocaleString("en-IN")}
+          Buy Now · {priceLabel}
         </button>
       </div>
       <div className="h-20 lg:hidden" />
@@ -797,3 +819,6 @@ const targetProduct = useMemo(() => {
 };
 
 export default HighFrequencyTherapyWandLanding;
+
+
+

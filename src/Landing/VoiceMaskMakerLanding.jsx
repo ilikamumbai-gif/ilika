@@ -255,18 +255,40 @@ const VoiceMaskMakerLanding = () => {
   }, [secs]);
 
   const targetProduct = useMemo(() => {
-    const targetSlug = "ilika-voice-face-mask-maker-machine-with-collagen-peptide";
+    const targetSlugs = [
+      "voice-face-mask-maker",
+      "ilika-voice-face-mask-maker-machine-with-collagen-peptide",
+      "ilika-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
+    ];
+
     return products.find((p) => {
       const nameSlug = createSlug(p?.name || "");
-      const rawSlug = String(p?.productUrl || p?.slug || "").trim().toLowerCase();
-      return nameSlug === targetSlug || rawSlug === targetSlug;
+      const rawSlug = String(p?.productUrl || p?.slug || "")
+        .trim()
+        .toLowerCase()
+        .replace(/^\/+|\/+$/g, "")
+        .replace(/^product\//, "")
+        .replace(/^https?:\/\/[^/]+\//, "")
+        .replace(/^product\//, "");
+
+      return targetSlugs.includes(nameSlug) || targetSlugs.includes(rawSlug);
     });
   }, [products]);
 
   const defaultVariant = targetProduct?.variants?.find((v) => v?.isDefault) || targetProduct?.variants?.[0];
   const productName = targetProduct?.name || "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin";
-  const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 6999);
-  const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 8200);
+  const rawProductPrice = defaultVariant?.price ?? targetProduct?.price;
+  const rawProductMrp = defaultVariant?.mrp ?? targetProduct?.mrp;
+  const productPrice =
+    rawProductPrice === undefined || rawProductPrice === null || rawProductPrice === ""
+      ? null
+      : Number(rawProductPrice);
+  const productMrp =
+    rawProductMrp === undefined || rawProductMrp === null || rawProductMrp === ""
+      ? null
+      : Number(rawProductMrp);
+  const hasLivePrice = Number.isFinite(productPrice);
+  const hasLiveMrp = Number.isFinite(productMrp);
   const productImage =
     voiceVersionMaskMakerImage ||
     defaultVariant?.images?.[0] ||
@@ -275,26 +297,40 @@ const VoiceMaskMakerLanding = () => {
     "https://ilika.in/cdn/shop/products/mask-maker-machine.jpg";
 
   const productSlug = getProductSlug(targetProduct);
-  const productPath = `/product/${productSlug}`;
-  const COUPON_FORCED_PRICE = 4999;
-  const discountedPrice = couponApplied ? COUPON_FORCED_PRICE : productPrice;
-  const effectiveSavings = Math.max(productMrp - discountedPrice, 0);
+  const productPath = productSlug ? `/product/${productSlug}` : "/product/voice-face-mask-maker";
+  const discountedPrice = hasLivePrice
+    ? couponApplied
+      ? Math.round(productPrice * 0.85)
+      : productPrice
+    : null;
+  const effectiveSavings =
+    hasLiveMrp && Number.isFinite(discountedPrice)
+      ? Math.max(productMrp - discountedPrice, 0)
+      : 0;
+  const priceLabel = Number.isFinite(discountedPrice)
+    ? `₹${discountedPrice.toLocaleString("en-IN")}`
+    : "Loading price...";
+  const mrpLabel = hasLiveMrp ? `₹${productMrp.toLocaleString("en-IN")}` : "MRP unavailable";
 
   const handleApplyCoupon = () => setCouponApplied(true);
 
   const handleBuyNow = async () => {
+    if (!targetProduct || !hasLivePrice || !Number.isFinite(discountedPrice)) {
+      return;
+    }
+
     const cartPayload = {
       id: String(targetProduct?.id || targetProduct?._id || productSlug),
       name: productName,
       price: discountedPrice,
-      originalPrice: productPrice,
+      originalPrice: hasLiveMrp ? productMrp : discountedPrice,
       image: productImage,
       images: [productImage],
       discountApplied: couponApplied
         ? {
             code: "ILIKADIY",
             percent: 15,
-            amount: Math.max(productPrice - discountedPrice, 0),
+            amount: hasLivePrice ? Math.max(productPrice - discountedPrice, 0) : 0,
             basedOn: "selling_price",
           }
         : null,
@@ -336,24 +372,27 @@ const VoiceMaskMakerLanding = () => {
             </p>
 
             <div className="mb-4 flex flex-wrap items-end gap-2 sm:gap-3">
-              <span className="[font-family:'Playfair_Display',serif] text-[38px] font-bold leading-none sm:text-[52px]">₹{discountedPrice.toLocaleString("en-IN")}</span>
+              <span className="[font-family:'Playfair_Display',serif] text-[38px] font-bold leading-none sm:text-[52px]">{priceLabel}</span>
               <div className="flex flex-col gap-1 pb-1">
-                <span className="text-[15px] font-light text-[rgba(215,201,194,0.85)] line-through">MRP ₹{productMrp.toLocaleString("en-IN")}</span>
-                <span className="w-fit rounded-full bg-[rgba(255,179,102,0.24)] px-2.5 py-[3px] text-[12px] font-semibold tracking-[0.04em] text-[#A85A00]">
-                  Save ₹{effectiveSavings.toLocaleString("en-IN")}
-                </span>
+                <span className="text-[15px] font-light text-[rgba(215,201,194,0.85)] line-through">{mrpLabel}</span>
+                {effectiveSavings > 0 && (
+                  <span className="w-fit rounded-full bg-[rgba(255,179,102,0.24)] px-2.5 py-[3px] text-[12px] font-semibold tracking-[0.04em] text-[#A85A00]">
+                    Save ₹{effectiveSavings.toLocaleString("en-IN")}
+                  </span>
+                )}
               </div>
             </div>
 
             <button
               type="button"
               onClick={handleBuyNow}
-              className="group relative mb-3 inline-flex h-[64px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-3 py-3 text-[15px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[20px] sm:tracking-[0.03em]"
+              disabled={!targetProduct || !hasLivePrice}
+              className="group relative mb-3 inline-flex h-[64px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-3 py-3 text-[15px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] disabled:cursor-not-allowed disabled:opacity-60 sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[20px] sm:tracking-[0.03em]"
             >
               <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
               <span className="relative z-[1] inline-flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5" />
-                Buy Now - ₹{discountedPrice.toLocaleString("en-IN")}
+                Buy Now - {priceLabel}
               </span>
               <span className="absolute bottom-1.5 right-2 rounded-full bg-[rgba(255,255,255,0.2)] px-1.5 py-[2px] text-[9px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)] sm:right-3 sm:px-2 sm:text-[10px]">
                 LIMITED STOCK
@@ -364,14 +403,19 @@ const VoiceMaskMakerLanding = () => {
               <button
                 type="button"
                 onClick={handleApplyCoupon}
+                disabled={!hasLivePrice}
                 className={`inline-flex h-auto min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] border border-dashed px-3 py-2 text-[13px] font-semibold tracking-[0.03em] transition sm:h-[48px] sm:min-w-[320px] sm:flex-1 sm:px-4 sm:py-0 sm:text-[16px] sm:tracking-[0.04em] ${
                   couponApplied
                     ? "border-[#F0C24A] bg-[#FFD54A] text-[#5C3A00]"
                     : "border-[#E4B63E] bg-[#F7C948] text-[#5C3A00] hover:bg-[#FFD54A]"
-                }`}
+                } disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 <Tag className="h-3.5 w-3.5" />
-                {couponApplied ? "Coupon Applied: ilikaDIY · Price Locked at ₹4,999" : "Use Code: ilikaDIY · Flat 15% Off"}
+                {couponApplied
+                  ? `Coupon Applied: ilikaDIY · Price Locked at ${priceLabel}`
+                  : hasLivePrice
+                    ? `Use Code: ilikaDIY · Get 15% Off`
+                    : "Use Code: ilikaDIY · Waiting for live price"}
                 {!couponApplied && (
                   <span className="hidden animate-bounce items-center gap-1 rounded-full border border-[#E4B63E] bg-[#FFF1C2] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.08em] text-[#7A4D00] sm:inline-flex">
                     <MousePointerClick className="h-3 w-3" />
@@ -387,8 +431,10 @@ const VoiceMaskMakerLanding = () => {
               </a>
             </div>
 
-            {loading && !targetProduct && (
-              <p className="mt-2 text-[12px] text-[#C68B7D]">Loading live product details...</p>
+            {(!targetProduct || !hasLivePrice) && (
+              <p className="mt-2 text-[12px] text-[#C68B7D]">
+                {loading ? "Loading live product details..." : "Live product price unavailable right now."}
+              </p>
             )}
           </div>
 
@@ -457,12 +503,13 @@ const VoiceMaskMakerLanding = () => {
           <button
             type="button"
             onClick={handleBuyNow}
+            disabled={!targetProduct || !hasLivePrice}
             className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]"
           >
             <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
             <span className="relative z-[1] inline-flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
-              Buy Now - ₹{discountedPrice.toLocaleString("en-IN")}
+              Buy Now - {priceLabel}
             </span>
             <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">
               LIMITED STOCK
@@ -518,12 +565,13 @@ const VoiceMaskMakerLanding = () => {
           <button
             type="button"
             onClick={handleBuyNow}
+            disabled={!targetProduct || !hasLivePrice}
             className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]"
           >
             <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
             <span className="relative z-[1] inline-flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
-              Buy Now - ₹{discountedPrice.toLocaleString("en-IN")}
+              Buy Now - {priceLabel}
             </span>
             <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">
               LIMITED STOCK
@@ -631,12 +679,13 @@ const VoiceMaskMakerLanding = () => {
           <button
             type="button"
             onClick={handleBuyNow}
+            disabled={!targetProduct || !hasLivePrice}
             className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]"
           >
             <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
             <span className="relative z-[1] inline-flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
-              Buy Now - ₹{discountedPrice.toLocaleString("en-IN")}
+              Buy Now - {priceLabel}
             </span>
             <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">
               LIMITED STOCK
@@ -699,12 +748,13 @@ const VoiceMaskMakerLanding = () => {
           <button
             type="button"
             onClick={handleBuyNow}
+            disabled={!targetProduct || !hasLivePrice}
             className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]"
           >
             <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
             <span className="relative z-[1] inline-flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
-              Buy Now - ₹{discountedPrice.toLocaleString("en-IN")}
+              Buy Now - {priceLabel}
             </span>
             <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">
               LIMITED STOCK
@@ -759,11 +809,12 @@ const VoiceMaskMakerLanding = () => {
           <button
             type="button"
             onClick={handleBuyNow}
+            disabled={!targetProduct || !hasLivePrice}
             className="mb-3 inline-flex w-full items-center justify-center rounded-full bg-[#FFF7F2] px-8 py-4 text-[15px] font-semibold text-[#9E5C4F] transition hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] sm:inline-block sm:w-auto sm:px-12 sm:py-[18px] sm:text-[16px]"
           >
             <span className="inline-flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
-              Buy Now - ₹{discountedPrice.toLocaleString("en-IN")}
+              Buy Now - {priceLabel}
             </span>
           </button>
           <a

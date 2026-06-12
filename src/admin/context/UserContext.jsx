@@ -23,6 +23,7 @@ export const UserProvider = ({ children }) => {
         id: user.uid,
         name: user.name || "No Name",
         email: user.email,
+        phone: user.phone || user.phoneNumber || "",
       }));
 
       setUsers(formattedUsers);

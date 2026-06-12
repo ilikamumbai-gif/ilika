@@ -185,8 +185,16 @@ const HotColdBlackheadRemoverLanding = () => {
   const productName =
     targetProduct?.name ||
     "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening";
-  const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 1299);
-  const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 2499);
+  const rawProductPrice = defaultVariant?.price ?? targetProduct?.price;
+  const rawProductMrp = defaultVariant?.mrp ?? targetProduct?.mrp;
+  const productPrice =
+    rawProductPrice === undefined || rawProductPrice === null || rawProductPrice === ""
+      ? null
+      : Number(rawProductPrice);
+  const productMrp =
+    rawProductMrp === undefined || rawProductMrp === null || rawProductMrp === ""
+      ? null
+      : Number(rawProductMrp);
   const productImages = Array.isArray(defaultVariant?.images) && defaultVariant.images.length
     ? defaultVariant.images
     : Array.isArray(targetProduct?.images) && targetProduct.images.length
@@ -196,15 +204,24 @@ const HotColdBlackheadRemoverLanding = () => {
   const secondaryImage = productImages[1] || productImages[0];
   const productSlug = getProductSlug(targetProduct);
   const productPath = `/product/${productSlug}`;
-  const savings = Math.max(productMrp - productPrice, 0);
+  const hasLivePrice = Number.isFinite(productPrice);
+  const hasLiveMrp = Number.isFinite(productMrp);
+  const savings =
+    hasLivePrice && hasLiveMrp ? Math.max(productMrp - productPrice, 0) : 0;
+  const priceLabel = hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price...";
+  const mrpLabel = hasLiveMrp ? `₹${productMrp.toLocaleString("en-IN")}` : "MRP unavailable";
   const productId = String(targetProduct?.id || targetProduct?._id || productSlug);
 
   const handleBuyNow = async () => {
+    if (!targetProduct || !hasLivePrice) {
+      return;
+    }
+
     const cartPayload = {
       id: productId,
       name: productName,
       price: productPrice,
-      originalPrice: productMrp,
+      originalPrice: hasLiveMrp ? productMrp : productPrice,
       image: productImage,
       images: productImages,
     };
@@ -297,12 +314,13 @@ const HotColdBlackheadRemoverLanding = () => {
               <button
                 type="button"
                 onClick={handleBuyNow}
-                className="hot-cold-cta inline-flex min-h-[56px] w-full max-w-[420px] items-center justify-center rounded-xl px-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#e8ecf4] transition hover:-translate-y-0.5 sm:min-h-[68px] sm:rounded-sm sm:text-[13px]"
+                disabled={!targetProduct || !hasLivePrice}
+                className="hot-cold-cta inline-flex min-h-[56px] w-full max-w-[420px] items-center justify-center rounded-xl px-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#e8ecf4] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-[68px] sm:rounded-sm sm:text-[13px]"
               >
                 <span className="relative z-[1] flex items-center gap-3">
                   <span>Buy Now</span>
                   <span className="text-white/80">·</span>
-                  <span>{"\u20B9"}{productPrice.toLocaleString("en-IN")}</span>
+                  <span>{priceLabel}</span>
                 </span>
               </button>
               <a
@@ -316,18 +334,22 @@ const HotColdBlackheadRemoverLanding = () => {
 
             <div className="mt-7 flex flex-wrap items-end justify-center gap-2 sm:mt-8 sm:gap-3 lg:justify-start">
               <span className="[font-family:'Cormorant_Garamond',serif] text-[38px] font-semibold leading-none text-[#e8ecf4] sm:text-5xl">
-                {"\u20B9"}{productPrice.toLocaleString("en-IN")}
+                {priceLabel}
               </span>
               <span className="pb-1 text-[15px] text-[#8892a8] line-through sm:text-lg">
-                {"\u20B9"}{productMrp.toLocaleString("en-IN")}
+                {mrpLabel}
               </span>
-              <span className="rounded-sm bg-[#111624] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-[#e63946] sm:px-3 sm:text-[11px]">
-                Save {"\u20B9"}{savings.toLocaleString("en-IN")}
-              </span>
+              {savings > 0 && (
+                <span className="rounded-sm bg-[#111624] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-[#e63946] sm:px-3 sm:text-[11px]">
+                  Save {"\u20B9"}{savings.toLocaleString("en-IN")}
+                </span>
+              )}
             </div>
 
-            {loading && !targetProduct ? (
-              <p className="mt-4 text-sm text-[#8892a8]">Loading live product details...</p>
+            {!targetProduct || !hasLivePrice ? (
+              <p className="mt-4 text-sm text-[#8892a8]">
+                {loading ? "Loading live product details..." : "Live product price unavailable right now."}
+              </p>
             ) : null}
           </div>
 
@@ -449,12 +471,13 @@ const HotColdBlackheadRemoverLanding = () => {
             <button
               type="button"
               onClick={handleBuyNow}
+              disabled={!targetProduct || !hasLivePrice}
               className="hot-cold-cta inline-flex min-h-[56px] w-full max-w-[360px] items-center justify-center rounded-xl px-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e8ecf4] transition hover:-translate-y-0.5 sm:min-h-[58px] sm:rounded-sm sm:text-[12px]"
             >
               <span className="relative z-[1] flex items-center gap-2.5">
                 <span>Buy Now</span>
                 <span className="text-white/80">·</span>
-                <span>{"\u20B9"}{productPrice.toLocaleString("en-IN")}</span>
+                <span>{priceLabel}</span>
               </span>
             </button>
           </div>
@@ -551,12 +574,13 @@ const HotColdBlackheadRemoverLanding = () => {
             <button
               type="button"
               onClick={handleBuyNow}
+              disabled={!targetProduct || !hasLivePrice}
               className="hot-cold-cta inline-flex min-h-[56px] w-full max-w-[360px] items-center justify-center rounded-xl px-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e8ecf4] transition hover:-translate-y-0.5 sm:min-h-[58px] sm:rounded-sm sm:text-[12px]"
             >
               <span className="relative z-[1] flex items-center gap-2.5">
                 <span>Buy Now</span>
                 <span className="text-white/80">·</span>
-                <span>{"\u20B9"}{productPrice.toLocaleString("en-IN")}</span>
+                <span>{priceLabel}</span>
               </span>
             </button>
           </div>
@@ -607,12 +631,13 @@ const HotColdBlackheadRemoverLanding = () => {
             <button
               type="button"
               onClick={handleBuyNow}
+              disabled={!targetProduct || !hasLivePrice}
               className="hot-cold-cta inline-flex min-h-[56px] w-full max-w-[360px] items-center justify-center rounded-xl px-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e8ecf4] transition hover:-translate-y-0.5 sm:w-auto sm:min-h-[58px] sm:min-w-[340px] sm:rounded-sm sm:text-[12px]"
             >
               <span className="relative z-[1] flex items-center gap-2.5">
                 <span>Buy Now</span>
                 <span className="text-white/80">·</span>
-                <span>{"\u20B9"}{productPrice.toLocaleString("en-IN")}</span>
+                <span>{priceLabel}</span>
               </span>
             </button>
            
@@ -628,12 +653,13 @@ const HotColdBlackheadRemoverLanding = () => {
         <button
           type="button"
           onClick={handleBuyNow}
+          disabled={!targetProduct || !hasLivePrice}
           className="hot-cold-cta inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl px-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e8ecf4]"
         >
           <span className="relative z-[1] flex items-center gap-2.5">
             <span>Buy Now</span>
             <span className="text-white/80">·</span>
-            <span>{"\u20B9"}{productPrice.toLocaleString("en-IN")}</span>
+            <span>{priceLabel}</span>
           </span>
         </button>
       </div>
@@ -647,4 +673,3 @@ const HotColdBlackheadRemoverLanding = () => {
 };
 
 export default HotColdBlackheadRemoverLanding;
-

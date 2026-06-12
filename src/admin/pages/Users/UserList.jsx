@@ -25,7 +25,8 @@ const UserList = () => {
   const filtered = users.filter(u =>
     !search ||
     u.name?.toLowerCase().includes(search.toLowerCase()) ||
-    u.email?.toLowerCase().includes(search.toLowerCase())
+    u.email?.toLowerCase().includes(search.toLowerCase()) ||
+    String(u.phone || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -42,7 +43,7 @@ const UserList = () => {
         <Search size={15} className="text-gray-400 shrink-0" />
         <input
           type="text"
-          placeholder="Search by name or email…"
+          placeholder="Search by name, email or phone..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="flex-1 text-sm focus:outline-none bg-transparent placeholder-gray-300"
@@ -55,7 +56,7 @@ const UserList = () => {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F0F0F0" }}>
-                {["User", "Email", "Orders", "Total Spent", "Status", "Actions"].map(h => (
+                {["User", "Email", "Phone", "Orders", "Total Spent", "Status", "Actions"].map(h => (
                   <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "#888" }}>
                     {h}
                   </th>
@@ -65,7 +66,7 @@ const UserList = () => {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center">
+                  <td colSpan={7} className="px-5 py-12 text-center">
                     <div className="flex flex-col items-center gap-2 text-gray-300">
                       <Users size={36} />
                       <p className="text-sm">No users found</p>
@@ -88,6 +89,7 @@ const UserList = () => {
                       </div>
                     </td>
                     <td className="px-5 py-4 text-gray-500 text-sm">{user.email}</td>
+                    <td className="px-5 py-4 text-gray-500 text-sm">{user.phone || "-"}</td>
                     <td className="px-5 py-4">
                       <span className="font-bold text-gray-800">{orderCount}</span>
                     </td>
@@ -134,6 +136,7 @@ const UserList = () => {
                   <div className="min-w-0">
                     <p className="font-semibold text-gray-800 truncate">{user.name}</p>
                     <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                    <p className="text-xs text-gray-400 truncate">{user.phone || "-"}</p>
                     <div className="flex gap-2 mt-1">
                       <span className="text-xs text-gray-500">{orderCount} orders</span>
                       <span className="text-xs font-semibold text-gray-700">₹{spent.toLocaleString("en-IN")}</span>

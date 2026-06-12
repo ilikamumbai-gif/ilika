@@ -114,8 +114,18 @@ const NonvoiceMaskMakerLanding = () => {
 
   const defaultVariant = targetProduct?.variants?.find((v) => v?.isDefault) || targetProduct?.variants?.[0];
   const productName = targetProduct?.name || "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin";
-  const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 5999);
-  const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 7200);
+  const rawProductPrice = defaultVariant?.price ?? targetProduct?.price;
+  const rawProductMrp = defaultVariant?.mrp ?? targetProduct?.mrp;
+  const productPrice =
+    rawProductPrice === undefined || rawProductPrice === null || rawProductPrice === ""
+      ? null
+      : Number(rawProductPrice);
+  const productMrp =
+    rawProductMrp === undefined || rawProductMrp === null || rawProductMrp === ""
+      ? null
+      : Number(rawProductMrp);
+  const hasLivePrice = Number.isFinite(productPrice);
+  const hasLiveMrp = Number.isFinite(productMrp);
   const productImage =
     defaultVariant?.images?.[0] ||
     targetProduct?.images?.[0] ||
@@ -124,14 +134,19 @@ const NonvoiceMaskMakerLanding = () => {
 
   const productSlug = getProductSlug(targetProduct);
   const productPath = `/product/${productSlug}`;
-  const effectiveSavings = Math.max(productMrp - productPrice, 0);
+  const effectiveSavings =
+    hasLivePrice && hasLiveMrp ? Math.max(productMrp - productPrice, 0) : 0;
 
   const handleBuyNow = async () => {
+    if (!targetProduct || !hasLivePrice) {
+      return;
+    }
+
     const cartPayload = {
       id: String(targetProduct?.id || targetProduct?._id || productSlug),
       name: productName,
       price: productPrice,
-      originalPrice: productPrice,
+      originalPrice: hasLiveMrp ? productMrp : productPrice,
       image: productImage,
       images: [productImage],
       discountApplied: null,
@@ -169,20 +184,26 @@ const NonvoiceMaskMakerLanding = () => {
             </p>
 
             <div className="mb-4 flex items-end gap-2.5 sm:gap-3">
-              <span className="[font-family:'Playfair_Display',serif] text-[44px] font-bold leading-none sm:text-[52px]">₹{productPrice.toLocaleString("en-IN")}</span>
+              <span className="[font-family:'Playfair_Display',serif] text-[44px] font-bold leading-none sm:text-[52px]">
+                {hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}
+              </span>
               <div className="flex flex-col gap-1 pb-1">
-                <span className="text-[15px] font-light text-[rgba(126,102,96,0.85)] line-through">MRP ₹{productMrp.toLocaleString("en-IN")}</span>
-                <span className="w-fit rounded-full bg-[rgba(198,160,109,0.22)] px-2.5 py-[3px] text-[12px] font-semibold tracking-[0.04em] text-[#9D6C2F]">
-                  Save ₹{effectiveSavings.toLocaleString("en-IN")}
+                <span className="text-[15px] font-light text-[rgba(126,102,96,0.85)] line-through">
+                  {hasLiveMrp ? `MRP ₹${productMrp.toLocaleString("en-IN")}` : "MRP unavailable"}
                 </span>
+                {effectiveSavings > 0 && (
+                  <span className="w-fit rounded-full bg-[rgba(198,160,109,0.22)] px-2.5 py-[3px] text-[12px] font-semibold tracking-[0.04em] text-[#9D6C2F]">
+                    Save ₹{effectiveSavings.toLocaleString("en-IN")}
+                  </span>
+                )}
               </div>
             </div>
 
-            <button type="button" onClick={handleBuyNow} className="group relative mb-3 inline-flex h-[74px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-5 py-4 text-[16px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[18px] sm:tracking-[0.03em]">
+            <button type="button" onClick={handleBuyNow} disabled={!targetProduct || !hasLivePrice} className="group relative mb-3 inline-flex h-[74px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-5 py-4 text-[16px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] disabled:cursor-not-allowed disabled:opacity-60 sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[18px] sm:tracking-[0.03em]">
               <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
               <span className="relative z-[1] inline-flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5" />
-                Buy Now - ₹{productPrice.toLocaleString("en-IN")}
+                Buy Now - {hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}
               </span>
               <span className="absolute bottom-1.5 right-2 rounded-full bg-[rgba(255,255,255,0.2)] px-1.5 py-[2px] text-[9px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)] sm:right-3 sm:px-2 sm:text-[10px]">LIMITED STOCK</span>
             </button>
@@ -196,7 +217,7 @@ const NonvoiceMaskMakerLanding = () => {
               <span>Offer ends in <span className="font-semibold text-[#9E5C4F]">{countdown}</span> · Only 12 units left</span>
             </div>
 
-            {loading && !targetProduct && <p className="mt-2 text-[12px] text-[#8F5A4E]">Loading live product details...</p>}
+            {(!targetProduct || !hasLivePrice) && <p className="mt-2 text-[12px] text-[#8F5A4E]">{loading ? "Loading live product details..." : "Live product price unavailable right now."}</p>}
           </div>
 
           <div className="relative mx-auto flex w-full max-w-[470px] items-center justify-center">
@@ -229,7 +250,7 @@ const NonvoiceMaskMakerLanding = () => {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">{features.map((f) => (<div key={f.title} className="rounded-[20px] border border-[#EBDDD4] bg-[#FFFDFC] px-7 py-9 transition hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(184,113,97,0.14)]"><div className="mb-5 grid h-[52px] w-[52px] place-content-center rounded-[14px] bg-[#F6E7DE] text-[26px]"><f.icon className="mx-auto h-6.5 w-6.5 text-[#9E5C4F]" /></div><h3 className="mb-2.5 text-[17px] font-semibold">{f.title}</h3><p className="text-[14px] font-light leading-[1.65] text-[#7E6660]">{f.desc}</p></div>))}</div>
 
-        <div className="mx-auto mt-12 w-full max-w-[760px]"><button type="button" onClick={handleBuyNow} className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]"><span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" /><span className="relative z-[1] inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - ₹{productPrice.toLocaleString("en-IN")}</span><span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">LIMITED STOCK</span></button></div>
+        <div className="mx-auto mt-12 w-full max-w-[760px]"><button type="button" onClick={handleBuyNow} disabled={!targetProduct || !hasLivePrice} className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] disabled:cursor-not-allowed disabled:opacity-60"><span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" /><span className="relative z-[1] inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - {hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}</span><span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">LIMITED STOCK</span></button></div>
       </section>
 
       <section className="cv-auto bg-[linear-gradient(180deg,_#F8EDE5_0%,_#F0DCCE_100%)] px-[8%] py-20">
@@ -242,7 +263,7 @@ const NonvoiceMaskMakerLanding = () => {
       <section className="cv-auto bg-[linear-gradient(180deg,_#FFFDFB_0%,_#F9EFE7_100%)] px-[8%] py-20">
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-[60px]"><div><h3 className="mb-5 [font-family:'Playfair_Display',serif] text-[34px] font-bold leading-[1.2]">Made with<br />Real Ingredients</h3><p className="mb-7 text-[15px] font-light leading-[1.7] text-[#7E6660]">Unlike store-bought masks packed with chemicals, you control exactly what goes on your skin. Use what's in your fridge - and your skin will thank you.</p><div className="flex flex-wrap gap-2.5">{["Orange", "Kiwi", "Strawberry", "Lemon", "Milk", "Honey", "Avocado", "Collagen"].map((tag) => (<span key={tag} className="rounded-full border border-[#EBCFC2] bg-[#F6E7DE] px-[18px] py-2 text-[13px] font-medium text-[#9E5C4F]">{tag}</span>))}</div></div><div className="rounded-[28px] bg-[#F6E7DE] px-10 py-12"><div className="mb-4 rounded-2xl border border-[#EBCFC2] bg-[#FFFDFC] p-6"><p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#B87161]"><Star className="h-3.5 w-3.5" /> Included</p><h4 className="mb-1.5 text-[15px] font-semibold">Collagen Peptide Pack</h4><p className="text-[13px] font-light text-[#7E6660]">Clinically formulated to boost skin elasticity, reduce fine lines and restore that youthful firmness. Just add one scoop to your mask mix.</p></div><div className="rounded-2xl border border-[#EBCFC2] bg-[#FFFDFC] p-6"><p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#B87161]"><Lightbulb className="h-3.5 w-3.5" /> Pro Tip</p><h4 className="mb-1.5 text-[15px] font-semibold">Vitamin C Brightening Mask</h4><p className="text-[13px] font-light text-[#7E6660]">Orange + lemon + a pinch of turmeric → instant glow mask. The machine blends it to the perfect consistency for your skin type.</p></div></div></div>
 
-        <div className="mx-auto mt-12 w-full max-w-[760px]"><button type="button" onClick={handleBuyNow} className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)]"><span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" /><span className="relative z-[1] inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - ₹{productPrice.toLocaleString("en-IN")}</span><span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">LIMITED STOCK</span></button></div>
+        <div className="mx-auto mt-12 w-full max-w-[760px]"><button type="button" onClick={handleBuyNow} disabled={!targetProduct || !hasLivePrice} className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] disabled:cursor-not-allowed disabled:opacity-60"><span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" /><span className="relative z-[1] inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - {hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}</span><span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">LIMITED STOCK</span></button></div>
       </section>
 
       <section className="cv-auto bg-[linear-gradient(180deg,_#FFFFFF_0%,_#FFF5EE_100%)] px-[8%] py-20">
@@ -259,7 +280,7 @@ const NonvoiceMaskMakerLanding = () => {
         <h2 className="relative z-[1] mb-4 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2] text-white">Ready to Glow<br /><em className="text-[rgba(255,255,255,0.75)]">Every Single Day?</em></h2>
         <p className="relative z-[1] mb-9 text-[16px] font-light text-[rgba(255,255,255,0.88)]">Inclusive of all taxes · Fast delivery across India</p>
 
-        <div className="relative z-[1]"><button type="button" onClick={handleBuyNow} className="mb-3 inline-block rounded-full bg-[#FFF7F2] px-12 py-[18px] text-[16px] font-semibold text-[#9E5C4F] transition hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)]"><span className="inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - ₹{productPrice.toLocaleString("en-IN")}</span></button><a href={productPath} className="mb-3 ml-2 inline-block rounded-full border-2 border-[rgba(255,255,255,0.7)] px-9 py-4 text-[16px] font-medium text-white transition hover:bg-[rgba(255,255,255,0.12)]">Learn More ↗</a></div>
+        <div className="relative z-[1]"><button type="button" onClick={handleBuyNow} disabled={!targetProduct || !hasLivePrice} className="mb-3 inline-block rounded-full bg-[#FFF7F2] px-12 py-[18px] text-[16px] font-semibold text-[#9E5C4F] transition hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] disabled:cursor-not-allowed disabled:opacity-60"><span className="inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - {hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}</span></button><a href={productPath} className="mb-3 ml-2 inline-block rounded-full border-2 border-[rgba(255,255,255,0.7)] px-9 py-4 text-[16px] font-medium text-white transition hover:bg-[rgba(255,255,255,0.12)]">Learn More ↗</a></div>
       </section>
 
       <CartDrawer />
