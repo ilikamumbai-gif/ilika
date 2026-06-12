@@ -1,6 +1,7 @@
 import React from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { API_URL, getApiUrl, handleApiError, readSessionCache, writeSessionCache } from "../../utils/api";
+import { sortProductsInStockFirst } from "../../utils/productOrdering";
 
 export const ProductContext = createContext(null);
 const PRODUCT_CACHE_KEY = "ilika.products.v1";
@@ -22,7 +23,7 @@ const toCanonicalProduct = (item = {}) => {
 
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState(() =>
-    readSessionCache(PRODUCT_CACHE_KEY, []).map(toCanonicalProduct)
+    sortProductsInStockFirst(readSessionCache(PRODUCT_CACHE_KEY, []).map(toCanonicalProduct))
   );
   const [loading, setLoading] = useState(false);
 
@@ -38,13 +39,13 @@ export const ProductProvider = ({ children }) => {
       if (!res.ok) throw new Error("Failed to fetch products");
 
       const data = await res.json();
-      const list = Array.isArray(data) ? data.map(toCanonicalProduct) : [];
+      const list = Array.isArray(data) ? sortProductsInStockFirst(data.map(toCanonicalProduct)) : [];
       setProducts(list);
       writeSessionCache(PRODUCT_CACHE_KEY, list);
       return list;
     } catch (error) {
       handleApiError("Products", error);
-      const cached = readSessionCache(PRODUCT_CACHE_KEY, []).map(toCanonicalProduct);
+      const cached = sortProductsInStockFirst(readSessionCache(PRODUCT_CACHE_KEY, []).map(toCanonicalProduct));
       setProducts(cached);
       return cached;
     } finally {
@@ -57,7 +58,7 @@ export const ProductProvider = ({ children }) => {
   }, []);
 
   const activeProducts = useMemo(
-    () => products.filter((product) => product?.isActive !== false),
+    () => sortProductsInStockFirst(products.filter((product) => product?.isActive !== false)),
     [products]
   );
 

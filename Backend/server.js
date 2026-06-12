@@ -9,6 +9,7 @@ import { admin, db } from "./firebaseAdmin.js";
 
 dotenv.config();
 const app = express();
+app.set("trust proxy", true);
 
 const SUPPORT_ALERT_EMAIL = process.env.SUPPORT_ALERT_EMAIL || "adminilika@gmail.com";
 const ORDER_ALERT_EMAIL = process.env.ORDER_ALERT_EMAIL || "ilika.mumbai@gmail.com";
@@ -267,19 +268,26 @@ const normalizeAnalyticsUrl = (value) => {
 
 const stripIpv6Prefix = (ip = "") => String(ip || "").replace(/^::ffff:/i, "").trim();
 
-const getClientIpAddress = (req) => {
-  const forwardedFor = String(req.headers["x-forwarded-for"] || "")
+const getForwardedHeaderCandidates = (value) =>
+  String(value || "")
     .split(",")
     .map((part) => stripIpv6Prefix(part))
-    .find(Boolean);
+    .filter(Boolean);
 
-  const candidate =
-    forwardedFor ||
-    stripIpv6Prefix(req.headers["cf-connecting-ip"]) ||
-    stripIpv6Prefix(req.ip) ||
-    stripIpv6Prefix(req.socket?.remoteAddress);
+const getClientIpAddress = (req) => {
+  const candidates = [
+    ...getForwardedHeaderCandidates(req.headers["x-forwarded-for"]),
+    ...getForwardedHeaderCandidates(req.headers["x-real-ip"]),
+    ...getForwardedHeaderCandidates(req.headers["x-vercel-forwarded-for"]),
+    ...getForwardedHeaderCandidates(req.headers["x-client-ip"]),
+    ...getForwardedHeaderCandidates(req.headers["fastly-client-ip"]),
+    stripIpv6Prefix(req.headers["cf-connecting-ip"]),
+    stripIpv6Prefix(req.ip),
+    stripIpv6Prefix(req.socket?.remoteAddress),
+  ].filter(Boolean);
 
-  return candidate || "";
+  const firstPublicIp = candidates.find((candidate) => !isPrivateIpAddress(candidate));
+  return firstPublicIp || candidates[0] || "";
 };
 
 const isPrivateIpAddress = (ip = "") => {
@@ -308,6 +316,41 @@ const emptyIpLocation = () => ({
 });
 
 const normalizeLocationValue = (value) => optionalTrimmed(value, 120);
+const normalizeDebugIp = (value) => optionalTrimmed(stripIpv6Prefix(value), 120);
+
+const getGeoHeaderLocation = (req) => {
+  const headers = req?.headers || {};
+  const location = {
+    country: normalizeLocationValue(
+      headers["x-vercel-ip-country-name"] ||
+        headers["cloudfront-viewer-country-name"] ||
+        headers["x-country-name"] ||
+        headers["x-country"] ||
+        headers["cf-ipcountry"] ||
+        headers["x-vercel-ip-country"]
+    ),
+    state: normalizeLocationValue(
+      headers["x-vercel-ip-country-region"] ||
+        headers["x-region-name"] ||
+        headers["x-region"] ||
+        headers["cloudfront-viewer-country-region"]
+    ),
+    city: normalizeLocationValue(
+      headers["x-vercel-ip-city"] ||
+        headers["x-city"] ||
+        headers["cloudfront-viewer-city"]
+    ),
+  };
+
+  return location;
+};
+
+const hasResolvedIpLocation = (location = {}) =>
+  Boolean(
+    normalizeLocationValue(location?.country) ||
+      normalizeLocationValue(location?.state) ||
+      normalizeLocationValue(location?.city)
+  );
 
 const buildVisitorAnalyticsFingerprint = (event = {}) => {
   return [
@@ -361,45 +404,95 @@ const isDuplicateVisitorAnalyticsEvent = (event = {}) => {
 
 const fetchIpLocation = async (ipAddress = "") => {
   const ip = stripIpv6Prefix(ipAddress);
-  if (!ip || isPrivateIpAddress(ip)) {
-    return emptyIpLocation();
-  }
+  const hasPublicIp = Boolean(ip) && !isPrivateIpAddress(ip);
+  const cacheKey = hasPublicIp ? ip : "__request_origin__";
 
-  const cached = visitorLocationCache.get(ip);
+  const cached = visitorLocationCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.data;
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 3000);
+  const lookupProviders = [
+    {
+      name: "ipapi",
+      url: hasPublicIp
+        ? `https://ipapi.co/${encodeURIComponent(ip)}/json/`
+        : "https://ipapi.co/json/",
+      mapResponse: (json) => ({
+        country: optionalTrimmed(json?.country_name, 120),
+        state: optionalTrimmed(json?.region, 120),
+        city: optionalTrimmed(json?.city, 120),
+      }),
+      isValid: (json) => !json?.error,
+    },
+    {
+      name: "ipwhois",
+      url: hasPublicIp
+        ? `https://ipwho.is/${encodeURIComponent(ip)}`
+        : "https://ipwho.is/",
+      mapResponse: (json) => ({
+        country: optionalTrimmed(json?.country, 120),
+        state: optionalTrimmed(json?.region, 120),
+        city: optionalTrimmed(json?.city, 120),
+      }),
+      isValid: (json) => json?.success !== false,
+    },
+    {
+      name: "ipapi.is",
+      url: hasPublicIp
+        ? `https://api.ipapi.is/?q=${encodeURIComponent(ip)}`
+        : "https://api.ipapi.is/",
+      mapResponse: (json) => ({
+        country: optionalTrimmed(json?.location?.country, 120),
+        state: optionalTrimmed(json?.location?.state, 120),
+        city: optionalTrimmed(json?.location?.city, 120),
+      }),
+      isValid: (json) => !json?.error,
+    },
+  ];
 
-  try {
-    const response = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`, {
-      signal: controller.signal,
-      headers: {
-        Accept: "application/json",
-      },
-    });
-    const json = await response.json();
+  for (const provider of lookupProviders) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
 
-    const location = {
-      country: optionalTrimmed(json?.country_name, 120),
-      state: optionalTrimmed(json?.region, 120),
-      city: optionalTrimmed(json?.city, 120),
-    };
+    try {
+      const response = await fetch(provider.url, {
+        signal: controller.signal,
+        headers: {
+          Accept: "application/json",
+        },
+      });
 
-    visitorLocationCache.set(ip, {
-      data: location,
-      expiresAt: Date.now() + VISITOR_LOCATION_CACHE_TTL_MS,
-    });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
-    return location;
-  } catch (error) {
-    console.error("VISITOR LOCATION LOOKUP ERROR:", error?.message || error);
-    return emptyIpLocation();
-  } finally {
-    clearTimeout(timeout);
+      const json = await response.json();
+      if (!provider.isValid(json)) {
+        throw new Error("provider returned invalid response");
+      }
+
+      const location = provider.mapResponse(json);
+      if (hasResolvedIpLocation(location)) {
+        visitorLocationCache.set(cacheKey, {
+          data: location,
+          expiresAt: Date.now() + VISITOR_LOCATION_CACHE_TTL_MS,
+        });
+        return location;
+      }
+    } catch (error) {
+      console.error(`VISITOR LOCATION LOOKUP ERROR [${provider.name}]:`, error?.message || error);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+
+  const fallback = emptyIpLocation();
+  visitorLocationCache.set(cacheKey, {
+    data: fallback,
+    expiresAt: Date.now() + Math.min(VISITOR_LOCATION_CACHE_TTL_MS, 5 * 60 * 1000),
+  });
+  return fallback;
 };
 
 const mapVisitorAnalyticsDoc = (doc) => {
@@ -428,6 +521,26 @@ const mapVisitorAnalyticsDoc = (doc) => {
       country: normalizeLocationValue(data.locationCountry ?? data.ipLocation?.country),
       state: normalizeLocationValue(data.locationState ?? data.ipLocation?.state),
       city: normalizeLocationValue(data.locationCity ?? data.ipLocation?.city),
+    },
+    locationDebug: {
+      clientIp: normalizeDebugIp(data.locationDebug?.clientIp ?? data.clientIp),
+      requestIp: normalizeDebugIp(data.locationDebug?.requestIp),
+      headerLocation: {
+        country: normalizeLocationValue(data.locationDebug?.headerLocation?.country),
+        state: normalizeLocationValue(data.locationDebug?.headerLocation?.state),
+        city: normalizeLocationValue(data.locationDebug?.headerLocation?.city),
+      },
+      clientIpLocation: {
+        country: normalizeLocationValue(data.locationDebug?.clientIpLocation?.country),
+        state: normalizeLocationValue(data.locationDebug?.clientIpLocation?.state),
+        city: normalizeLocationValue(data.locationDebug?.clientIpLocation?.city),
+      },
+      resolvedLocation: {
+        country: normalizeLocationValue(data.locationDebug?.resolvedLocation?.country),
+        state: normalizeLocationValue(data.locationDebug?.resolvedLocation?.state),
+        city: normalizeLocationValue(data.locationDebug?.resolvedLocation?.city),
+      },
+      locationSource: optionalTrimmed(data.locationDebug?.locationSource, 80),
     },
     createdAt: createdAt.toISOString(),
   };
@@ -3531,6 +3644,8 @@ app.post("/api/visitor-analytics", async (req, res) => {
       referrer,
       device,
       browser,
+      clientIp,
+      ipLocation: clientIpLocation,
     } = req.body || {};
 
     const clientIpAddress = getClientIpAddress(req);
@@ -3549,6 +3664,12 @@ app.post("/api/visitor-analytics", async (req, res) => {
     const normalizedPrice = normalizeAnalyticsNumber(price, { min: 0, max: 10000000 });
     const normalizedDevice = optionalTrimmed(device, 80);
     const normalizedBrowser = optionalTrimmed(browser, 120);
+    const normalizedClientIp = stripIpv6Prefix(clientIp);
+    const normalizedClientLocation = {
+      country: normalizeLocationValue(clientIpLocation?.country),
+      state: normalizeLocationValue(clientIpLocation?.state),
+      city: normalizeLocationValue(clientIpLocation?.city),
+    };
 
     if (!normalizedVisitorId) {
       return res.status(400).json({ error: "visitorId is required" });
@@ -3587,7 +3708,28 @@ app.post("/api/visitor-analytics", async (req, res) => {
       return res.status(202).json({ success: false, ignored: true, reason: "duplicate" });
     }
 
-    const ipLocation = await fetchIpLocation(clientIpAddress);
+    const headerLocation = getGeoHeaderLocation(req);
+    let locationSource = "backend-ip-lookup";
+    let ipLocation;
+
+    if (hasResolvedIpLocation(headerLocation)) {
+      ipLocation = headerLocation;
+      locationSource = "header-location";
+    } else if (hasResolvedIpLocation(normalizedClientLocation)) {
+      ipLocation = normalizedClientLocation;
+      locationSource = "client-location";
+    } else {
+      ipLocation = await fetchIpLocation(
+        normalizedClientIp && !isPrivateIpAddress(normalizedClientIp)
+          ? normalizedClientIp
+          : clientIpAddress
+      );
+      if (!hasResolvedIpLocation(ipLocation)) {
+        locationSource = "lookup-empty";
+      } else if (normalizedClientIp && !isPrivateIpAddress(normalizedClientIp)) {
+        locationSource = "client-ip-lookup";
+      }
+    }
     const locationCountry = normalizeLocationValue(ipLocation.country);
     const locationState = normalizeLocationValue(ipLocation.state);
     const locationCity = normalizeLocationValue(ipLocation.city);
@@ -3610,9 +3752,30 @@ app.post("/api/visitor-analytics", async (req, res) => {
         state: locationState,
         city: locationCity,
       },
+      clientIp: normalizeDebugIp(normalizedClientIp),
       locationCountry,
       locationState,
       locationCity,
+      locationDebug: {
+        clientIp: normalizeDebugIp(normalizedClientIp),
+        requestIp: normalizeDebugIp(clientIpAddress),
+        headerLocation: {
+          country: normalizeLocationValue(headerLocation.country),
+          state: normalizeLocationValue(headerLocation.state),
+          city: normalizeLocationValue(headerLocation.city),
+        },
+        clientIpLocation: {
+          country: normalizeLocationValue(normalizedClientLocation.country),
+          state: normalizeLocationValue(normalizedClientLocation.state),
+          city: normalizeLocationValue(normalizedClientLocation.city),
+        },
+        resolvedLocation: {
+          country: locationCountry,
+          state: locationState,
+          city: locationCity,
+        },
+        locationSource,
+      },
       createdAt: new Date(),
     };
 
@@ -3698,7 +3861,27 @@ app.get("/api/visitor-analytics", async (req, res) => {
 
     query = query.orderBy("createdAt", "desc").limit(5000);
 
-    const snapshot = await query.get();
+    let snapshot;
+    try {
+      snapshot = await query.get();
+    } catch (queryError) {
+      const message = String(queryError?.message || "");
+      const needsFallback =
+        queryError?.code === 9 ||
+        message.toLowerCase().includes("index") ||
+        message.toLowerCase().includes("failed-precondition");
+
+      if (!needsFallback) {
+        throw queryError;
+      }
+
+      console.warn("VISITOR ANALYTICS QUERY FALLBACK:", message);
+      snapshot = await db
+        .collection("visitorAnalytics")
+        .orderBy("createdAt", "desc")
+        .limit(5000)
+        .get();
+    }
     const queriedEvents = snapshot.docs.map(mapVisitorAnalyticsDoc);
 
     const filteredEvents = queriedEvents.filter((event) => {
@@ -3740,6 +3923,36 @@ app.get("/api/visitor-analytics", async (req, res) => {
         .sort((a, b) => b.visitors - a.visitors || b.events - a.events || a.label.localeCompare(b.label));
     };
 
+    const buildLocationLabel = (location = {}) =>
+      [location?.city, location?.state, location?.country].filter(Boolean).join(", ") || "Unknown";
+
+    const locationActivityMap = new Map();
+    filteredEvents.forEach((event) => {
+      const locationLabel = buildLocationLabel(event.ipLocation);
+
+      if (!locationActivityMap.has(locationLabel)) {
+        locationActivityMap.set(locationLabel, {
+          locationLabel,
+          eventCount: 0,
+          visitors: new Set(),
+          pageViews: 0,
+          productViews: 0,
+          addToCarts: 0,
+          lastSeenAt: null,
+        });
+      }
+
+      const entry = locationActivityMap.get(locationLabel);
+      entry.eventCount += 1;
+      if (event.visitorId) entry.visitors.add(event.visitorId);
+      if (event.eventType === "page_view") entry.pageViews += 1;
+      if (event.eventType === "product_view") entry.productViews += 1;
+      if (event.eventType === "add_to_cart") entry.addToCarts += 1;
+      if (!entry.lastSeenAt || new Date(event.createdAt) > new Date(entry.lastSeenAt)) {
+        entry.lastSeenAt = event.createdAt;
+      }
+    });
+
     const cartByLocationMap = new Map();
     filteredEvents
       .filter((event) => event.eventType === "add_to_cart")
@@ -3761,6 +3974,7 @@ app.get("/api/visitor-analytics", async (req, res) => {
             eventCount: 0,
             totalQuantity: 0,
             totalRevenue: 0,
+            lastSeenAt: null,
           });
         }
 
@@ -3768,6 +3982,9 @@ app.get("/api/visitor-analytics", async (req, res) => {
         entry.eventCount += 1;
         entry.totalQuantity += Number(event.quantity || 0);
         entry.totalRevenue += Number(event.price || 0) * Number(event.quantity || 0);
+        if (!entry.lastSeenAt || new Date(event.createdAt) > new Date(entry.lastSeenAt)) {
+          entry.lastSeenAt = event.createdAt;
+        }
       });
 
     const eventCounts = filteredEvents.reduce(
@@ -3793,6 +4010,22 @@ app.get("/api/visitor-analytics", async (req, res) => {
         byCountry: buildLocationCounts("country"),
         byState: buildLocationCounts("state"),
         byCity: buildLocationCounts("city"),
+        activityByLocation: Array.from(locationActivityMap.values())
+          .map((entry) => ({
+            locationLabel: entry.locationLabel,
+            eventCount: entry.eventCount,
+            visitorCount: entry.visitors.size,
+            pageViews: entry.pageViews,
+            productViews: entry.productViews,
+            addToCarts: entry.addToCarts,
+            lastSeenAt: entry.lastSeenAt,
+          }))
+          .sort(
+            (a, b) =>
+              b.eventCount - a.eventCount ||
+              b.visitorCount - a.visitorCount ||
+              a.locationLabel.localeCompare(b.locationLabel)
+          ),
         cartByLocation: Array.from(cartByLocationMap.values())
           .map((entry) => ({
             ...entry,

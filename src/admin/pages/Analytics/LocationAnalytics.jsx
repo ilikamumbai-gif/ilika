@@ -43,6 +43,12 @@ const formatDateTime = (value) => {
 const formatCurrency = (value) =>
   `₹${Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 
+const formatLocationLabel = (location = {}) =>
+  [location?.city, location?.state, location?.country].filter(Boolean).join(", ") || "Unknown";
+
+const formatDebugLocation = (location = {}) =>
+  [location?.city, location?.state, location?.country].filter(Boolean).join(", ") || "none";
+
 const StatCard = ({ title, value, hint, icon: Icon, tone = "pink" }) => {
   const tones = {
     pink: "bg-pink-50 text-pink-600",
@@ -99,6 +105,49 @@ const LocationSummaryCard = ({ title, rows, icon: Icon }) => (
   </div>
 );
 
+const LocationActivityCard = ({ rows = [], loading }) => (
+  <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
+    <div className="mb-4 flex items-center gap-3">
+      <div className="grid h-10 w-10 place-content-center rounded-2xl bg-blue-50 text-blue-600">
+        <Globe size={18} />
+      </div>
+      <div>
+        <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-gray-800">Activity by Location</h2>
+        <p className="text-xs text-gray-500">Location-wise event counts for pages, product views, and cart activity.</p>
+      </div>
+    </div>
+
+    <div className="space-y-3">
+      {loading ? (
+        <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">Loading location activity...</p>
+      ) : rows.length === 0 ? (
+        <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">No location activity for current filters</p>
+      ) : (
+        rows.slice(0, 12).map((row) => (
+          <div key={row.locationLabel} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="break-words text-sm font-semibold text-gray-800">{row.locationLabel || "Unknown"}</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  {row.eventCount} events • {row.visitorCount} visitors
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-blue-700">
+                {row.pageViews} / {row.productViews} / {row.addToCarts}
+              </span>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-600">
+              <span className="rounded-full bg-white px-2.5 py-1">page_view: {row.pageViews}</span>
+              <span className="rounded-full bg-white px-2.5 py-1">product_view: {row.productViews}</span>
+              <span className="rounded-full bg-white px-2.5 py-1">add_to_cart: {row.addToCarts}</span>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+);
+
 const LocationAnalytics = () => {
   const { getAdminAuthHeaders } = useAdminAuth();
   const [filters, setFilters] = useState({
@@ -119,6 +168,7 @@ const LocationAnalytics = () => {
       byCountry: [],
       byState: [],
       byCity: [],
+      activityByLocation: [],
       cartByLocation: [],
     },
     filterOptions: {
@@ -183,8 +233,8 @@ const LocationAnalytics = () => {
         </p>
       </div>
 
-      <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-gray-800">Filters</h2>
             <p className="text-xs text-gray-500">Refine visitor events by date, location, event type, or product.</p>
@@ -343,9 +393,54 @@ const LocationAnalytics = () => {
         <LocationSummaryCard title="Visitors by City" rows={payload.summary.byCity} icon={Navigation} />
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5">
-          <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-6 grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <LocationActivityCard rows={payload.summary.activityByLocation} loading={loading} />
+
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="grid h-10 w-10 place-content-center rounded-2xl bg-emerald-50 text-emerald-600">
+              <MousePointerClick size={18} />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-gray-800">Add to Cart Activity by Location</h2>
+              <p className="text-xs text-gray-500">Product-wise cart activity grouped by location.</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {loading ? (
+              <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">Loading cart location activity...</p>
+            ) : payload.summary.cartByLocation.length === 0 ? (
+              <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">No add-to-cart events for current filters</p>
+            ) : (
+              payload.summary.cartByLocation.slice(0, 12).map((row, index) => (
+                <div key={`${row.productId || row.productName}-${index}`} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="break-words text-sm font-semibold text-gray-800">{row.productName || "Unknown Product"}</p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {formatLocationLabel({ city: row.city, state: row.state, country: row.country })}
+                      </p>
+                      {row.productId ? <p className="mt-1 break-all text-[11px] text-gray-400">{row.productId}</p> : null}
+                    </div>
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-emerald-700">
+                      {row.totalQuantity} qty
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                    <span className="rounded-full bg-white px-2.5 py-1">{row.eventCount} cart events</span>
+                    <span className="rounded-full bg-white px-2.5 py-1">{formatCurrency(row.totalRevenue)}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-gray-800">Recent Visitors</h2>
               <p className="text-xs text-gray-500">Latest anonymous visitor events across pages, product views, and carts.</p>
@@ -355,7 +450,67 @@ const LocationAnalytics = () => {
             </span>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="space-y-3 lg:hidden">
+            {loading ? (
+              <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">Loading visitor analytics...</p>
+            ) : recentEvents.length === 0 ? (
+              <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">No visitor events found for current filters</p>
+            ) : (
+              recentEvents.map((event) => (
+                <div key={event.id} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-800">{formatDateTime(event.createdAt)}</p>
+                      <p className="mt-1 break-all text-xs text-gray-500">{event.visitorId || "â€”"}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-700">
+                      {event.eventType}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-1 gap-3 text-sm text-gray-700 sm:grid-cols-2">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">Session</p>
+                      <p className="mt-1 break-all text-xs text-gray-600">{event.sessionId || "â€”"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">Location</p>
+                      <p className="mt-1">{formatLocationLabel(event.ipLocation)}</p>
+                      <p className="mt-1 break-all text-[11px] text-gray-500">
+                        source: {event.locationDebug?.locationSource || "unknown"}
+                      </p>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">Page</p>
+                      <p className="mt-1 break-all text-xs text-gray-600">{event.pageUrl || "â€”"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">Product</p>
+                      <p className="mt-1 font-medium text-gray-800">{event.productName || "â€”"}</p>
+                      {event.productId ? <p className="mt-1 break-all text-xs text-gray-500">{event.productId}</p> : null}
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">Details</p>
+                      <p className="mt-1 text-xs text-gray-600">
+                        Qty: {event.quantity ?? "â€”"} | Price: {event.price != null ? formatCurrency(event.price) : "â€”"}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-600">
+                        {[event.device, event.browser].filter(Boolean).join(" Â· ") || "â€”"}
+                      </p>
+                      <p className="mt-1 break-all text-[11px] text-gray-500">
+                        clientIp: {event.locationDebug?.clientIp || "none"} | requestIp: {event.locationDebug?.requestIp || "none"}
+                      </p>
+                      <p className="mt-1 break-all text-[11px] text-gray-500">
+                        header: {formatDebugLocation(event.locationDebug?.headerLocation)} | client: {formatDebugLocation(event.locationDebug?.clientIpLocation)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="hidden overflow-x-auto lg:block">
             <table className="min-w-[1180px] w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 text-left text-xs uppercase tracking-[0.12em] text-gray-500">
@@ -393,7 +548,13 @@ const LocationAnalytics = () => {
                         <div className="mt-1">{event.sessionId || "—"}</div>
                       </td>
                       <td className="px-3 py-3 text-gray-700">
-                        {[event.ipLocation?.city, event.ipLocation?.state, event.ipLocation?.country].filter(Boolean).join(", ") || "Unknown"}
+                        <div>{formatLocationLabel(event.ipLocation)}</div>
+                        <div className="mt-1 text-[11px] text-gray-500">
+                          source: {event.locationDebug?.locationSource || "unknown"}
+                        </div>
+                        <div className="mt-1 break-all text-[11px] text-gray-400">
+                          clientIp: {event.locationDebug?.clientIp || "none"}
+                        </div>
                       </td>
                       <td className="px-3 py-3 text-xs text-gray-600 break-all">{event.pageUrl || "—"}</td>
                       <td className="px-3 py-3 text-gray-700">
@@ -403,53 +564,19 @@ const LocationAnalytics = () => {
                       <td className="px-3 py-3 text-gray-700">{event.quantity ?? "—"}</td>
                       <td className="px-3 py-3 text-gray-700">{event.price != null ? formatCurrency(event.price) : "—"}</td>
                       <td className="px-3 py-3 text-gray-700">
-                        {[event.device, event.browser].filter(Boolean).join(" · ") || "—"}
+                        <div>{[event.device, event.browser].filter(Boolean).join(" · ") || "—"}</div>
+                        <div className="mt-1 break-all text-[11px] text-gray-400">
+                          header: {formatDebugLocation(event.locationDebug?.headerLocation)}
+                        </div>
+                        <div className="mt-1 break-all text-[11px] text-gray-400">
+                          client: {formatDebugLocation(event.locationDebug?.clientIpLocation)}
+                        </div>
                       </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-gray-200 bg-white p-5">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="grid h-10 w-10 place-content-center rounded-2xl bg-emerald-50 text-emerald-600">
-              <MousePointerClick size={18} />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-gray-800">Product Added to Cart by Location</h2>
-              <p className="text-xs text-gray-500">Where anonymous add-to-cart activity is coming from.</p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {loading ? (
-              <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">Loading cart location activity...</p>
-            ) : payload.summary.cartByLocation.length === 0 ? (
-              <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">No add-to-cart events for current filters</p>
-            ) : (
-              payload.summary.cartByLocation.slice(0, 12).map((row, index) => (
-                <div key={`${row.productId || row.productName}-${index}`} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-gray-800">{row.productName || "Unknown Product"}</p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {[row.city, row.state, row.country].filter(Boolean).join(", ")}
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-emerald-700">
-                      {row.totalQuantity} qty
-                    </span>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between text-xs text-gray-600">
-                    <span>{row.eventCount} cart events</span>
-                    <span className="font-semibold text-gray-800">{formatCurrency(row.totalRevenue)}</span>
-                  </div>
-                </div>
-              ))
-            )}
           </div>
         </div>
       </div>

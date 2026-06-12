@@ -5,11 +5,15 @@ const SESSION_ID_KEY = "ilika.sessionId";
 const LAST_PAGE_URL_KEY = "ilika.lastPageUrl";
 const PAGE_VIEW_CACHE_KEY = "ilika.analytics.pageViews";
 const ADD_TO_CART_CACHE_KEY = "ilika.analytics.addToCart";
+const LOCATION_CACHE_KEY = "ilika.analytics.location";
+const PUBLIC_IP_CACHE_KEY = "ilika.analytics.publicIp";
 
 const EVENT_TYPES = new Set(["page_view", "product_view", "add_to_cart"]);
 const ADD_TO_CART_DEBOUNCE_MS = 1500;
 
 const isBrowser = typeof window !== "undefined";
+let pendingLocationPromise = null;
+let pendingPublicIpPromise = null;
 
 const createId = () => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -156,6 +160,218 @@ const getBrowserName = () => {
   return "unknown";
 };
 
+const normalizeLocationValue = (value) => {
+  const text = String(value || "").trim();
+  return text ? text.slice(0, 120) : null;
+};
+
+const normalizeIpValue = (value) => {
+  const text = String(value || "").trim();
+  return text ? text.slice(0, 120) : "";
+};
+
+const normalizeLocationObject = (location = {}) => {
+  const normalized = {
+    country: normalizeLocationValue(location?.country),
+    state: normalizeLocationValue(location?.state),
+    city: normalizeLocationValue(location?.city),
+  };
+
+  if (!normalized.country && !normalized.state && !normalized.city) {
+    return null;
+  }
+
+  return normalized;
+};
+
+const readCachedLocation = () => {
+  if (!isBrowser) return null;
+  return normalizeLocationObject(readJsonStorage(window.sessionStorage, LOCATION_CACHE_KEY, null));
+};
+
+const writeCachedLocation = (location) => {
+  if (!isBrowser) return;
+  if (!location) return;
+  writeStorage(window.sessionStorage, LOCATION_CACHE_KEY, JSON.stringify(location));
+};
+
+const readCachedPublicIp = () => {
+  if (!isBrowser) return "";
+  return String(readStorage(window.sessionStorage, PUBLIC_IP_CACHE_KEY) || "").trim();
+};
+
+const writeCachedPublicIp = (ipAddress) => {
+  if (!isBrowser) return;
+  const normalized = String(ipAddress || "").trim();
+  if (!normalized) return;
+  writeStorage(window.sessionStorage, PUBLIC_IP_CACHE_KEY, normalized);
+};
+
+const fetchJson = async (url) => {
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+    credentials: "omit",
+  });
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+
+  return res.json();
+};
+
+const fetchExternalApproxLocation = async () => {
+  const providers = [
+    () =>
+      fetchJson("https://ipwho.is/").then((data) =>
+        normalizeLocationObject({
+          country: data?.country,
+          state: data?.region,
+          city: data?.city,
+        })
+      ),
+    () =>
+      fetchJson("https://ipapi.co/json/").then((data) =>
+        normalizeLocationObject({
+          country: data?.country_name,
+          state: data?.region,
+          city: data?.city,
+        })
+      ),
+  ];
+
+  for (const provider of providers) {
+    try {
+      const location = await provider();
+      if (location) {
+        return location;
+      }
+    } catch {
+      // Ignore and try the next provider silently.
+    }
+  }
+
+  return null;
+};
+
+const fetchExternalNetworkContext = async () => {
+  const providers = [
+    () =>
+      fetchJson("https://ipwho.is/").then((data) => ({
+        ip: normalizeIpValue(data?.ip),
+        location: normalizeLocationObject({
+          country: data?.country,
+          state: data?.region,
+          city: data?.city,
+        }),
+      })),
+    () =>
+      fetchJson("https://ipapi.co/json/").then((data) => ({
+        ip: normalizeIpValue(data?.ip),
+        location: normalizeLocationObject({
+          country: data?.country_name,
+          state: data?.region,
+          city: data?.city,
+        }),
+      })),
+  ];
+
+  for (const provider of providers) {
+    try {
+      const context = await provider();
+      if (context?.ip || context?.location) {
+        if (context.ip) writeCachedPublicIp(context.ip);
+        if (context.location) writeCachedLocation(context.location);
+        return context;
+      }
+    } catch {
+      // Ignore and try next provider silently.
+    }
+  }
+
+  return { ip: "", location: null };
+};
+
+const fetchPublicIpAddress = async () => {
+  if (!isBrowser) return "";
+
+  const cachedIp = readCachedPublicIp();
+  if (cachedIp) return cachedIp;
+
+  if (pendingPublicIpPromise) {
+    return pendingPublicIpPromise;
+  }
+
+  const providers = [
+    () => fetchJson("https://api.ipify.org?format=json").then((data) => String(data?.ip || "").trim()),
+    () => fetchJson("https://api64.ipify.org?format=json").then((data) => String(data?.ip || "").trim()),
+  ];
+
+  pendingPublicIpPromise = (async () => {
+    for (const provider of providers) {
+      try {
+        const ipAddress = await provider();
+        if (ipAddress) {
+          writeCachedPublicIp(ipAddress);
+          return ipAddress;
+        }
+      } catch {
+        // Ignore and try the next provider silently.
+      }
+    }
+
+    return "";
+  })().finally(() => {
+    pendingPublicIpPromise = null;
+  });
+
+  return pendingPublicIpPromise;
+};
+
+const fetchApproxLocation = async () => {
+  if (!isBrowser) return null;
+
+  const cached = readCachedLocation();
+  if (cached) return cached;
+
+  if (pendingLocationPromise) {
+    return pendingLocationPromise;
+  }
+
+  pendingLocationPromise = fetch("/api/geo-location", {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+    credentials: "omit",
+  })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      const ipAddress = normalizeIpValue(data?.ip);
+      if (ipAddress) {
+        writeCachedPublicIp(ipAddress);
+      }
+
+      return normalizeLocationObject(data?.location);
+    })
+    .catch(() => null)
+    .then(async (location) => {
+      const resolvedLocation = location || (await fetchExternalApproxLocation());
+      if (resolvedLocation) {
+        writeCachedLocation(resolvedLocation);
+      }
+      return resolvedLocation;
+    })
+    .finally(() => {
+      pendingLocationPromise = null;
+    });
+
+  return pendingLocationPromise;
+};
+
 export const buildVisitorEventPayload = (event = {}) => {
   const eventType = String(event.eventType || "").trim();
   if (!EVENT_TYPES.has(eventType)) return null;
@@ -181,6 +397,8 @@ export const buildVisitorEventPayload = (event = {}) => {
     referrer: event.referrer || getTrackedReferrer(),
     device: event.device || getDeviceType(),
     browser: event.browser || getBrowserName(),
+    clientIp: String(event.clientIp || readCachedPublicIp() || "").trim(),
+    ipLocation: normalizeLocationObject(event.ipLocation || readCachedLocation()),
   };
 };
 
@@ -214,7 +432,20 @@ const postVisitorAnalytics = (payload) => {
 };
 
 export const trackVisitorEvent = async (event = {}) => {
-  const payload = buildVisitorEventPayload(event);
+  const browserContext = await fetchExternalNetworkContext().catch(() => ({ ip: "", location: null }));
+  const clientIp =
+    event.clientIp ||
+    browserContext.ip ||
+    (await fetchPublicIpAddress().catch(() => ""));
+  const approximateLocation =
+    event.ipLocation ||
+    browserContext.location ||
+    (await fetchApproxLocation().catch(() => null));
+  const payload = buildVisitorEventPayload({
+    ...event,
+    clientIp,
+    ipLocation: approximateLocation,
+  });
   if (!payload || !API_URL) return;
 
   const schedule = typeof window !== "undefined" && typeof window.requestIdleCallback === "function"

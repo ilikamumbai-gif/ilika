@@ -8,6 +8,7 @@ import { useProducts } from "../admin/context/ProductContext";
 import ProductCard from "../components/ProductCard";
 import Banner from "../components/Banner";
 import Heading from "../components/Heading";
+import { sortProductsInStockFirst } from "../utils/productOrdering";
 
 const BEST_SELLER_PRODUCT_NAMES = [
   "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
@@ -124,7 +125,9 @@ const GiftStore = () => {
 
   const bestSellerProducts = useMemo(
     () =>
-      BEST_SELLER_PRODUCT_NAMES.map((name) => productMap.get(normalizeProductName(name))).filter(Boolean),
+      sortProductsInStockFirst(
+        BEST_SELLER_PRODUCT_NAMES.map((name) => productMap.get(normalizeProductName(name))).filter(Boolean)
+      ),
     [productMap]
   );
 
