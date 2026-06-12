@@ -64,6 +64,8 @@ const getOrderTimestampMs = (createdAt) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const formatInr = (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
+
 /* ─────────────────── STATUS / SOURCE CONFIG ─────────────────── */
 
 const STATUS_CONFIG = {
@@ -154,6 +156,8 @@ const OrderDetail = () => {
   const giftRecipientAddress = giftOrder.recipientAddress || {};
   const giftBuyerAddress = giftOrder.buyerAddress || {};
   const giftWrapFee = Number(giftOrder.giftWrapFee || 0);
+  const isGiftOrder = Boolean(giftOrder?.isGiftOrder);
+  const hasGiftWrap = Boolean(isGiftOrder && giftOrder?.wantsGiftWrap && giftWrapFee > 0);
 
   const handleStatusChange = async (newStatus) => {
     setStatusUpdating(true);
@@ -450,10 +454,13 @@ const OrderDetail = () => {
 
       const finalY  = doc.lastAutoTable.finalY + 8;
       const totalsX = pageWidth - margin - 80;
+      const totalsBoxHeight = hasGiftWrap ? 50 : 42;
+      const totalsDividerY = hasGiftWrap ? finalY + 38 : finalY + 30;
+      const grandTotalY = hasGiftWrap ? finalY + 46 : finalY + 38;
 
       doc.setDrawColor(220, 220, 230);
       doc.setFillColor(250, 250, 253);
-      doc.roundedRect(totalsX, finalY, 80, 42, 3, 3, "FD");
+      doc.roundedRect(totalsX, finalY, 80, totalsBoxHeight, 3, 3, "FD");
 
       doc.setFontSize(8.5);
       doc.setFont(undefined, "normal");
@@ -461,6 +468,9 @@ const OrderDetail = () => {
       doc.text("Subtotal", totalsX + 5, finalY + 10);
       doc.text("Discount", totalsX + 5, finalY + 18);
       doc.text("Shipping", totalsX + 5, finalY + 26);
+      if (hasGiftWrap) {
+        doc.text("Gift Wrap", totalsX + 5, finalY + 34);
+      }
 
       doc.setFont(undefined, "bold");
       doc.setTextColor(30, 30, 30);
@@ -468,17 +478,21 @@ const OrderDetail = () => {
       doc.setTextColor(22, 163, 74);
       doc.text(`-Rs. ${discountAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`, totalsX + 75, finalY + 18, { align: "right" });
       doc.text("FREE", totalsX + 75, finalY + 26, { align: "right" });
+      if (hasGiftWrap) {
+        doc.setTextColor(30, 30, 30);
+        doc.text(formatPrice(giftWrapFee), totalsX + 75, finalY + 34, { align: "right" });
+      }
 
       doc.setDrawColor(210, 210, 225);
-      doc.line(totalsX + 4, finalY + 30, totalsX + 76, finalY + 30);
+      doc.line(totalsX + 4, totalsDividerY, totalsX + 76, totalsDividerY);
 
       doc.setFillColor(238, 238, 255);
-      doc.roundedRect(totalsX + 1, finalY + 32, 78, 8, 2, 2, "F");
+      doc.roundedRect(totalsX + 1, grandTotalY - 6, 78, 8, 2, 2, "F");
       doc.setFontSize(9);
       doc.setFont(undefined, "bold");
       doc.setTextColor(60, 60, 180);
-      doc.text("GRAND TOTAL", totalsX + 5, finalY + 38);
-      doc.text(formatPrice(total), totalsX + 75, finalY + 38, { align: "right" });
+      doc.text("GRAND TOTAL", totalsX + 5, grandTotalY);
+      doc.text(formatPrice(total), totalsX + 75, grandTotalY, { align: "right" });
 
       /* ── REVERSE CHARGE NOTE + SIGNATURE ── */
       const footerTopY       = pageHeight - footerHeight;
@@ -628,8 +642,8 @@ const OrderDetail = () => {
         </SectionCard>
       </div>
 
-      {giftOrder?.isGiftOrder && (
-        <div className="grid lg:grid-cols-2 gap-4 mb-5">
+      {isGiftOrder && (
+        <div className="grid lg:grid-cols-3 gap-4 mb-5">
           <SectionCard icon={<Tag size={15} />} title="Gift Details">
             <InfoRow
               label="Gift Order"
@@ -639,8 +653,9 @@ const OrderDetail = () => {
                 </span>
               }
             />
-            <InfoRow label="Gift Wrap" value={giftOrder?.wantsGiftWrap ? `Yes (+₹${giftWrapFee.toLocaleString("en-IN")})` : "No"} />
-            <InfoRow label="Wrap Fee" value={giftWrapFee > 0 ? `₹${giftWrapFee.toLocaleString("en-IN")}` : "₹0"} />
+            <InfoRow label="Gift Wrap" value={giftOrder?.wantsGiftWrap ? `Yes (+${formatInr(giftWrapFee)})` : "No"} />
+            <InfoRow label="Wrap Fee" value={hasGiftWrap ? formatInr(giftWrapFee) : "₹0"} />
+            <InfoRow label="Charged Total" value={formatInr(total)} />
           </SectionCard>
 
           <SectionCard icon={<MapPin size={15} />} title="Gift Delivery Address">
@@ -650,6 +665,15 @@ const OrderDetail = () => {
             <InfoRow label="State" value={giftRecipientAddress.state} />
             <InfoRow label="Pincode" value={giftRecipientAddress.pincode} />
             <InfoRow label="Phone" value={giftRecipientAddress.phone} />
+          </SectionCard>
+
+          <SectionCard icon={<User size={15} />} title="Gift Buyer Address">
+            <InfoRow label="Buyer" value={giftBuyerAddress.name || addr.name} />
+            <InfoRow label="Address" value={giftBuyerAddress.addressLine || giftBuyerAddress.line || addr.addressLine || addr.line} />
+            <InfoRow label="City" value={giftBuyerAddress.city || addr.city} />
+            <InfoRow label="State" value={giftBuyerAddress.state || addr.state} />
+            <InfoRow label="Pincode" value={giftBuyerAddress.pincode || addr.pincode} />
+            <InfoRow label="Phone" value={giftBuyerAddress.phone || addr.phone} />
           </SectionCard>
         </div>
       )}
@@ -813,9 +837,15 @@ const OrderDetail = () => {
               <span>Shipping</span>
               <span className="text-green-600 font-medium">Free</span>
             </div>
+            {hasGiftWrap ? (
+              <div className="flex justify-between text-gray-500">
+                <span>Gift Wrapping</span>
+                <span>{formatInr(giftWrapFee)}</span>
+              </div>
+            ) : null}
             <div className="flex justify-between font-bold text-base text-gray-900 pt-2 border-t border-gray-200">
               <span>Grand Total</span>
-              <span>₹{total.toLocaleString("en-IN")}</span>
+              <span>{formatInr(total)}</span>
             </div>
             <div className="flex justify-between text-xs pt-1">
               <span className="text-gray-400">Payment Status</span>

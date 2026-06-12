@@ -44,6 +44,13 @@ export const OrderProvider = ({ children }) => {
         paidAt: o.paidAt || null,
         items: o.items || [],
         shippingAddress: o.shippingAddress || {},
+        giftOrder: o.giftOrder || {
+          isGiftOrder: false,
+          wantsGiftWrap: false,
+          giftWrapFee: 0,
+          buyerAddress: null,
+          recipientAddress: null,
+        },
         source: o.source || "WEBSITE",
         tracking: o.tracking || {
           trackingId: "",
