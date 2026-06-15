@@ -1011,7 +1011,204 @@ const DeferredSection = ({ children, minHeight = 240, rootMargin = "120px 0px" }
   );
 };
 
-const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
+const getReviewImages = (review = {}) => {
+  if (Array.isArray(review?.images) && review.images.length) return review.images;
+  if (typeof review?.image === "string" && review.image.trim()) return [review.image];
+  return [];
+};
+
+const ProductReviewCard = ({ review, theme }) => {
+  const reviewImages = getReviewImages(review);
+
+  return (
+    <article
+      className="w-[86%] sm:w-[48%] lg:w-[32%] xl:w-[30%] shrink-0 rounded-[24px] border bg-white p-5 shadow-[0_10px_24px_rgba(69,39,34,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(69,39,34,0.08)]"
+      style={{ borderColor: theme.borderSoft }}
+    >
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0 flex items-center gap-3">
+          <div
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+            style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
+          >
+            {review?.name?.[0]?.toUpperCase() || "U"}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold" style={{ color: theme.heading }}>
+              {review?.name || "Anonymous"}
+            </p>
+            <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-[#2f8f52]">
+              Verified Buyer
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-0.5 pt-0.5">
+          {[1, 2, 3, 4, 5].map((starIndex) => (
+            <Star
+              key={starIndex}
+              className={`h-3.5 w-3.5 ${
+                starIndex <= Number(review?.rating || 0)
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "text-gray-200"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <p className="text-[13px] leading-6 text-[#5f5552] sm:text-[14px] sm:leading-7">
+        {review?.comment || "Loved it."}
+      </p>
+
+      {reviewImages.length > 0 ? (
+        <div className={`mt-4 grid gap-2 ${reviewImages.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+          {reviewImages.slice(0, 2).map((img, imageIndex) => (
+            <img
+              key={imageIndex}
+              src={img}
+              alt={`${review?.name || "Customer"} review ${imageIndex + 1}`}
+              loading="lazy"
+              width="320"
+              height="220"
+              className="h-36 w-full rounded-[18px] object-cover"
+            />
+          ))}
+        </div>
+      ) : null}
+    </article>
+  );
+};
+
+const ProductReviewCarouselSection = ({ reviews = [], theme, productName, onWriteReview }) => {
+  const sliderRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const scroll = (direction) => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    const scrollAmount = slider.clientWidth * 0.9;
+    slider.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  const handleMouseDown = (e) => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    setIsDragging(true);
+    slider.classList.add("cursor-grabbing");
+    setStartX(e.pageX - slider.offsetLeft);
+    setScrollLeft(slider.scrollLeft);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    e.preventDefault();
+    const x = e.pageX - slider.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    slider.scrollLeft = scrollLeft - walk;
+  };
+
+  const stopDrag = () => {
+    const slider = sliderRef.current;
+    setIsDragging(false);
+    if (slider) slider.classList.remove("cursor-grabbing");
+  };
+
+  return (
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div className="flex-1 min-w-[260px]">
+          <Heading
+            heading="Customer Reviews"
+            sub={`Real reviews from ${productName || "our"} customers`}
+              align="left"
+              subVariant="paragraph"
+            subClassName="!max-w-4xl !text-gray-500"
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onWriteReview}
+            data-track-event="write_review_click"
+            data-track-label={productName}
+            className="inline-flex items-center gap-2.5 rounded-[22px] px-6 py-3 text-sm font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition hover:translate-y-[-1px]"
+            style={{ backgroundColor: theme.primary, color: theme.onPrimary }}
+          >
+            <Star className="h-4 w-4 fill-current" />
+            Write a Review
+          </button>
+          {reviews.length > 1 ? (
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                onClick={() => scroll("left")}
+                className="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md transition hover:bg-[#fff7f8]"
+                style={{ borderColor: theme.borderSoft, color: theme.accent }}
+                aria-label="Previous reviews"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => scroll("right")}
+                className="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md transition hover:bg-[#fff7f8]"
+                style={{ borderColor: theme.borderSoft, color: theme.accent }}
+                aria-label="Next reviews"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {reviews.length > 0 ? (
+        <div
+          ref={sliderRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={stopDrag}
+          onMouseUp={stopDrag}
+          className="overflow-x-auto scroll-smooth scrollbar-hide cursor-grab select-none touch-pan-x px-0.5"
+        >
+          <div className="flex gap-3 sm:gap-5">
+            {reviews.map((review, index) => (
+              <ProductReviewCard
+                key={review?.id || review?._id || `${review?.name || "review"}-${index}`}
+                review={review}
+                theme={theme}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-[28px] border bg-white px-6 py-10 text-center" style={{ borderColor: theme.borderSoft }}>
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full" style={{ backgroundColor: theme.reviewSurface }}>
+            <Star className="h-7 w-7" style={{ color: theme.accentSoft }} />
+          </div>
+          <p className="text-sm text-gray-500">No reviews yet</p>
+          <button
+            onClick={onWriteReview}
+            className="mt-4 text-sm font-semibold"
+            style={{ color: theme.accent }}
+          >
+            Be the first to write one
+          </button>
+        </div>
+      )}
+    </section>
+  );
+};
+
+const ReviewForm = ({ product, onReviewAdded, theme, onSubmitted, submitLabel = "Submit Review" }) => {
   const [name, setName] = useState("");
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -1167,7 +1364,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
       setComment("");
       setReviewImages([]);
 
-      onClose();
+      onSubmitted?.();
 
     } catch (err) {
       console.error(err);
@@ -1178,82 +1375,130 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" onClick={onClose}>
-      <div className="bg-white rounded-3xl w-full max-w-md p-7 shadow-2xl relative" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition"><X className="w-4 h-4" /></button>
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.reviewSurface }}>
-            <Star className="w-5 h-5" style={{ color: theme.accentSoft, fill: theme.accentSoft }} />
-          </div>
-          <div><h3 className="font-semibold" style={{ color: theme.heading }}>Write a Review</h3><p className="text-xs text-gray-400">{product.name}</p></div>
-        </div>
-        <form onSubmit={submit} className="space-y-4">
-          <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Your Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Priya S." className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2" style={{ "--tw-ring-color": theme.ringSoft, borderColor: theme.accentSoft }} /></div>
-          <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Rating</label><StarRating value={rating} onChange={setRating} /></div>
-          <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Your Experience</label><textarea rows={4} value={comment} onChange={e => setComment(e.target.value)} placeholder="Tell us what you loved (or didn't)..." className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2" style={{ "--tw-ring-color": theme.ringSoft, borderColor: theme.accentSoft }} /></div>
+    <form onSubmit={submit} className="space-y-5">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.95fr)]">
+        <div className="space-y-5">
           <div>
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
-              Upload Image (Optional)
-            </label>
-            <label
-              className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dashed bg-white px-4 py-3 transition"
-              style={{ borderColor: theme.accentSoft }}
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition"
-                  style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
-                >
-                  <ImagePlus className="h-5 w-5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold leading-5" style={{ color: theme.heading }}>
-                    {reviewImages.length > 0 ? `${reviewImages.length} image${reviewImages.length > 1 ? "s" : ""} selected` : "Choose images"}
-                  </p>
-                  <p className="truncate text-xs text-gray-400">
-                    JPG, PNG or WEBP
-                  </p>
-                </div>
-              </div>
-              <span
-                className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition group-hover:opacity-90"
-                style={{ backgroundColor: theme.accent, color: "#ffffff" }}
-              >
-                Browse
-              </span>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageChange}
-                className="hidden"
-              />
-            </label>
-            <p className="text-[11px] text-gray-400 mt-1">
-              Upload 1-2 images (Max 2MB each)
-            </p>
-            {reviewImages.length > 0 && (
-              <div className="flex gap-2 mt-2">
-                {reviewImages.map((img, i) => (
-                  <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border">
-                    <img src={img} loading="lazy" alt={`${product?.name || "Product"} review image ${i + 1}`} width="160" height="160" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setReviewImages(prev => prev.filter((_, index) => index !== i))
-                      }
-                      className="absolute top-1 right-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Your Name</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Priya S." className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2" style={{ "--tw-ring-color": theme.ringSoft, borderColor: theme.accentSoft }} />
           </div>
-          {error && <p className="text-red-500 text-xs">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full rounded-xl py-3 text-sm font-medium transition disabled:opacity-50" style={{ backgroundColor: theme.primary, color: theme.onPrimary }}>{loading ? "Submitting..." : "Submit Review"}</button>
-        </form>
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Your Experience</label>
+            <textarea rows={6} value={comment} onChange={e => setComment(e.target.value)} placeholder="Tell us what you loved (or didn't)..." className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2" style={{ "--tw-ring-color": theme.ringSoft, borderColor: theme.accentSoft }} />
+          </div>
+        </div>
+
+        <div className="space-y-5">
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Rating</label>
+            <div className="rounded-2xl border px-4 py-4" style={{ borderColor: theme.accentSoft, backgroundColor: theme.reviewSurface }}>
+              <StarRating value={rating} onChange={setRating} />
+            </div>
+          </div>
+          <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                  Upload Image (Optional)
+                </label>
+                <label
+                  className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dashed bg-white px-4 py-4 transition"
+                  style={{ borderColor: theme.accentSoft }}
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition"
+                      style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
+                    >
+                      <ImagePlus className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold leading-5" style={{ color: theme.heading }}>
+                        {reviewImages.length > 0 ? `${reviewImages.length} image${reviewImages.length > 1 ? "s" : ""} selected` : "Choose images"}
+                      </p>
+                      <p className="truncate text-xs text-gray-400">
+                        JPG, PNG or WEBP
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition group-hover:opacity-90"
+                    style={{ backgroundColor: theme.accent, color: "#ffffff" }}
+                  >
+                    Browse
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Upload 1-2 images (Max 2MB each)
+                </p>
+                {reviewImages.length > 0 && (
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {reviewImages.map((img, i) => (
+                      <div key={i} className="relative aspect-square w-full rounded-xl overflow-hidden border">
+                        <img src={img} loading="lazy" alt={`${product?.name || "Product"} review image ${i + 1}`} width="160" height="160" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setReviewImages(prev => prev.filter((_, index) => index !== i))
+                          }
+                          className="absolute top-1 right-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+          </div>
+        </div>
+      </div>
+      {error && <p className="text-red-500 text-xs">{error}</p>}
+      <button type="submit" disabled={loading} className="w-full rounded-xl py-3.5 text-sm font-medium transition disabled:opacity-50 md:mt-1" style={{ backgroundColor: theme.primary, color: theme.onPrimary }}>{loading ? "Submitting..." : submitLabel}</button>
+    </form>
+  );
+};
+
+const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="absolute inset-0 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
+        <div className="flex min-h-full items-center justify-center">
+          <div
+            className="relative my-6 w-full max-w-3xl rounded-[32px] bg-white px-6 py-6 shadow-2xl sm:px-8 sm:py-7"
+            onClick={e => e.stopPropagation()}
+          >
+            <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition"><X className="w-4 h-4" /></button>
+            <div className="mb-6 flex items-start gap-3 pr-10">
+              <div className="mt-0.5 w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.reviewSurface }}>
+                <Star className="w-5 h-5" style={{ color: theme.accentSoft, fill: theme.accentSoft }} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-[20px] font-semibold leading-tight" style={{ color: theme.heading }}>Write a Review</h3>
+                <p className="mt-1 text-sm leading-6 text-gray-400">{product.name}</p>
+              </div>
+            </div>
+            <ReviewForm
+              product={product}
+              onReviewAdded={onReviewAdded}
+              theme={theme}
+              onSubmitted={onClose}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -2403,9 +2648,13 @@ const ProductDetail = () => {
       { id: "details", label: "Description" },
       { id: "additional", label: "Additional Detail" },
       ...(product?.warranty === "import" ? [{ id: "warranty", label: "Warranty Terms" }] : []),
-      { id: "reviews", label: `Reviews${product?.reviews?.length ? ` (${product.reviews.length})` : ""}` },
+      { id: "reviews", label: "Write Review" },
     ],
-    [product?.warranty, product?.reviews?.length]
+    [product?.warranty]
+  );
+  const productReviews = useMemo(
+    () => (Array.isArray(product?.reviews) ? product.reviews : []),
+    [product?.reviews]
   );
 
   const rating = product?.rating || 4;
@@ -2639,69 +2888,29 @@ const ProductDetail = () => {
     }
 
     if (tabId === "reviews") {
-      return product.reviews?.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {product.reviews.map((rev, i) => (
-            <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-              {(() => {
-                const reviewImages = Array.isArray(rev?.images) && rev.images.length
-                  ? rev.images
-                  : rev?.image
-                    ? [rev.image]
-                    : [];
-
-                return (
-                  <>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: detailTheme.reviewSurface, color: detailTheme.accent }}>
-                          {rev.name?.[0]?.toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>{rev.name}</p>
-                          <div className="flex gap-0.5 mt-0.5">
-                            {[1, 2, 3, 4, 5].map((s) => (
-                              <Star key={s} className={`w-3 h-3 ${s <= rev.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 leading-relaxed">{rev.comment}</p>
-                    {reviewImages.length > 0 && (
-                      <div className="flex gap-2 mt-3">
-                        {reviewImages.map((img, imageIndex) => (
-                          <img
-                            key={imageIndex}
-                            src={img}
-                            loading="lazy"
-                            width="160"
-                            height="160"
-                            className="w-20 h-20 object-cover rounded-lg border"
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white border border-gray-100 rounded-3xl p-8 sm:p-12 text-center">
-          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: detailTheme.reviewSurface }}>
-            <Star className="w-7 h-7" style={{ color: detailTheme.accentSoft }} />
+      return (
+        <div className="space-y-5">
+          <ReviewForm
+            product={product}
+            onReviewAdded={(newReview) => {
+              setProduct((prev) => {
+                if (!prev) return prev;
+                return {
+                  ...prev,
+                  reviews: [...(prev.reviews || []), newReview],
+                };
+              });
+            }}
+            theme={detailTheme}
+          />
+          <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
+            <span className="font-semibold" style={{ color: detailTheme.heading }}>
+              {productReviews.length}
+            </span>{" "}
+            <span className="text-gray-600">
+              review{productReviews.length === 1 ? "" : "s"} submitted
+            </span>
           </div>
-          <p className="text-gray-500 text-sm mb-1">No reviews yet</p>
-          <p className="text-gray-400 text-xs mb-4">Be the first to share your experience!</p>
-          <button
-            onClick={() => setShowReviewModal(true)}
-            className="text-sm font-semibold hover:underline"
-            style={{ color: detailTheme.accent }}
-          >
-            Write a Review
-          </button>
         </div>
       );
     }
@@ -3444,143 +3653,6 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-        {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
-        <DeferredSection minHeight={360}>
-          <section ref={detailsTabsRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-10">
-            <div className="hidden md:block overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
-              <div className="grid auto-cols-fr grid-flow-col border-b border-gray-100 bg-[#fcf7f7]">
-                {infoTabs.map((tab) => {
-                  const isActive = activeInfoTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveInfoTab(tab.id)}
-                      className="relative px-5 py-5 text-center text-sm font-semibold uppercase tracking-[0.03em] transition"
-                      style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
-                    >
-                      {tab.label}
-                      <span
-                        className={`absolute bottom-0 left-0 h-[3px] w-full origin-left transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0"}`}
-                        style={{ backgroundColor: detailTheme.accent }}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="p-7 lg:p-8">
-                <div className="min-w-0">
-                  {activeInfoTab === "reviews" ? (
-                    <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
-                      <div>
-                        <h2 className="text-lg font-semibold" style={{ color: detailTheme.heading }}>
-                          Customer Reviews
-                        </h2>
-                        <p className="text-xs text-gray-400 mt-1">Real reviews from real customers</p>
-                      </div>
-                      <button
-                        onClick={() => setShowReviewModal(true)}
-                        data-track-event="write_review_click"
-                        data-track-label={product.name}
-                        className="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium shadow-sm transition"
-                        style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
-                      >
-                        <Star className="w-4 h-4 fill-white" /> Write a Review
-                      </button>
-                    </div>
-                  ) : null}
-                  {renderInfoPanel(activeInfoTab)}
-                </div>
-              </div>
-            </div>
-
-            <div className="md:hidden space-y-3">
-              {infoTabs.map((tab) => {
-                const isActive = mobileOpenInfoTab === tab.id;
-
-                return (
-                  <div key={tab.id} className="overflow-hidden rounded-[22px] border border-gray-100 bg-white shadow-sm">
-                    <button
-                      type="button"
-                      onClick={() => setMobileOpenInfoTab(isActive ? null : tab.id)}
-                      className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
-                    >
-                      <span className="text-sm font-semibold uppercase tracking-[0.05em]" style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}>
-                        {tab.label}
-                      </span>
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform duration-200 ${isActive ? "rotate-180" : ""}`}
-                        style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
-                      />
-                    </button>
-
-                    {isActive ? (
-                      <div className="border-t border-gray-100 px-4 py-4">
-                        {tab.id === "reviews" ? (
-                          <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-                            <div>
-                              <h2 className="text-base font-semibold" style={{ color: detailTheme.heading }}>
-                                Customer Reviews
-                              </h2>
-                              <p className="text-xs text-gray-400 mt-1">Real reviews from real customers</p>
-                            </div>
-                            <button
-                              onClick={() => setShowReviewModal(true)}
-                              data-track-event="write_review_click"
-                              data-track-label={product.name}
-                              className="flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-medium shadow-sm transition"
-                              style={{ backgroundColor: detailTheme.primary, color: detailTheme.onPrimary }}
-                            >
-                              <Star className="w-3.5 h-3.5 fill-white" /> Write a Review
-                            </button>
-                          </div>
-                        ) : null}
-
-                        {renderInfoPanel(tab.id)}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        </DeferredSection>
-
-        {activeInfoTab !== "reviews" && hasInTheBox && (
-          <DeferredSection minHeight={280}>
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
-              <div className="mb-4 sm:mb-5">
-                <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }}/>
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-x-4 gap-y-5 sm:gap-x-5">
-                {inTheBoxItems.map((item, index) => (
-                  <div key={item.id || index} className="flex w-[112px] sm:w-[128px] flex-col items-center text-center">
-                    {item.image ? (
-                      <img
-                        loading={index < 2 ? "eager" : "lazy"}
-                        src={item.image}
-                        alt={item.title || `Box item ${index + 1}`}
-                        className="h-28 w-auto max-w-full rounded-[18px] object-contain sm:h-32"
-                      />
-                    ) : null}
-                    {item.title ? (
-                      <p className="mt-3 text-sm font-medium leading-5" style={{ color: detailTheme.heading }}>
-                        {item.title}
-                      </p>
-                    ) : null}
-                    {item.subtitle ? (
-                      <p className="mt-1 text-xs leading-5 text-gray-500">
-                        {item.subtitle}
-                      </p>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </section>
-          </DeferredSection>
-        )}
         {/* INGREDIENTS SECTION */}
         {activeInfoTab !== "reviews" && hasIngredients && (
           <DeferredSection minHeight={420}>
@@ -3661,7 +3733,133 @@ const ProductDetail = () => {
             </section>
           </DeferredSection>
         )}
-        {activeInfoTab !== "reviews" && product.videos?.length > 0 && (
+        
+
+        {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
+        <DeferredSection minHeight={360}>
+          <section ref={detailsTabsRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-10">
+            <div className="hidden md:block overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
+              <div className="grid auto-cols-fr grid-flow-col border-b border-gray-100 bg-[#fcf7f7]">
+                {infoTabs.map((tab) => {
+                  const isActive = activeInfoTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveInfoTab(tab.id)}
+                      className="relative px-5 py-5 text-center text-sm font-semibold uppercase tracking-[0.03em] transition"
+                      style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
+                    >
+                      {tab.label}
+                      <span
+                        className={`absolute bottom-0 left-0 h-[3px] w-full origin-left transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0"}`}
+                        style={{ backgroundColor: detailTheme.accent }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="p-7 lg:p-8">
+                <div className="min-w-0">
+                  {renderInfoPanel(activeInfoTab)}
+                </div>
+              </div>
+            </div>
+
+            <div className="md:hidden space-y-3">
+              {infoTabs.map((tab) => {
+                const isActive = mobileOpenInfoTab === tab.id;
+
+                return (
+                  <div key={tab.id} className="overflow-hidden rounded-[22px] border border-gray-100 bg-white shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => setMobileOpenInfoTab(isActive ? null : tab.id)}
+                      className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                    >
+                      <span className="text-sm font-semibold uppercase tracking-[0.05em]" style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}>
+                        {tab.label}
+                      </span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ${isActive ? "rotate-180" : ""}`}
+                        style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
+                      />
+                    </button>
+
+                    {isActive ? (
+                      <div className="border-t border-gray-100 px-4 py-4">
+                        {renderInfoPanel(tab.id)}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </DeferredSection>
+
+        {activeInfoTab !== "reviews" && hasInTheBox && (
+          <DeferredSection minHeight={280}>
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
+              <div className="mb-4 sm:mb-5">
+                <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }}/>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-5 sm:gap-x-5">
+                {inTheBoxItems.map((item, index) => (
+                  <div key={item.id || index} className="flex w-[112px] sm:w-[128px] flex-col items-center text-center">
+                    {item.image ? (
+                      <img
+                        loading={index < 2 ? "eager" : "lazy"}
+                        src={item.image}
+                        alt={item.title || `Box item ${index + 1}`}
+                        className="h-28 w-auto max-w-full rounded-[18px] object-contain sm:h-32"
+                      />
+                    ) : null}
+                    {item.title ? (
+                      <p className="mt-3 text-sm font-medium leading-5" style={{ color: detailTheme.heading }}>
+                        {item.title}
+                      </p>
+                    ) : null}
+                    {item.subtitle ? (
+                      <p className="mt-1 text-xs leading-5 text-gray-500">
+                        {item.subtitle}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </section>
+          </DeferredSection>
+        )}
+        
+
+
+
+        {/* â•â•â•â• PRODUCT BANNERS â•â•â•â• */}
+        {activeInfoTab !== "reviews" && ((product.banners?.length > 0) || product.bannerImage) && (
+          <DeferredSection minHeight={320}>
+            <section className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4">
+              {(product.banners?.length > 0
+                ? product.banners
+                : [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
+              ).filter(b => b?.url).map((banner, idx) => (
+                <div key={idx} className="shadow-sm">
+                  <img loading="lazy"
+                    src={banner.url}
+                    alt={banner.alt || `Product Banner ${idx + 1}`}
+                    width="1600"
+                    height="900"
+                    className="w-full object-cover h-auto"
+                  />
+                </div>
+              ))}
+            </section>
+          </DeferredSection>
+        )}
+
+{activeInfoTab !== "reviews" && product.videos?.length > 0 && (
           <DeferredSection minHeight={360}>
             <section className="w-full bg-[#fbf7f7] my-10 max-h-[80vh] overflow-hidden">
               {product.videos.map((vid, idx) => (
@@ -3696,30 +3894,15 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-
-
-        {/* â•â•â•â• PRODUCT BANNERS â•â•â•â• */}
-        {activeInfoTab !== "reviews" && ((product.banners?.length > 0) || product.bannerImage) && (
-          <DeferredSection minHeight={320}>
-            <section className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4">
-              {(product.banners?.length > 0
-                ? product.banners
-                : [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
-              ).filter(b => b?.url).map((banner, idx) => (
-                <div key={idx} className="shadow-sm">
-                  <img loading="lazy"
-                    src={banner.url}
-                    alt={banner.alt || `Product Banner ${idx + 1}`}
-                    width="1600"
-                    height="900"
-                    className="w-full object-cover h-auto"
-                  />
-                </div>
-              ))}
-            </section>
-          </DeferredSection>
-        )}
-
+        <DeferredSection minHeight={340}>
+          <ProductReviewCarouselSection
+            reviews={productReviews}
+            theme={detailTheme}
+            productName={product?.name}
+            onWriteReview={() => setShowReviewModal(true)}
+          />
+        </DeferredSection>
+          
         {/* â•â•â•â• RELATED PRODUCTS â•â•â•â• */}
         {relatedProducts.length > 0 && (
           <DeferredSection minHeight={360}>
