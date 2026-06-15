@@ -167,7 +167,7 @@ const Footer = ({ theme = "default" }) => {
 
           <a href="tel:+919120879879" className="flex items-start gap-3 transition hover:opacity-80">
             <Phone size={16} className="mt-1 shrink-0" />
-            <span>+91 91208 79879</span>
+            <span>+91 92701 14738</span>
           </a>
 
           <div className="flex items-start gap-3">
@@ -351,7 +351,7 @@ const Footer = ({ theme = "default" }) => {
 
               <a href="tel:+919120879879" className="flex items-center gap-2 transition hover:opacity-80">
                 <Phone size={13} className="shrink-0" />
-                <span>+91 91208 79879</span>
+                <span>+91 92701 14738</span>
               </a>
 
               <div className="flex items-center gap-2">

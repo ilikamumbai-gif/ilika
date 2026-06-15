@@ -12,8 +12,8 @@ import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Banner from "../components/Banner";
 
-const endBannerDesktop = "/Images/End.webp";
-const endBannerMobile = "/Images/endmobile.webp";
+const endBannerDesktop = "/Images/End1.webp";
+const endBannerMobile = "/Images/End1.webp";
 
 const normalize = (value = "") =>
   String(value)

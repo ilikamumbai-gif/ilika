@@ -33,7 +33,7 @@ const Contact = () => {
             <div className="flex flex-col items-center gap-2 hover:scale-110 transition">
               <Phone />
               <p className="font-semibold heading-2-color">Phone</p>
-              <p className="text-sm">+91 91208 79879</p>
+              <p className="text-sm">+91 92701 14738</p>
             </div>
 
             <div className="flex flex-col items-center gap-2 hover:scale-110 transition">

@@ -177,7 +177,7 @@ const TermsCondition = () => {
               <br />
               <strong>customersupport.ilika@gmail.com</strong>
               <br />
-              Phone: <strong>+91 91208 79879</strong>
+              Phone: <strong>+91 92701 14738</strong>
             </p>
 
           </div>

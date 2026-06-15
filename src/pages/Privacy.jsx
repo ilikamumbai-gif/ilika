@@ -162,7 +162,7 @@ const Privacy = () => {
               </h3>
               <p>
                 <strong>Email:</strong> customersupport.ilika@gmail.com <br />
-                <strong>Phone:</strong> +91 91208 79879 <br />
+                <strong>Phone:</strong> +91 92701 14738 <br />
                 <strong>Website:</strong>{" "}
                 <a href="https://www.ilika.in" className="underline">
                   www.ilika.in

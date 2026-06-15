@@ -3,9 +3,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
 import { google } from "googleapis";
 import { admin, db } from "./firebaseAdmin.js";
+import { sendEmail, isEmailConfigured } from "./services/emailService.js";
+import { sendOrderEmailByType, triggerOrderEmailAutomation } from "./services/orderEmailTriggerService.js";
+import getOrderConfirmationEmail from "./emailTemplates/orderConfirmationEmail.js";
 
 dotenv.config();
 const app = express();
@@ -13,12 +15,11 @@ app.set("trust proxy", true);
 
 const SUPPORT_ALERT_EMAIL = process.env.SUPPORT_ALERT_EMAIL || "adminilika@gmail.com";
 const ORDER_ALERT_EMAIL = process.env.ORDER_ALERT_EMAIL || "ilika.mumbai@gmail.com";
-const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
-const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
-const SMTP_SECURE = String(process.env.SMTP_SECURE || "true").toLowerCase() !== "false";
-const SMTP_USER = process.env.SMTP_USER || process.env.GMAIL_USER || "";
-const SMTP_PASS = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "";
-const SMTP_FROM = process.env.SMTP_FROM || SMTP_USER;
+const CUSTOMER_SUPPORT_EMAIL =
+  process.env.CUSTOMER_SUPPORT_EMAIL ||
+  process.env.EMAIL_FROM ||
+  process.env.EMAIL_USER ||
+  "customersupport.ilika@gmail.com";
 const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN || "";
 const META_AD_ACCOUNT_ID = String(process.env.META_AD_ACCOUNT_ID || "").replace(/^act_/, "");
 const GOOGLE_ADS_DEVELOPER_TOKEN = process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "";
@@ -27,26 +28,6 @@ const GOOGLE_ADS_CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET || "";
 const GOOGLE_ADS_REFRESH_TOKEN = process.env.GOOGLE_ADS_REFRESH_TOKEN || "";
 const GOOGLE_ADS_CUSTOMER_ID = String(process.env.GOOGLE_ADS_CUSTOMER_ID || "").replace(/-/g, "");
 const GOOGLE_ADS_LOGIN_CUSTOMER_ID = String(process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID || "").replace(/-/g, "");
-let mailTransporter = null;
-
-const getMailTransporter = () => {
-  if (mailTransporter) return mailTransporter;
-  if (!SMTP_USER || !SMTP_PASS) {
-    return null;
-  }
-
-  mailTransporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: SMTP_SECURE,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-  });
-
-  return mailTransporter;
-};
 
 const formatIstDateTime = (date = new Date()) => {
   return new Intl.DateTimeFormat("en-IN", {
@@ -746,9 +727,8 @@ const fetchGoogleAdsInsights = async (days = 30) => {
 };
 
 const sendAdminLoginAlert = async ({ username, role, req }) => {
-  const transporter = getMailTransporter();
-  if (!transporter) {
-    console.warn("Admin login alert email skipped: SMTP credentials are missing");
+  if (!isEmailConfigured()) {
+    console.warn("Admin login alert email skipped: email credentials are missing");
     return { status: "skipped", reason: "missing_smtp_credentials" };
   }
 
@@ -771,13 +751,22 @@ const sendAdminLoginAlert = async ({ username, role, req }) => {
     `Device/User Agent: ${userAgent}`,
   ].join("\n");
 
-  await transporter.sendMail({
-    from: SMTP_FROM,
-    to: SUPPORT_ALERT_EMAIL,
-    subject,
-    text,
-  });
-  return { status: "sent" };
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1f2937;">
+      <h2 style="margin-bottom:16px;">Ilika Admin Login Alert</h2>
+      <p>An admin has logged into Ilika Admin Panel.</p>
+      <p><strong>Username:</strong> ${username}</p>
+      <p><strong>Role:</strong> ${role}</p>
+      <p><strong>Login Time (IST):</strong> ${formatIstDateTime(loginAt)}</p>
+      <p><strong>Login Time (UTC):</strong> ${loginAt.toISOString()}</p>
+      <p><strong>IP Address:</strong> ${ipAddress || "Unknown"}</p>
+      <p><strong>Device/User Agent:</strong> ${userAgent}</p>
+      <pre style="white-space:pre-wrap;background:#f9fafb;padding:12px;border-radius:8px;">${text}</pre>
+    </div>
+  `;
+
+  const result = await sendEmail(SUPPORT_ALERT_EMAIL, subject, html);
+  return result.ok ? { status: "sent", messageId: result.messageId } : { status: result.status, reason: result.reason };
 };
 
 const formatAddressForEmail = (address = {}) => {
@@ -848,9 +837,8 @@ const isValidShippingAddress = (address = {}) =>
   );
 
 const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
-  const transporter = getMailTransporter();
-  if (!transporter) {
-    console.warn("Order alert email skipped: SMTP credentials are missing");
+  if (!isEmailConfigured()) {
+    console.warn("Order alert email skipped: email credentials are missing");
     return { status: "skipped", reason: "missing_smtp_credentials" };
   }
 
@@ -934,20 +922,53 @@ const sendOrderReceivedAlert = async ({ orderId, orderPayload = {} }) => {
     itemsText,
   ].filter(Boolean).join("\n");
 
-  await transporter.sendMail({
-    from: SMTP_FROM,
-    to: ORDER_ALERT_EMAIL,
-    subject,
-    text,
-  });
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1f2937;">
+      <h2 style="margin-bottom:16px;">New Order Received</h2>
+      <p><strong>Order ID:</strong> ${orderId}</p>
+      <p><strong>Order Time (IST):</strong> ${formatIstDateTime(createdAt)}</p>
+      <p><strong>Order Time (UTC):</strong> ${createdAt.toISOString()}</p>
+      <p><strong>Source:</strong> ${source}</p>
+      <p><strong>Payment Status:</strong> ${paymentStatus}</p>
+      <p><strong>Subtotal (Before Discount):</strong> Rs ${originalSubtotal.toFixed(2)}</p>
+      <p><strong>Discount:</strong> Rs ${discountAmount.toFixed(2)}</p>
+      <p><strong>Gift Order:</strong> ${giftOrder?.isGiftOrder ? "Yes" : "No"}</p>
+      ${
+        giftOrder?.isGiftOrder
+          ? `<p><strong>Gift Wrap:</strong> ${
+              giftOrder?.wantsGiftWrap ? `Yes (+Rs ${giftWrapFee.toFixed(2)})` : "No"
+            }</p>`
+          : ""
+      }
+      <p><strong>Grand Total:</strong> Rs ${totalAmount.toFixed(2)}</p>
+      <h3 style="margin-top:24px;">Customer Details</h3>
+      <p><strong>Name:</strong> ${userName}</p>
+      <p><strong>Email:</strong> ${userEmail}</p>
+      <p><strong>Phone:</strong> ${userPhone}</p>
+      <h3 style="margin-top:24px;">Shipping Address</h3>
+      <pre style="white-space:pre-wrap;background:#f9fafb;padding:12px;border-radius:8px;">${addressText}</pre>
+      ${
+        giftOrder?.isGiftOrder && recipientAddressText
+          ? `<h3 style="margin-top:24px;">Gift Recipient Address</h3><pre style="white-space:pre-wrap;background:#f9fafb;padding:12px;border-radius:8px;">${recipientAddressText}</pre>`
+          : ""
+      }
+      ${
+        giftOrder?.isGiftOrder && buyerAddressText
+          ? `<h3 style="margin-top:24px;">Buyer Address</h3><pre style="white-space:pre-wrap;background:#f9fafb;padding:12px;border-radius:8px;">${buyerAddressText}</pre>`
+          : ""
+      }
+      <h3 style="margin-top:24px;">Ordered Items</h3>
+      <pre style="white-space:pre-wrap;background:#f9fafb;padding:12px;border-radius:8px;">${itemsText}</pre>
+    </div>
+  `;
 
-  return { status: "sent" };
+  const result = await sendEmail(ORDER_ALERT_EMAIL, subject, html);
+  return result.ok ? { status: "sent", messageId: result.messageId } : { status: result.status, reason: result.reason };
 };
 
 const sendOrderCancelledAlert = async ({ orderId, orderPayload = {}, previousStatus = "" }) => {
-  const transporter = getMailTransporter();
-  if (!transporter) {
-    console.warn("Order cancellation alert email skipped: SMTP credentials are missing");
+  if (!isEmailConfigured()) {
+    console.warn("Order cancellation alert email skipped: email credentials are missing");
     return { status: "skipped", reason: "missing_smtp_credentials" };
   }
 
@@ -1018,14 +1039,158 @@ const sendOrderCancelledAlert = async ({ orderId, orderPayload = {}, previousSta
     itemsText,
   ].filter(Boolean).join("\n");
 
-  await transporter.sendMail({
-    from: SMTP_FROM,
-    to: ORDER_ALERT_EMAIL,
-    subject,
-    text,
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1f2937;">
+      <h2 style="margin-bottom:16px;">Order Cancelled Alert</h2>
+      <p><strong>Order ID:</strong> ${orderId}</p>
+      <p><strong>Cancelled Time (IST):</strong> ${formatIstDateTime(cancelledAt)}</p>
+      <p><strong>Cancelled Time (UTC):</strong> ${cancelledAt.toISOString()}</p>
+      <p><strong>Previous Status:</strong> ${String(previousStatus || "Unknown")}</p>
+      ${
+        createdAt && !Number.isNaN(createdAt.getTime())
+          ? `<p><strong>Placed Time (IST):</strong> ${formatIstDateTime(createdAt)}</p>`
+          : ""
+      }
+      <p><strong>Payment Status:</strong> ${String(orderPayload?.paymentStatus || "Pending")}</p>
+      <p><strong>Grand Total:</strong> Rs ${totalAmount.toFixed(2)}</p>
+      <h3 style="margin-top:24px;">Customer Details</h3>
+      <p><strong>Name:</strong> ${userName}</p>
+      <p><strong>Email:</strong> ${userEmail}</p>
+      <p><strong>Phone:</strong> ${userPhone}</p>
+      <h3 style="margin-top:24px;">Shipping Address</h3>
+      <pre style="white-space:pre-wrap;background:#f9fafb;padding:12px;border-radius:8px;">${addressText}</pre>
+      <h3 style="margin-top:24px;">Order Items</h3>
+      <pre style="white-space:pre-wrap;background:#f9fafb;padding:12px;border-radius:8px;">${itemsText}</pre>
+      <pre style="white-space:pre-wrap;background:#f9fafb;padding:12px;border-radius:8px;margin-top:24px;">${text}</pre>
+    </div>
+  `;
+
+  const result = await sendEmail(ORDER_ALERT_EMAIL, subject, html);
+  return result.ok ? { status: "sent", messageId: result.messageId } : { status: result.status, reason: result.reason };
+};
+
+const updateOrderConfirmationEmailStatus = async ({
+  orderId,
+  sent = false,
+  sentAt = null,
+}) => {
+  if (!orderId) return;
+
+  await db.collection("orders").doc(orderId).set(
+    {
+      emailStatus: {
+        orderConfirmation: {
+          sent: Boolean(sent),
+          sentAt: sentAt || null,
+        },
+      },
+      updatedAt: new Date(),
+    },
+    { merge: true }
+  );
+};
+
+const sendCustomerOrderConfirmationEmail = async ({ orderId, orderPayload = {} }) => {
+  const customerEmail = String(orderPayload?.userEmail || "").trim();
+  if (!customerEmail) {
+    console.warn("Order confirmation email skipped: customer email is missing", { orderId });
+    return { status: "skipped", reason: "missing_customer_email" };
+  }
+
+  if (!isEmailConfigured()) {
+    console.warn("Order confirmation email skipped: email credentials are missing");
+    return { status: "skipped", reason: "missing_smtp_credentials" };
+  }
+
+  const shippingAddress = orderPayload?.shippingAddress || {};
+  const items = Array.isArray(orderPayload?.items) ? orderPayload.items : [];
+  const primaryProductName =
+    items.map((item) => String(item?.name || "").trim()).filter(Boolean).join(", ") ||
+    "Your Ilika order";
+  const { subject, html } = getOrderConfirmationEmail({
+    customerName:
+      String(shippingAddress?.name || "").trim() ||
+      String(orderPayload?.userName || "").trim() ||
+      "Customer",
+    orderId,
+    productName: primaryProductName,
+    items,
+    totalAmount: Number(orderPayload?.totalAmount || 0),
+    shippingAddress,
+    supportEmail: CUSTOMER_SUPPORT_EMAIL,
   });
 
-  return { status: "sent" };
+  const result = await sendEmail(customerEmail, subject, html);
+  return result.ok ? { status: "sent", messageId: result.messageId } : { status: result.status, reason: result.reason };
+};
+
+const syncShiprocketTrackingAutomation = async ({ awb = "", trackingData = {} }) => {
+  const trackingId = String(awb || "").trim();
+  if (!trackingId) return;
+
+  const snapshot = await db
+    .collection("orders")
+    .where("tracking.trackingId", "==", trackingId)
+    .get();
+
+  if (snapshot.empty) {
+    console.log("No orders found for Shiprocket tracking sync", { trackingId });
+    return;
+  }
+
+  const liveStatus = String(trackingData?.status || "").trim() || "Processing";
+  const liveCourier = String(trackingData?.courier || "").trim();
+  const liveTrackingUrl = trackingId
+    ? `https://shiprocket.co/tracking/${encodeURIComponent(trackingId)}`
+    : "";
+
+  for (const doc of snapshot.docs) {
+    const order = doc.data() || {};
+    const previousTracking = order?.tracking || {};
+    const previousStatus = String(previousTracking?.shippingStatus || "").trim();
+
+    const trackingUpdate = {
+      trackingId,
+      courierName: liveCourier || String(previousTracking?.courierName || "").trim(),
+      trackingUrl: String(previousTracking?.trackingUrl || "").trim() || liveTrackingUrl,
+      shippingStatus: liveStatus,
+    };
+
+    const updatePayload = {
+      tracking: trackingUpdate,
+      updatedAt: new Date(),
+    };
+
+    const trackingChanged =
+      previousStatus !== trackingUpdate.shippingStatus ||
+      String(previousTracking?.courierName || "").trim() !== trackingUpdate.courierName ||
+      String(previousTracking?.trackingUrl || "").trim() !== trackingUpdate.trackingUrl;
+
+    if (trackingChanged) {
+      await doc.ref.set(updatePayload, { merge: true });
+    }
+
+    const emailAutomationResult = await triggerOrderEmailAutomation({
+      order: {
+        id: doc.id,
+        ...order,
+        tracking: trackingUpdate,
+      },
+      oldTrackingStatus: previousStatus,
+      newTrackingStatus: liveStatus,
+      trackingData: { ...trackingData, awb: trackingId },
+    });
+
+    console.log("Shiprocket order email automation completed", {
+      orderId: doc.id,
+      trackingId,
+      ok: emailAutomationResult.ok,
+      attempts: Array.isArray(emailAutomationResult.attempts)
+        ? emailAutomationResult.attempts.length
+        : 0,
+      reason: emailAutomationResult.reason || "",
+    });
+  }
 };
 
 const withTimeout = async (promise, timeoutMs = 12000, timeoutLabel = "operation_timeout") => {
@@ -2987,6 +3152,36 @@ app.post("/api/payments/verify", async (req, res) => {
         trackingUrl: "",
         shippingStatus: "Processing",
       },
+      emailStatus: {
+        orderConfirmation: {
+          sent: false,
+          sentAt: null,
+        },
+        shipped: {
+          sent: false,
+          sentAt: null,
+        },
+        outForDelivery: {
+          sent: false,
+          sentAt: null,
+        },
+        deliveryExpected: {
+          sent: false,
+          sentAt: null,
+        },
+        delivered: {
+          sent: false,
+          sentAt: null,
+        },
+        warranty: {
+          sent: false,
+          sentAt: null,
+        },
+        feedback: {
+          sent: false,
+          sentAt: null,
+        },
+      },
       razorpay_payment_id,
       paidAt: new Date(),
       createdAt: new Date(),
@@ -3005,7 +3200,29 @@ app.post("/api/payments/verify", async (req, res) => {
       console.error("ORDER ALERT EMAIL FAILED (PAID):", err?.message || err);
     }
 
-    res.json({ success: true, orderId, orderAlertEmail });
+    let orderConfirmationEmail = { status: "unknown" };
+    try {
+      orderConfirmationEmail = await withTimeout(
+        sendCustomerOrderConfirmationEmail({ orderId, orderPayload }),
+        12000,
+        "order_confirmation_email_timeout_paid"
+      );
+    } catch (err) {
+      orderConfirmationEmail = { status: "failed", reason: err?.message || "send_failed" };
+      console.error("ORDER CONFIRMATION EMAIL FAILED (PAID):", err?.message || err);
+    }
+
+    try {
+      await updateOrderConfirmationEmailStatus({
+        orderId,
+        sent: orderConfirmationEmail.status === "sent",
+        sentAt: orderConfirmationEmail.status === "sent" ? new Date() : null,
+      });
+    } catch (statusErr) {
+      console.error("ORDER CONFIRMATION EMAIL STATUS UPDATE FAILED (PAID):", statusErr?.message || statusErr);
+    }
+
+    res.json({ success: true, orderId, orderAlertEmail, orderConfirmationEmail });
   } catch (error) {
     console.error("VERIFY PAYMENT ERROR:", error);
     res.status(500).json({ error: "Payment verification failed" });
@@ -3129,6 +3346,36 @@ app.post("/api/orders", async (req, res) => {
         trackingUrl: "",
         shippingStatus: "Processing",
       },
+      emailStatus: {
+        orderConfirmation: {
+          sent: false,
+          sentAt: null,
+        },
+        shipped: {
+          sent: false,
+          sentAt: null,
+        },
+        outForDelivery: {
+          sent: false,
+          sentAt: null,
+        },
+        deliveryExpected: {
+          sent: false,
+          sentAt: null,
+        },
+        delivered: {
+          sent: false,
+          sentAt: null,
+        },
+        warranty: {
+          sent: false,
+          sentAt: null,
+        },
+        feedback: {
+          sent: false,
+          sentAt: null,
+        },
+      },
       createdAt: new Date(),
     };
     const orderId = await createOrderWithGeneratedId(orderPayload);
@@ -3145,7 +3392,29 @@ app.post("/api/orders", async (req, res) => {
       console.error("ORDER ALERT EMAIL FAILED (COD):", err?.message || err);
     }
 
-    res.json({ orderId, orderAlertEmail });
+    let orderConfirmationEmail = { status: "unknown" };
+    try {
+      orderConfirmationEmail = await withTimeout(
+        sendCustomerOrderConfirmationEmail({ orderId, orderPayload }),
+        12000,
+        "order_confirmation_email_timeout_cod"
+      );
+    } catch (err) {
+      orderConfirmationEmail = { status: "failed", reason: err?.message || "send_failed" };
+      console.error("ORDER CONFIRMATION EMAIL FAILED (COD):", err?.message || err);
+    }
+
+    try {
+      await updateOrderConfirmationEmailStatus({
+        orderId,
+        sent: orderConfirmationEmail.status === "sent",
+        sentAt: orderConfirmationEmail.status === "sent" ? new Date() : null,
+      });
+    } catch (statusErr) {
+      console.error("ORDER CONFIRMATION EMAIL STATUS UPDATE FAILED (COD):", statusErr?.message || statusErr);
+    }
+
+    res.json({ orderId, orderAlertEmail, orderConfirmationEmail });
   } catch (err) {
     console.error("CREATE ORDER ERROR:", err);
     res.status(500).json({ error: "Failed to place order" });
@@ -3457,6 +3726,11 @@ app.get("/api/shipping/track/:awb", async (req, res) => {
 
     const trackingPayload = await trackRes.json();
     const normalized = normalizeShiprocketTracking(trackingPayload, awb);
+    try {
+      await syncShiprocketTrackingAutomation({ awb, trackingData: normalized });
+    } catch (syncErr) {
+      console.error("SHIPROCKET TRACK AUTOMATION ERROR:", syncErr?.message || syncErr);
+    }
     return res.json(normalized);
   } catch (error) {
     console.error("SHIPROCKET TRACK ERROR:", error);
@@ -4387,6 +4661,92 @@ const requireSuperAdmin = async (req, res) => {
   }
   return requester;
 };
+
+app.post("/api/admin/test-email", async (req, res) => {
+  try {
+    const requester = await getRequesterAdmin(req);
+    if (!requester) {
+      return res.status(403).json({ error: "Admin authentication required" });
+    }
+
+    const email = String(req.body?.email || "").trim();
+    const type = String(req.body?.type || "").trim();
+    const allowedTypes = new Set([
+      "orderConfirmation",
+      "shipped",
+      "outForDelivery",
+      "delivered",
+      "warranty",
+      "feedback",
+    ]);
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+    if (!allowedTypes.has(type)) {
+      return res.status(400).json({ error: "Invalid test email type" });
+    }
+
+    const sampleOrder = {
+      id: "TEST-ORDER-001",
+      userEmail: email,
+      totalAmount: 499,
+      shippingAddress: {
+        name: "Ilika Test Customer",
+        phone: "9876543210",
+        addressLine: "123 Glow Street",
+        city: "Mumbai",
+        state: "Maharashtra",
+        pincode: "400001",
+      },
+      items: [
+        {
+          name: "Ilika Mask Combo",
+          quantity: 1,
+          price: 499,
+          variantLabel: "Test Sample",
+        },
+      ],
+      tracking: {
+        trackingId: "TESTAWB123456",
+        trackingUrl: "https://shiprocket.co/tracking/TESTAWB123456",
+        shippingStatus: type === "orderConfirmation" ? "Processing" : "Shipped",
+      },
+    };
+
+    const trackingData = {
+      awb: "TESTAWB123456",
+      status:
+        type === "shipped"
+          ? "SHIPPED"
+          : type === "outForDelivery"
+            ? "OUT_FOR_DELIVERY"
+            : type === "delivered"
+              ? "DELIVERED"
+              : "IN_TRANSIT",
+      etd: "2026-06-20",
+      deliveredDate: type === "delivered" ? "2026-06-18" : "",
+      courier: "Shiprocket Test Courier",
+    };
+
+    const result = await sendOrderEmailByType({
+      type,
+      order: sampleOrder,
+      trackingData,
+    });
+
+    return res.json({
+      message: "Test email processed",
+      requestedBy: requester.username || requester.id,
+      email,
+      type,
+      result,
+    });
+  } catch (error) {
+    console.error("TEST EMAIL ERROR:", error);
+    return res.status(500).json({ error: "Failed to send test email" });
+  }
+});
 
 app.get("/api/merchant/sync-status", async (req, res) => {
   res.json({

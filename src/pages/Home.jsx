@@ -32,10 +32,12 @@ const skinMobile = "/Images/skinMobile.webp";
 
 const hairMobile = "/Images/hairMobile.webp";
 const BannerStyle = "/Images/Banner.webp";
-const endBannerDesktop = "/Images/End.webp";
-const endBannerMobile = "/Images/endmobile.webp";
+const endBannerDesktop = "/Images/End1.webp";
+const endBannerMobile = "/Images/End1.webp";
 const maskBannerDesktop = "/Images/mask.webp";
-const maskBannerMobile = "/Images/maskmobile.webp";
+const maskBannerMobile = "/Images/mask.webp";
+
+
 const HAIR_CAROUSEL_ITEMS = [
   { title: "Healthy Hair Growth", image: "/Images/hairc5.webp", bgColor: "", link: "/hair/care" },
   { title: "Hair Fall Control", image: "/Images/hairc1.webp", bgColor: "", link: "/hair/care" },

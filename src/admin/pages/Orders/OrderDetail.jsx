@@ -307,7 +307,7 @@ const OrderDetail = () => {
       const soldByLines = [
         "Office No. 201-202, Hirubai Residency",
         "Virar (West) - 401303, Maharashtra, India",
-        "+91 91208 79879",
+        "+91 92701 14738",
         "GSTIN: 27AALCP9913F1Z2",
         "customersupport.ilika@gmail.com",
       ];
