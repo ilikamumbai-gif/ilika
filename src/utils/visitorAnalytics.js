@@ -225,82 +225,6 @@ const fetchJson = async (url) => {
   return res.json();
 };
 
-const fetchExternalApproxLocation = async () => {
-  const providers = [
-    () =>
-      fetchJson("https://ipwho.is/").then((data) =>
-        normalizeLocationObject({
-          country: data?.country,
-          state: data?.region,
-          city: data?.city,
-          postalCode: data?.postal || data?.postal_code || data?.zip,
-        })
-      ),
-    () =>
-      fetchJson("https://ipapi.co/json/").then((data) =>
-        normalizeLocationObject({
-          country: data?.country_name,
-          state: data?.region,
-          city: data?.city,
-          postalCode: data?.postal || data?.postal_code || data?.zip,
-        })
-      ),
-  ];
-
-  for (const provider of providers) {
-    try {
-      const location = await provider();
-      if (location) {
-        return location;
-      }
-    } catch {
-      // Ignore and try the next provider silently.
-    }
-  }
-
-  return null;
-};
-
-const fetchExternalNetworkContext = async () => {
-  const providers = [
-    () =>
-      fetchJson("https://ipwho.is/").then((data) => ({
-        ip: normalizeIpValue(data?.ip),
-        location: normalizeLocationObject({
-          country: data?.country,
-          state: data?.region,
-          city: data?.city,
-          postalCode: data?.postal || data?.postal_code || data?.zip,
-        }),
-      })),
-    () =>
-      fetchJson("https://ipapi.co/json/").then((data) => ({
-        ip: normalizeIpValue(data?.ip),
-        location: normalizeLocationObject({
-          country: data?.country_name,
-          state: data?.region,
-          city: data?.city,
-          postalCode: data?.postal || data?.postal_code || data?.zip,
-        }),
-      })),
-  ];
-
-  for (const provider of providers) {
-    try {
-      const context = await provider();
-      if (context?.ip || context?.location) {
-        if (context.ip) writeCachedPublicIp(context.ip);
-        if (context.location) writeCachedLocation(context.location);
-        return context;
-      }
-    } catch {
-      // Ignore and try next provider silently.
-    }
-  }
-
-  return { ip: "", location: null };
-};
-
 const fetchServerNetworkContext = async () => {
   if (!isBrowser) return { ip: "", location: null };
 
@@ -396,12 +320,11 @@ const fetchApproxLocation = async () => {
       return normalizeLocationObject(data?.location);
     })
     .catch(() => null)
-    .then(async (location) => {
-      const resolvedLocation = location || (await fetchExternalApproxLocation());
-      if (resolvedLocation) {
-        writeCachedLocation(resolvedLocation);
+    .then((location) => {
+      if (location) {
+        writeCachedLocation(location);
       }
-      return resolvedLocation;
+      return location;
     })
     .finally(() => {
       pendingLocationPromise = null;
@@ -471,16 +394,13 @@ const postVisitorAnalytics = (payload) => {
 
 export const trackVisitorEvent = async (event = {}) => {
   const serverContext = await fetchServerNetworkContext().catch(() => ({ ip: "", location: null }));
-  const browserContext = await fetchExternalNetworkContext().catch(() => ({ ip: "", location: null }));
   const clientIp =
     event.clientIp ||
     serverContext.ip ||
-    browserContext.ip ||
     (await fetchPublicIpAddress().catch(() => ""));
   const approximateLocation =
     event.ipLocation ||
     serverContext.location ||
-    browserContext.location ||
     (await fetchApproxLocation().catch(() => null));
   const payload = buildVisitorEventPayload({
     ...event,
