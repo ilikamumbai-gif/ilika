@@ -281,6 +281,7 @@ const normalizeAnalyticsUrl = (value) => {
 };
 
 const stripIpv6Prefix = (ip = "") => String(ip || "").replace(/^::ffff:/i, "").trim();
+const VISITOR_ANALYTICS_EXCLUDED_IPS = new Set(["160.25.128.119"]);
 
 const getForwardedHeaderCandidates = (value) =>
   String(value || "")
@@ -332,6 +333,8 @@ const emptyIpLocation = () => ({
 
 const normalizeLocationValue = (value) => optionalTrimmed(value, 120);
 const normalizeDebugIp = (value) => optionalTrimmed(stripIpv6Prefix(value), 120);
+const isExcludedVisitorAnalyticsIp = (value = "") =>
+  VISITOR_ANALYTICS_EXCLUDED_IPS.has(stripIpv6Prefix(value));
 const isIndiaLocationValue = (value) => {
   const normalized = String(value || "").trim().toLowerCase();
   return normalized === "india" || normalized === "in";
@@ -600,7 +603,13 @@ const getVisitorAnalyticsFilterOptions = async () => {
   }
 
   const snapshot = await db.collection("visitorAnalytics").orderBy("createdAt", "desc").limit(5000).get();
-  const events = snapshot.docs.map(mapVisitorAnalyticsDoc);
+  const events = snapshot.docs
+    .map(mapVisitorAnalyticsDoc)
+    .filter((event) => {
+      const clientIp = event?.locationDebug?.clientIp || event?.clientIp || "";
+      const requestIp = event?.locationDebug?.requestIp || "";
+      return !isExcludedVisitorAnalyticsIp(clientIp) && !isExcludedVisitorAnalyticsIp(requestIp);
+    });
   const options = {
     countries: Array.from(new Set(events.map((event) => event.ipLocation?.country).filter(Boolean))).sort(),
     states: Array.from(new Set(events.map((event) => event.ipLocation?.state).filter(Boolean))).sort(),
@@ -4313,7 +4322,13 @@ app.get("/api/visitor-analytics", async (req, res) => {
         .limit(5000)
         .get();
     }
-    const queriedEvents = snapshot.docs.map(mapVisitorAnalyticsDoc);
+    const queriedEvents = snapshot.docs
+      .map(mapVisitorAnalyticsDoc)
+      .filter((event) => {
+        const clientIp = event?.locationDebug?.clientIp || event?.clientIp || "";
+        const requestIp = event?.locationDebug?.requestIp || "";
+        return !isExcludedVisitorAnalyticsIp(clientIp) && !isExcludedVisitorAnalyticsIp(requestIp);
+      });
 
     const filteredEvents = queriedEvents.filter((event) => {
       const createdAtDate = new Date(event.createdAt);

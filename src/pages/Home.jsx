@@ -228,6 +228,12 @@ const Home = () => {
           <Banner
             className="mt-0"
             slides={[
+                {
+                desktopSrc: maskBannerDesktop,
+                mobileSrc: maskBannerMobile,
+                linkUrl: "/voice-mask-maker",
+                alt: "Voice Mask Maker Banner",
+              },
               {
                 desktopSrc: endBannerDesktop,
                 mobileSrc: endBannerMobile,
@@ -240,12 +246,7 @@ const Home = () => {
               //   linkUrl: "/mask-combo#mask-combo-4in1",
               //   alt: "Mask Combo Banner",
               // },
-              {
-                desktopSrc: maskBannerDesktop,
-                mobileSrc: maskBannerMobile,
-                linkUrl: "/voice-mask-maker",
-                alt: "Voice Mask Maker Banner",
-              },
+            
             ]}
             imageFit="contain"
             autoSlideMs={5000}
@@ -600,7 +601,7 @@ const Home = () => {
 {/* TESTIMONIAL */}
           <LazyMountSection minHeight={340}>
             <section className="min-h-[320px] lg:min-h-[340px] flex flex-col justify-center">
-              <Heading heading="Loved By Thousands" sub="Real experiences from the Ilika community"/>
+              <Heading heading="Loved By Thousands" sub="Real experiences from the ilikä community"/>
               <Suspense fallback={<div className="h-24" />}>
                 <TestimonialList />
               </Suspense>

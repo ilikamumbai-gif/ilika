@@ -142,7 +142,7 @@ const AdminSidebar = ({ open, onClose }) => {
 
         {/* FOOTER */}
         <div className="px-5 py-4 shrink-0" style={{ borderTop: "1px solid #222" }}>
-          <p className="text-xs" style={{ color: "#444" }}>© 2025 Ilika Beauty</p>
+          <p className="text-xs" style={{ color: "#444" }}>© 2025 ilikä Beauty</p>
         </div>
       </aside>
     </>

@@ -98,7 +98,7 @@ const ComboCard = ({ offer, offerIndex, onAdd, isAdding }) => {
     >
       <div className="flex flex-wrap items-start justify-between gap-3 px-4 pt-4 sm:px-6 sm:pt-6">
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b45309]">
+          <p className="text-[10px] font-semibold tracking-[0.18em] text-[#b45309]">
             {offer.subtitle}
           </p>
           <div className="-ml-1 mt-1">
@@ -178,7 +178,7 @@ const MaskCombo = () => {
       {
         id: "mask-combo-mixed",
         title: "Best Seller Duo",
-        subtitle: "Ilika 4 in 1 + 24K Gold",
+        subtitle: "ilikä 4 in 1 + 24K Gold",
         price: 499,
         description:
           "One 4-in-1 Collagen Mask for glow and hydration, paired with one 24K Gold Anti-aging Mask.",
@@ -190,10 +190,10 @@ const MaskCombo = () => {
       {
         id: "mask-combo-4in1",
         title: "Double Glow",
-        subtitle: "2 x Ilika 4 in 1",
+        subtitle: "2 x ilikä 4 in 1",
         price: 449,
         description:
-          "Two Ilika 4-in-1 Collagen Masks for double the glow, firmness, and hydration at one special price.",
+          "Two ilikä 4-in-1 Collagen Masks for double the glow, firmness, and hydration at one special price.",
         items: [
           { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask" },
           { product: fourInOneMask, fallbackName: "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask" },
@@ -250,12 +250,12 @@ const MaskCombo = () => {
   };
 
   useSeo({
-    title: "Mask Combo Offers | Ilika",
+    title: "Mask Combo Offers | ilikä",
     description:
-      "Choose from 3 Ilika face mask combo offers at Rs 499 and checkout instantly.",
+      "Choose from 3 ilikä face mask combo offers at Rs 499 and checkout instantly.",
     path: "/mask-combo",
     image: "/Images/24.webp",
-    keywords: ["Ilika mask combo", "face mask combo", "collagen mask combo", "24k gold mask"],
+    keywords: ["ilikä mask combo", "face mask combo", "collagen mask combo", "24k gold mask"],
   });
 
   return (
