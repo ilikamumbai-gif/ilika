@@ -27,21 +27,26 @@ export const normalizeShiprocketStatusBucket = (status = "", trackingData = {}) 
     .replace(/[_-]+/g, " ");
 
   if (!normalized) return "";
-  if (normalized.includes("deliver")) return "delivered";
   if (
     normalized.includes("out for delivery") ||
     normalized === "ofd" ||
-    normalized.includes("assigned for delivery")
+    normalized.includes("assigned for delivery") ||
+    normalized.includes("customer not contactable") ||
+    normalized === "nc"
   ) {
     return "outForDelivery";
   }
+  if (normalized.includes("delivered")) return "delivered";
   if ((normalized.includes("in transit") || normalized.includes("transit")) && trackingData?.etd) {
     return "deliveryExpected";
   }
   if (
     normalized.includes("ship") ||
     normalized.includes("pick") ||
-    normalized.includes("pickup")
+    normalized.includes("pickup") ||
+    normalized.includes("delivery center") ||
+    normalized.includes("forward hub") ||
+    normalized.includes("received at")
   ) {
     return "shipped";
   }

@@ -29,9 +29,26 @@ const TRACK_STEPS = [
 
 const normalizeStatusKey = (status = "") => {
   const value = String(status || "").toLowerCase();
-  if (value.includes("deliver")) return "delivered";
-  if (value.includes("out for delivery")) return "out-for-delivery";
-  if (value.includes("ship")) return "shipped";
+  if (
+    value.includes("out for delivery") ||
+    value.includes("assigned for delivery") ||
+    value.includes("customer not contactable") ||
+    value === "nc"
+  ) {
+    return "out-for-delivery";
+  }
+  if (value.includes("delivered")) return "delivered";
+  if (
+    value.includes("ship") ||
+    value.includes("pick") ||
+    value.includes("pickup") ||
+    value.includes("delivery center") ||
+    value.includes("forward hub") ||
+    value.includes("received at") ||
+    value.includes("transit")
+  ) {
+    return "shipped";
+  }
   return "processing";
 };
 
