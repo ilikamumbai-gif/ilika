@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { X, CheckCircle2, Copy, ExternalLink, Gift } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -83,10 +83,12 @@ const GroomingLeadOffer = ({
   pageKey = "grooming",
   showPopup = true,
   popupDelayMs = 1200,
+  requireInteraction = false,
 }) => {
   const location = useLocation();
   const { currentUser, userData } = useAuth();
   const { activeProducts = [] } = useProducts();
+  const hasOpenedRef = useRef(false);
   const [mobileNumber, setMobileNumber] = useState("");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -128,12 +130,60 @@ const GroomingLeadOffer = ({
     const dismissKey = getDismissKey(pageKey);
     if (window.sessionStorage.getItem(dismissKey) === "true") return undefined;
 
-    const timer = window.setTimeout(() => {
-      setIsPopupOpen(true);
-    }, popupDelayMs);
+    let timer = null;
+    let idleId = null;
 
-    return () => window.clearTimeout(timer);
-  }, [isUnlocked, pageKey, popupDelayMs, showPopup]);
+    const openPopup = () => {
+      if (hasOpenedRef.current) return;
+      hasOpenedRef.current = true;
+      setIsPopupOpen(true);
+    };
+
+    const scheduleOpen = () => {
+      timer = window.setTimeout(() => {
+        if (typeof window.requestIdleCallback === "function") {
+          idleId = window.requestIdleCallback(() => openPopup(), { timeout: 1200 });
+          return;
+        }
+        openPopup();
+      }, popupDelayMs);
+    };
+
+    if (!requireInteraction) {
+      scheduleOpen();
+    } else {
+      const handleInteraction = () => {
+        window.removeEventListener("pointerdown", handleInteraction);
+        window.removeEventListener("keydown", handleInteraction);
+        window.removeEventListener("touchstart", handleInteraction);
+        window.removeEventListener("scroll", handleInteraction);
+        scheduleOpen();
+      };
+
+      window.addEventListener("pointerdown", handleInteraction, { passive: true, once: true });
+      window.addEventListener("keydown", handleInteraction, { passive: true, once: true });
+      window.addEventListener("touchstart", handleInteraction, { passive: true, once: true });
+      window.addEventListener("scroll", handleInteraction, { passive: true, once: true });
+
+      return () => {
+        window.removeEventListener("pointerdown", handleInteraction);
+        window.removeEventListener("keydown", handleInteraction);
+        window.removeEventListener("touchstart", handleInteraction);
+        window.removeEventListener("scroll", handleInteraction);
+        if (timer) window.clearTimeout(timer);
+        if (idleId && typeof window.cancelIdleCallback === "function") {
+          window.cancelIdleCallback(idleId);
+        }
+      };
+    }
+
+    return () => {
+      if (timer) window.clearTimeout(timer);
+      if (idleId && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleId);
+      }
+    };
+  }, [isUnlocked, pageKey, popupDelayMs, requireInteraction, showPopup]);
 
   useEffect(() => {
     if (!copiedCode) return undefined;

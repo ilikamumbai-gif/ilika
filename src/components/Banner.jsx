@@ -49,6 +49,7 @@ const Banner = ({
   );
   const activeSlides = normalizedSlides.length > 0 ? normalizedSlides : matchedBanners;
   const hasMultiple = activeSlides.length > 1;
+  const aspectRatio = `${width} / ${height}`;
 
   useEffect(() => {
     setActiveIndex(0);
@@ -91,8 +92,19 @@ const Banner = ({
           },
         ];
 
+  const shouldRenderSlide = (index) => {
+    if (!hasMultiple) return true;
+    if (index === activeIndex) return true;
+    const prevIndex = (activeIndex - 1 + slidesToRender.length) % slidesToRender.length;
+    const nextIndex = (activeIndex + 1) % slidesToRender.length;
+    return index === prevIndex || index === nextIndex;
+  };
+
   return (
-    <section className={`relative w-full overflow-hidden ${className}`}>
+    <section
+      className={`relative w-full overflow-hidden ${className}`}
+      style={{ aspectRatio }}
+    >
       <div
         className={`flex transition-transform duration-500 ease-in-out ${
           isTransitioning ? "will-change-transform" : ""
@@ -105,11 +117,12 @@ const Banner = ({
           const resolvedLink = slide?.linkUrl || linkUrl || "";
           const resolvedAlt = slide?.alt || alt || "Banner";
 
-          const content = (
+          const content = shouldRenderSlide(index) ? (
             <picture>
               <source media="(max-width: 639px)" srcSet={mobileImageSrc} />
               <OptimizedImage
-                priority={priority && index === 0}
+                priority={priority && index === activeIndex}
+                fetchPriority={priority && index === activeIndex ? "high" : "low"}
                 src={desktopSrc}
                 alt={resolvedAlt}
                 className={`w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
@@ -118,6 +131,11 @@ const Banner = ({
                 height={height}
               />
             </picture>
+          ) : (
+            <div
+              aria-hidden="true"
+              className="w-full h-full bg-[#f7ece8]"
+            />
           );
 
           return (

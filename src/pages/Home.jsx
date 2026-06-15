@@ -13,11 +13,11 @@ import { getProductSlug } from "../utils/slugify";
 
 const ProductList = lazy(() => import("../components/ProductList"));
 import Banner from "../components/Banner";
-import GroomingLeadOffer from "../components/GroomingLeadOffer";
 const CartDrawer = lazy(() => import("../components/CartDrawer"));
 const Footer = lazy(() => import("../components/Footer"));
 const PromoCardGrid = lazy(() => import("../components/PromoCardGrid"));
 const CategoryNav = lazy(() => import("../components/CategoryNav"));
+const GroomingLeadOffer = lazy(() => import("../components/GroomingLeadOffer"));
 
 /* assets (correct import) */
 import bannerSkincare from "../assets/Images/FacecareBanner.webp";
@@ -254,15 +254,19 @@ const Home = () => {
             priority
           />
 
-          <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6">
-            <GroomingLeadOffer pageKey="home-page" />
-          </div>
+          <Suspense fallback={null}>
+            <GroomingLeadOffer
+              pageKey="home-page"
+              popupDelayMs={9000}
+              requireInteraction
+            />
+          </Suspense>
 
-          <LazyMountSection minHeight={220} rootMargin="80px 0px">
-            <Suspense fallback={<div className="h-40" />}>
+          <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6">
+            <Suspense fallback={<div className="h-[520px]" />}>
               <PromoCardGrid />
             </Suspense>
-          </LazyMountSection>
+          </section>
           {/* <SkinTypeBanner /> */}
 
           {isMobile ? (
