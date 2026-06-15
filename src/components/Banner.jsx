@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useOptionalBanners } from "../admin/context/BannerContext";
 import OptimizedImage from "./OptimizedImage";
 
@@ -116,6 +117,7 @@ const Banner = ({
           const desktopSrc = slide?.desktopSrc || slide?.src || src || "/Images/Banner.webp";
           const mobileImageSrc = slide?.mobileSrc || mobileSrc || desktopSrc;
           const resolvedLink = slide?.linkUrl || linkUrl || "";
+          const isExternalLink = /^https?:\/\//i.test(resolvedLink) || resolvedLink.startsWith("//");
           const resolvedAlt = slide?.alt || alt || "Banner";
 
           const content = shouldRenderSlide(index) ? (
@@ -146,9 +148,15 @@ const Banner = ({
           return (
             <div key={`${resolvedAlt}-${index}`} className="w-full shrink-0 grow-0 basis-full">
               {resolvedLink ? (
-                <a href={resolvedLink} aria-label={resolvedAlt || "Banner link"}>
-                  {content}
-                </a>
+                isExternalLink ? (
+                  <a href={resolvedLink} aria-label={resolvedAlt || "Banner link"}>
+                    {content}
+                  </a>
+                ) : (
+                  <Link to={resolvedLink} aria-label={resolvedAlt || "Banner link"}>
+                    {content}
+                  </Link>
+                )
               ) : (
                 content
               )}
