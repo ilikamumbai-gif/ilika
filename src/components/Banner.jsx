@@ -29,6 +29,7 @@ const Banner = ({
   autoSlideMs = 4500,
   showControls = false,
   slides = [],
+  preserveFullImage = false,
 }) => {
   const bannerCtx = useOptionalBanners();
   const matchedBanners = useMemo(() => (bannerKey && bannerCtx?.activeBanners?.length
@@ -103,7 +104,7 @@ const Banner = ({
   return (
     <section
       className={`relative w-full overflow-hidden ${className}`}
-      style={{ aspectRatio }}
+      style={preserveFullImage ? undefined : { aspectRatio }}
     >
       <div
         className={`flex transition-transform duration-500 ease-in-out ${
@@ -125,7 +126,11 @@ const Banner = ({
                 fetchPriority={priority && index === activeIndex ? "high" : "low"}
                 src={desktopSrc}
                 alt={resolvedAlt}
-                className={`w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
+                className={
+                  preserveFullImage
+                    ? `block w-full h-auto ${imageFit === "contain" ? "object-contain" : "object-cover"}`
+                    : `w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`
+                }
                 sizes="100vw"
                 width={width}
                 height={height}

@@ -226,7 +226,7 @@ const Home = () => {
         </Suspense>
         <main>
           <Banner
-            className="mt-0"
+            className="mt-0 bg-[#fdecef]"
             slides={[
                 {
                 desktopSrc: maskBannerDesktop,
@@ -252,13 +252,13 @@ const Home = () => {
             autoSlideMs={5000}
             showControls
             priority
+            preserveFullImage
           />
 
           <Suspense fallback={null}>
             <GroomingLeadOffer
               pageKey="home-page"
-              popupDelayMs={9000}
-              requireInteraction
+              popupDelayMs={1800}
             />
           </Suspense>
 
