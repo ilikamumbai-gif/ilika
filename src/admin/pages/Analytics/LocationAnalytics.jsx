@@ -43,6 +43,27 @@ const formatDateTime = (value) => {
 const formatCurrency = (value) =>
   `₹${Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 
+const formatDateOnly = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const formatTimeOnly = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const formatLocationLabel = (location = {}) => {
   const city = String(location?.city || "").trim();
   const postalCode = String(location?.postalCode || location?.pincode || "").trim();
@@ -67,6 +88,81 @@ const isIndiaLabel = (label = "") => {
 };
 
 const DEFAULT_LOCATION_LIST_LIMIT = 5;
+
+const escapeCsvValue = (value) => {
+  const normalized = value == null ? "" : String(value);
+  return `"${normalized.replace(/"/g, '""')}"`;
+};
+
+const getEventLocationParts = (event = {}) => {
+  const source = event?.ipLocation || {};
+
+  return {
+    city: String(source?.city || "").trim(),
+    state: String(source?.state || "").trim(),
+    country: String(source?.country || "").trim(),
+    postalCode: String(source?.postalCode || source?.pincode || "").trim(),
+  };
+};
+
+const buildLocationAnalyticsCsv = (events = []) => {
+  const groupedCounts = events.reduce((accumulator, event) => {
+    const location = getEventLocationParts(event);
+    const eventType = String(event?.eventType || "").trim() || "unknown";
+    const productName = String(event?.productName || "").trim() || "Unknown Product";
+    const pageUrl = String(event?.pageUrl || "").trim();
+    const city = location.city || "Unknown";
+    const postalCode = location.postalCode || "";
+    const groupingKey = [productName, eventType, pageUrl, city, postalCode].join("||");
+
+    if (!accumulator[groupingKey]) {
+      accumulator[groupingKey] = {
+        productName,
+        eventType,
+        pageUrl,
+        city,
+        postalCode,
+        count: 0,
+        latestCreatedAt: "",
+      };
+    }
+
+    accumulator[groupingKey].count += 1;
+    if (
+      !accumulator[groupingKey].latestCreatedAt ||
+      new Date(event?.createdAt || 0) > new Date(accumulator[groupingKey].latestCreatedAt || 0)
+    ) {
+      accumulator[groupingKey].latestCreatedAt = event?.createdAt || "";
+    }
+    return accumulator;
+  }, {});
+
+  const headers = [
+    "Date",
+    "Time",
+    "Event Type",
+    "Product Name",
+    "Page URL",
+    "City",
+    "Pincode",
+    "Count",
+  ];
+
+  const rows = Object.values(groupedCounts).map((group) => {
+    return [
+      formatDateOnly(group.latestCreatedAt),
+      formatTimeOnly(group.latestCreatedAt),
+      group.eventType,
+      group.productName,
+      group.pageUrl,
+      group.city,
+      group.postalCode,
+      group.count,
+    ];
+  });
+
+  return [headers, ...rows].map((row) => row.map(escapeCsvValue).join(",")).join("\n");
+};
 
 const StatCard = ({ title, value, hint, icon: Icon, tone = "pink" }) => {
   const tones = {
@@ -201,6 +297,23 @@ const LocationAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const downloadFilteredCsv = () => {
+    if (!payload.events.length) return;
+
+    const csvContent = buildLocationAnalyticsCsv(payload.events);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0, 10);
+
+    link.href = downloadUrl;
+    link.setAttribute("download", `location-analytics-${stamp}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+  };
+
   useEffect(() => {
     const syncRefreshSignal = (nextValue) => {
       const latestValue =
@@ -298,22 +411,32 @@ const LocationAnalytics = () => {
             <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-gray-800">Filters</h2>
             <p className="text-xs text-gray-500">Refine visitor events by date, location, event type, or product.</p>
           </div>
-          <button
-            type="button"
-            onClick={() =>
-              setFilters({
-                ...createDefaultDateRange(),
-                eventType: "",
-                country: "India",
-                state: "",
-                city: "",
-                product: "",
-              })
-            }
-            className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
-          >
-            Reset filters
-          </button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={downloadFilteredCsv}
+              disabled={loading || payload.events.length === 0}
+              className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
+            >
+              Download CSV
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setFilters({
+                  ...createDefaultDateRange(),
+                  eventType: "",
+                  country: "India",
+                  state: "",
+                  city: "",
+                  product: "",
+                })
+              }
+              className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
+            >
+              Reset filters
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
