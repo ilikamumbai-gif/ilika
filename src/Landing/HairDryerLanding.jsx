@@ -424,5 +424,3 @@ const HairDryerLanding = () => {
 };
 
 export default HairDryerLanding;
-
-

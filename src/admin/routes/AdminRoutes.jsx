@@ -31,6 +31,7 @@ import AdminList from "../pages/Admins/AdminList";
 import CouponList from "../pages/Coupons/CouponList";
 import BannerList from "../pages/Banners/BannerList";
 import SocialFeedList from "../pages/SocialFeed/SocialFeedList";
+import LeadList from "../pages/Leads/LeadList";
 
 import { ProductProvider } from "../context/ProductContext";
 import { CategoryProvider } from "../context/CategoryContext";
@@ -94,6 +95,7 @@ const AdminRoutes = () => {
 
                         <Route path="orders" element={withPermission("orders", <OrderList />)} />
                         <Route path="orders/:id" element={withPermission("orders", <OrderDetail />)} />
+                        <Route path="leads" element={withPermission("orders", <LeadList />)} />
 
                         <Route path="cart-products" element={withPermission("cart-products", <CartProductList />)} />
                         <Route path="cart-products/:productId" element={withPermission("cart-products", <CartProductDetail />)} />

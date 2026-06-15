@@ -13,6 +13,7 @@ import { getProductSlug } from "../utils/slugify";
 
 const ProductList = lazy(() => import("../components/ProductList"));
 import Banner from "../components/Banner";
+import GroomingLeadOffer from "../components/GroomingLeadOffer";
 const CartDrawer = lazy(() => import("../components/CartDrawer"));
 const Footer = lazy(() => import("../components/Footer"));
 const PromoCardGrid = lazy(() => import("../components/PromoCardGrid"));
@@ -251,6 +252,10 @@ const Home = () => {
             showControls
             priority
           />
+
+          <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6">
+            <GroomingLeadOffer pageKey="home-page" />
+          </div>
 
           <LazyMountSection minHeight={220} rootMargin="80px 0px">
             <Suspense fallback={<div className="h-40" />}>

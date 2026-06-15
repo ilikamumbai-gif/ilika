@@ -226,6 +226,39 @@ const optionalTrimmed = (value, max = 500) => {
   return text || null;
 };
 
+const LEAD_DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
+const LEAD_SOURCE_DEFAULT = "grooming_appliance_offer_popup";
+const LEAD_OFFER_DEFAULT = "Grooming Appliances Special Offer";
+const LEAD_COUPON_DEFAULT = "₹500+";
+const LEAD_ALLOWED_STATUSES = new Set(["new", "contacted", "converted", "not_interested"]);
+
+const normalizeIndianMobileNumber = (value = "") => {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (!digits) return "";
+
+  if (digits.length === 12 && digits.startsWith("91")) {
+    return digits.slice(2);
+  }
+
+  if (digits.length === 11 && digits.startsWith("0")) {
+    return digits.slice(1);
+  }
+
+  return digits;
+};
+
+const isValidIndianMobileNumber = (value = "") => /^[6-9]\d{9}$/.test(value);
+
+const toDateValue = (value) => {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (typeof value?.toDate === "function") return value.toDate();
+  if (value?._seconds) return new Date(value._seconds * 1000);
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
 const normalizeAnalyticsNumber = (value, { min = null, max = null } = {}) => {
   if (value === null || value === undefined || value === "") return null;
   const parsed = Number(value);
@@ -5112,6 +5145,146 @@ app.get("/api/notify/:id", async (req, res) => {
   const doc = await db.collection("notifications").doc(req.params.id).get();
   if (!doc.exists) return res.status(404).json({ error: "Not found" });
   res.json({ id: doc.id, ...doc.data() });
+});
+
+app.post("/api/leads", async (req, res) => {
+  try {
+    const normalizedMobile = normalizeIndianMobileNumber(req.body?.mobileNumber);
+    const source = trimToLength(req.body?.source || LEAD_SOURCE_DEFAULT, 120) || LEAD_SOURCE_DEFAULT;
+    const offerName = trimToLength(req.body?.offerName || LEAD_OFFER_DEFAULT, 200) || LEAD_OFFER_DEFAULT;
+    const couponValue = trimToLength(req.body?.couponValue || LEAD_COUPON_DEFAULT, 50) || LEAD_COUPON_DEFAULT;
+    const pageUrl = normalizeAnalyticsUrl(req.body?.pageUrl || "");
+
+    if (!isValidIndianMobileNumber(normalizedMobile)) {
+      return res.status(400).json({
+        success: false,
+        error: "Please enter a valid Indian mobile number.",
+      });
+    }
+
+    if (!pageUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "Valid page URL is required.",
+      });
+    }
+
+    const existingSnapshot = await db
+      .collection("leads")
+      .where("mobileNumber", "==", normalizedMobile)
+      .where("offerName", "==", offerName)
+      .get();
+
+    const now = new Date();
+    const duplicateLead = existingSnapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .find((lead) => {
+        const createdAt = toDateValue(lead.createdAt);
+        return createdAt && now.getTime() - createdAt.getTime() <= LEAD_DUPLICATE_WINDOW_MS;
+      });
+
+    if (duplicateLead) {
+      return res.status(200).json({
+        success: true,
+        duplicate: true,
+        message: "Coupon already unlocked for this number in the last 24 hours.",
+        lead: {
+          id: duplicateLead.id,
+          mobileNumber: duplicateLead.mobileNumber,
+          offerName: duplicateLead.offerName,
+          couponValue: duplicateLead.couponValue,
+          status: duplicateLead.status,
+        },
+      });
+    }
+
+    const leadPayload = {
+      mobileNumber: normalizedMobile,
+      source,
+      offerName,
+      couponValue,
+      pageUrl,
+      status: "new",
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const docRef = await db.collection("leads").add(leadPayload);
+
+    return res.status(201).json({
+      success: true,
+      duplicate: false,
+      message: "Coupon unlocked successfully.",
+      lead: {
+        id: docRef.id,
+        ...leadPayload,
+      },
+    });
+  } catch (error) {
+    console.error("Create lead failed:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Unable to save lead right now.",
+    });
+  }
+});
+
+app.get("/api/leads", async (req, res) => {
+  try {
+    const requester = await getRequesterAdmin(req);
+    if (!requester) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const snapshot = await db.collection("leads").orderBy("createdAt", "desc").get();
+    const leads = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return res.json(leads);
+  } catch (error) {
+    console.error("Fetch leads failed:", error);
+    return res.status(500).json({ error: "Failed to fetch leads" });
+  }
+});
+
+app.put("/api/leads/:id/status", async (req, res) => {
+  try {
+    const requester = await getRequesterAdmin(req);
+    if (!requester) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const nextStatus = String(req.body?.status || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_");
+
+    if (!LEAD_ALLOWED_STATUSES.has(nextStatus)) {
+      return res.status(400).json({ error: "Invalid lead status" });
+    }
+
+    const ref = db.collection("leads").doc(req.params.id);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      return res.status(404).json({ error: "Lead not found" });
+    }
+
+    await ref.update({
+      status: nextStatus,
+      updatedAt: new Date(),
+    });
+
+    const updated = await ref.get();
+    return res.json({
+      id: updated.id,
+      ...updated.data(),
+    });
+  } catch (error) {
+    console.error("Update lead status failed:", error);
+    return res.status(500).json({ error: "Failed to update lead status" });
+  }
 });
 
 /* ============================== FEEDBACK ============================== */

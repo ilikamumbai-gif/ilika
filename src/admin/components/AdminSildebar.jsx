@@ -32,6 +32,7 @@ const NAV_GROUPS = [
     label: "Sales",
     items: [
       { to: "/admin/orders",      icon: ClipboardList,   label: "Orders", permission: "orders"         },
+      { to: "/admin/leads",       icon: ClipboardList,   label: "Leads", permission: "orders"          },
       { to: "/admin/cart-products",icon: ShoppingCart,   label: "Cart Interest", permission: "cart-products"  },
       { to: "/admin/notifications", icon: Bell, label: "Notifications", permission: "notifications" }
     ]
