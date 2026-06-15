@@ -14,7 +14,7 @@ const NAV_GROUPS = [
     label: "Overview",
     items: [
       { to: "/admin",             icon: LayoutDashboard, label: "Dashboard"      },
-      { to: "/admin/analytics",   icon: LineChart,       label: "Analytics", permission: "analytics" },
+      // { to: "/admin/analytics",   icon: LineChart,       label: "Analytics", permission: "analytics" },
       { to: "/admin/location-analytics", icon: MapPinned, label: "Location Analytics", permission: "analytics" },
     ]
   },

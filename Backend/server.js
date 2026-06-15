@@ -1958,11 +1958,18 @@ const normalizeCouponPayload = (payload = {}, fallback = {}) => {
     ? Math.max(1, Math.min(100, Math.round(discountPercentRaw)))
     : 0;
 
+  const forcedPriceRaw = Number(payload?.forcedPrice ?? fallback.forcedPrice ?? 0);
+  const forcedPrice = Number.isFinite(forcedPriceRaw) && forcedPriceRaw > 0
+    ? Number(forcedPriceRaw.toFixed(2))
+    : null;
+
   return {
     name: String(payload?.name ?? fallback.name ?? "").trim(),
     code,
     discountPercent,
+    forcedPrice,
     isActive: typeof payload?.isActive === "boolean" ? payload.isActive : (fallback.isActive ?? true),
+    isVisible: typeof payload?.isVisible === "boolean" ? payload.isVisible : (fallback.isVisible ?? true),
   };
 };
 
@@ -2271,8 +2278,8 @@ app.post("/api/coupons", async (req, res) => {
     if (!normalized.code) {
       return res.status(400).json({ error: "Coupon code is required" });
     }
-    if (!normalized.discountPercent) {
-      return res.status(400).json({ error: "Discount percent must be between 1 and 100" });
+    if (!normalized.discountPercent && !normalized.forcedPrice) {
+      return res.status(400).json({ error: "Set either discount percent or forced price" });
     }
 
     const duplicate = await db
@@ -2333,8 +2340,8 @@ app.put("/api/coupons/:id", async (req, res) => {
     if (!normalized.code) {
       return res.status(400).json({ error: "Coupon code is required" });
     }
-    if (!normalized.discountPercent) {
-      return res.status(400).json({ error: "Discount percent must be between 1 and 100" });
+    if (!normalized.discountPercent && !normalized.forcedPrice) {
+      return res.status(400).json({ error: "Set either discount percent or forced price" });
     }
 
     const duplicate = await db

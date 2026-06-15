@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { trackInitiateCheckout, trackPurchase, trackAddPaymentInfo } from "../utils/pixel";
 import { trackGtmBeginCheckout, savePendingGtmPurchase } from "../utils/gtm";
 import { initializeApp, getApps } from "firebase/app";
@@ -107,9 +107,81 @@ const OtpWidget = ({
 
 const normalizeIndianPhone = (phone = "") =>
   String(phone).replace(/\D/g, "").slice(-10);
+const normalizeCouponCode = (value = "") =>
+  String(value || "").trim().toUpperCase();
 const guestAddressStorageKey = "guest_checkout_addresses";
 const guestVerifiedPhonesStorageKey = "guest_verified_phones";
 const GIFT_WRAP_FEE = 99;
+
+const getAddonPrice = (item = {}) => {
+  const selectedAddOnPrice = Number(item?.selectedAddOn?.price || 0);
+  return Number.isFinite(selectedAddOnPrice) && selectedAddOnPrice > 0 ? selectedAddOnPrice : 0;
+};
+
+const getEligibleCouponForCheckoutItem = (item = {}) => {
+  const snapshot = item?.couponSnapshot || item?.coupon || null;
+  if (!snapshot) return null;
+
+  const code = normalizeCouponCode(snapshot?.code);
+  const discountPercent = Number(snapshot?.discountPercent || 0);
+  const forcedPrice = Number(snapshot?.forcedPrice || 0);
+  const normalizedName = String(item?.name || "").toLowerCase();
+  const isVoiceMaskMakerProduct = normalizedName.includes("automatic voice version face mask maker machine");
+  const fallbackForcedPrice =
+    isVoiceMaskMakerProduct && code.toLowerCase() === "ilikadiy" ? 4999 : 0;
+  const resolvedForcedPrice = forcedPrice > 0 ? forcedPrice : fallbackForcedPrice;
+  const hasDiscount = discountPercent > 0;
+  const hasForcedPrice = resolvedForcedPrice > 0;
+
+  if (!code || snapshot?.isActive === false || (!hasDiscount && !hasForcedPrice)) {
+    return null;
+  }
+
+  return {
+    code,
+    discountPercent,
+    forcedPrice: hasForcedPrice ? resolvedForcedPrice : null,
+    isVisible: snapshot?.isVisible !== false,
+  };
+};
+
+const applyCheckoutCouponToItem = (item = {}, appliedCode = "") => {
+  const normalizedAppliedCode = normalizeCouponCode(appliedCode);
+  if (!normalizedAppliedCode) return item;
+
+  const eligibleCoupon = getEligibleCouponForCheckoutItem(item);
+  if (!eligibleCoupon || eligibleCoupon.code !== normalizedAppliedCode) return item;
+
+  const quantity = Math.max(Number(item?.quantity) || 1, 1);
+  const addOnPrice = getAddonPrice(item);
+  const storedOriginalUnitPrice = Number(item?.originalPrice || 0);
+  const currentUnitPrice = Number(item?.price || 0);
+  const originalUnitTotal = storedOriginalUnitPrice > 0 ? storedOriginalUnitPrice : currentUnitPrice;
+  const baseProductUnitPrice = Math.max(0, originalUnitTotal - addOnPrice);
+  const discountedBaseUnitPrice = eligibleCoupon.forcedPrice
+    ? Math.min(baseProductUnitPrice, Number(eligibleCoupon.forcedPrice))
+    : Math.max(
+      0,
+      Number((baseProductUnitPrice - ((baseProductUnitPrice * Number(eligibleCoupon.discountPercent || 0)) / 100)).toFixed(2))
+    );
+  const nextUnitPrice = Number((discountedBaseUnitPrice + addOnPrice).toFixed(2));
+  const discountAmountPerUnit = Number(Math.max(0, originalUnitTotal - nextUnitPrice).toFixed(2));
+  const effectivePercent = originalUnitTotal > 0
+    ? Number(((discountAmountPerUnit / originalUnitTotal) * 100).toFixed(2))
+    : 0;
+
+  return {
+    ...item,
+    price: nextUnitPrice,
+    originalPrice: Number(originalUnitTotal.toFixed(2)),
+    discountApplied: {
+      code: eligibleCoupon.code,
+      percent: effectivePercent,
+      basedOn: "checkout_coupon",
+      amount: Number((discountAmountPerUnit * quantity).toFixed(2)),
+    },
+  };
+};
 
 const emptyAddressDraft = () => ({
   name: "",
@@ -139,6 +211,9 @@ const Checkout = () => {
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL;
+  const [couponCodeInput, setCouponCodeInput] = useState("");
+  const [appliedCheckoutCouponCode, setAppliedCheckoutCouponCode] = useState("");
+  const [couponFeedback, setCouponFeedback] = useState({ type: "", text: "" });
 
   // ─── OTP STATE ────────────────────────────────────────────────────────────
   const [otpSent, setOtpSent] = useState(false);
@@ -508,10 +583,25 @@ const Checkout = () => {
   };
 
   // ─── CALCULATIONS ─────────────────────────────────────────────────────────
-  const subtotal = cartItems.reduce(
-    (acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1),
-    0
+  const cartSubtotal = useMemo(
+    () => cartItems.reduce(
+      (acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+      0
+    ),
+    [cartItems]
   );
+  const checkoutItems = useMemo(
+    () => cartItems.map((item) => applyCheckoutCouponToItem(item, appliedCheckoutCouponCode)),
+    [cartItems, appliedCheckoutCouponCode]
+  );
+  const subtotal = useMemo(
+    () => checkoutItems.reduce(
+      (acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+      0
+    ),
+    [checkoutItems]
+  );
+  const couponDiscountAmount = Math.max(0, Number((cartSubtotal - subtotal).toFixed(2)));
   const hasGiftStoreItems = cartItems.some(
     (item) => String(item?.checkoutContext?.source || "").trim().toLowerCase() === "gift-store"
   );
@@ -523,10 +613,54 @@ const Checkout = () => {
     if (!cartItems.length || total <= 0) return;
     trackGtmBeginCheckout({
       value: total,
-      items: cartItems,
+      items: checkoutItems,
       source,
     });
-  }, [cartItems, total, source]);
+  }, [cartItems.length, checkoutItems, total, source]);
+
+  useEffect(() => {
+    if (!appliedCheckoutCouponCode) return;
+    const hasMatch = cartItems.some((item) => {
+      const eligibleCoupon = getEligibleCouponForCheckoutItem(item);
+      return eligibleCoupon?.code === appliedCheckoutCouponCode;
+    });
+
+    if (!hasMatch) {
+      setAppliedCheckoutCouponCode("");
+      setCouponFeedback({ type: "", text: "" });
+    }
+  }, [appliedCheckoutCouponCode, cartItems]);
+
+  const handleApplyCheckoutCoupon = () => {
+    const normalizedCode = normalizeCouponCode(couponCodeInput);
+    if (!normalizedCode) {
+      setCouponFeedback({ type: "error", text: "Enter a coupon code." });
+      return;
+    }
+
+    const matchedItems = cartItems.filter((item) => {
+      const eligibleCoupon = getEligibleCouponForCheckoutItem(item);
+      return eligibleCoupon?.code === normalizedCode;
+    });
+
+    if (!matchedItems.length) {
+      setCouponFeedback({ type: "error", text: "This coupon is not valid for the items in your cart." });
+      return;
+    }
+
+    setAppliedCheckoutCouponCode(normalizedCode);
+    setCouponCodeInput(normalizedCode);
+    setCouponFeedback({
+      type: "success",
+      text: `${normalizedCode} applied to ${matchedItems.length} item${matchedItems.length > 1 ? "s" : ""}.`,
+    });
+  };
+
+  const handleRemoveCheckoutCoupon = () => {
+    setAppliedCheckoutCouponCode("");
+    setCouponCodeInput("");
+    setCouponFeedback({ type: "", text: "" });
+  };
 
   // ─── FETCH ADDRESSES ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -736,11 +870,11 @@ const Checkout = () => {
 
     setLoading(true);
 
-    trackInitiateCheckout(total, cartItems.length);
-    trackAddPaymentInfo(total, cartItems.length);
+    trackInitiateCheckout(total, checkoutItems.length);
+    trackAddPaymentInfo(total, checkoutItems.length);
 
     try {
-      const itemsPayload = cartItems.map((item) => ({
+      const itemsPayload = checkoutItems.map((item) => ({
         id: item.id,
         baseProductId: item.baseProductId || null,
         variantId: item.variantId || null,
@@ -790,11 +924,11 @@ const Checkout = () => {
         if (!res.ok) throw new Error(data.error);
 
         if (window.__allowNextPurchase) window.__allowNextPurchase();
-        trackPurchase(data.orderId, parseFloat(Number(total).toFixed(2)), cartItems.length);
+        trackPurchase(data.orderId, parseFloat(Number(total).toFixed(2)), checkoutItems.length);
         savePendingGtmPurchase({
           orderId: data.orderId,
           value: parseFloat(Number(total).toFixed(2)),
-          items: cartItems,
+          items: checkoutItems,
           paymentMethod: "COD",
           source,
         });
@@ -846,11 +980,11 @@ const Checkout = () => {
             if (!verifyRes.ok) throw new Error(verifyData.error);
 
             if (window.__allowNextPurchase) window.__allowNextPurchase();
-            trackPurchase(verifyData.orderId, parseFloat(Number(total).toFixed(2)), cartItems.length);
+            trackPurchase(verifyData.orderId, parseFloat(Number(total).toFixed(2)), checkoutItems.length);
             savePendingGtmPurchase({
               orderId: verifyData.orderId,
               value: parseFloat(Number(total).toFixed(2)),
-              items: cartItems,
+              items: checkoutItems,
               paymentMethod: "ONLINE",
               source,
             });
@@ -1170,7 +1304,7 @@ const Checkout = () => {
           <div className="bg-white border rounded-xl p-5 h-fit sticky top-24">
             <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
-            {cartItems.map((item) => (
+            {checkoutItems.map((item) => (
               <div key={item.id} className="border-b pb-3 mb-3">
                 <div className="flex gap-3">
                   <img loading="lazy"
@@ -1186,9 +1320,15 @@ const Checkout = () => {
                     ) : null}
                   </div>
                   <div className="font-medium text-sm">
-                    {Number(item.price) * Number(item.quantity)}
+                    ₹{Number((Number(item.price) * Number(item.quantity)).toFixed(2)).toLocaleString("en-IN")}
                   </div>
                 </div>
+
+                {item.discountApplied?.code ? (
+                  <p className="mt-1 ml-[76px] text-xs text-emerald-700">
+                    Coupon {item.discountApplied.code} applied
+                  </p>
+                ) : null}
 
                 {item.isCombo && Array.isArray(item.comboItems) && item.comboItems.length > 0 && (
                   <div className="mt-2 ml-[76px] rounded-lg bg-gray-50 p-2 space-y-1.5">
@@ -1215,9 +1355,56 @@ const Checkout = () => {
             ))}
 
             <div className="mt-4 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Subtotal</span><span>{subtotal}</span>
+              <div className="rounded-2xl border border-[#ead5de] bg-[#fff9fb] p-3">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-[#7b5568]">
+                  Apply Coupon At Checkout
+                </label>
+                <div className="flex overflow-hidden rounded-xl border border-[#ead5de] bg-white">
+                  <input
+                    type="text"
+                    value={couponCodeInput}
+                    onChange={(e) => {
+                      setCouponCodeInput(e.target.value);
+                      if (couponFeedback.type === "error") {
+                        setCouponFeedback({ type: "", text: "" });
+                      }
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyCheckoutCoupon()}
+                    placeholder="Enter coupon code"
+                    className="flex-1 px-3 py-2.5 text-sm outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCheckoutCoupon}
+                    className="bg-black px-4 py-2.5 text-sm font-medium text-white"
+                  >
+                    Apply
+                  </button>
+                </div>
+                {couponFeedback.text ? (
+                  <p className={`mt-2 text-xs font-medium ${couponFeedback.type === "error" ? "text-rose-600" : "text-emerald-700"}`}>
+                    {couponFeedback.text}
+                  </p>
+                ) : null}
+                {appliedCheckoutCouponCode ? (
+                  <button
+                    type="button"
+                    onClick={handleRemoveCheckoutCoupon}
+                    className="mt-2 text-xs font-semibold text-[#b24074] underline underline-offset-4"
+                  >
+                    Remove coupon
+                  </button>
+                ) : null}
               </div>
+              <div className="flex justify-between">
+                <span>Subtotal</span><span>₹{subtotal.toLocaleString("en-IN")}</span>
+              </div>
+              {appliedCheckoutCouponCode && couponDiscountAmount > 0 ? (
+                <div className="flex justify-between text-emerald-700">
+                  <span>Coupon ({appliedCheckoutCouponCode})</span>
+                  <span>-₹{couponDiscountAmount.toLocaleString("en-IN")}</span>
+                </div>
+              ) : null}
               {isGiftOrder && wantsGiftWrap ? (
                 <div className="flex justify-between">
                   <span>Gift wrapping</span><span>₹{giftWrapFee}</span>
@@ -1229,7 +1416,7 @@ const Checkout = () => {
               </div>
               <hr />
               <div className="flex justify-between font-semibold text-lg">
-                <span>Total</span><span>{total}</span>
+                <span>Total</span><span>₹{total.toLocaleString("en-IN")}</span>
               </div>
             </div>
 

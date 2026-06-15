@@ -54,6 +54,7 @@ const ProductCard = ({
   const hasActiveCoupon =
     assignedCoupon &&
     assignedCoupon?.isActive !== false &&
+    assignedCoupon?.isVisible !== false &&
     couponCode &&
     couponPercent > 0;
   const couponBadgeText = hasActiveCoupon ? couponCode : couponText;

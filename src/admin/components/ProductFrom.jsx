@@ -76,6 +76,7 @@ const sanitizeCouponSnapshot = (coupon) => {
     discountPercent,
     forcedPrice: hasForcedPrice ? forcedPrice : null,
     isActive: coupon.isActive !== false,
+    isVisible: coupon.isVisible !== false,
   };
 };
 
@@ -1185,7 +1186,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         <div>
           <p className="font-semibold text-sm">Offer Coupon</p>
           <p className="text-xs text-gray-500 mt-0.5">
-            Assign one coupon to this product. Coupon input will appear on product detail page only when selected.
+            Assign one coupon to this product. Visible coupons appear on product pages, while hidden coupons stay usable only at checkout.
           </p>
         </div>
 
@@ -1210,14 +1211,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           <option value="">No coupon</option>
           {(coupons || []).map((coupon) => (
             <option key={coupon.id} value={coupon.id}>
-              {normalizeCouponCode(coupon.code)} - {Number(coupon?.forcedPrice || 0) > 0 ? `Forced ₹${Number(coupon.forcedPrice).toLocaleString("en-IN")}` : `${Number(coupon.discountPercent || 0)}%`} {coupon.isActive === false ? "(Inactive)" : ""}
+              {normalizeCouponCode(coupon.code)} - {Number(coupon?.forcedPrice || 0) > 0 ? `Forced ₹${Number(coupon.forcedPrice).toLocaleString("en-IN")}` : `${Number(coupon.discountPercent || 0)}%`} {coupon.isVisible === false ? "(Hidden)" : ""} {coupon.isActive === false ? "(Inactive)" : ""}
             </option>
           ))}
         </select>
 
         {form.couponSnapshot && (
           <p className="text-xs text-gray-600">
-            Selected: <span className="font-semibold">{form.couponSnapshot.code}</span> ({Number(form.couponSnapshot?.forcedPrice || 0) > 0 ? `Forced ₹${Number(form.couponSnapshot.forcedPrice).toLocaleString("en-IN")}` : `${form.couponSnapshot.discountPercent}% off`})
+            Selected: <span className="font-semibold">{form.couponSnapshot.code}</span> ({Number(form.couponSnapshot?.forcedPrice || 0) > 0 ? `Forced ₹${Number(form.couponSnapshot.forcedPrice).toLocaleString("en-IN")}` : `${form.couponSnapshot.discountPercent}% off`}, {form.couponSnapshot.isVisible === false ? "hidden on product page" : "visible on product page"})
           </p>
         )}
       </div>

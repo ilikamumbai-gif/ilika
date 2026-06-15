@@ -1775,8 +1775,10 @@ const ProductDetail = () => {
       discountPercent,
       forcedPrice: hasForcedPrice ? resolvedForcedPrice : null,
       name: snapshot.name || "",
+      isVisible: snapshot.isVisible !== false,
     };
   }, [product?.couponSnapshot, product?.coupon, product?.name]);
+  const visibleAssignedCoupon = assignedCoupon?.isVisible === false ? null : assignedCoupon;
 
   const couponForcedPrice = appliedCoupon && Number(appliedCoupon?.forcedPrice || 0) > 0
     ? Number(appliedCoupon.forcedPrice)
@@ -1906,37 +1908,37 @@ const ProductDetail = () => {
   }, [productId]);
 
   useEffect(() => {
-    if (!assignedCoupon) {
+    if (!visibleAssignedCoupon) {
       setCouponCodeInput("");
       setAppliedCoupon(null);
       setCouponMessage({ type: "", text: "" });
       return;
     }
-    setAppliedCoupon((prev) => (prev?.code === assignedCoupon.code ? assignedCoupon : prev));
-  }, [assignedCoupon]);
+    setAppliedCoupon((prev) => (prev?.code === visibleAssignedCoupon.code ? visibleAssignedCoupon : prev));
+  }, [visibleAssignedCoupon]);
 
   const applyCouponCode = useCallback((rawCode) => {
-    if (!assignedCoupon) return;
+    if (!visibleAssignedCoupon) return;
     const typed = normalizeCouponCode(rawCode);
     if (!typed) {
       setCouponMessage({ type: "error", text: "Enter coupon code" });
       setAppliedCoupon(null);
       return;
     }
-    if (typed !== assignedCoupon.code) {
+    if (typed !== visibleAssignedCoupon.code) {
       setCouponMessage({ type: "error", text: "Invalid coupon code for this product" });
       setAppliedCoupon(null);
       return;
     }
-    setAppliedCoupon(assignedCoupon);
+    setAppliedCoupon(visibleAssignedCoupon);
     setCouponMessage({
       type: "success",
       text:
-        Number(assignedCoupon?.forcedPrice || 0) > 0
-          ? `${assignedCoupon.code} applied. Price locked at ₹${Number(assignedCoupon.forcedPrice).toLocaleString("en-IN")}`
-          : `${assignedCoupon.code} applied successfully`,
+        Number(visibleAssignedCoupon?.forcedPrice || 0) > 0
+          ? `${visibleAssignedCoupon.code} applied. Price locked at ₹${Number(visibleAssignedCoupon.forcedPrice).toLocaleString("en-IN")}`
+          : `${visibleAssignedCoupon.code} applied successfully`,
     });
-  }, [assignedCoupon]);
+  }, [visibleAssignedCoupon]);
 
   useEffect(() => {
     if (!packOptions.length) {
@@ -1952,10 +1954,10 @@ const ProductDetail = () => {
   }, [applyCouponCode, couponCodeInput]);
 
   const handleApplyAssignedCoupon = useCallback(() => {
-    if (!assignedCoupon) return;
-    setCouponCodeInput(assignedCoupon.code);
-    applyCouponCode(assignedCoupon.code);
-  }, [assignedCoupon, applyCouponCode]);
+    if (!visibleAssignedCoupon) return;
+    setCouponCodeInput(visibleAssignedCoupon.code);
+    applyCouponCode(visibleAssignedCoupon.code);
+  }, [visibleAssignedCoupon, applyCouponCode]);
 
   const handleRemoveCoupon = useCallback(() => {
     setAppliedCoupon(null);
@@ -2979,7 +2981,7 @@ const ProductDetail = () => {
                 <div className="hidden sm:block">{renderVariantSelector()}</div>
               )}
 
-              {assignedCoupon && (
+              {visibleAssignedCoupon && (
                 <div className="space-y-3">
 
                   {/* ── TICKET CARD ── */}
@@ -3005,7 +3007,7 @@ const ProductDetail = () => {
                         Coupon Code
                       </span>
                       <span className="w-full flex items-center justify-center py-2 rounded-full bg-pink-600 text-white font-black text-base sm:text-lg tracking-wide">
-                        {assignedCoupon.code}
+                        {visibleAssignedCoupon.code}
                       </span>
                     </div>
 
@@ -3013,7 +3015,7 @@ const ProductDetail = () => {
                     <div className="flex flex-col items-center justify-center bg-yellow-200 px-6 py-4 flex-shrink-0 w-[140px] sm:w-[160px]">
                       <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-green-800 leading-tight">FLAT</span>
                       <div className="flex items-baseline gap-0.5">
-                        <span className="text-3xl sm:text-4xl font-black text-green-800 leading-none">{assignedCoupon.discountPercent}%</span>
+                        <span className="text-3xl sm:text-4xl font-black text-green-800 leading-none">{visibleAssignedCoupon.discountPercent}%</span>
                         <span className="text-sm sm:text-base font-black text-green-800 leading-none">OFF</span>
                       </div>
                     </div>
@@ -3055,7 +3057,7 @@ const ProductDetail = () => {
                         className="flex items-center gap-1.5 text-xs font-semibold text-pink-600 hover:underline transition"
                       >
                         <span className="w-2 h-2 rounded-full bg-pink-600 flex-shrink-0" />
-                        {assignedCoupon.code} • {assignedCoupon.discountPercent}% off
+                        {visibleAssignedCoupon.code} • {visibleAssignedCoupon.discountPercent}% off
                       </button>
                     </div>
                   )}

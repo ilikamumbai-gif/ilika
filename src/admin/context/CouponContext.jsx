@@ -57,6 +57,7 @@ export const CouponProvider = ({ children }) => {
         discountPercent: Number(payload?.discountPercent || 0),
         forcedPrice: Number(payload?.forcedPrice || 0) > 0 ? Number(payload.forcedPrice) : null,
         isActive: payload?.isActive ?? true,
+        isVisible: payload?.isVisible ?? true,
       }),
     });
 
@@ -78,6 +79,7 @@ export const CouponProvider = ({ children }) => {
         discountPercent: Number(payload?.discountPercent || 0),
         forcedPrice: Number(payload?.forcedPrice || 0) > 0 ? Number(payload.forcedPrice) : null,
         isActive: payload?.isActive ?? true,
+        isVisible: payload?.isVisible ?? true,
       }),
     });
 

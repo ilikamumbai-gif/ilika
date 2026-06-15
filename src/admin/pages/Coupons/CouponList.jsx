@@ -10,6 +10,7 @@ const EMPTY_FORM = {
   discountPercent: "",
   forcedPrice: "",
   isActive: true,
+  isVisible: true,
 };
 
 const CouponList = () => {
@@ -54,6 +55,7 @@ const CouponList = () => {
         discountPercent,
         forcedPrice: forcedPrice || null,
         isActive: form.isActive,
+        isVisible: form.isVisible,
       };
 
       if (editingId) {
@@ -79,6 +81,7 @@ const CouponList = () => {
       discountPercent: coupon.discountPercent || "",
       forcedPrice: coupon.forcedPrice || "",
       isActive: coupon.isActive !== false,
+      isVisible: coupon.isVisible !== false,
     });
   };
 
@@ -103,7 +106,7 @@ const CouponList = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white border rounded-2xl p-4 sm:p-5 mb-5 space-y-4" style={{ borderColor: "#EBEBEB" }}>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
           <input
             type="text"
             placeholder="Coupon name (optional)"
@@ -144,6 +147,14 @@ const CouponList = () => {
             />
             Active coupon
           </label>
+          <label className="flex items-center gap-2 text-sm border rounded-lg px-3 py-2">
+            <input
+              type="checkbox"
+              checked={form.isVisible}
+              onChange={(e) => setForm((prev) => ({ ...prev, isVisible: e.target.checked }))}
+            />
+            Show on product page
+          </label>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -174,7 +185,7 @@ const CouponList = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F0F0F0" }}>
-                  {["Code", "Name", "Offer", "Status", "Actions"].map((h) => (
+                  {["Code", "Name", "Offer", "Status", "Visibility", "Actions"].map((h) => (
                     <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                       {h}
                     </th>
@@ -194,6 +205,11 @@ const CouponList = () => {
                     <td className="px-5 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${coupon.isActive === false ? "bg-red-50 text-red-600 border-red-200" : "bg-green-50 text-green-700 border-green-200"}`}>
                         {coupon.isActive === false ? "Inactive" : "Active"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${coupon.isVisible === false ? "bg-gray-100 text-gray-600 border-gray-200" : "bg-pink-50 text-pink-700 border-pink-200"}`}>
+                        {coupon.isVisible === false ? "Hidden" : "Visible"}
                       </span>
                     </td>
                     <td className="px-5 py-4">
