@@ -48,6 +48,7 @@ const Banner = ({
     [slides]
   );
   const activeSlides = normalizedSlides.length > 0 ? normalizedSlides : matchedBanners;
+  const hasMultiple = activeSlides.length > 1;
 
   useEffect(() => {
     setActiveIndex(0);
@@ -61,12 +62,6 @@ const Banner = ({
     return () => window.clearInterval(timer);
   }, [activeSlides.length, autoSlideMs]);
 
-  const matchedBanner =
-    activeSlides.length > 0
-      ? activeSlides[Math.min(activeIndex, activeSlides.length - 1)]
-      : null;
-  const hasMultiple = activeSlides.length > 1;
-
   const goNext = () => {
     if (!hasMultiple) return;
     setActiveIndex((prev) => (prev + 1) % activeSlides.length);
@@ -77,50 +72,66 @@ const Banner = ({
     setActiveIndex((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
   };
 
-  const desktopSrc = matchedBanner?.desktopSrc || matchedBanner?.src || src || "/Images/Banner.webp";
-  const mobileImageSrc = matchedBanner?.mobileSrc || mobileSrc || desktopSrc;
-  const resolvedLink = matchedBanner?.linkUrl || linkUrl || "";
-  const resolvedAlt = matchedBanner?.alt || alt || "Banner";
-
-  const content = (
-    <picture>
-      <source media="(max-width: 639px)" srcSet={mobileImageSrc} />
-      <OptimizedImage
-        priority={priority && activeIndex === 0}
-        src={desktopSrc}
-        alt={resolvedAlt}
-        className={`w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
-        sizes="100vw"
-        width={width}
-        height={height}
-      />
-    </picture>
-  );
-
   useEffect(() => {
-    if (activeSlides.length <= 1) {
-      setIsTransitioning(false);
-      return undefined;
-    }
-    setIsTransitioning(true);
-    const t = window.setTimeout(() => setIsTransitioning(false), 500);
+    setIsTransitioning(hasMultiple);
+    if (!hasMultiple) return undefined;
+    const t = window.setTimeout(() => setIsTransitioning(false), 520);
     return () => window.clearTimeout(t);
   }, [activeIndex, activeSlides.length]);
+
+  const slidesToRender =
+    activeSlides.length > 0
+      ? activeSlides
+      : [
+          {
+            desktopSrc: src || "/Images/Banner.webp",
+            mobileSrc: mobileSrc || src || "/Images/Banner.webp",
+            linkUrl,
+            alt,
+          },
+        ];
 
   return (
     <section className={`relative w-full overflow-hidden ${className}`}>
       <div
-        className={`transition-all duration-500 ease-in-out ${
-          isTransitioning ? "opacity-95" : "opacity-100"
+        className={`flex transition-transform duration-500 ease-in-out ${
+          isTransitioning ? "will-change-transform" : ""
         }`}
+        style={{ transform: `translateX(-${activeIndex * 100}%)` }}
       >
-        {resolvedLink ? (
-          <a href={resolvedLink} aria-label={resolvedAlt || "Banner link"}>
-            {content}
-          </a>
-        ) : (
-          content
-        )}
+        {slidesToRender.map((slide, index) => {
+          const desktopSrc = slide?.desktopSrc || slide?.src || src || "/Images/Banner.webp";
+          const mobileImageSrc = slide?.mobileSrc || mobileSrc || desktopSrc;
+          const resolvedLink = slide?.linkUrl || linkUrl || "";
+          const resolvedAlt = slide?.alt || alt || "Banner";
+
+          const content = (
+            <picture>
+              <source media="(max-width: 639px)" srcSet={mobileImageSrc} />
+              <OptimizedImage
+                priority={priority && index === 0}
+                src={desktopSrc}
+                alt={resolvedAlt}
+                className={`w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
+                sizes="100vw"
+                width={width}
+                height={height}
+              />
+            </picture>
+          );
+
+          return (
+            <div key={`${resolvedAlt}-${index}`} className="w-full shrink-0 grow-0 basis-full">
+              {resolvedLink ? (
+                <a href={resolvedLink} aria-label={resolvedAlt || "Banner link"}>
+                  {content}
+                </a>
+              ) : (
+                content
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {showControls && hasMultiple ? (

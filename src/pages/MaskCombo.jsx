@@ -92,7 +92,10 @@ const ComboCard = ({ offer, offerIndex, onAdd, isAdding }) => {
   const missingProduct = offer.items.some((entry) => !entry.product);
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-[#f2d7be] bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(44,24,16,0.08)] sm:rounded-3xl">
+    <article
+      id={offer.id}
+      className="scroll-mt-32 overflow-hidden rounded-2xl border border-[#f2d7be] bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(44,24,16,0.08)] sm:rounded-3xl"
+    >
       <div className="flex flex-wrap items-start justify-between gap-3 px-4 pt-4 sm:px-6 sm:pt-6">
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b45309]">

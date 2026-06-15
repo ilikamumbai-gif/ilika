@@ -36,6 +36,8 @@ const endBannerDesktop = "/Images/End1.webp";
 const endBannerMobile = "/Images/End1.webp";
 const maskBannerDesktop = "/Images/mask.webp";
 const maskBannerMobile = "/Images/mask.webp";
+const maskComboBanner24Desktop = "/Images/24.webp";
+const maskComboBanner24Mobile = "/Images/24.webp";
 
 
 const HAIR_CAROUSEL_ITEMS = [
@@ -231,6 +233,12 @@ const Home = () => {
                 linkUrl: "/mask-combo",
                 alt: "Mask Combo Offer Banner",
               },
+              // {
+              //   desktopSrc: maskComboBanner24Desktop,
+              //   mobileSrc: maskComboBanner24Mobile,
+              //   linkUrl: "/mask-combo#mask-combo-4in1",
+              //   alt: "Mask Combo Banner",
+              // },
               {
                 desktopSrc: maskBannerDesktop,
                 mobileSrc: maskBannerMobile,
