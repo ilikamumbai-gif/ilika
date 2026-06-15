@@ -224,15 +224,15 @@ const MarketplaceButtons = ({ links = [], theme, className = "" }) => {
 
   return (
     <div className={className}>
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Also available on</p>
-      <div className="mt-3 flex flex-wrap items-center gap-3">
+      <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Also available on</p>
+      <div className="mt-3 grid grid-cols-3 gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
         {links.map((item) => (
           <a
             key={item.key}
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-md bg-white p-1 shadow-sm transition hover:-translate-y-0.5 hover:scale-105"
+            className="inline-flex min-h-[52px] items-center justify-center rounded-xl bg-white p-2 shadow-sm transition hover:-translate-y-0.5 hover:scale-105"
             aria-label={`Buy on ${item.label}`}
           >
             <img
@@ -1022,7 +1022,7 @@ const ProductReviewCard = ({ review, theme }) => {
 
   return (
     <article
-      className="w-[86%] sm:w-[48%] lg:w-[32%] xl:w-[30%] shrink-0 rounded-[24px] border bg-white p-5 shadow-[0_10px_24px_rgba(69,39,34,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(69,39,34,0.08)]"
+      className="w-[88%] sm:w-[48%] lg:w-[32%] xl:w-[30%] shrink-0 snap-start rounded-[24px] border bg-white p-4 sm:p-5 shadow-[0_10px_24px_rgba(69,39,34,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(69,39,34,0.08)]"
       style={{ borderColor: theme.borderSoft }}
     >
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -1125,23 +1125,23 @@ const ProductReviewCarouselSection = ({ reviews = [], theme, productName, onWrit
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div className="flex-1 min-w-[260px]">
+      <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
+        <div className="flex-1 min-w-0 sm:min-w-[260px]">
           <Heading
             heading="Customer Reviews"
             sub={`Real reviews from ${productName || "our"} customers`}
-              align="left"
-              subVariant="paragraph"
+            align="left"
+            subVariant="paragraph"
             subClassName="!max-w-4xl !text-gray-500"
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3 sm:justify-end">
           <button
             onClick={onWriteReview}
             data-track-event="write_review_click"
             data-track-label={productName}
-            className="inline-flex items-center gap-2.5 rounded-[22px] px-6 py-3 text-sm font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition hover:translate-y-[-1px]"
+            className="inline-flex items-center justify-center gap-2.5 rounded-[22px] px-5 py-3 text-sm font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition hover:translate-y-[-1px] sm:px-6"
             style={{ backgroundColor: theme.primary, color: theme.onPrimary }}
           >
             <Star className="h-4 w-4 fill-current" />
@@ -1177,7 +1177,7 @@ const ProductReviewCarouselSection = ({ reviews = [], theme, productName, onWrit
           onMouseMove={handleMouseMove}
           onMouseLeave={stopDrag}
           onMouseUp={stopDrag}
-          className="overflow-x-auto scroll-smooth scrollbar-hide cursor-grab select-none touch-pan-x px-0.5"
+          className="overflow-x-auto scroll-smooth scrollbar-hide cursor-grab select-none touch-pan-x snap-x snap-mandatory px-0.5 pb-1"
         >
           <div className="flex gap-3 sm:gap-5">
             {reviews.map((review, index) => (
@@ -3551,9 +3551,10 @@ const ProductDetail = () => {
           <DeferredSection minHeight={220}>
             <section className="max-w-7xl mx-auto px-3 sm:px-6 mb-6 sm:mb-8">
               <div
-                className="overflow-hidden rounded-[22px]"
+                className="overflow-hidden rounded-[22px] border"
                 style={{
                   backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : detailTheme.pageBg,
+                  borderColor: detailTheme.borderSoft,
                 }}
               >
                 <div className="px-3 pt-2 pb-2 sm:px-4 sm:pb-3">
@@ -3566,7 +3567,7 @@ const ProductDetail = () => {
                   {whyLoveItItems.map((item, index) => {
                     const IconComponent = resolveWhyLoveItIcon(item.icon);
                     const borderClass = `
-                      ${index > 0 ? "" : ""}
+                      ${index > 0 ? "border-t" : ""}
                       ${index % 2 === 1 ? "sm:border-l" : ""}
                       ${index >= 2 ? "sm:border-t lg:border-t-0" : ""}
                       ${index > 0 ? "lg:border-l" : ""}
@@ -3575,12 +3576,12 @@ const ProductDetail = () => {
                     return (
                       <div
                         key={item.id || index}
-                        className={`flex h-full flex-col items-center justify-start px-4 py-5 text-center sm:px-5 ${borderClass}`}
+                        className={`flex h-full flex-col items-center justify-start px-4 py-4 text-center sm:px-5 sm:py-5 ${borderClass}`}
                         style={{ borderColor: detailTheme.borderSoft }}
                       >
                         {IconComponent ? (
                           <span
-                            className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full"
+                            className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full sm:h-11 sm:w-11"
                             style={{
                               color: detailTheme.accent,
                               backgroundColor: detailTheme.isDefaultWhite ? "#fff6f5" : hexToRgba(detailTheme.accentSoft, 0.16),
@@ -3590,14 +3591,14 @@ const ProductDetail = () => {
                           </span>
                         ) : null}
                         <h3
-                          className={`font-semibold ${IconComponent ? "text-[16px] sm:text-[15px]" : "text-[16px] sm:text-base"}`}
+                          className={`font-semibold leading-6 ${IconComponent ? "text-[15px] sm:text-[15px]" : "text-[15px] sm:text-base"}`}
                           style={{ color: detailTheme.heading }}
                         >
                           {item.title}
                         </h3>
                         {item.description ? (
                           <p
-                            className="mt-1.5 max-w-[260px] text-[14px] sm:text-sm leading-7 sm:leading-6"
+                            className="mt-1.5 max-w-[280px] text-[13px] sm:text-sm leading-6 sm:leading-6"
                             style={{ color: detailTheme.isDefaultWhite ? "#4b5563" : hexToRgba(detailTheme.heading, 0.78) }}
                           >
                             {item.description}
@@ -3806,24 +3807,24 @@ const ProductDetail = () => {
                 <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }}/>
               </div>
 
-              <div className="flex flex-wrap justify-center gap-x-4 gap-y-5 sm:gap-x-5">
+              <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
                 {inTheBoxItems.map((item, index) => (
-                  <div key={item.id || index} className="flex w-[112px] sm:w-[128px] flex-col items-center text-center">
+                  <div key={item.id || index} className="flex min-w-0 flex-col items-center rounded-[18px] bg-white/70 px-2 py-2 text-center sm:w-[128px] sm:bg-transparent sm:px-0 sm:py-0">
                     {item.image ? (
                       <img
                         loading={index < 2 ? "eager" : "lazy"}
                         src={item.image}
                         alt={item.title || `Box item ${index + 1}`}
-                        className="h-28 w-auto max-w-full rounded-[18px] object-contain sm:h-32"
+                        className="h-24 w-auto max-w-full rounded-[18px] object-contain sm:h-32"
                       />
                     ) : null}
                     {item.title ? (
-                      <p className="mt-3 text-sm font-medium leading-5" style={{ color: detailTheme.heading }}>
+                      <p className="mt-2.5 text-[13px] font-medium leading-5 sm:mt-3 sm:text-sm" style={{ color: detailTheme.heading }}>
                         {item.title}
                       </p>
                     ) : null}
                     {item.subtitle ? (
-                      <p className="mt-1 text-xs leading-5 text-gray-500">
+                      <p className="mt-1 text-[11px] leading-4 text-gray-500 sm:text-xs sm:leading-5">
                         {item.subtitle}
                       </p>
                     ) : null}
