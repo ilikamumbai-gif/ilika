@@ -235,21 +235,21 @@ const MarketplaceButtons = ({ links = [], theme, className = "" }) => {
   return (
     <div className={className}>
       <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Also available on</p>
-      <div className="mt-3 grid grid-cols-3 gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+      <div className="mt-2 grid grid-cols-3 gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
         {links.map((item) => (
           <a
             key={item.key}
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-[52px] items-center justify-center rounded-xl bg-white p-2 shadow-sm transition hover:-translate-y-0.5 hover:scale-105"
+            className="inline-flex items-center justify-center p-1 transition hover:scale-105"
             aria-label={`Buy on ${item.label}`}
           >
             <img
               src={MARKETPLACE_LOGOS[item.key]}
               alt={item.label}
               loading="lazy"
-              className="h-9 w-9 object-contain"
+              className="h-7 w-7 object-contain"
             />
           </a>
         ))}
@@ -2131,6 +2131,10 @@ const ProductDetail = () => {
     return 1;
   }, []);
   const shouldLoopIngredients = ingredients.length > 1;
+  const MAX_VISIBLE_THUMBS = 6;
+  const galleryCount = images.length + productVideos.length;
+  const hasThumbnailOverflow = galleryCount > MAX_VISIBLE_THUMBS;
+  const overflowStartIndex = MAX_VISIBLE_THUMBS - 1;
 
   /* â”€â”€ Auto-scroll thumbnails on product page â”€â”€ */
   useEffect(() => {
@@ -2160,7 +2164,10 @@ const ProductDetail = () => {
       }
       if (thumbsRef.current) {
         const targetIndex = idx < lastImageIndex ? idx : currentImages.length;
-        const thumb = thumbsRef.current.querySelectorAll("button")[targetIndex];
+        const visibleTargetIndex = hasThumbnailOverflow
+          ? Math.min(targetIndex, overflowStartIndex)
+          : targetIndex;
+        const thumb = thumbsRef.current.querySelectorAll("button")[visibleTargetIndex];
         if (thumb) {
           const strip = thumbsRef.current;
           strip.scrollTo({ left: thumb.offsetLeft - strip.offsetWidth / 2 + thumb.offsetWidth / 2, behavior: "smooth" });
@@ -2169,7 +2176,7 @@ const ProductDetail = () => {
     }, 3500);
 
     return () => clearInterval(autoScrollRef.current);
-  }, [images.join("|"), activeVariant?.id, selectedVideoUrl, productVideos]);
+  }, [images.join("|"), activeVariant?.id, selectedVideoUrl, productVideos, hasThumbnailOverflow, overflowStartIndex]);
 
   const stopAuto = () => clearInterval(autoScrollRef.current);
   const selectedVideoIndex = useMemo(
@@ -2180,11 +2187,26 @@ const ProductDetail = () => {
     () => productVideos.find((video) => video.embedUrl === selectedVideoUrl) || null,
     [productVideos, selectedVideoUrl]
   );
-  const galleryCount = images.length + productVideos.length;
   const selectedGalleryIndex =
     selectedVideoIndex >= 0
       ? images.length + selectedVideoIndex
       : Math.max(0, images.indexOf(selectedImage));
+  const overflowCount = hasThumbnailOverflow ? galleryCount - overflowStartIndex : 0;
+
+  const handleOverflowThumbClick = useCallback(() => {
+    stopAuto();
+    if (images[overflowStartIndex]) {
+      setSelectedImage(images[overflowStartIndex]);
+      setSelectedVideoUrl("");
+      setSelectedVideoPlaying(false);
+      return;
+    }
+    const overflowVideo = productVideos[overflowStartIndex - images.length];
+    if (overflowVideo) {
+      setSelectedVideoUrl(overflowVideo.embedUrl);
+      setSelectedVideoPlaying(true);
+    }
+  }, [images, overflowStartIndex, productVideos]);
 
   const effectiveMrp = Number(packMrp) + addonPrice;
   const discount = effectiveMrp ? Math.max(0, Math.round(((effectiveMrp - price) / effectiveMrp) * 100)) : 0;
@@ -3057,7 +3079,7 @@ const ProductDetail = () => {
                   style={{ scrollbarWidth: "none" }}
                 >
                   {displayImages.length > 0 ? (
-                    displayImages.map((img, i) => (
+                    displayImages.slice(0, hasThumbnailOverflow ? overflowStartIndex : displayImages.length).map((img, i) => (
                       <button
                         key={img}
                         onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
@@ -3081,7 +3103,7 @@ const ProductDetail = () => {
                       </button>
                     ))
                   ) : (
-                    Array.from({ length: Math.min(images.length, 5) }).map((_, i) => (
+                    Array.from({ length: Math.min(images.length, hasThumbnailOverflow ? overflowStartIndex : 5) }).map((_, i) => (
                       <div
                         key={i}
                         className="flex-shrink-0 rounded-[16px] bg-gray-100 animate-pulse"
@@ -3089,7 +3111,7 @@ const ProductDetail = () => {
                       />
                     ))
                   )}
-                  {productVideos.map((video) => {
+                  {!hasThumbnailOverflow && productVideos.map((video) => {
                     const isSelected = selectedVideoUrl === video.embedUrl;
                     return (
                       <button
@@ -3116,97 +3138,147 @@ const ProductDetail = () => {
                       </button>
                     );
                   })}
+                  {hasThumbnailOverflow && (
+                    <button
+                      type="button"
+                      onClick={handleOverflowThumbClick}
+                      className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${
+                        selectedGalleryIndex >= overflowStartIndex ? "shadow-sm" : "hover:border-gray-200"
+                      }`}
+                      style={{
+                        width: "64px",
+                        height: "64px",
+                        borderColor: selectedGalleryIndex >= overflowStartIndex ? "#f2b9b3" : "#f3e2df",
+                        backgroundColor: selectedGalleryIndex >= overflowStartIndex ? "#fff5f4" : "#ffffff",
+                      }}
+                      aria-label={`View ${overflowCount} more gallery items`}
+                      title={`+${overflowCount} more`}
+                    >
+                      {images[overflowStartIndex] ? (
+                        <img
+                          loading="lazy"
+                          src={`${images[overflowStartIndex]}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                          alt={`${product.name} gallery thumbnail ${overflowStartIndex + 1}`}
+                          width="148"
+                          height="148"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : productVideos[overflowStartIndex - images.length]?.thumb ? (
+                        <img
+                          loading="lazy"
+                          src={productVideos[overflowStartIndex - images.length].thumb}
+                          alt={productVideos[overflowStartIndex - images.length].title}
+                          width="148"
+                          height="148"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-black/70" />
+                      )}
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-lg font-semibold text-white">
+                        +{overflowCount}
+                      </span>
+                    </button>
+                  )}
                 </div>
               )}
 
-              <div
-                className={`order-1 relative flex-1 overflow-hidden rounded-[18px] sm:rounded-[24px] border border-[#f4dfdb] bg-[#fff5f4] select-none group ${selectedVideoUrl ? "cursor-default" : "cursor-zoom-in"} lg:order-2`}
-                onTouchStart={e => setTouchStartX(e.targetTouches[0].clientX)}
-                onTouchMove={e => setTouchEndX(e.targetTouches[0].clientX)}
-                onTouchEnd={handleSwipe}
-                onClick={() => {
-                  if (selectedVideoUrl) return;
-                  const idx = images.indexOf(selectedImage);
-                  openLightbox(idx >= 0 ? idx : 0);
-                }}
-              >
-                {selectedVideoUrl ? (
-                  <div className="flex aspect-square w-full items-center justify-center bg-[#fff5f4]">
-                    {selectedVideoPlaying ? (
-                      <iframe
-                        src={selectedVideoUrl}
-                        title="Product video preview"
-                        className="w-full max-h-full aspect-video"
-                        style={{ border: "none" }}
-                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                        allowFullScreen
-                      />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedVideoPlaying(true);
-                        }}
-                        className="relative h-full w-full overflow-hidden"
-                        aria-label="Play product video"
-                      >
-                        {selectedVideo?.thumb ? (
-                          <img
-                            loading="lazy"
-                            src={selectedVideo.thumb}
-                            alt={selectedVideo.title || "Product video thumbnail"}
-                            className="h-full w-full object-contain bg-[#fff5f4]"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-[#fff5f4]" />
-                        )}
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-black/70 text-2xl leading-none text-white shadow-lg">
-                            ▶
+              <div className="order-1 flex flex-1 flex-col gap-3 sm:gap-4 lg:order-2">
+                <div
+                  className={`relative overflow-hidden rounded-[18px] sm:rounded-[24px] border border-[#f4dfdb] bg-[#fff5f4] select-none group ${selectedVideoUrl ? "cursor-default" : "cursor-zoom-in"}`}
+                  onTouchStart={e => setTouchStartX(e.targetTouches[0].clientX)}
+                  onTouchMove={e => setTouchEndX(e.targetTouches[0].clientX)}
+                  onTouchEnd={handleSwipe}
+                  onClick={() => {
+                    if (selectedVideoUrl) return;
+                    const idx = images.indexOf(selectedImage);
+                    openLightbox(idx >= 0 ? idx : 0);
+                  }}
+                >
+                  {selectedVideoUrl ? (
+                    <div className="flex aspect-square w-full items-center justify-center bg-[#fff5f4]">
+                      {selectedVideoPlaying ? (
+                        <iframe
+                          src={selectedVideoUrl}
+                          title="Product video preview"
+                          className="w-full max-h-full aspect-video"
+                          style={{ border: "none" }}
+                          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedVideoPlaying(true);
+                          }}
+                          className="relative h-full w-full overflow-hidden"
+                          aria-label="Play product video"
+                        >
+                          {selectedVideo?.thumb ? (
+                            <img
+                              loading="lazy"
+                              src={selectedVideo.thumb}
+                              alt={selectedVideo.title || "Product video thumbnail"}
+                              className="h-full w-full object-contain bg-[#fff5f4]"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-[#fff5f4]" />
+                          )}
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-black/70 text-2xl leading-none text-white shadow-lg">
+                              ▶
+                            </span>
                           </span>
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                ) : selectedImage ? (
-                  <div
-                    className="aspect-square w-full overflow-auto [&::-webkit-scrollbar]:hidden"
-                    style={{ scrollbarWidth: "none" }}
-                  >
-                    <img
-                      loading="eager"
-                      fetchPriority="high"
-                      decoding="sync"
-                      onLoad={() => setIsHeroImageLoaded(true)}
-                      src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-                      alt={product.name}
-                      width="1080"
-                      height="1080"
-                      className="block min-h-full w-full object-contain transition-opacity duration-300 ease-out"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full aspect-square bg-gray-100 animate-pulse" />
-                )}
+                        </button>
+                      )}
+                    </div>
+                  ) : selectedImage ? (
+                    <div
+                      className="aspect-square w-full overflow-auto [&::-webkit-scrollbar]:hidden"
+                      style={{ scrollbarWidth: "none" }}
+                    >
+                      <img
+                        loading="eager"
+                        fetchPriority="high"
+                        decoding="sync"
+                        onLoad={() => setIsHeroImageLoaded(true)}
+                        src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                        alt={product.name}
+                        width="1080"
+                        height="1080"
+                        className="block min-h-full w-full object-contain transition-opacity duration-300 ease-out"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full aspect-square bg-gray-100 animate-pulse" />
+                  )}
 
-                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all duration-300 group-hover:bg-black/5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/82 opacity-0 shadow-md transition-all duration-300 group-hover:opacity-100">
-                    <ZoomIn className="w-5 h-5" style={{ color: detailTheme.heading }} />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all duration-300 group-hover:bg-black/5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/82 opacity-0 shadow-md transition-all duration-300 group-hover:opacity-100">
+                      <ZoomIn className="w-5 h-5" style={{ color: detailTheme.heading }} />
+                    </div>
                   </div>
+
+                  {galleryCount > 1 && (
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none lg:hidden">
+                      {Array.from({ length: galleryCount }).map((_, i) => (
+                        <span
+                          key={i}
+                          className={`rounded-full transition-all duration-300 ${selectedGalleryIndex === i ? "w-5 h-2" : "w-2 h-2 bg-black/25"}`}
+                          style={selectedGalleryIndex === i ? { backgroundColor: detailTheme.accent } : undefined}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {galleryCount > 1 && (
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none lg:hidden">
-                    {Array.from({ length: galleryCount }).map((_, i) => (
-                      <span
-                        key={i}
-                        className={`rounded-full transition-all duration-300 ${selectedGalleryIndex === i ? "w-5 h-2" : "w-2 h-2 bg-black/25"}`}
-                        style={selectedGalleryIndex === i ? { backgroundColor: detailTheme.accent } : undefined}
-                      />
-                    ))}
-                  </div>
-                )}
+                <MarketplaceButtons
+                  links={marketplaceLinks}
+                  theme={detailTheme}
+                  className="px-4 py-2 sm:px-5"
+                />
               </div>
             </div>
 
@@ -3537,12 +3609,6 @@ const ProductDetail = () => {
                 </button>
 
               </div>
-
-              <MarketplaceButtons
-                links={marketplaceLinks}
-                theme={detailTheme}
-                className="pt-1"
-              />
 
             </div>
 

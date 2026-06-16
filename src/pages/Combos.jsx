@@ -85,7 +85,9 @@ const Combos = () => {
       textColor: "#2d1718",
       badgeColor: "#d44d6b",
       buttonVariant: "light",
-    }, {
+    },
+
+    {
       category: "Beauty Tech",
       title: "Ilika Voice Mask Maker Machine",
       highlight: "15% OFF",
@@ -97,20 +99,6 @@ const Combos = () => {
         "linear-gradient(90deg, rgba(255,241,211,0.94) 0%, rgba(255,221,165,0.78) 40%, rgba(255,221,165,0.38) 72%, rgba(255,221,165,0.14) 100%)",
       textColor: "#24150d",
       badgeColor: "#8e4b11",
-      buttonVariant: "dark",
-    },
-    {
-      category: "Combo",
-      title: "Glow Therapy Combo",
-      highlight: "Free Serum",
-      description: "Get the Nonvoice Mask Maker with Hyaluronic Serum at combo pricing.",
-      link: "/glow-therapy-combo",
-      image: "/Images/5.png",
-      background: "linear-gradient(135deg, #ffd7df 0%, #ffe9ef 55%, #fff8fa 100%)",
-      overlay:
-        "linear-gradient(90deg, rgba(255,235,241,0.94) 0%, rgba(255,220,231,0.78) 40%, rgba(255,220,231,0.36) 72%, rgba(255,220,231,0.14) 100%)",
-      textColor: "#2f171d",
-      badgeColor: "#c44269",
       buttonVariant: "dark",
     },
 
@@ -128,6 +116,7 @@ const Combos = () => {
       badgeColor: "#4f82c8",
       buttonVariant: "light",
     },
+
     {
       category: "Styling",
       title: "Ilika 5 in 1 Air Wrap Offer",
@@ -142,6 +131,22 @@ const Combos = () => {
       badgeColor: "#c76d37",
       buttonVariant: "dark",
     },
+
+    {
+      category: "Combo",
+      title: "Glow Therapy Combo",
+      highlight: "Free Serum",
+      description: "Get the Nonvoice Mask Maker with Hyaluronic Serum at combo pricing.",
+      link: "/glow-therapy-combo",
+      image: "/Images/5.png",
+      background: "linear-gradient(135deg, #ffd7df 0%, #ffe9ef 55%, #fff8fa 100%)",
+      overlay:
+        "linear-gradient(90deg, rgba(255,235,241,0.94) 0%, rgba(255,220,231,0.78) 40%, rgba(255,220,231,0.36) 72%, rgba(255,220,231,0.14) 100%)",
+      textColor: "#2f171d",
+      badgeColor: "#c44269",
+      buttonVariant: "dark",
+    },
+
     {
       category: "Combo",
       title: "Hydration + Glow Combo",
@@ -156,6 +161,7 @@ const Combos = () => {
       badgeColor: "#9d5fbe",
       buttonVariant: "light",
     },
+
     {
       category: "Hair Care",
       title: "Herbal Hair Oil Offer",
@@ -170,6 +176,7 @@ const Combos = () => {
       badgeColor: "#5f8f35",
       buttonVariant: "light",
     },
+    
     {
       category: "Hair Care",
       title: "Blackseed Hair Oil Offer",
