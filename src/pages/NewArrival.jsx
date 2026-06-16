@@ -30,16 +30,15 @@ const NewArrival = () => {
         <Header />
         <CartDrawer />
         <Banner
-          className="mt-0 mb-10"
+          className="mt-0"
           src={holimainbanner}
           mobileSrc={holiMobile}
           bannerKey="new-arrival-top"
+          height={420}
         />
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
-
-
-
-          <Heading level="h1" heading="Our New Arrival" />
+       
+            <Heading heading="Our New Arrival" />
+    
 
           {hairCategory ? (
             <ProductList
@@ -56,7 +55,7 @@ const NewArrival = () => {
             <p className="text-sm text-gray-500">Loading products...</p>
           )}
 
-        </section>
+      
 
         <Footer />
       </div>

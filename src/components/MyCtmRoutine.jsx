@@ -45,10 +45,10 @@ const MyCtmRoutine = () => {
 
          <div className="bg-white">
           <div className="px-0 pt-1 sm:px-1 sm:pt-2 lg:px-2">
+            
             <Heading
               heading="Build Your Routine"
               sub="Simple steps to your best skin & hair"
-              subVariant="paragraph"
               subClassName="max-w-[280px] sm:max-w-none text-[#8a7a76]"
             />
 
