@@ -12,6 +12,11 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
+import {
+  getCartItemDisplayImage,
+  getCartItemDisplayPricing,
+  getCartItemVariantName,
+} from "../utils/productPricing";
 
 // ─── OTP WIDGET - defined OUTSIDE Checkout so it never re-mounts on re-render ─
 // If defined inside the parent component, React treats it as a new component
@@ -874,23 +879,32 @@ const Checkout = () => {
     trackAddPaymentInfo(total, checkoutItems.length);
 
     try {
-      const itemsPayload = checkoutItems.map((item) => ({
-        id: item.id,
-        baseProductId: item.baseProductId || null,
-        variantId: item.variantId || null,
-        name: item.name,
-        hsnCode: item.hsnCode || item.hsn || null,
-        gstRate: item.gstRate ?? null,
-        price: Number(item.price),
-        quantity: Number(item.quantity) || 1,
-        image: item.image || item.images?.[0] || item.imageUrl || "",
-        variantLabel: item.variantLabel || null,
-        originalPrice: item.originalPrice || null,
-        discountApplied: item.discountApplied || null,
-        selectedAddOn: item.selectedAddOn || null,
-        isCombo: item.isCombo || false,
-        comboItems: item.comboItems || item.items || [],
-      }));
+      const itemsPayload = checkoutItems.map((item) => {
+        const itemPricing = getCartItemDisplayPricing(item);
+        const variantName = getCartItemVariantName(item);
+
+        return {
+          id: item.id,
+          baseProductId: item.baseProductId || null,
+          variantId: item.variantId || null,
+          variantName: variantName || null,
+          name: item.name,
+          hsnCode: item.hsnCode || item.hsn || null,
+          gstRate: item.gstRate ?? null,
+          price: Number(itemPricing.price),
+          compareAtPrice: itemPricing.compareAtPrice ?? null,
+          quantity: Number(item.quantity) || 1,
+          image: getCartItemDisplayImage(item),
+          variantLabel: variantName || null,
+          sku: item.sku || null,
+          stock: item.stock ?? null,
+          originalPrice: item.originalPrice || null,
+          discountApplied: item.discountApplied || null,
+          selectedAddOn: item.selectedAddOn || null,
+          isCombo: item.isCombo || false,
+          comboItems: item.comboItems || item.items || [],
+        };
+      });
       const giftOptionsPayload = {
         isGiftOrder: Boolean(hasGiftStoreItems && isGiftOrder),
         wantsGiftWrap: Boolean(hasGiftStoreItems && isGiftOrder && wantsGiftWrap),
@@ -1308,21 +1322,30 @@ const Checkout = () => {
               <div key={item.id} className="border-b pb-3 mb-3">
                 <div className="flex gap-3">
                   <img loading="lazy"
-                    src={item.image || item.images?.[0] || item.imageUrl || "/placeholder.webp"}
+                    src={getCartItemDisplayImage(item)}
                     className="w-16 h-16 rounded-md object-cover"
                     alt={item.name}
                   />
                   <div className="flex-1 text-sm">
                     <p className="font-medium">{item.name}</p>
                     <p className="text-gray-500">Qty: {item.quantity}</p>
+                    {getCartItemVariantName(item) ? (
+                      <p className="text-gray-500 text-xs mt-0.5">{getCartItemVariantName(item)}</p>
+                    ) : null}
                     {item.selectedAddOn?.label ? (
                       <p className="text-emerald-700 text-xs mt-0.5">Add-on: {item.selectedAddOn.label}</p>
                     ) : null}
                   </div>
                   <div className="font-medium text-sm">
-                    ₹{Number((Number(item.price) * Number(item.quantity)).toFixed(2)).toLocaleString("en-IN")}
+                    ₹{Number((Number(getCartItemDisplayPricing(item).price) * Number(item.quantity)).toFixed(2)).toLocaleString("en-IN")}
                   </div>
                 </div>
+
+                {getCartItemDisplayPricing(item).compareAtPrice && getCartItemDisplayPricing(item).compareAtPrice > getCartItemDisplayPricing(item).price ? (
+                  <p className="mt-1 ml-[76px] text-xs text-gray-400 line-through">
+                    MRP ₹{Number(getCartItemDisplayPricing(item).compareAtPrice).toLocaleString("en-IN")}
+                  </p>
+                ) : null}
 
                 {item.discountApplied?.code ? (
                   <p className="mt-1 ml-[76px] text-xs text-emerald-700">
@@ -1438,3 +1461,4 @@ const Checkout = () => {
 };
 
 export default Checkout;
+

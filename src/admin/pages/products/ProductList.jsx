@@ -5,6 +5,7 @@ import AdminLayout from "../../components/AdminLayout";
 import { useProducts } from "../../context/ProductContext";
 import { useCategories } from "../../context/CategoryContext";
 import { useAdminAuth } from "../../context/AdminAuthContext";
+import { getProductDisplayPricing } from "../../../utils/productPricing";
 
 const FilterSelect = ({ value, onChange, children }) => (
   <div className="relative">
@@ -160,6 +161,7 @@ const ProductList = () => {
                 </td></tr>
               ) : filtered.map(p => {
                 const productId = getCanonicalProductId(p);
+                const pricing = getProductDisplayPricing(p);
                 return (
                 <tr key={productId} className="hover:bg-gray-50/70 transition-colors" style={{ borderBottom: "1px solid #F5F5F5" }}>
                   <td className="px-5 py-4">
@@ -172,7 +174,7 @@ const ProductList = () => {
                     </div>
                   </td>
                   <td className="px-5 py-4 text-gray-500 text-xs">{getCategoryNames(p.categoryIds)}</td>
-                  <td className="px-5 py-4 font-bold text-gray-900">₹{p.price}</td>
+                  <td className="px-5 py-4 font-bold text-gray-900">₹{pricing.price}</td>
                   <td className="px-5 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${p.isActive === false ? "bg-red-50 text-red-600 border-red-200" : "bg-green-50 text-green-700 border-green-200"}`}>
                       {p.isActive === false ? "Inactive" : "Active"}
@@ -210,6 +212,7 @@ const ProductList = () => {
         <div className="md:hidden divide-y divide-gray-100">
           {filtered.map(p => {
             const productId = getCanonicalProductId(p);
+            const pricing = getProductDisplayPricing(p);
             return (
             <div key={productId} className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
@@ -218,7 +221,7 @@ const ProductList = () => {
                 )}
                 <div className="min-w-0">
                   <p className="font-semibold text-gray-800 truncate">{p.name}</p>
-                  <p className="text-sm font-bold text-gray-900 mt-0.5">₹{p.price}</p>
+                  <p className="text-sm font-bold text-gray-900 mt-0.5">₹{pricing.price}</p>
                   <div className="flex gap-1.5 mt-1">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${p.isActive === false ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>{p.isActive === false ? "Inactive" : "Active"}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${p.inStock === false ? "bg-gray-100 text-gray-500" : "bg-blue-50 text-blue-600"}`}>{p.inStock === false ? "Out" : "In Stock"}</span>
@@ -248,3 +251,4 @@ const ProductList = () => {
 };
 
 export default ProductList;
+

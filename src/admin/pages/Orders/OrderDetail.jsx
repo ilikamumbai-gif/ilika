@@ -13,6 +13,7 @@ import autoTable from "jspdf-autotable";
 import { logActivity } from "../../Utils/logActivity";
 import { normalizeSource } from "../../Utils/trafficSource";
 import { formatOrderId, formatOrderRef } from "../../../utils/orderId";
+import { getCartItemDisplayPricing, getCartItemVariantName } from "../../../utils/productPricing";
 
 /* ─────────────────── HELPERS ─────────────────── */
 
@@ -756,9 +757,9 @@ const OrderDetail = () => {
                         />
                         <div className="min-w-0">
                           <p className="font-semibold text-gray-900 leading-snug">{item.name}</p>
-                          {item.variantLabel && (
+                          {getCartItemVariantName(item) && (
                             <span className="inline-flex items-center gap-1 mt-1 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                              <Tag size={10} /> {item.variantLabel}
+                              <Tag size={10} /> {getCartItemVariantName(item)}
                             </span>
                           )}
                           {item.selectedAddOn?.label && (
@@ -789,9 +790,9 @@ const OrderDetail = () => {
                       </span>
                     </td>
                     <td className="py-4 text-right">
-                      <p className="font-medium text-gray-800">₹{item.price?.toLocaleString("en-IN")}</p>
-                      {item.originalPrice && item.originalPrice !== item.price && (
-                        <p className="text-xs text-gray-400 line-through">₹{item.originalPrice}</p>
+                      <p className="font-medium text-gray-800">₹{getCartItemDisplayPricing(item).price?.toLocaleString("en-IN")}</p>
+                      {getCartItemDisplayPricing(item).compareAtPrice && getCartItemDisplayPricing(item).compareAtPrice !== getCartItemDisplayPricing(item).price && (
+                        <p className="text-xs text-gray-400 line-through">₹{getCartItemDisplayPricing(item).compareAtPrice.toLocaleString("en-IN")}</p>
                       )}
                     </td>
                     <td className="py-4 text-right">
@@ -812,7 +813,7 @@ const OrderDetail = () => {
                     </td>
                     <td className="py-4 text-right">
                       <span className="font-bold text-gray-900">
-                        ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                        ₹{(getCartItemDisplayPricing(item).price * item.quantity).toLocaleString("en-IN")}
                       </span>
                     </td>
                   </tr>
@@ -863,3 +864,5 @@ const OrderDetail = () => {
 };
 
 export default OrderDetail;
+
+

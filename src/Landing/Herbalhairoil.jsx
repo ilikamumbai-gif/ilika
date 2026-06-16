@@ -9,6 +9,7 @@ import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
 import { getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
+import { buildCartProductSnapshot } from "../utils/productPricing";
 import blackseedImage from "./assets/Herbal1.png";
 import bringrajIngredient from "./assets/bringraj.png";
 import amlaIngredient from "./assets/amla.png";
@@ -237,18 +238,13 @@ const Herbalhairoil = () => {
   const heroImage = blackseedImage;
 
   const cartItem = product
-    ? defaultVariant
-      ? {
-        ...product,
-        id: `${productId}_${defaultVariant.id}`,
-        baseProductId: productId,
-        variantId: defaultVariant.id,
-        variantLabel: defaultVariant.label,
-        price: defaultVariant.price,
-        mrp: defaultVariant.mrp,
-        image: defaultVariant.images?.[0],
-      }
-      : { ...product, id: productId }
+    ? buildCartProductSnapshot(product, {
+      variant: defaultVariant,
+      cartId: defaultVariant ? `${productId}_${defaultVariant.id}` : productId,
+      selectedPrice: price,
+      selectedCompareAtPrice: mrp,
+      selectedImage: defaultVariant?.images?.[0] || "",
+    })
     : null;
 
   const handleKnowMore = () => {
@@ -421,4 +417,3 @@ const Herbalhairoil = () => {
 };
 
 export default Herbalhairoil;
-

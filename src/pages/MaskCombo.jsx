@@ -269,6 +269,7 @@ const MaskCombo = () => {
           src={endBannerDesktop}
           mobileSrc={endBannerMobile}
           imageFit="contain"
+          preserveFullImage
           priority
         />
 

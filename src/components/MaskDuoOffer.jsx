@@ -17,6 +17,8 @@ import Heading from "./Heading";
 const PRIMARY = "#b34140";
 const PRIMARY_LIGHT = "#fff4f3";
 const COMBO_PRICE = 699;
+const HYDRA_COMBO_NAME =
+  'Ilika "Hydra Gel Moisturizer | Hyaluronic Acid & Niacinamide for Deep Hydration, Glowing Skin & Oil-Free Moisture | 25g"';
 
 const normalizeName = (name = "") =>
   String(name || "")
@@ -35,10 +37,15 @@ const getImage = (product) =>
 const isHydraFreeMask = (name = "") => {
   const normalized = normalizeName(name);
   return (
-    normalized.includes("hydra gel face moisturizer") &&
+    normalized.includes("hydra gel") &&
     (
-      normalized.includes("for dry dehydrated skin") ||
-      normalized.includes("for dry and dehydrated skin")
+      normalized.includes("moisturizer") ||
+      normalized.includes("face moisturizer") ||
+      normalized.includes("lightweight face gel")
+    ) &&
+    (
+      normalized.includes("25 g") ||
+      normalized.includes("25g")
     )
   );
 };
@@ -61,7 +68,7 @@ const isCollagenMask = (name = "") => {
 
 const formatHydraName = (name = "") => {
   if (!isHydraFreeMask(name)) return name;
-  return name.replace(/\|\s*50\s*g\b/i, "| 25 g").replace(/\|\s*25g\b/i, "| 25 g");
+  return HYDRA_COMBO_NAME;
 };
 
 const trustItems = [
@@ -97,8 +104,7 @@ const MaskDuoOffer = () => {
       .filter(
         (product) =>
           product.isActive !== false &&
-          isHydraFreeMask(product.name) &&
-          !/\b50\s*g\b/i.test(normalizeName(product.name))
+          isHydraFreeMask(product.name)
       )
       .sort((a, b) => {
         const aIs25g = normalizeName(a.name).includes("25 g") || normalizeName(a.name).includes("25g");
@@ -126,7 +132,7 @@ const MaskDuoOffer = () => {
 
   const savings = originalMRP > COMBO_PRICE ? originalMRP - COMBO_PRICE : 0;
 
-  const selectedHydraName = currentFreeMask ? formatHydraName(currentFreeMask.name) : "Hydra Gel Face Moisturizer | For Dry & Dehydrated Skin 25g";
+  const selectedHydraName = currentFreeMask ? formatHydraName(currentFreeMask.name) : HYDRA_COMBO_NAME;
 
   const maskBenefits = useMemo(
     () => ({

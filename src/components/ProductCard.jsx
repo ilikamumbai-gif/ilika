@@ -7,6 +7,12 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { getProductSlug } from "../utils/slugify";
 import OptimizedImage from "./OptimizedImage";
+import {
+  buildCartProductSnapshot,
+  getDefaultVariant,
+  getProductDisplayImage,
+  getProductDisplayPricing,
+} from "../utils/productPricing";
 
 const ProductCard = ({
   product,
@@ -21,24 +27,14 @@ const ProductCard = ({
   const slug = getProductSlug(product);
   const productId = product._id || product.id;
 
-  /* VARIANT SUPPORT */
-  const defaultVariant = product.hasVariants && product.variants?.length
-    ? product.variants[0]
-    : null;
-
-  const displayPrice = defaultVariant ? defaultVariant.price : product.price;
-  const displayMrp = defaultVariant ? defaultVariant.mrp : product.mrp;
+  const defaultVariant = getDefaultVariant(product);
+  const { price: displayPrice, compareAtPrice: displayMrp } = getProductDisplayPricing(product, defaultVariant);
 
   const cartId = defaultVariant
     ? `${productId}_${defaultVariant.id}`
     : productId;
 
-  const productImage =
-    (defaultVariant?.images && defaultVariant.images[0]) ||
-    (product.images && product.images[0]) ||
-    product.image ||
-    product.imageUrl ||
-    "/placeholder.webp";
+  const productImage = getProductDisplayImage(product, defaultVariant);
 
   const calculatedDiscount =
     product.discount ||
@@ -128,19 +124,13 @@ const ProductCard = ({
       return;
     }
 
-    const item = defaultVariant
-      ? {
-          ...product,
-          id: cartId,
-          baseProductId: productId,
-          variantId: defaultVariant.id,
-          variantLabel: defaultVariant.label,
-          price: defaultVariant.price,
-          mrp: defaultVariant.mrp,
-          image: defaultVariant.images?.[0],
-          ...(cartMetadata || {}),
-        }
-      : { ...product, id: productId, ...(cartMetadata || {}) };
+    const item = buildCartProductSnapshot(product, {
+      variant: defaultVariant,
+      cartId,
+      extra: {
+        ...(cartMetadata || {}),
+      },
+    });
 
     addToCart(item);
   };

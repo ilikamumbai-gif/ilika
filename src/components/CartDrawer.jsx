@@ -1,7 +1,12 @@
-﻿import React from "react";
+import React from "react";
 import { X, Minus, Plus } from "lucide-react";
-import { useCart } from "../context/CartProvider";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartProvider";
+import {
+  getCartItemDisplayImage,
+  getCartItemDisplayPricing,
+  getCartItemVariantName,
+} from "../utils/productPricing";
 
 const CartDrawer = () => {
   const {
@@ -12,32 +17,25 @@ const CartDrawer = () => {
     decrementQty,
   } = useCart();
 
-  const navigate = useNavigate(); // ✔… ADDED
+  const navigate = useNavigate();
 
   if (!isCartOpen) return null;
 
   const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
+    (acc, item) => acc + getCartItemDisplayPricing(item).price * item.quantity,
     0
   );
 
-
   const grandTotal = subtotal;
-
-
 
   return (
     <>
-      {/* BACKDROP */}
       <div
         className="fixed inset-0 bg-black/40 z-40"
         onClick={closeCart}
       />
 
-      {/* DRAWER */}
       <div className="fixed top-0 right-0 h-full w-[90%] sm:w-[420px] bg-white text-neutral-900 z-50 shadow-xl flex flex-col">
-
-        {/* HEADER */}
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="text-lg font-semibold">
             My Bag ({cartItems.length})
@@ -45,7 +43,6 @@ const CartDrawer = () => {
           <X className="cursor-pointer" onClick={closeCart} />
         </div>
 
-        {/* ITEMS */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {cartItems.length === 0 ? (
             <div className="text-center mt-10 space-y-3">
@@ -56,162 +53,141 @@ const CartDrawer = () => {
                   closeCart();
                   navigate("/shopall");
                 }}
-                className="bg-gradient-to-r from-[#cb8484] to-[#ecb7b7]
-                text-black px-5 py-2 rounded-md hover:opacity-90 transition"
+                className="bg-gradient-to-r from-[#cb8484] to-[#ecb7b7] text-black px-5 py-2 rounded-md hover:opacity-90 transition"
               >
                 Shop All
               </button>
             </div>
           ) : (
-            cartItems.map((item) => (
-              <div key={item.id} className="flex gap-4 border-b pb-4">
+            cartItems.map((item) => {
+              const itemImage = getCartItemDisplayImage(item);
+              const itemPricing = getCartItemDisplayPricing(item);
+              const variantName = getCartItemVariantName(item);
 
-                <img loading="lazy"
-                  src={
-                    item?.image ||
-                    item?.images?.[0] ||
-                    item?.variants?.find(v => v.label === item.variantLabel)?.images?.[0] ||
-                    item?.variants?.[0]?.images?.[0] ||
-                    "/placeholder.webp"
-                  }
-                  alt={item.name}
-                  className="w-16 h-16 object-contain rounded border bg-white"
-                />
+              return (
+                <div key={item.id} className="flex gap-4 border-b pb-4">
+                  <img
+                    loading="lazy"
+                    src={itemImage}
+                    alt={item.name}
+                    className="w-16 h-16 object-contain rounded border bg-white"
+                  />
 
-                <div className="flex-1">
+                  <div className="flex-1">
+                    <p className="font-medium">{item.name}</p>
 
-                  <p className="font-medium">{item.name}</p>
+                    {variantName && (
+                      <p className="text-xs text-gray-500 mt-[2px]">
+                        {variantName}
+                      </p>
+                    )}
+                    {item.selectedAddOn?.label && (
+                      <p className="text-xs text-emerald-700 mt-[2px]">
+                        Add-on: {item.selectedAddOn.label}
+                      </p>
+                    )}
 
-                  {item.variantLabel && (
-                    <p className="text-xs text-gray-500 mt-[2px]">
-                      {item.variantLabel}
-                    </p>
-                  )}
-                  {item.selectedAddOn?.label && (
-                    <p className="text-xs text-emerald-700 mt-[2px]">
-                      Add-on: {item.selectedAddOn.label}
-                    </p>
-                  )}
+                    {item.isCombo && item.comboItems && (
+                      <div className="mt-2 space-y-2 bg-gray-50 p-2 rounded-lg">
+                        {item.comboItems.map((sub, i) => {
+                          const isSurpriseMask =
+                            Boolean(sub?.isFree) || /\(free\)/i.test(sub?.name || "");
+                          const subUnitPrice = Number(sub?.price) || 0;
 
-                  {/* ✔… SHOW KIT PRODUCTS */}
-                  {item.isCombo && item.comboItems && (
-                    <div className="mt-2 space-y-2 bg-gray-50 p-2 rounded-lg">
+                          return (
+                            <div key={i} className="flex items-center gap-2">
+                              <img
+                                loading="lazy"
+                                src={
+                                  Array.isArray(sub.image)
+                                    ? sub.image[0]
+                                    : sub.image || "/placeholder.webp"
+                                }
+                                alt={isSurpriseMask ? "Hydra Gel Face Moisturizer" : sub.name}
+                                className="w-10 h-10 rounded object-cover border"
+                              />
 
-                      {item.comboItems.map((sub, i) => {
-                        const isSurpriseMask =
-                          Boolean(sub?.isFree) || /\(free\)/i.test(sub?.name || "");
-                        const subUnitPrice = Number(sub?.price) || 0;
-
-                        return (
-                          <div key={i} className="flex items-center gap-2">
-
-                            <img loading="lazy"
-                              src={
-                                Array.isArray(sub.image)
-                                  ? sub.image[0]
-                                  : sub.image || "/placeholder.webp"
-                              }
-                              alt={isSurpriseMask ? "Hydra Gel Face Moisturizer" : sub.name}
-                              className="w-10 h-10 rounded object-cover border"
-                            />
-
-                            <div className="flex-1">
-                              <p className="text-xs font-medium">
-                                {isSurpriseMask ? "Hydra Gel Face Moisturizer" : sub.name}
-                              </p>
-                              {sub.variantLabel && (
-                                <p className="text-[11px] text-gray-500">
-                                  {sub.variantLabel}
+                              <div className="flex-1">
+                                <p className="text-xs font-medium">
+                                  {isSurpriseMask ? "Hydra Gel Face Moisturizer" : sub.name}
                                 </p>
-                              )}
-                              {item.quantity > 1 && (
-                                <p className="text-[11px] text-gray-500">
-                                  Qty: {item.quantity}
-                                </p>
-                              )}
+                                {sub.variantLabel && (
+                                  <p className="text-[11px] text-gray-500">
+                                    {sub.variantLabel}
+                                  </p>
+                                )}
+                                {item.quantity > 1 && (
+                                  <p className="text-[11px] text-gray-500">
+                                    Qty: {item.quantity}
+                                  </p>
+                                )}
+                              </div>
+
+                              <span className="text-xs text-gray-400">
+                                {isSurpriseMask ? "FREE" : `${subUnitPrice * item.quantity}`}
+                              </span>
                             </div>
+                          );
+                        })}
 
-                            <span className="text-xs text-gray-400">
-                              {isSurpriseMask ? "FREE" : `${subUnitPrice * item.quantity}`}
-                            </span>
-
-                          </div>
-                        );
-                      })}
-
-                      <div className="flex justify-between text-xs font-medium border-t pt-2">
-                        <span>Kit Price</span>
-                        <span className="text-green-700">{item.price}</span>
+                        <div className="flex justify-between text-xs font-medium border-t pt-2">
+                          <span>Kit Price</span>
+                          <span className="text-green-700">{itemPricing.price}</span>
+                        </div>
                       </div>
+                    )}
 
+                    {!item.isCombo && (
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                        <span>{itemPricing.price}</span>
+                        {itemPricing.compareAtPrice && itemPricing.compareAtPrice > itemPricing.price ? (
+                          <span className="text-xs text-gray-400 line-through">
+                            {itemPricing.compareAtPrice}
+                          </span>
+                        ) : null}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-3 mt-2">
+                      <button
+                        onClick={() => decrementQty(item.id)}
+                        className="w-7 h-7 border rounded flex items-center justify-center"
+                      >
+                        <Minus size={14} />
+                      </button>
+
+                      <span className="text-sm font-medium">
+                        {item.quantity}
+                      </span>
+
+                      <button
+                        onClick={() => incrementQty(item.id)}
+                        className="w-7 h-7 border rounded flex items-center justify-center"
+                      >
+                        <Plus size={14} />
+                      </button>
                     </div>
-                  )}
-
-                  {/* Normal product price */}
-                  {!item.isCombo && (
-                    <p className="text-sm text-gray-500">
-                      {
-                        item.price ||
-                        item?.variants?.find(v => v.label === item.variantLabel)?.price ||
-                        item?.variants?.[0]?.price ||
-                        0
-                      }
-                    </p>
-                  )}
-
-                  {/* QUANTITY CONTROLS */}
-                  <div className="flex items-center gap-3 mt-2">
-                    <button
-                      onClick={() => decrementQty(item.id)}
-                      className="w-7 h-7 border rounded flex items-center justify-center"
-                    >
-                      <Minus size={14} />
-                    </button>
-
-                    <span className="text-sm font-medium">
-                      {item.quantity}
-                    </span>
-
-                    <button
-                      onClick={() => incrementQty(item.id)}
-                      className="w-7 h-7 border rounded flex items-center justify-center"
-                    >
-                      <Plus size={14} />
-                    </button>
                   </div>
-                </div>
 
-                {/* PRICE */}
-                <p className="font-medium">
-                  {
-                    (
-                      item.price ||
-                      item?.variants?.find(v => v.label === item.variantLabel)?.price ||
-                      item?.variants?.[0]?.price ||
-                      0
-                    ) * item.quantity
-                  }
-                </p>
-              </div>
-            ))
+                  <p className="font-medium">
+                    {itemPricing.price * item.quantity}
+                  </p>
+                </div>
+              );
+            })
           )}
         </div>
 
-        {/* FOOTER */}
         <div className="p-4 border-t space-y-3">
-
           <div className="space-y-2 text-sm">
-
             <div className="flex justify-between">
               <span className="text-gray-600">Subtotal</span>
               <span>{subtotal}</span>
             </div>
 
             <div className="flex justify-between">
-              <span >
-                Delivery
-              </span>
-              <span className="text-green-900">Free </span>
+              <span>Delivery</span>
+              <span className="text-green-900">Free</span>
             </div>
 
             <hr />
@@ -220,10 +196,8 @@ const CartDrawer = () => {
               <span>Grand Total</span>
               <span>{grandTotal}</span>
             </div>
-
           </div>
 
-          {/* ✔… UPDATED CHECKOUT BUTTON */}
           <button
             disabled={cartItems.length === 0}
             onClick={() => {
@@ -231,16 +205,15 @@ const CartDrawer = () => {
               closeCart();
               navigate("/checkout");
             }}
-            className={`w-full py-3 rounded-lg text-white transition
-              ${cartItems.length
+            className={`w-full py-3 rounded-lg text-white transition ${
+              cartItems.length
                 ? "bg-black hover:bg-gray-900 active:scale-[0.98]"
-                : "bg-gray-400 cursor-not-allowed"}`}
+                : "bg-gray-400 cursor-not-allowed"
+            }`}
           >
             Proceed to Checkout
           </button>
-
         </div>
-
       </div>
     </>
   );

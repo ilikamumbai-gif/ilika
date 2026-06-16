@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { trackViewContent, trackAddToCart } from "../utils/pixel";
 import { markCurrentPageAsLastVisited, trackVisitorEvent } from "../utils/visitorAnalytics";
 import Header from "../components/Header";
@@ -23,6 +23,16 @@ import ProductCard from "../components/ProductCard";
 import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 import { useSeo } from "../hooks/useSeo";
+import {
+  buildCartProductSnapshot,
+  findVariantByQueryValue,
+  getDefaultVariant,
+  getProductDisplayPricing,
+  getProductVariantName,
+  getProductVariantAvailability,
+  getVariantQueryValue,
+  slugifyVariantValue,
+} from "../utils/productPricing";
 
 const DEFAULT_DETAIL_BG = "#FFFFFF";
 const COLLAGEN_ADDON_OPTIONS = [
@@ -1507,7 +1517,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STICKY FLOATING ATC BAR
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme, warrantyRegistrationUrl }) => {
+const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme, warrantyRegistrationUrl, thumbnailImage }) => {
   const ctaColors = getDetailCtaColors(theme);
   return (
     <div
@@ -1532,9 +1542,9 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
 
           {/* LEFT - product name + thumbnail */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-            {(product?.images?.[0] || product?.imageUrl) && (
+            {thumbnailImage && (
               <img
-                src={product.images?.[0] || product.imageUrl}
+                src={thumbnailImage}
                 loading="lazy"
                 decoding="async"
                 alt={product.name}
@@ -1629,6 +1639,7 @@ const ProductDetail = () => {
   const { products = [] } = useProducts();
   const { productUrl } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { addToCart, closeCart, cartItems } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
@@ -1680,6 +1691,10 @@ const ProductDetail = () => {
     startScrollLeft: 0,
   });
   const ingredientNormalizeTimerRef = useRef(null);
+  const requestedVariantQuery = useMemo(
+    () => slugifyVariantValue(searchParams.get("variant") || ""),
+    [searchParams]
+  );
 
 
   // =======================================================
@@ -1882,12 +1897,13 @@ const ProductDetail = () => {
 
         if (!isCurrentRoute) return;
         setProduct(found);
-        trackViewContent(found.id || found._id, found.name, found.variants?.[0]?.price ?? found.price ?? 0);
+        const initialDisplayPricing = getProductDisplayPricing(found);
+        trackViewContent(found.id || found._id, found.name, initialDisplayPricing.price ?? 0);
         trackVisitorEvent({
           eventType: "product_view",
           productId: found.id || found._id || "",
           productName: found.name || "",
-          price: found.variants?.[0]?.price ?? found.price ?? null,
+          price: initialDisplayPricing.price ?? null,
         });
         markCurrentPageAsLastVisited();
       } catch (error) {
@@ -1906,54 +1922,94 @@ const ProductDetail = () => {
     };
   }, [productUrl, products, navigate]);
 
-  /* â”€â”€ Set first image - clear stale data immediately, then preload & populate â”€â”€ */
-  useEffect(() => {
-    if (!product) return;
-
-    // 1. Wipe stale images immediately so old thumbnails never flash
-    setSelectedImage(null);
-    setIsHeroImageLoaded(false);
-    setSelectedVideoUrl("");
-    setSelectedVideoPlaying(false);
-    setActiveVariant(null);
-    setDisplayImages([]);
-
-    // 2. Async: preload new product images, then reveal them
-    const run = async () => {
-      let newImages = [];
-      let firstImage = null;
-
-      if (product.hasVariants && product.variants?.length) {
-        const first = product.variants[0];
-        newImages = first?.images?.length ? first.images : product?.images || [];
-        firstImage = first?.images?.[0] || first?.image || product?.images?.[0] || null;
-        // Set variant synchronously so price/label updates immediately
-        setActiveVariant(first);
-      } else {
-        newImages = product?.images || [];
-        firstImage = product?.images?.[0] || product?.imageUrl || product?.image || null;
-      }
-
-      // Show the main (first) image right away
-      setSelectedImage(firstImage);
-      setSelectedVideoUrl("");
-      setSelectedVideoPlaying(false);
-
-      // Defer secondary image preloading until hero image has loaded.
-      setPendingImagesToPreload(newImages);
-    };
-
-    run();
-  }, [product, preloadImages]);
-
   useEffect(() => {
     if (!isHeroImageLoaded || !pendingImagesToPreload?.length) return;
     preloadImages(pendingImagesToPreload);
   }, [isHeroImageLoaded, pendingImagesToPreload, preloadImages]);
 
+  const syncVariantQueryParam = useCallback((variant, options = {}) => {
+    const nextParams = new URLSearchParams(searchParams);
+    const nextVariantQuery = getVariantQueryValue(variant);
+
+    if (nextVariantQuery) {
+      nextParams.set("variant", nextVariantQuery);
+    } else {
+      nextParams.delete("variant");
+    }
+
+    if (nextParams.toString() === searchParams.toString()) return;
+    setSearchParams(nextParams, { replace: options.replace ?? false });
+  }, [searchParams, setSearchParams]);
+
+  const applyVariantSelection = useCallback((variant) => {
+    const resolvedVariant = variant || null;
+    const nextImages = resolvedVariant?.images?.length
+      ? resolvedVariant.images
+      : product?.images || [];
+    const nextImage =
+      resolvedVariant?.images?.[0] ||
+      resolvedVariant?.image ||
+      product?.images?.[0] ||
+      product?.imageUrl ||
+      product?.image ||
+      null;
+
+    setSelectedImage(null);
+    setIsHeroImageLoaded(false);
+    setSelectedVideoUrl("");
+    setSelectedVideoPlaying(false);
+    setDisplayImages([]);
+    stopAuto();
+    setActiveVariant(resolvedVariant);
+    setSelectedImage(nextImage);
+    setPendingImagesToPreload(nextImages);
+  }, [product]);
+
+  /* â”€â”€ Resolve variant from URL and preload matching media â”€â”€ */
+  useEffect(() => {
+    if (!product) return;
+
+    if (!product.hasVariants || !product.variants?.length) {
+      applyVariantSelection(null);
+      if (requestedVariantQuery) {
+        syncVariantQueryParam(null, { replace: true });
+      }
+      return;
+    }
+
+    const matchedVariant = requestedVariantQuery
+      ? findVariantByQueryValue(product, requestedVariantQuery)
+      : null;
+    const fallbackVariant =
+      product.variants.find((variant) => variant?.isDefault) ||
+      product.variants.find((variant) => getProductVariantAvailability(product, variant)) ||
+      getDefaultVariant(product) ||
+      product.variants[0] ||
+      null;
+    const resolvedVariant = matchedVariant || fallbackVariant;
+
+    applyVariantSelection(resolvedVariant);
+
+    if (requestedVariantQuery && !matchedVariant && resolvedVariant) {
+      syncVariantQueryParam(resolvedVariant, { replace: true });
+    }
+  }, [
+    product,
+    requestedVariantQuery,
+    applyVariantSelection,
+    syncVariantQueryParam,
+  ]);
+
   const productId = product?.id || product?._id || null;
   // `images` = source of truth for lightbox, swipe, auto-scroll logic
   const images = activeVariant?.images?.length ? activeVariant.images : product?.images || [];
+  const stickyThumbnailImage =
+    activeVariant?.images?.[0] ||
+    activeVariant?.image ||
+    product?.images?.[0] ||
+    product?.imageUrl ||
+    product?.image ||
+    "";
   const productVideos = useMemo(() => {
     const rawVideos = Array.isArray(product?.videos) ? product.videos : [];
     return rawVideos
@@ -1972,8 +2028,12 @@ const ProductDetail = () => {
       .filter(Boolean);
   }, [product?.videos]);
   // `displayImages` = what thumbnails actually render - only set after async preload
-  const basePrice = Number(activeVariant?.price ?? product?.price ?? 0);
-  const mrp = Number(activeVariant?.mrp ?? product?.mrp ?? 0);
+  const activeDisplayPricing = useMemo(
+    () => getProductDisplayPricing(product, activeVariant),
+    [product, activeVariant]
+  );
+  const basePrice = Number(activeDisplayPricing.price || 0);
+  const mrp = Number(activeDisplayPricing.compareAtPrice || 0);
   const packOptions = useMemo(() => {
     const raw = Array.isArray(product?.packOptions) ? product.packOptions : [];
     return raw
@@ -2135,7 +2195,7 @@ const ProductDetail = () => {
     ? `${productId}_${activeVariant.id}${packCartSuffix}${addonCartSuffix}`
     : `${productId}${packCartSuffix}${addonCartSuffix}`;
   const isInCart = cartItems.some(i => i.id === cartId);
-  const isOutOfStock = product?.inStock === false;
+  const isOutOfStock = !getProductVariantAvailability(product, activeVariant);
 
   useEffect(() => {
     ingredientDragStateRef.current.isDragging = false;
@@ -2216,80 +2276,45 @@ const ProductDetail = () => {
     setIsAdding(true);
 
     try {
-      addToCart(
-        activeVariant
-          ? {
-            ...product,
-            id: cartId,
-            baseProductId: productId,
-            variantId: activeVariant.id,
-            variantLabel: activeVariant.label,
-            selectedPack: selectedPack
+      const cartItem = buildCartProductSnapshot(product, {
+        variant: activeVariant,
+        cartId,
+        selectedPrice: price,
+        selectedCompareAtPrice: effectiveMrp,
+        selectedImage: activeVariant?.images?.[0] || activeVariant?.image || "",
+        extra: {
+          selectedPack: selectedPack
+            ? {
+              id: selectedPack.id,
+              label: selectedPack.label,
+              price: selectedPack.price,
+              mrp: selectedPack.mrp || null,
+            }
+            : null,
+          selectedAddOn:
+            eligibleForCollagenAddon && selectedCollagenAddon.count > 0
               ? {
-                id: selectedPack.id,
-                label: selectedPack.label,
-                price: selectedPack.price,
-                mrp: selectedPack.mrp || null,
+                type: "collagen_tablet_pack",
+                id: selectedCollagenAddon.id,
+                count: selectedCollagenAddon.count,
+                label: selectedCollagenAddon.label,
+                tablets: selectedCollagenAddon.tablets,
+                price: selectedCollagenAddon.price,
               }
               : null,
-            price,
-            mrp: activeVariant.mrp,
-            image: activeVariant.images?.[0],
-            selectedAddOn:
-              eligibleForCollagenAddon && selectedCollagenAddon.count > 0
-                ? {
-                  type: "collagen_tablet_pack",
-                  id: selectedCollagenAddon.id,
-                  count: selectedCollagenAddon.count,
-                  label: selectedCollagenAddon.label,
-                  tablets: selectedCollagenAddon.tablets,
-                  price: selectedCollagenAddon.price,
-                }
-                : null,
-            originalPrice: appliedCoupon ? Number(packBasePrice + addonPrice) : null,
-            discountApplied: appliedCoupon
-              ? {
-                code: appliedCoupon.code,
-                percent: appliedCouponEffectivePercent,
-                basedOn: "selling_price",
-                amount: couponDiscountAmount,
-              }
-              : null,
-          }
-          : {
-            ...product,
-            id: productId,
-            selectedPack: selectedPack
-              ? {
-                id: selectedPack.id,
-                label: selectedPack.label,
-                price: selectedPack.price,
-                mrp: selectedPack.mrp || null,
-              }
-              : null,
-            price,
-            selectedAddOn:
-              eligibleForCollagenAddon && selectedCollagenAddon.count > 0
-                ? {
-                  type: "collagen_tablet_pack",
-                  id: selectedCollagenAddon.id,
-                  count: selectedCollagenAddon.count,
-                  label: selectedCollagenAddon.label,
-                  tablets: selectedCollagenAddon.tablets,
-                  price: selectedCollagenAddon.price,
-                }
-                : null,
-            originalPrice: appliedCoupon ? Number(packBasePrice + addonPrice) : null,
-            discountApplied: appliedCoupon
-              ? {
-                code: appliedCoupon.code,
-                percent: appliedCouponEffectivePercent,
-                basedOn: "selling_price",
-                amount: couponDiscountAmount,
-              }
-              : null,
-          }
-      );
+          originalPrice: appliedCoupon ? Number(packBasePrice + addonPrice) : null,
+          discountApplied: appliedCoupon
+            ? {
+              code: appliedCoupon.code,
+              percent: appliedCouponEffectivePercent,
+              basedOn: "selling_price",
+              amount: couponDiscountAmount,
+            }
+            : null,
+        },
+      });
+
+      addToCart(cartItem);
 
       trackAddToCart(productId, product?.name, price, 1);
     } finally {
@@ -2302,6 +2327,7 @@ const ProductDetail = () => {
     cartId,
     productId,
     price,
+    effectiveMrp,
     packBasePrice,
     addonPrice,
     appliedCoupon,
@@ -2535,17 +2561,9 @@ const ProductDetail = () => {
   }, [variantPaletteMap, isCssColorValue, detailTheme.accentSoft]);
 
   const handleVariantSelect = useCallback((variant) => {
-    setSelectedImage(null);
-    setIsHeroImageLoaded(false);
-    setDisplayImages([]);
-    stopAuto();
-    const newImgs = variant.images?.length ? variant.images : product?.images || [];
-    setActiveVariant(variant);
-    setSelectedImage(variant.images?.[0] || variant.image || null);
-    setSelectedVideoUrl("");
-    setSelectedVideoPlaying(false);
-    setPendingImagesToPreload(newImgs);
-  }, [product?.images]);
+    applyVariantSelection(variant);
+    syncVariantQueryParam(variant);
+  }, [applyVariantSelection, syncVariantQueryParam]);
 
   const renderVariantSelector = () => (
     <div>
@@ -2672,20 +2690,34 @@ const ProductDetail = () => {
     if (!product || !currentRouteSlug) return false;
     return canonicalProductSlug === currentRouteSlug;
   }, [product, currentRouteSlug, canonicalProductSlug]);
+  const activeVariantName = useMemo(
+    () => getProductVariantName(product, activeVariant) || "",
+    [product, activeVariant]
+  );
   const seoProductTitle = product?.name
-    ? `${product.name} | Ilika`
+    ? `${product.name}${activeVariantName ? ` - ${activeVariantName}` : ""} | Ilika`
     : "Product Details | Ilika";
   const seoProductDescription =
+    (activeVariantName
+      ? `${stripHtml(product?.shortInfo) || stripHtml(product?.description) || "Explore product details, benefits, pricing, and offers on Ilika."} Variant: ${activeVariantName}.`
+      : "") ||
     stripHtml(product?.shortInfo) ||
     stripHtml(product?.description) ||
     "Explore product details, benefits, pricing, and offers on Ilika.";
   const seoProductImage =
     images?.[0] || product?.imageUrl || product?.image || "https://ilika.in/Images/logo2.webp";
-  const canonicalPath = canonicalProductSlug
+  const canonicalBasePath = canonicalProductSlug
     ? `/product/${canonicalProductSlug}`
     : currentRouteSlug
       ? `/product/${currentRouteSlug}`
       : "/products";
+  const activeVariantQueryValue = useMemo(
+    () => getVariantQueryValue(activeVariant),
+    [activeVariant]
+  );
+  const canonicalPath = activeVariantQueryValue
+    ? `${canonicalBasePath}?variant=${encodeURIComponent(activeVariantQueryValue)}`
+    : canonicalBasePath;
   const seoProductKeywords = useMemo(() => {
     const fromCategories = Array.isArray(product?.categoryName)
       ? product.categoryName
@@ -2793,8 +2825,20 @@ const ProductDetail = () => {
     if (!product || !currentRouteSlug || !canonicalProductSlug) return;
     if (!productMatchesCurrentRoute) return;
     if (currentRouteSlug === canonicalProductSlug) return;
-    navigate(`/product/${canonicalProductSlug}`, { replace: true });
-  }, [product, currentRouteSlug, canonicalProductSlug, productMatchesCurrentRoute, navigate]);
+    navigate(
+      activeVariantQueryValue
+        ? `/product/${canonicalProductSlug}?variant=${encodeURIComponent(activeVariantQueryValue)}`
+        : `/product/${canonicalProductSlug}`,
+      { replace: true }
+    );
+  }, [
+    product,
+    currentRouteSlug,
+    canonicalProductSlug,
+    productMatchesCurrentRoute,
+    navigate,
+    activeVariantQueryValue,
+  ]);
 
   const renderInfoPanel = (tabId) => {
     if (tabId === "details") {
@@ -2991,6 +3035,7 @@ const ProductDetail = () => {
         isAdding={isAdding}
         isBuying={isBuying}
         visible={showStickyBar}
+        thumbnailImage={stickyThumbnailImage}
         warrantyRegistrationUrl={warrantyRegistrationUrl}
       // footerHeight={footerHeight}
       />
@@ -3463,7 +3508,7 @@ const ProductDetail = () => {
               <div ref={atcButtonsRef} className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
 
                 <button
-                  onClick={product.inStock ? handleAddToCart : handleNotifyMe}
+                  onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
                   disabled={isAdding}
                   className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition min-h-[54px]
                 ${isAdding ?
@@ -3472,7 +3517,7 @@ const ProductDetail = () => {
                 >
                   {isAdding
                     ? "Adding..."
-                    : product.inStock
+                    : !isOutOfStock
                       ? "Add To Cart"
                       : "Notify Me"}
                 </button>
@@ -3488,7 +3533,7 @@ const ProductDetail = () => {
                       : "hover:opacity-90 shadow-sm"}`}
                   style={isOutOfStock || isBuying ? undefined : detailCtaColors.buyNow}
                 >
-                  {isBuying ? "Processing..." : product.inStock ? "Buy Now" : "Out of Stock"}
+                  {isBuying ? "Processing..." : !isOutOfStock ? "Buy Now" : "Out of Stock"}
                 </button>
 
               </div>
@@ -3551,10 +3596,9 @@ const ProductDetail = () => {
           <DeferredSection minHeight={220}>
             <section className="max-w-7xl mx-auto px-3 sm:px-6 mb-6 sm:mb-8">
               <div
-                className="overflow-hidden rounded-[22px] border"
+                className="overflow-hidden rounded-[22px]"
                 style={{
                   backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : detailTheme.pageBg,
-                  borderColor: detailTheme.borderSoft,
                 }}
               >
                 <div className="px-3 pt-2 pb-2 sm:px-4 sm:pb-3">
@@ -3567,7 +3611,7 @@ const ProductDetail = () => {
                   {whyLoveItItems.map((item, index) => {
                     const IconComponent = resolveWhyLoveItIcon(item.icon);
                     const borderClass = `
-                      ${index > 0 ? "border-t" : ""}
+                    
                       ${index % 2 === 1 ? "sm:border-l" : ""}
                       ${index >= 2 ? "sm:border-t lg:border-t-0" : ""}
                       ${index > 0 ? "lg:border-l" : ""}

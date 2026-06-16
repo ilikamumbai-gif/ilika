@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProductSlug } from "../utils/slugify";
+import { getProductDisplayPricing } from "../utils/productPricing";
 
 const ComboTab = ({ combo, products }) => {
   const [activeTab, setActiveTab] = useState("description");
@@ -157,6 +158,7 @@ const ComboTab = ({ combo, products }) => {
               if (!product) return null;
 
               const slug = getProductSlug(product);
+              const pricing = getProductDisplayPricing(product);
 
               return (
 
@@ -184,7 +186,7 @@ const ComboTab = ({ combo, products }) => {
                   </p>
 
                   <p className="text-sm text-gray-500">
-                    ₹{product.price}
+                    ₹{pricing.price}
                   </p>
 
                 </Link>
@@ -208,6 +210,7 @@ const ComboTab = ({ combo, products }) => {
             if (!free) return null;
 
             const slug = getProductSlug(free);
+            const pricing = getProductDisplayPricing(free);
 
             return (
 
@@ -232,7 +235,7 @@ const ComboTab = ({ combo, products }) => {
                   </h3>
 
                   <p className="text-gray-500">
-                    Worth ₹{free.price}
+                    Worth ₹{pricing.price}
                   </p>
 
                 </div>
@@ -252,3 +255,4 @@ const ComboTab = ({ combo, products }) => {
 };
 
 export default ComboTab;
+

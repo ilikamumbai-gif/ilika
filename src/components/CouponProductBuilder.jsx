@@ -3,6 +3,7 @@ import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
 import ComboProductCard from "./ComboProductCard";
 import Banner from "./Banner";
+import { buildCartProductSnapshot } from "../utils/productPricing";
 
 const offBanner = "/Images/offerBanner.gif";
 const offBannerMobile = "/Images/offerBannerMobile.gif";
@@ -218,15 +219,17 @@ const CouponProductBuilder = () => {
         originalPrice - (originalPrice * discount) / 100
       );
 
-      const item = {
-        ...product,
-        id: `${getProductId(product)}-${variant?.label || "default"}-coupon`,
-        price: finalPrice,
-        originalPrice,
-        discountApplied: discount,
-        variantLabel: variant?.label || null,
-        image: getVariantImage(product, variant),
-      };
+      const item = buildCartProductSnapshot(product, {
+        variant,
+        cartId: `${getProductId(product)}-${variant?.label || "default"}-coupon`,
+        selectedPrice: finalPrice,
+        selectedCompareAtPrice: originalPrice,
+        selectedImage: getVariantImage(product, variant),
+        extra: {
+          originalPrice,
+          discountApplied: discount,
+        },
+      });
 
       addToCart(item);
     });

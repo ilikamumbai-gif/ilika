@@ -7,6 +7,7 @@ import Heading from "../components/Heading";
 import CartDrawer from "../components/CartDrawer";
 import { useAuth } from "../context/AuthContext";
 import { formatOrderId, formatOrderRef } from "../utils/orderId";
+import { getCartItemDisplayPricing, getCartItemVariantName } from "../utils/productPricing";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const CANCEL_SUPPORT_EMAIL = "ilika.mumbai@gamil.com";
@@ -676,13 +677,20 @@ const UserDetail = () => {
                                         <div className="flex-1 min-w-0">
                                           <p className="text-sm font-medium text-gray-800 truncate">{item.name || "Product"}</p>
                                           <p className="text-xs text-gray-400 mt-0.5">
-                                            Qty {item.quantity || 1}{item.variantLabel ? ` · ${item.variantLabel}` : ""}
+                                            Qty {item.quantity || 1}{getCartItemVariantName(item) ? ` · ${getCartItemVariantName(item)}` : ""}
                                           </p>
                                           {item.selectedAddOn?.label ? (
                                             <p className="text-xs text-emerald-700 mt-0.5">Add-on: {item.selectedAddOn.label}</p>
                                           ) : null}
                                         </div>
-                                        <p className="text-sm font-bold text-gray-800 ml-auto flex-shrink-0">{formatCurrency(item.price)}</p>
+                                        <div className="ml-auto flex-shrink-0 text-right">
+                                          <p className="text-sm font-bold text-gray-800">{formatCurrency(getCartItemDisplayPricing(item).price)}</p>
+                                          {getCartItemDisplayPricing(item).compareAtPrice && getCartItemDisplayPricing(item).compareAtPrice > getCartItemDisplayPricing(item).price ? (
+                                            <p className="text-[11px] text-gray-400 line-through">
+                                              {formatCurrency(getCartItemDisplayPricing(item).compareAtPrice)}
+                                            </p>
+                                          ) : null}
+                                        </div>
                                       </div>
                                     ))}
                                   </div>
@@ -768,3 +776,4 @@ const UserDetail = () => {
 };
 
 export default UserDetail;
+

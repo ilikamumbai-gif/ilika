@@ -1,4 +1,5 @@
 import React from "react";
+import { getProductDisplayImage, getProductDisplayPricing } from "../utils/productPricing";
 
 /**
  * CtmProductCard
@@ -6,11 +7,12 @@ import React from "react";
  * Props:
  *  - product   : the raw product object from backend
  *  - productId : the canonical id string resolved by the parent (avoids id/_id ambiguity)
- *  - selected  : boolean — true when this card is the chosen one for its step
+ *  - selected  : boolean - true when this card is the chosen one for its step
  *  - onSelect  : (product) => void
  */
 const CtmProductCard = ({ product, selected, onSelect }) => {
-  const image = product.images?.[0] ?? product.image ?? "";
+  const image = getProductDisplayImage(product);
+  const pricing = getProductDisplayPricing(product);
 
   return (
     <div
@@ -23,14 +25,12 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
           : "border border-stone-200 shadow-sm hover:shadow-md hover:-translate-y-0.5",
       ].join(" ")}
     >
-      {/* ── SELECTED BADGE ── */}
       {selected && (
         <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-5 h-5 sm:w-6 sm:h-6 bg-[#1C371C] rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs z-10 pointer-events-none">
-          ✓
+          <span className="block h-2 w-2 rounded-full bg-white" />
         </div>
       )}
 
-      {/* ── IMAGE ── */}
       <div className="bg-stone-50 aspect-square flex items-center justify-center overflow-hidden p-3 sm:p-4">
         {image ? (
           <img
@@ -44,7 +44,6 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
         )}
       </div>
 
-      {/* ── CONTENT ── */}
       <div className="p-3 sm:p-4 flex flex-col gap-1 sm:gap-1.5 flex-1">
         <h3 className="font-serif text-[13px] sm:text-[15px] font-semibold text-[#1C371C] leading-snug line-clamp-2">
           {product.name}
@@ -64,12 +63,18 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
           {"☆".repeat(5 - Math.min(5, Math.max(0, product.rating || 4)))}
         </div>
 
-        <p className="font-serif text-base sm:text-lg font-semibold text-[#1C371C] mt-0.5 sm:mt-1">
-          ₹{product.price}
-        </p>
+        <div className="mt-0.5 sm:mt-1 flex flex-wrap items-center gap-2">
+          <p className="font-serif text-base sm:text-lg font-semibold text-[#1C371C]">
+            ₹{pricing.price}
+          </p>
+          {pricing.compareAtPrice && pricing.compareAtPrice > pricing.price ? (
+            <span className="text-xs text-gray-400 line-through">
+              ₹{pricing.compareAtPrice}
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      {/* ── BUTTON ── */}
       <div className="px-3 pb-3 sm:px-4 sm:pb-4">
         <button
           type="button"
@@ -85,7 +90,7 @@ const CtmProductCard = ({ product, selected, onSelect }) => {
               : "bg-transparent text-[#1C371C] border border-[#1C371C] hover:bg-[#1C371C] hover:text-white",
           ].join(" ")}
         >
-          {selected ? "✓ Selected" : "Select"}
+          {selected ? "Selected" : "Select"}
         </button>
       </div>
     </div>

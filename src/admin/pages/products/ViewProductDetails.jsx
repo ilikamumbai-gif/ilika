@@ -16,6 +16,7 @@ import {
 import AdminLayout from "../../components/AdminLayout";
 import { useProducts } from "../../context/ProductContext";
 import { useCategories } from "../../context/CategoryContext";
+import { getProductDisplayImage, getProductDisplayPricing } from "../../../utils/productPricing";
 
 const getSafeFileExtension = (url = "") => {
   const cleanUrl = String(url || "").split("?")[0];
@@ -224,6 +225,8 @@ const ViewProductDetails = () => {
       .map((categoryId) => categories.find((item) => String(item.id) === String(categoryId))?.name)
       .filter(Boolean);
   }, [product?.categoryIds, categories]);
+  const productPricing = useMemo(() => getProductDisplayPricing(product), [product]);
+  const productImage = useMemo(() => getProductDisplayImage(product), [product]);
 
   const allImages = useMemo(() => flattenImages(product), [product]);
   const plainDescription = useMemo(() => htmlToPlainText(product?.description || ""), [product?.description]);
@@ -330,10 +333,10 @@ const ViewProductDetails = () => {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-3xl border border-gray-200 bg-white p-6">
             <div className="flex flex-col gap-5 md:flex-row">
-              {(product.images?.[0] || product.image) ? (
+              {productImage ? (
                 <img
                   loading="lazy"
-                  src={product.images?.[0] || product.image}
+                  src={productImage}
                   alt={product.name}
                   className="h-40 w-40 rounded-2xl border border-gray-200 object-cover"
                 />
@@ -360,8 +363,8 @@ const ViewProductDetails = () => {
                 </div>
 
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <InfoCard icon={Tag} label="Price" value={`Rs ${product.price || "-"}`} />
-                  <InfoCard icon={Tag} label="MRP" value={`Rs ${product.mrp || "-"}`} />
+                  <InfoCard icon={Tag} label="Price" value={`Rs ${productPricing.price || "-"}`} />
+                  <InfoCard icon={Tag} label="MRP" value={`Rs ${productPricing.compareAtPrice || "-"}`} />
                   <InfoCard icon={Layers3} label="Categories" value={categoryNames.join(", ") || "-"} />
                   <InfoCard icon={PlayCircle} label="Videos" value={Array.isArray(product.videos) ? String(product.videos.length) : "0"} />
                 </div>

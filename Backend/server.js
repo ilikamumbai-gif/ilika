@@ -3155,24 +3155,32 @@ app.post("/api/payments/verify", async (req, res) => {
       if (!productData.inStock)
         return res.status(400).json({ error: `${productData.name} is out of stock` });
 
-      const finalPrice = Number(item.price) || Number(productData.price) || 0;
+      const submittedPrice = Number(item?.price);
+      const productPrice = Number(productData?.price);
+      const finalPrice = Number.isFinite(submittedPrice)
+        ? submittedPrice
+        : (Number.isFinite(productPrice) ? productPrice : 0);
       totalAmount += finalPrice * quantity;
 
-      validatedItems.push({
-        productId: resolvedProductId,
-        baseProductId: resolvedProductId,
-        cartItemId: rawCartItemId,
-        name: item.name || productData.name,
-        price: finalPrice,
-        quantity,
-        image: item.image || item.images?.[0] || item.imageUrl || "",
-        variantId: item.variantId || null,
-        variantLabel: item.variantLabel || null,
-        selectedAddOn: item.selectedAddOn || null,
-        originalPrice: item.originalPrice || null,
-        discountApplied: item.discountApplied || null,
-        isCombo: false,
-      });
+        validatedItems.push({
+          productId: resolvedProductId,
+          baseProductId: resolvedProductId,
+          cartItemId: rawCartItemId,
+          name: item.name || productData.name,
+          price: finalPrice,
+          compareAtPrice: item.compareAtPrice || null,
+          quantity,
+          image: item.image || item.images?.[0] || item.imageUrl || "",
+          variantId: item.variantId || null,
+          variantName: item.variantName || item.variantLabel || null,
+          variantLabel: item.variantLabel || null,
+          sku: item.sku || null,
+          stock: item.stock ?? null,
+          selectedAddOn: item.selectedAddOn || null,
+          originalPrice: item.originalPrice || null,
+          discountApplied: item.discountApplied || null,
+          isCombo: false,
+        });
     }
 
     const pricing = calculateOrderPricing(validatedItems);
@@ -3349,24 +3357,32 @@ app.post("/api/orders", async (req, res) => {
       if (!productData.inStock)
         return res.status(400).json({ error: `${productData.name} is out of stock` });
 
-      const finalPrice = Number(item.price) || Number(productData.price);
+      const submittedPrice = Number(item?.price);
+      const productPrice = Number(productData?.price);
+      const finalPrice = Number.isFinite(submittedPrice)
+        ? submittedPrice
+        : (Number.isFinite(productPrice) ? productPrice : 0);
       totalAmount += finalPrice * quantity;
 
-      validatedItems.push({
-        productId: resolvedProductId,
-        baseProductId: resolvedProductId,
-        cartItemId: rawCartItemId,
-        name: item.name || productData.name,
-        price: finalPrice,
-        quantity,
-        image: item.image || item.images?.[0] || item.imageUrl || "",
-        variantId: item.variantId || null,
-        variantLabel: item.variantLabel || null,
-        selectedAddOn: item.selectedAddOn || null,
-        originalPrice: item.originalPrice || null,
-        discountApplied: item.discountApplied || null,
-        isCombo: false,
-      });
+        validatedItems.push({
+          productId: resolvedProductId,
+          baseProductId: resolvedProductId,
+          cartItemId: rawCartItemId,
+          name: item.name || productData.name,
+          price: finalPrice,
+          compareAtPrice: item.compareAtPrice || null,
+          quantity,
+          image: item.image || item.images?.[0] || item.imageUrl || "",
+          variantId: item.variantId || null,
+          variantName: item.variantName || item.variantLabel || null,
+          variantLabel: item.variantLabel || null,
+          sku: item.sku || null,
+          stock: item.stock ?? null,
+          selectedAddOn: item.selectedAddOn || null,
+          originalPrice: item.originalPrice || null,
+          discountApplied: item.discountApplied || null,
+          isCombo: false,
+        });
     }
 
     const pricing = calculateOrderPricing(validatedItems);

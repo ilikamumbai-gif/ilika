@@ -7,6 +7,12 @@ import Footer from "../components/Footer";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
 import { getProductSlug } from "../utils/slugify";
+import {
+  buildCartProductSnapshot,
+  getDefaultVariant,
+  getProductDisplayImage,
+  getProductDisplayPricing,
+} from "../utils/productPricing";
 
 const rules = {
   skinType: {
@@ -265,13 +271,14 @@ const KnowSkinType = () => {
 
   const addProductToCart = async (p) => {
     if (!p) return;
-    await addToCart({
-      ...p,
-      id: p._id || p.id,
-      image: p?.image || p?.images?.[0] || p?.imageUrl || p?.variants?.[0]?.images?.[0] || "/placeholder.webp",
-      price: Number(p?.price || 0),
-      name: p?.name || "Product",
-    });
+    const defaultVariant = getDefaultVariant(p);
+    await addToCart(buildCartProductSnapshot(p, {
+      variant: defaultVariant,
+      cartId: defaultVariant ? `${p._id || p.id}_${defaultVariant.id}` : (p._id || p.id),
+      extra: {
+        name: p?.name || "Product",
+      },
+    }));
   };
 
   const addWholeKit = async () => {
@@ -453,13 +460,14 @@ const KnowSkinType = () => {
                   {kit.map((item, idx) => {
                     const p = item.matchedProduct;
                     const id = p?._id || p?.id;
-                    const image = p?.image || p?.images?.[0] || p?.imageUrl || p?.variants?.[0]?.images?.[0] || "/placeholder.webp";
+                    const image = getProductDisplayImage(p);
+                    const pricing = getProductDisplayPricing(p);
                     return (
                       <div key={`${item.product}-${idx}`} className="rounded-2xl border border-[#e5e7eb] bg-white p-3">
                         <img src={image} alt={p?.name || item.product} className="w-full h-40 object-cover rounded-xl" />
                         <p className="mt-2 text-sm font-semibold text-[#1f2937] line-clamp-2">{p?.name || item.product}</p>
                         <p className="text-xs text-gray-500">Score: {item.score}</p>
-                        <p className="text-sm font-bold text-[#1c371c] mt-1">Rs {Number(p?.price || 0)}</p>
+                        <p className="text-sm font-bold text-[#1c371c] mt-1">Rs {pricing.price}</p>
 
                         <div className="mt-3 flex flex-col gap-2">
                           <button

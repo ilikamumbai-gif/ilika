@@ -241,10 +241,10 @@ const Combos = () => {
                     aria-hidden="true"
                     className="absolute bottom-0 right-0 h-[62%] w-[74%] object-contain object-right-bottom opacity-70 transition duration-300 group-hover:scale-[1.03] group-hover:opacity-80 sm:h-[54%] sm:w-auto sm:opacity-30 sm:group-hover:opacity-36 md:h-[62%] lg:h-[70%]"
                   />
-                  <div
-                    className="absolute inset-0 opacity-100"
-                    style={{ background: card.overlay }}
-                  />
+                    <div
+                      className="absolute inset-0 opacity-30"
+                      style={{ background: card.overlay }}
+                    />
                 </div>
 
 

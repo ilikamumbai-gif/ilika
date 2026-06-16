@@ -9,6 +9,7 @@ import { useCart } from "../context/CartProvider";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
+import { buildCartProductSnapshot, getDefaultVariant } from "../utils/productPricing";
 
 const removeInlineImagesFromHtml = (html = "") =>
   String(html || "").replace(/<img[^>]*>/gi, "");
@@ -310,23 +311,11 @@ const BlogDetail = () => {
     if (!linkedProduct) return;
 
     const productId = linkedProduct._id || linkedProduct.id;
-    const defaultVariant =
-      linkedProduct.hasVariants && linkedProduct.variants?.length
-        ? linkedProduct.variants[0]
-        : null;
-
-    const cartItem = defaultVariant
-      ? {
-          ...linkedProduct,
-          id: `${productId}_${defaultVariant.id}`,
-          baseProductId: productId,
-          variantId: defaultVariant.id,
-          variantLabel: defaultVariant.label,
-          price: defaultVariant.price,
-          mrp: defaultVariant.mrp,
-          image: defaultVariant.images?.[0],
-        }
-      : { ...linkedProduct, id: productId };
+    const defaultVariant = getDefaultVariant(linkedProduct);
+    const cartItem = buildCartProductSnapshot(linkedProduct, {
+      variant: defaultVariant,
+      cartId: defaultVariant ? `${productId}_${defaultVariant.id}` : productId,
+    });
 
     addToCart(cartItem);
   };
