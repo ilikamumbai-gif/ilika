@@ -22,7 +22,7 @@ const PRODUCT_NAMES = {
   blackSeedHairOil:
     "Ilika Black Seed Hair Oil | For Premature Grey Hair & Hair Fall Control | Nourishing Scalp Care",
 };
-
+  
 const normalizeName = (value = "") =>
   String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
 
