@@ -73,8 +73,8 @@ const Combos = () => {
 
   const offerCards = [
     {
-      category: "Summer Sale",
-      title: "End of Summer Sale",
+      category: "Combo",
+      title: "Mask Combo Offers",
       highlight: "Up to 40% OFF",
       description: "Fresh picks across Ilika beauty tools and everyday self-care.",
       link: "/mask-combo",
@@ -176,7 +176,7 @@ const Combos = () => {
       badgeColor: "#5f8f35",
       buttonVariant: "light",
     },
-    
+
     {
       category: "Hair Care",
       title: "Blackseed Hair Oil Offer",
