@@ -532,7 +532,7 @@ const Home = () => {
 
               {/* APPLIANCES */}
               <Banner
-                className="mt-0 mb-6 md:h-auto"
+                className="mt-0 md:h-[38vh] lg:h-[42vh]"
                 src={BannerStyle}
                 mobileSrc={BannerStyle}
                 linkUrl="/hair/styling"
