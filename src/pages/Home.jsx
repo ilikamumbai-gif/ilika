@@ -15,7 +15,6 @@ const ProductList = lazy(() => import("../components/ProductList"));
 import Banner from "../components/Banner";
 const CartDrawer = lazy(() => import("../components/CartDrawer"));
 const Footer = lazy(() => import("../components/Footer"));
-const PromoCardGrid = lazy(() => import("../components/PromoCardGrid"));
 const CategoryNav = lazy(() => import("../components/CategoryNav"));
 const GroomingLeadOffer = lazy(() => import("../components/GroomingLeadOffer"));
 
@@ -262,11 +261,6 @@ const Home = () => {
             />
           </Suspense>
 
-          <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6">
-            <Suspense fallback={<div className="h-[520px]" />}>
-              <PromoCardGrid />
-            </Suspense>
-          </section>
           {/* <SkinTypeBanner /> */}
 
           {isMobile ? (
