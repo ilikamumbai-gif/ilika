@@ -85,8 +85,131 @@
   onload="this.media='all'"
 />
 
-  <script type="application/ld+json"> 
-  {"@context":"https://schema.org","@graph":[{"@type":"WebSite","url":"https://ilika.in/","name":"Ilika","alternateName":"ilika.in"},{"@type":"Organization","name":"Ilika","url":"https://ilika.in","logo":"https://ilika.in/Images/logo.webp","sameAs":["https://www.instagram.com/","https://www.facebook.com/"]}]}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://ilika.in/#organization",
+    "name": "Ilika",
+    "alternateName": [
+      "Ilika Mumbai",
+      "Ilika Skincare",
+      "Ilika Beauty",
+      "Ilika India"
+    ],
+    "url": "https://ilika.in/",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://ilika.in/logo.png"
+    },
+    "image": "https://ilika.in/logo.png",
+    "description": "Ilika is a premium Indian skincare, haircare, beauty and personal care brand offering face serums, moisturizers, toners, face masks, beauty devices, hair care products and innovative skincare technology designed for healthy, glowing skin and hair.",
+    "slogan": "Elegant. Bright. You.",
+    "foundingDate": "2021",
+    "foundingLocation": {
+      "@type": "Place",
+      "name": "India"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "India"
+    },
+    "brand": {
+      "@type": "Brand",
+      "name": "Ilika"
+    },
+    "knowsAbout": [
+      "Skincare",
+      "Haircare",
+      "Beauty Devices",
+      "Face Serums",
+      "Face Moisturizers",
+      "Face Masks",
+      "Sheet Masks",
+      "Hair Growth Solutions",
+      "LED Light Therapy",
+      "Blackhead Removal",
+      "Anti-Aging Skincare",
+      "Beauty Technology",
+      "Personal Care Products"
+    ],
+    "makesOffer": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product",
+          "name": "Hyaluronic Acid Serum"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product",
+          "name": "Collagen Serum"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product",
+          "name": "24K Gold Collagen Face Mask"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product",
+          "name": "Hydra Gel Moisturizer"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product",
+          "name": "Black Seed Hair Oil"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product",
+          "name": "High Frequency Therapy Wand"
+        }
+      }
+    ],
+    "sameAs": [
+      "https://www.instagram.com/ilikamumbai/",
+      "https://www.youtube.com/@ilikamumbai"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer support",
+      "areaServed": "IN",
+      "availableLanguage": [
+        "English",
+        "Hindi"
+      ]
+    }
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://ilika.in/#website",
+    "url": "https://ilika.in/",
+    "name": "Ilika",
+    "alternateName": "Ilika Skincare",
+    "publisher": {
+      "@id": "https://ilika.in/#organization"
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://ilika.in/?s={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
   </script>
 
   <script>
