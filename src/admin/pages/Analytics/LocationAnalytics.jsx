@@ -88,11 +88,44 @@ const isIndiaLabel = (label = "") => {
 };
 
 const DEFAULT_LOCATION_LIST_LIMIT = 5;
+const BLOCKED_IPS = new Set(["160.25.128.77"]);
+
+const normalizeText = (value) => String(value || "").trim();
+
+const normalizeLabel = (value) => normalizeText(value).toLowerCase();
 
 const escapeCsvValue = (value) => {
   const normalized = value == null ? "" : String(value);
   return `"${normalized.replace(/"/g, '""')}"`;
 };
+
+const getEventIpCandidates = (event = {}) =>
+  [
+    event?.clientIp,
+    event?.locationDebug?.clientIp,
+    event?.locationDebug?.requestIp,
+  ]
+    .map(normalizeText)
+    .filter(Boolean);
+
+const isBlockedIpEvent = (event = {}) =>
+  getEventIpCandidates(event).some((ip) => BLOCKED_IPS.has(ip));
+
+const isLocalhostUrl = (pageUrl = "") => {
+  const normalized = normalizeText(pageUrl);
+  if (!normalized) return false;
+
+  try {
+    const parsed = new URL(normalized);
+    const hostname = normalizeLabel(parsed.hostname);
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1" || hostname === "[::1]";
+  } catch {
+    return /localhost|127\.0\.0\.1|::1/i.test(normalized);
+  }
+};
+
+const shouldExcludeEvent = (event = {}) =>
+  isBlockedIpEvent(event) || isLocalhostUrl(event?.pageUrl);
 
 const getEventLocationParts = (event = {}) => {
   const source = event?.ipLocation || {};
@@ -102,6 +135,183 @@ const getEventLocationParts = (event = {}) => {
     state: String(source?.state || "").trim(),
     country: String(source?.country || "").trim(),
     postalCode: String(source?.postalCode || source?.pincode || "").trim(),
+  };
+};
+
+const buildLocationKey = (location = {}) =>
+  [
+    normalizeText(location?.city) || "Unknown",
+    normalizeText(location?.state),
+    normalizeText(location?.country),
+    normalizeText(location?.postalCode),
+  ].join("||");
+
+const buildLocationSummaryRows = (events = [], field) => {
+  const groups = new Map();
+
+  events.forEach((event) => {
+    const location = getEventLocationParts(event);
+    const rawLabel = location[field];
+    const label = normalizeText(rawLabel) || "Unknown";
+    const locationKey = buildLocationKey(location);
+
+    if (!groups.has(label)) {
+      groups.set(label, {
+        label,
+        visitors: new Set(),
+        sessions: new Set(),
+        locations: new Set(),
+        events: 0,
+      });
+    }
+
+    const group = groups.get(label);
+    group.events += 1;
+    if (event?.visitorId) group.visitors.add(event.visitorId);
+    if (event?.sessionId) group.sessions.add(event.sessionId);
+    group.locations.add(locationKey);
+  });
+
+  return Array.from(groups.values())
+    .map((group) => ({
+      label: group.label,
+      visitors: group.visitors.size,
+      sessions: group.sessions.size,
+      locations: group.locations.size,
+      events: group.events,
+    }))
+    .sort((a, b) => b.visitors - a.visitors || b.events - a.events || a.label.localeCompare(b.label))
+    .slice(0, DEFAULT_LOCATION_LIST_LIMIT);
+};
+
+const buildActivityByLocationRows = (events = []) => {
+  const groups = new Map();
+
+  events.forEach((event) => {
+    const location = getEventLocationParts(event);
+    const locationLabel = formatLocationLabel(location);
+    const locationKey = buildLocationKey(location);
+
+    if (!groups.has(locationKey)) {
+      groups.set(locationKey, {
+        locationLabel,
+        visitors: new Set(),
+        eventCount: 0,
+        pageViews: 0,
+        productViews: 0,
+        addToCarts: 0,
+      });
+    }
+
+    const group = groups.get(locationKey);
+    group.eventCount += 1;
+    if (event?.visitorId) group.visitors.add(event.visitorId);
+    if (event?.eventType === "page_view") group.pageViews += 1;
+    if (event?.eventType === "product_view") group.productViews += 1;
+    if (event?.eventType === "add_to_cart") group.addToCarts += 1;
+  });
+
+  return Array.from(groups.values())
+    .map((group) => ({
+      locationLabel: group.locationLabel,
+      eventCount: group.eventCount,
+      visitorCount: group.visitors.size,
+      pageViews: group.pageViews,
+      productViews: group.productViews,
+      addToCarts: group.addToCarts,
+    }))
+    .sort((a, b) => b.eventCount - a.eventCount || b.visitorCount - a.visitorCount || a.locationLabel.localeCompare(b.locationLabel));
+};
+
+const buildCartByLocationRows = (events = []) => {
+  const groups = new Map();
+
+  events
+    .filter((event) => event?.eventType === "add_to_cart")
+    .forEach((event) => {
+      const location = getEventLocationParts(event);
+      const productId = normalizeText(event?.productId);
+      const productName = normalizeText(event?.productName) || "Unknown Product";
+      const locationKey = buildLocationKey(location);
+      const groupKey = [productId, productName, locationKey].join("||");
+
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, {
+          productId,
+          productName,
+          city: location.city,
+          state: location.state,
+          country: location.country,
+          postalCode: location.postalCode,
+          eventCount: 0,
+          totalQuantity: 0,
+          totalRevenue: 0,
+        });
+      }
+
+      const group = groups.get(groupKey);
+      const quantity = Number(event?.quantity);
+      const price = Number(event?.price);
+
+      group.eventCount += 1;
+      group.totalQuantity += Number.isFinite(quantity) ? quantity : 0;
+      group.totalRevenue +=
+        (Number.isFinite(quantity) ? quantity : 0) * (Number.isFinite(price) ? price : 0);
+    });
+
+  return Array.from(groups.values()).sort(
+    (a, b) => b.eventCount - a.eventCount || b.totalQuantity - a.totalQuantity || a.productName.localeCompare(b.productName)
+  );
+};
+
+const buildFilterOptionsFromEvents = (events = []) => {
+  const countries = new Set();
+  const states = new Set();
+  const cities = new Set();
+  const products = new Set();
+
+  events.forEach((event) => {
+    const location = getEventLocationParts(event);
+    if (location.country) countries.add(location.country);
+    if (location.state) states.add(location.state);
+    if (location.city) cities.add(location.city);
+    if (event?.productName) products.add(String(event.productName).trim());
+  });
+
+  const toSortedArray = (values) => Array.from(values).sort((a, b) => a.localeCompare(b));
+
+  return {
+    countries: toSortedArray(countries),
+    states: toSortedArray(states),
+    cities: toSortedArray(cities),
+    products: toSortedArray(products),
+  };
+};
+
+const buildDerivedSummary = (events = []) => {
+  const totalVisitors = new Set(events.map((event) => event?.visitorId).filter(Boolean)).size;
+  const totalSessions = new Set(events.map((event) => event?.sessionId).filter(Boolean)).size;
+  const eventCounts = events.reduce(
+    (accumulator, event) => {
+      const eventType = normalizeText(event?.eventType);
+      if (eventType && Object.prototype.hasOwnProperty.call(accumulator, eventType)) {
+        accumulator[eventType] += 1;
+      }
+      return accumulator;
+    },
+    { page_view: 0, product_view: 0, add_to_cart: 0 }
+  );
+
+  return {
+    totalVisitors,
+    totalSessions,
+    totalEvents: events.length,
+    eventCounts,
+    byCountry: buildLocationSummaryRows(events, "country"),
+    byState: buildLocationSummaryRows(events, "state"),
+    byCity: buildLocationSummaryRows(events, "city"),
+    activityByLocation: buildActivityByLocationRows(events),
+    cartByLocation: buildCartByLocationRows(events),
   };
 };
 
@@ -297,10 +507,20 @@ const LocationAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const downloadFilteredCsv = () => {
-    if (!payload.events.length) return;
+  const visibleEvents = useMemo(
+    () => payload.events.filter((event) => !shouldExcludeEvent(event)),
+    [payload.events]
+  );
+  const visibleSummary = useMemo(() => buildDerivedSummary(visibleEvents), [visibleEvents]);
+  const visibleFilterOptions = useMemo(
+    () => buildFilterOptionsFromEvents(visibleEvents),
+    [visibleEvents]
+  );
 
-    const csvContent = buildLocationAnalyticsCsv(payload.events);
+  const downloadFilteredCsv = () => {
+    if (!visibleEvents.length) return;
+
+    const csvContent = buildLocationAnalyticsCsv(visibleEvents);
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const downloadUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -390,10 +610,10 @@ const LocationAnalytics = () => {
     load();
   }, [filters, getAdminAuthHeaders, refreshSignal]);
 
-  const recentEvents = useMemo(() => payload.events.slice(0, 25), [payload.events]);
+  const recentEvents = useMemo(() => visibleEvents.slice(0, 25), [visibleEvents]);
   const countrySummaryRows = useMemo(
-    () => payload.summary.byCountry.filter((row) => isIndiaLabel(row.label)),
-    [payload.summary.byCountry]
+    () => visibleSummary.byCountry.filter((row) => isIndiaLabel(row.label)),
+    [visibleSummary.byCountry]
   );
 
   return (
@@ -415,7 +635,7 @@ const LocationAnalytics = () => {
             <button
               type="button"
               onClick={downloadFilteredCsv}
-              disabled={loading || payload.events.length === 0}
+              disabled={loading || visibleEvents.length === 0}
               className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
             >
               Download CSV
@@ -482,7 +702,7 @@ const LocationAnalytics = () => {
               className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none transition focus:border-pink-400"
             >
               <option value="">All states</option>
-              {payload.filterOptions.states.map((item) => (
+              {visibleFilterOptions.states.map((item) => (
                 <option key={item} value={item}>{item}</option>
               ))}
             </select>
@@ -496,7 +716,7 @@ const LocationAnalytics = () => {
               className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none transition focus:border-pink-400"
             >
               <option value="">All cities</option>
-              {payload.filterOptions.cities.map((item) => (
+              {visibleFilterOptions.cities.map((item) => (
                 <option key={item} value={item}>{item}</option>
               ))}
             </select>
@@ -510,7 +730,7 @@ const LocationAnalytics = () => {
               className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none transition focus:border-pink-400"
             >
               <option value="">All products</option>
-              {payload.filterOptions.products.map((item) => (
+              {visibleFilterOptions.products.map((item) => (
                 <option key={item} value={item}>{item}</option>
               ))}
             </select>
@@ -527,28 +747,28 @@ const LocationAnalytics = () => {
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Total visitors"
-          value={loading ? "..." : payload.summary.totalVisitors.toLocaleString("en-IN")}
-          hint={`${payload.summary.totalSessions.toLocaleString("en-IN")} sessions`}
+          value={loading ? "..." : visibleSummary.totalVisitors.toLocaleString("en-IN")}
+          hint={`${visibleSummary.totalSessions.toLocaleString("en-IN")} sessions`}
           icon={Users}
           tone="pink"
         />
         <StatCard
           title="Page views"
-          value={loading ? "..." : payload.summary.eventCounts.page_view.toLocaleString("en-IN")}
+          value={loading ? "..." : visibleSummary.eventCounts.page_view.toLocaleString("en-IN")}
           hint="Anonymous page visit events"
           icon={Globe}
           tone="blue"
         />
         <StatCard
           title="Product views"
-          value={loading ? "..." : payload.summary.eventCounts.product_view.toLocaleString("en-IN")}
+          value={loading ? "..." : visibleSummary.eventCounts.product_view.toLocaleString("en-IN")}
           hint="Product detail opens"
           icon={Eye}
           tone="amber"
         />
         <StatCard
           title="Add to cart"
-          value={loading ? "..." : payload.summary.eventCounts.add_to_cart.toLocaleString("en-IN")}
+          value={loading ? "..." : visibleSummary.eventCounts.add_to_cart.toLocaleString("en-IN")}
           hint="Cart actions by anonymous visitors"
           icon={ShoppingCart}
           tone="emerald"
@@ -557,12 +777,12 @@ const LocationAnalytics = () => {
 
       <div className="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-3">
         <LocationSummaryCard title="Visitors by Country" rows={countrySummaryRows} icon={MapPinned} />
-        <LocationSummaryCard title="Visitors by State" rows={payload.summary.byState} icon={Map} />
-        <LocationSummaryCard title="Visitors by City" rows={payload.summary.byCity} icon={Navigation} />
+        <LocationSummaryCard title="Visitors by State" rows={visibleSummary.byState} icon={Map} />
+        <LocationSummaryCard title="Visitors by City" rows={visibleSummary.byCity} icon={Navigation} />
       </div>
 
       <div className="mb-6 grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-        <LocationActivityCard rows={payload.summary.activityByLocation} loading={loading} />
+        <LocationActivityCard rows={visibleSummary.activityByLocation} loading={loading} />
 
         <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
           <div className="mb-4 flex items-center gap-3">
@@ -578,10 +798,10 @@ const LocationAnalytics = () => {
           <div className="space-y-3">
             {loading ? (
               <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">Loading cart location activity...</p>
-            ) : payload.summary.cartByLocation.length === 0 ? (
+            ) : visibleSummary.cartByLocation.length === 0 ? (
               <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">No add-to-cart events for current filters</p>
             ) : (
-              payload.summary.cartByLocation.slice(0, 12).map((row, index) => (
+              visibleSummary.cartByLocation.slice(0, 12).map((row, index) => (
                 <div key={`${row.productId || row.productName}-${index}`} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -619,7 +839,7 @@ const LocationAnalytics = () => {
               <p className="text-xs text-gray-500">Latest anonymous visitor events across pages, product views, and carts.</p>
             </div>
             <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
-              {payload.events.length.toLocaleString("en-IN")} events
+              {visibleEvents.length.toLocaleString("en-IN")} events
             </span>
           </div>
 
