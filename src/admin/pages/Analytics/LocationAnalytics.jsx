@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Globe,
   MapPinned,
-  Map,
+  Map as MapIcon,
   Navigation,
   ShoppingCart,
   Eye,
@@ -777,7 +777,7 @@ const LocationAnalytics = () => {
 
       <div className="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-3">
         <LocationSummaryCard title="Visitors by Country" rows={countrySummaryRows} icon={MapPinned} />
-        <LocationSummaryCard title="Visitors by State" rows={visibleSummary.byState} icon={Map} />
+        <LocationSummaryCard title="Visitors by State" rows={visibleSummary.byState} icon={MapIcon} />
         <LocationSummaryCard title="Visitors by City" rows={visibleSummary.byCity} icon={Navigation} />
       </div>
 
