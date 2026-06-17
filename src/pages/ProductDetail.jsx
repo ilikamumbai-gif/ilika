@@ -946,6 +946,12 @@ const getYouTubeVideoId = (url = "") => {
   }
 };
 
+const isShortFormVideoUrl = (url = "") => {
+  const raw = String(url || "").trim().toLowerCase();
+  if (!raw) return false;
+  return raw.includes("/shorts/") || raw.includes("youtube.com/shorts/");
+};
+
 const getDriveFileId = (url = "") => {
   if (!url) return "";
   const fromFilePath = url.match(/\/d\/([^/]+)/)?.[1];
@@ -988,10 +994,78 @@ const StarRating = ({ value, onChange }) => {
   );
 };
 
+const SkeletonBlock = ({ className = "" }) => (
+  <div className={`animate-pulse rounded-2xl bg-[#f3e8e6] ${className}`} aria-hidden="true" />
+);
+
+const ProductDetailSectionSkeleton = ({ minHeight = 240, className = "" }) => (
+  <div className={`max-w-7xl mx-auto px-4 sm:px-6 ${className}`} aria-hidden="true">
+    <div className="rounded-[26px] border border-[#f1e2df] bg-white p-4 sm:p-6">
+      <div className="space-y-4">
+        <SkeletonBlock className="h-8 w-52" />
+        <SkeletonBlock className="h-4 w-full max-w-3xl" />
+        <SkeletonBlock className="h-4 w-[92%] max-w-2xl" />
+        <SkeletonBlock className="h-4 w-[78%] max-w-xl" />
+      </div>
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <SkeletonBlock key={index} className="h-36 w-full" />
+        ))}
+      </div>
+    </div>
+    <div style={{ minHeight: Math.max(minHeight - 220, 0) }} />
+  </div>
+);
+
+const ProductDetailPageSkeleton = () => (
+  <>
+    <MiniDivider />
+    <div className="primary-bg-color bg-white">
+      <Header />
+      <CartDrawer />
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 pb-10 sm:pt-14">
+        <div className="grid grid-cols-1 gap-5 sm:gap-7 lg:grid-cols-2 lg:gap-16">
+          <div className="space-y-4">
+            <SkeletonBlock className="aspect-square w-full rounded-[24px]" />
+            <div className="grid grid-cols-4 gap-2 sm:gap-3">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <SkeletonBlock key={index} className="h-20 w-full rounded-[16px]" />
+              ))}
+            </div>
+          </div>
+          <div className="space-y-4 sm:space-y-5">
+            <SkeletonBlock className="h-4 w-16" />
+            <SkeletonBlock className="h-10 w-full max-w-[520px]" />
+            <SkeletonBlock className="h-4 w-full max-w-[460px]" />
+            <SkeletonBlock className="h-4 w-[82%] max-w-[420px]" />
+            <SkeletonBlock className="h-8 w-28" />
+            <SkeletonBlock className="h-28 w-full rounded-[26px]" />
+            <SkeletonBlock className="h-24 w-full rounded-[26px]" />
+            <div className="grid grid-cols-2 gap-3">
+              <SkeletonBlock className="h-14 w-full rounded-[18px]" />
+              <SkeletonBlock className="h-14 w-full rounded-[18px]" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-6 space-y-6 sm:mt-8">
+          <ProductDetailSectionSkeleton minHeight={160} className="px-0 sm:px-0" />
+          <ProductDetailSectionSkeleton minHeight={240} className="px-0 sm:px-0" />
+          <ProductDetailSectionSkeleton minHeight={300} className="px-0 sm:px-0" />
+        </div>
+      </main>
+    </div>
+  </>
+);
+
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    REVIEW MODAL
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-const DeferredSection = ({ children, minHeight = 240, rootMargin = "120px 0px" }) => {
+const DeferredSection = ({
+  children,
+  minHeight = 240,
+  rootMargin = "120px 0px",
+  placeholder = null,
+}) => {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -1016,7 +1090,7 @@ const DeferredSection = ({ children, minHeight = 240, rootMargin = "120px 0px" }
 
   return (
     <div ref={sectionRef} style={{ contentVisibility: "auto", containIntrinsicSize: `${minHeight}px` }}>
-      {isVisible ? children : <div style={{ minHeight }} aria-hidden="true" />}
+      {isVisible ? children : (placeholder || <ProductDetailSectionSkeleton minHeight={minHeight} />)}
     </div>
   );
 };
@@ -1651,6 +1725,7 @@ const ProductDetail = () => {
   const [pendingImagesToPreload, setPendingImagesToPreload] = useState([]);
   const [selectedVideoUrl, setSelectedVideoUrl] = useState("");
   const [selectedVideoPlaying, setSelectedVideoPlaying] = useState(false);
+  const [showAllThumbnails, setShowAllThumbnails] = useState(false);
   const [activeVariant, setActiveVariant] = useState(null);
   const [touchStartX, setTouchStartX] = useState(null);
   const [touchEndX, setTouchEndX] = useState(null);
@@ -2022,6 +2097,7 @@ const ProductDetail = () => {
           url: rawUrl,
           embedUrl,
           thumb: getVideoThumbnailUrl(rawUrl),
+          isShort: isShortFormVideoUrl(rawUrl),
           title: String(video?.title || "").trim() || `Product Video ${index + 1}`,
         };
       })
@@ -2136,6 +2212,10 @@ const ProductDetail = () => {
   const hasThumbnailOverflow = galleryCount > MAX_VISIBLE_THUMBS;
   const overflowStartIndex = MAX_VISIBLE_THUMBS - 1;
 
+  useEffect(() => {
+    setShowAllThumbnails(false);
+  }, [productId, activeVariant?.id, galleryCount]);
+
   /* â”€â”€ Auto-scroll thumbnails on product page â”€â”€ */
   useEffect(() => {
     clearInterval(autoScrollRef.current);
@@ -2195,6 +2275,7 @@ const ProductDetail = () => {
 
   const handleOverflowThumbClick = useCallback(() => {
     stopAuto();
+    setShowAllThumbnails(true);
     if (images[overflowStartIndex]) {
       setSelectedImage(images[overflowStartIndex]);
       setSelectedVideoUrl("");
@@ -2985,11 +3066,7 @@ const ProductDetail = () => {
   };
 
   /* â”€â”€ Loading / not found states â”€â”€ */
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500 animate-pulse">Loading product...</p>
-    </div>
-  );
+  if (loading) return <ProductDetailPageSkeleton />;
   if (!product || product.isActive === false) return (
     <div className="min-h-screen flex items-center justify-center">
       <p className="text-gray-500">Product not available</p>
@@ -3079,7 +3156,9 @@ const ProductDetail = () => {
                   style={{ scrollbarWidth: "none" }}
                 >
                   {displayImages.length > 0 ? (
-                    displayImages.slice(0, hasThumbnailOverflow ? overflowStartIndex : displayImages.length).map((img, i) => (
+                    displayImages
+                      .slice(0, hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : displayImages.length)
+                      .map((img, i) => (
                       <button
                         key={img}
                         onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
@@ -3103,7 +3182,12 @@ const ProductDetail = () => {
                       </button>
                     ))
                   ) : (
-                    Array.from({ length: Math.min(images.length, hasThumbnailOverflow ? overflowStartIndex : 5) }).map((_, i) => (
+                    Array.from({
+                      length: Math.min(
+                        images.length,
+                        hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : 5
+                      ),
+                    }).map((_, i) => (
                       <div
                         key={i}
                         className="flex-shrink-0 rounded-[16px] bg-gray-100 animate-pulse"
@@ -3111,7 +3195,7 @@ const ProductDetail = () => {
                       />
                     ))
                   )}
-                  {!hasThumbnailOverflow && productVideos.map((video) => {
+                  {(!hasThumbnailOverflow || showAllThumbnails) && productVideos.map((video) => {
                     const isSelected = selectedVideoUrl === video.embedUrl;
                     return (
                       <button
@@ -3138,7 +3222,7 @@ const ProductDetail = () => {
                       </button>
                     );
                   })}
-                  {hasThumbnailOverflow && (
+                  {hasThumbnailOverflow && !showAllThumbnails && (
                     <button
                       type="button"
                       onClick={handleOverflowThumbClick}
@@ -3201,7 +3285,11 @@ const ProductDetail = () => {
                         <iframe
                           src={selectedVideoUrl}
                           title="Product video preview"
-                          className="w-full max-h-full aspect-video"
+                          className={
+                            selectedVideo?.isShort
+                              ? "h-full w-auto max-w-full mx-auto"
+                              : "w-full max-h-full aspect-video"
+                          }
                           style={{ border: "none" }}
                           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                           allowFullScreen
@@ -3221,7 +3309,9 @@ const ProductDetail = () => {
                               loading="lazy"
                               src={selectedVideo.thumb}
                               alt={selectedVideo.title || "Product video thumbnail"}
-                              className="h-full w-full object-contain bg-[#fff5f4]"
+                              className={`h-full w-full bg-[#fff5f4] ${
+                                selectedVideo?.isShort ? "object-contain" : "object-contain"
+                              }`}
                             />
                           ) : (
                             <div className="h-full w-full bg-[#fff5f4]" />
@@ -3616,7 +3706,24 @@ const ProductDetail = () => {
         </section>
 
         {trustStripItems.length > 0 && (
-          <DeferredSection minHeight={110}>
+          <DeferredSection
+            minHeight={110}
+            placeholder={
+              <div className="max-w-7xl mx-auto px-3 sm:px-6 mb-4 sm:mb-5" aria-hidden="true">
+                <div className="grid grid-cols-2 gap-3 rounded-[18px] border border-[#f1e2df] bg-white p-3 sm:grid-cols-4 sm:p-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <SkeletonBlock className="h-10 w-10 shrink-0 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <SkeletonBlock className="h-4 w-24" />
+                        <SkeletonBlock className="h-3 w-20" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            }
+          >
             <section className="max-w-7xl mx-auto px-3 sm:px-6 mb-4 sm:mb-5">
               <div
                 className="overflow-hidden rounded-[18px] border"
@@ -3659,7 +3766,26 @@ const ProductDetail = () => {
 
 
         {whyLoveItItems.length > 0 && (
-          <DeferredSection minHeight={220}>
+          <DeferredSection
+            minHeight={220}
+            placeholder={
+              <div className="max-w-7xl mx-auto px-3 sm:px-6 mb-6 sm:mb-8" aria-hidden="true">
+                <div className="rounded-[22px] border border-[#f1e2df] bg-white p-4 sm:p-5">
+                  <SkeletonBlock className="h-8 w-48" />
+                  <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <div key={index} className="space-y-3 rounded-[18px] border border-[#f6ecea] p-4">
+                        <SkeletonBlock className="h-10 w-10 rounded-full" />
+                        <SkeletonBlock className="h-4 w-28" />
+                        <SkeletonBlock className="h-3 w-full" />
+                        <SkeletonBlock className="h-3 w-[85%]" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            }
+          >
             <section className="max-w-7xl mx-auto px-3 sm:px-6 mb-6 sm:mb-8">
               <div
                 className="overflow-hidden rounded-[22px]"
@@ -3726,7 +3852,10 @@ const ProductDetail = () => {
 
         {/* BEFORE / AFTER */}
         {hasBeforeAfter && (
-          <DeferredSection minHeight={420}>
+          <DeferredSection
+            minHeight={420}
+            placeholder={<ProductDetailSectionSkeleton minHeight={420} className="mb-16" />}
+          >
             <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
               <div className="flex items-center gap-3 mb-8">
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
@@ -3766,7 +3895,23 @@ const ProductDetail = () => {
 
         {/* INGREDIENTS SECTION */}
         {activeInfoTab !== "reviews" && hasIngredients && (
-          <DeferredSection minHeight={420}>
+          <DeferredSection
+            minHeight={420}
+            placeholder={
+              <div className="max-w-7xl mx-auto px-4 sm:px-4 mb-6 py-6 sm:py-6" aria-hidden="true">
+                <div className="rounded-[20px] border border-[#f1e2df] bg-white p-4 sm:p-6">
+                  <div className="mb-7 flex justify-center">
+                    <SkeletonBlock className="h-10 w-56" />
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <SkeletonBlock key={index} className="aspect-square w-full rounded-[28px]" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            }
+          >
             <section
               className="max-w-7xl mx-auto px-4 sm:px-4 mb-6 py-6 sm:py-6"
               style={{
@@ -3847,7 +3992,26 @@ const ProductDetail = () => {
         
 
         {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
-        <DeferredSection minHeight={360}>
+        <DeferredSection
+          minHeight={360}
+          placeholder={
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10" aria-hidden="true">
+              <div className="rounded-[28px] border border-[#f1e2df] bg-white p-4 sm:p-6">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <SkeletonBlock key={index} className="h-12 w-full rounded-xl" />
+                  ))}
+                </div>
+                <div className="mt-6 space-y-3">
+                  <SkeletonBlock className="h-4 w-full" />
+                  <SkeletonBlock className="h-4 w-[92%]" />
+                  <SkeletonBlock className="h-4 w-[80%]" />
+                  <SkeletonBlock className="h-40 w-full rounded-2xl" />
+                </div>
+              </div>
+            </div>
+          }
+        >
           <section ref={detailsTabsRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-10">
             <div className="hidden md:block overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
               <div className="grid auto-cols-fr grid-flow-col border-b border-gray-100 bg-[#fcf7f7]">
@@ -3911,7 +4075,22 @@ const ProductDetail = () => {
         </DeferredSection>
 
         {activeInfoTab !== "reviews" && hasInTheBox && (
-          <DeferredSection minHeight={280}>
+          <DeferredSection
+            minHeight={280}
+            placeholder={
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-8" aria-hidden="true">
+                <SkeletonBlock className="mb-5 h-8 w-48" />
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="space-y-3 text-center">
+                      <SkeletonBlock className="mx-auto h-28 w-28 rounded-[18px] sm:h-32 sm:w-32" />
+                      <SkeletonBlock className="mx-auto h-4 w-24" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            }
+          >
             <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
               <div className="mb-4 sm:mb-5">
                 <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }}/>
@@ -3950,7 +4129,14 @@ const ProductDetail = () => {
 
         {/* â•â•â•â• PRODUCT BANNERS â•â•â•â• */}
         {activeInfoTab !== "reviews" && ((product.banners?.length > 0) || product.bannerImage) && (
-          <DeferredSection minHeight={320}>
+          <DeferredSection
+            minHeight={320}
+            placeholder={
+              <div className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4" aria-hidden="true">
+                <SkeletonBlock className="h-56 w-full rounded-[24px] sm:h-72" />
+              </div>
+            }
+          >
             <section className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4">
               {(product.banners?.length > 0
                 ? product.banners
@@ -3971,7 +4157,22 @@ const ProductDetail = () => {
         )}
 
 {activeInfoTab !== "reviews" && product.videos?.length > 0 && (
-          <DeferredSection minHeight={360}>
+          <DeferredSection
+            minHeight={360}
+            placeholder={
+              <div className="w-full my-10 px-4 sm:px-6" aria-hidden="true">
+                <div className="grid grid-cols-1 overflow-hidden rounded-[24px] border border-[#f1e2df] bg-white md:grid-cols-12">
+                  <SkeletonBlock className="h-[240px] w-full rounded-none md:col-span-8 lg:col-span-9 md:h-[320px]" />
+                  <div className="space-y-3 p-4 md:col-span-4">
+                    <SkeletonBlock className="h-4 w-24" />
+                    <SkeletonBlock className="h-7 w-[80%]" />
+                    <SkeletonBlock className="h-4 w-full" />
+                    <SkeletonBlock className="h-4 w-[90%]" />
+                  </div>
+                </div>
+              </div>
+            }
+          >
             <section className="w-full bg-[#fbf7f7] my-10 max-h-[80vh] overflow-hidden">
               {product.videos.map((vid, idx) => (
                 <div
@@ -4005,7 +4206,35 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-        <DeferredSection minHeight={340}>
+        <DeferredSection
+          minHeight={340}
+          placeholder={
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-12" aria-hidden="true">
+              <div className="mb-6 space-y-3">
+                <SkeletonBlock className="h-8 w-56" />
+                <SkeletonBlock className="h-4 w-72" />
+              </div>
+              <div className="flex gap-4 overflow-hidden">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="w-full rounded-[24px] border border-[#f1e2df] bg-white p-4 sm:w-[48%] lg:w-[32%]">
+                    <div className="mb-4 flex items-center gap-3">
+                      <SkeletonBlock className="h-11 w-11 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <SkeletonBlock className="h-4 w-28" />
+                        <SkeletonBlock className="h-3 w-20" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <SkeletonBlock className="h-4 w-full" />
+                      <SkeletonBlock className="h-4 w-[88%]" />
+                      <SkeletonBlock className="h-4 w-[74%]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          }
+        >
           <ProductReviewCarouselSection
             reviews={productReviews}
             theme={detailTheme}
@@ -4016,7 +4245,29 @@ const ProductDetail = () => {
           
         {/* â•â•â•â• RELATED PRODUCTS â•â•â•â• */}
         {relatedProducts.length > 0 && (
-          <DeferredSection minHeight={360}>
+          <DeferredSection
+            minHeight={360}
+            placeholder={
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-2" aria-hidden="true">
+                <div className="mb-6 flex items-center gap-3">
+                  <SkeletonBlock className="h-6 w-1 rounded-full" />
+                  <SkeletonBlock className="h-7 w-44" />
+                </div>
+                <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="rounded-[24px] border border-[#f1e2df] bg-white p-3">
+                      <SkeletonBlock className="aspect-[0.9] w-full rounded-[18px]" />
+                      <div className="mt-3 space-y-2">
+                        <SkeletonBlock className="h-4 w-full" />
+                        <SkeletonBlock className="h-4 w-[70%]" />
+                        <SkeletonBlock className="h-5 w-24" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            }
+          >
             <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-2">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />

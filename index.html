@@ -437,6 +437,7 @@ Virar (West)",
     // Use Object.defineProperty to intercept when fbevents.js sets callMethod
     // fbevents.js does: fbq.callMethod = realDispatcher
     // Our setter wraps realDispatcher with purchaseFilter before storing it
+    
     var _realCallMethod = null;
     Object.defineProperty(fbqStub, 'callMethod', {
       get: function() { return _realCallMethod; },
