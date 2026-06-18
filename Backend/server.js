@@ -28,6 +28,15 @@ const GOOGLE_ADS_CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET || "";
 const GOOGLE_ADS_REFRESH_TOKEN = process.env.GOOGLE_ADS_REFRESH_TOKEN || "";
 const GOOGLE_ADS_CUSTOMER_ID = String(process.env.GOOGLE_ADS_CUSTOMER_ID || "").replace(/-/g, "");
 const GOOGLE_ADS_LOGIN_CUSTOMER_ID = String(process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID || "").replace(/-/g, "");
+const PRODUCT_PRERENDER_DEPLOY_HOOK_URL =
+  process.env.PRODUCT_PRERENDER_DEPLOY_HOOK_URL ||
+  process.env.SITE_REBUILD_HOOK_URL ||
+  process.env.VERCEL_DEPLOY_HOOK_URL ||
+  "";
+const PRODUCT_PRERENDER_DEPLOY_HOOK_TOKEN =
+  process.env.PRODUCT_PRERENDER_DEPLOY_HOOK_TOKEN ||
+  process.env.SITE_REBUILD_HOOK_TOKEN ||
+  "";
 
 const formatIstDateTime = (date = new Date()) => {
   return new Intl.DateTimeFormat("en-IN", {
@@ -1248,6 +1257,61 @@ const withTimeout = async (promise, timeoutMs = 12000, timeoutLabel = "operation
     ]);
   } finally {
     if (timeoutId) clearTimeout(timeoutId);
+  }
+};
+
+const triggerProductPrerenderRebuild = async ({
+  action = "product_updated",
+  productId = "",
+  productUrl = "",
+} = {}) => {
+  const hookUrl = String(PRODUCT_PRERENDER_DEPLOY_HOOK_URL || "").trim();
+  if (!hookUrl) {
+    return { status: "disabled", reason: "missing_deploy_hook_url" };
+  }
+
+  try {
+    const response = await withTimeout(
+      fetch(hookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(PRODUCT_PRERENDER_DEPLOY_HOOK_TOKEN
+            ? { Authorization: `Bearer ${PRODUCT_PRERENDER_DEPLOY_HOOK_TOKEN}` }
+            : {}),
+        },
+        body: JSON.stringify({
+          source: "product-admin",
+          action,
+          productId: String(productId || "").trim(),
+          productUrl: String(productUrl || "").trim(),
+          triggeredAt: new Date().toISOString(),
+        }),
+      }),
+      15000,
+      "product_prerender_rebuild_timeout"
+    );
+
+    const text = await response.text().catch(() => "");
+    if (!response.ok) {
+      return {
+        status: "error",
+        reason: `hook_failed_${response.status}`,
+        httpStatus: response.status,
+        response: text.slice(0, 400),
+      };
+    }
+
+    return {
+      status: "triggered",
+      httpStatus: response.status,
+      response: text.slice(0, 400),
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      reason: error?.message || "hook_request_failed",
+    };
   }
 };
 
@@ -2584,7 +2648,13 @@ app.post("/api/products", async (req, res) => {
       }
     }
 
-    res.json({ ...(await formatProductForApi(productData, docRef.id)), merchantSync });
+    const prerenderRebuild = await triggerProductPrerenderRebuild({
+      action: "product_created",
+      productId: docRef.id,
+      productUrl: productData.productUrl,
+    });
+
+    res.json({ ...(await formatProductForApi(productData, docRef.id)), merchantSync, prerenderRebuild });
   } catch (error) {
     console.error("ADD PRODUCT ERROR:", error);
     res.status(500).json({ error: "Failed to add product" });
@@ -2774,10 +2844,17 @@ app.put("/api/products/:id", async (req, res) => {
       }
     }
 
+    const prerenderRebuild = await triggerProductPrerenderRebuild({
+      action: "product_updated",
+      productId: updatedDoc.id,
+      productUrl: updateData.productUrl,
+    });
+
     res.json({
       message: "Product updated successfully",
       product: await formatProductForApi(updatedDoc.data(), updatedDoc.id),
       merchantSync,
+      prerenderRebuild,
     });
   } catch (error) {
     console.error("UPDATE PRODUCT ERROR:", error);
@@ -2837,9 +2914,15 @@ app.put("/admin/products/edit/:id", async (req, res) => {
 
     await productRef.update(updateData);
     const updatedDoc = await productRef.get();
+    const prerenderRebuild = await triggerProductPrerenderRebuild({
+      action: "product_updated",
+      productId: updatedDoc.id,
+      productUrl: updateData.productUrl,
+    });
     res.json({
       message: "Product updated successfully",
       product: await formatProductForApi(updatedDoc.data(), updatedDoc.id),
+      prerenderRebuild,
     });
   } catch (error) {
     console.error("UPDATE PRODUCT (ADMIN EDIT ROUTE) ERROR:", error);
@@ -2851,6 +2934,8 @@ app.delete("/api/products/:id", async (req, res) => {
   try {
     const productRef = await resolveProductDocByAnyId(req.params.id);
     if (!productRef) return res.status(404).json({ error: "Product not found" });
+    const deletedDoc = await productRef.get();
+    const deletedData = deletedDoc.exists ? deletedDoc.data() || {} : {};
     await productRef.delete();
 
     let merchantSync = { status: "disabled", reason: "auto_sync_disabled" };
@@ -2863,7 +2948,13 @@ app.delete("/api/products/:id", async (req, res) => {
       }
     }
 
-    res.json({ message: "Product deleted successfully", merchantSync });
+    const prerenderRebuild = await triggerProductPrerenderRebuild({
+      action: "product_deleted",
+      productId: productRef.id,
+      productUrl: deletedData?.productUrl || deletedData?.slug || "",
+    });
+
+    res.json({ message: "Product deleted successfully", merchantSync, prerenderRebuild });
   } catch {
     res.status(500).json({ error: "Failed to delete product" });
   }
