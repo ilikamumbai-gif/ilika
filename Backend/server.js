@@ -226,6 +226,8 @@ const optionalTrimmed = (value, max = 500) => {
   return text || null;
 };
 
+const normalizeProductSeoText = (value, max = 5000) => trimToLength(value, max);
+
 const LEAD_DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
 const LEAD_SOURCE_DEFAULT = "grooming_appliance_offer_popup";
 const LEAD_OFFER_DEFAULT = "Grooming Appliances Special Offer";
@@ -1390,6 +1392,71 @@ const stripHtml = (value = "") =>
     .replace(/\s+/g, " ")
     .trim();
 
+const normalizeSeoDescriptionValue = (value = "", fallbackDescription = "") => {
+  const explicit = normalizeProductSeoText(value, 2000);
+  if (explicit) return explicit;
+  return stripHtml(fallbackDescription).slice(0, 2000);
+};
+
+const readCategoryIds = (product = {}) => {
+  if (Array.isArray(product?.categoryIds)) return product.categoryIds.filter(Boolean);
+  if (product?.categoryId) return [product.categoryId].filter(Boolean);
+  return [];
+};
+
+const resolveCategoryNameById = async (categoryId = "") => {
+  const normalizedId = String(categoryId || "").trim();
+  if (!normalizedId) return "";
+
+  const directDoc = await db.collection("categories").doc(normalizedId).get();
+  if (directDoc.exists) {
+    return String(directDoc.data()?.name || "").trim();
+  }
+
+  const legacySnap = await db
+    .collection("categories")
+    .where("id", "==", normalizedId)
+    .limit(1)
+    .get();
+
+  if (!legacySnap.empty) {
+    return String(legacySnap.docs[0].data()?.name || "").trim();
+  }
+
+  return "";
+};
+
+const normalizeSeoCategoryValue = async (value = "", product = {}) => {
+  const explicit = normalizeProductSeoText(value, 250);
+  if (explicit) return explicit;
+
+  const directCategory =
+    normalizeProductSeoText(product?.category, 250) ||
+    normalizeProductSeoText(product?.categoryName, 250);
+  if (directCategory) return directCategory;
+
+  const [firstCategoryId] = readCategoryIds(product);
+  if (!firstCategoryId) return "";
+
+  const fallbackCategory = await resolveCategoryNameById(firstCategoryId);
+  return normalizeProductSeoText(fallbackCategory, 250);
+};
+
+const resolveProductSeoFields = async (product = {}) => ({
+  seoDescription: normalizeSeoDescriptionValue(product?.seoDescription, product?.description),
+  seoKeywords: normalizeProductSeoText(product?.seoKeywords, 1000),
+  seoCategory: await normalizeSeoCategoryValue(product?.seoCategory, product),
+});
+
+const formatProductForApi = async (product = {}, id = "") => {
+  const seoFields = await resolveProductSeoFields(product);
+  return {
+    ...product,
+    ...seoFields,
+    id: id || product?.id || "",
+  };
+};
+
 const normalizeAbsoluteUrl = (value = "", siteBase = "https://ilika.in") => {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -2491,6 +2558,9 @@ app.post("/api/products", async (req, res) => {
       productUrl,
       slug: productUrl,
       oldUrls: uniqueOldUrls(req.body?.oldUrls || []),
+      seoDescription: normalizeSeoDescriptionValue(req.body?.seoDescription, req.body?.description),
+      seoKeywords: normalizeProductSeoText(req.body?.seoKeywords, 1000),
+      seoCategory: await normalizeSeoCategoryValue(req.body?.seoCategory, req.body),
       videos: normalizeProductVideos(req.body?.videos),
       whyYouLoveIt: hasWhyYouLoveIt
         ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
@@ -2514,7 +2584,7 @@ app.post("/api/products", async (req, res) => {
       }
     }
 
-    res.json({ ...productData, id: docRef.id, merchantSync });
+    res.json({ ...(await formatProductForApi(productData, docRef.id)), merchantSync });
   } catch (error) {
     console.error("ADD PRODUCT ERROR:", error);
     res.status(500).json({ error: "Failed to add product" });
@@ -2584,7 +2654,7 @@ app.get("/api/products/slug/:slug", async (req, res) => {
 
     if (!byProductUrl.empty) {
       const doc = byProductUrl.docs[0];
-      return res.json({ id: doc.id, ...doc.data() });
+      return res.json(await formatProductForApi(doc.data(), doc.id));
     }
 
     const byOldUrls = await db
@@ -2598,7 +2668,7 @@ app.get("/api/products/slug/:slug", async (req, res) => {
       const data = doc.data() || {};
       return res.json({
         redirectTo: data.productUrl || "",
-        product: { id: doc.id, ...data },
+        product: await formatProductForApi(data, doc.id),
       });
     }
     return res.status(404).json({ error: "Product not found" });
@@ -2613,7 +2683,7 @@ app.get("/api/products/:id", async (req, res) => {
     if (!productRef) return res.status(404).json({ error: "Product not found" });
     const doc = await productRef.get();
     if (!doc.exists) return res.status(404).json({ error: "Product not found" });
-    res.json({ ...doc.data(), id: doc.id });
+    res.json(await formatProductForApi(doc.data(), doc.id));
   } catch {
     res.status(500).json({ error: "Failed to fetch product" });
   }
@@ -2626,7 +2696,7 @@ app.get("/admin/products/edit/:id", async (req, res) => {
     if (!productRef) return res.status(404).json({ error: "Product not found" });
     const doc = await productRef.get();
     if (!doc.exists) return res.status(404).json({ error: "Product not found" });
-    res.json({ ...doc.data(), id: doc.id });
+    res.json(await formatProductForApi(doc.data(), doc.id));
   } catch {
     res.status(500).json({ error: "Failed to fetch product" });
   }
@@ -2635,7 +2705,7 @@ app.get("/admin/products/edit/:id", async (req, res) => {
 app.get("/api/products", async (req, res) => {
   try {
     const snapshot = await db.collection("products").orderBy("createdAt", "desc").get();
-    res.json(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+    res.json(await Promise.all(snapshot.docs.map((doc) => formatProductForApi(doc.data(), doc.id))));
   } catch {
     res.status(500).json({ error: "Failed to fetch products" });
   }
@@ -2667,6 +2737,16 @@ app.put("/api/products/:id", async (req, res) => {
       productUrl,
       slug: productUrl,
       oldUrls,
+      seoDescription: normalizeSeoDescriptionValue(
+        req.body?.seoDescription,
+        req.body?.description ?? existingData?.description
+      ),
+      seoKeywords: normalizeProductSeoText(req.body?.seoKeywords, 1000),
+      seoCategory: await normalizeSeoCategoryValue(req.body?.seoCategory, {
+        ...existingData,
+        ...req.body,
+        categoryIds: Array.isArray(req.body?.categoryIds) ? req.body.categoryIds : existingData?.categoryIds,
+      }),
       videos: normalizeProductVideos(req.body?.videos),
       whyYouLoveIt: hasWhyYouLoveIt
         ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
@@ -2696,7 +2776,7 @@ app.put("/api/products/:id", async (req, res) => {
 
     res.json({
       message: "Product updated successfully",
-      product: { ...updatedDoc.data(), id: updatedDoc.id },
+      product: await formatProductForApi(updatedDoc.data(), updatedDoc.id),
       merchantSync,
     });
   } catch (error) {
@@ -2731,6 +2811,16 @@ app.put("/admin/products/edit/:id", async (req, res) => {
       productUrl,
       slug: productUrl,
       oldUrls,
+      seoDescription: normalizeSeoDescriptionValue(
+        req.body?.seoDescription,
+        req.body?.description ?? existingData?.description
+      ),
+      seoKeywords: normalizeProductSeoText(req.body?.seoKeywords, 1000),
+      seoCategory: await normalizeSeoCategoryValue(req.body?.seoCategory, {
+        ...existingData,
+        ...req.body,
+        categoryIds: Array.isArray(req.body?.categoryIds) ? req.body.categoryIds : existingData?.categoryIds,
+      }),
       videos: normalizeProductVideos(req.body?.videos),
       whyYouLoveIt: hasWhyYouLoveIt
         ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
@@ -2749,7 +2839,7 @@ app.put("/admin/products/edit/:id", async (req, res) => {
     const updatedDoc = await productRef.get();
     res.json({
       message: "Product updated successfully",
-      product: { ...updatedDoc.data(), id: updatedDoc.id },
+      product: await formatProductForApi(updatedDoc.data(), updatedDoc.id),
     });
   } catch (error) {
     console.error("UPDATE PRODUCT (ADMIN EDIT ROUTE) ERROR:", error);

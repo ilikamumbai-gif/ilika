@@ -3001,8 +3001,9 @@ const ProductDetail = () => {
     : "Product Details | Ilika";
   const seoProductDescription =
     (activeVariantName
-      ? `${stripHtml(product?.shortInfo) || stripHtml(product?.description) || "Explore product details, benefits, pricing, and offers on Ilika."} Variant: ${activeVariantName}.`
+      ? `${String(product?.seoDescription || "").trim() || stripHtml(product?.shortInfo) || stripHtml(product?.description) || "Explore product details, benefits, pricing, and offers on Ilika."} Variant: ${activeVariantName}.`
       : "") ||
+    String(product?.seoDescription || "").trim() ||
     stripHtml(product?.shortInfo) ||
     stripHtml(product?.description) ||
     "Explore product details, benefits, pricing, and offers on Ilika.";
@@ -3021,12 +3022,16 @@ const ProductDetail = () => {
     ? `${canonicalBasePath}?variant=${encodeURIComponent(activeVariantQueryValue)}`
     : canonicalBasePath;
   const seoProductKeywords = useMemo(() => {
-    const fromCategories = Array.isArray(product?.categoryName)
-      ? product.categoryName
-      : String(product?.categoryName || "")
-        .split(/[,/|&>]+/)
-        .map((item) => item.trim())
-        .filter(Boolean);
+    const explicitKeywords = String(product?.seoKeywords || "").trim();
+    if (explicitKeywords) return explicitKeywords;
+
+    const categorySource = product?.seoCategory || product?.categoryName || product?.category || "";
+    const fromCategories = Array.isArray(categorySource)
+      ? categorySource
+      : String(categorySource || "")
+          .split(/[,/|&>]+/)
+          .map((item) => item.trim())
+          .filter(Boolean);
     return [
       "Ilika",
       "buy online",
@@ -3057,71 +3062,6 @@ const ProductDetail = () => {
     keywords: seoProductKeywords,
     jsonLd: product && product.isActive !== false ? [productBreadcrumbJsonLd] : null,
   });
-
-  const productJsonLd = useMemo(() => {
-    if (!product || product.isActive === false) return null;
-
-    const fallbackOrigin =
-      (typeof window !== "undefined" && window.location?.origin) || "https://ilika.in";
-    const canonicalUrl = toAbsoluteUrl(
-      canonicalPath,
-      fallbackOrigin
-    );
-
-    const rawImages = Array.isArray(images) ? images : [];
-    const imageUrls = rawImages
-      .map((img) => toAbsoluteUrl(img, fallbackOrigin))
-      .filter(Boolean)
-      .slice(0, 10);
-
-    const cleanDescription =
-      stripHtml(product?.shortInfo) ||
-      stripHtml(product?.description) ||
-      "Buy this product online at Ilika.";
-
-    const productIdValue = String(product?.id || product?._id || productUrl || "").trim();
-    const variantId = String(activeVariant?.id || "").trim();
-    const sku = variantId ? `${productIdValue}_${variantId}` : productIdValue;
-
-    const numericPrice = Number(price);
-    if (!Number.isFinite(numericPrice) || numericPrice <= 0) return null;
-
-    const data = {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      name: String(product?.name || "").trim(),
-      description: cleanDescription,
-      sku: sku || undefined,
-      mpn: String(product?.mpn || product?.sku || "").trim() || undefined,
-      image: imageUrls.length ? imageUrls : undefined,
-      brand: {
-        "@type": "Brand",
-        name: String(product?.brand || "Ilika"),
-      },
-      offers: {
-        "@type": "Offer",
-        url: canonicalUrl,
-        priceCurrency: "INR",
-        price: numericPrice.toFixed(2),
-        availability: isOutOfStock
-          ? "https://schema.org/OutOfStock"
-          : "https://schema.org/InStock",
-        itemCondition: "https://schema.org/NewCondition",
-      },
-    };
-
-    const reviewCount = Array.isArray(product?.reviews) ? product.reviews.length : 0;
-    const numericRating = Number(rating);
-    if (reviewCount > 0 && Number.isFinite(numericRating) && numericRating > 0) {
-      data.aggregateRating = {
-        "@type": "AggregateRating",
-        ratingValue: String(numericRating),
-        reviewCount: String(reviewCount),
-      };
-    }
-
-    return data;
-  }, [product, activeVariant?.id, images, isOutOfStock, price, rating, productUrl, canonicalPath]);
 
   useEffect(() => {
     if (!product || !currentRouteSlug || !canonicalProductSlug) return;
@@ -3275,12 +3215,6 @@ const ProductDetail = () => {
   return (
     <>
       <MiniDivider />
-      {productJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
-        />
-      )}
       {showReviewModal && (
         <ReviewModal
           product={product}

@@ -330,6 +330,9 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     packOptions: [],
     marketplaceLinks: { amazon: "", flipkart: "", meesho: "" },
     productTag: "",
+    seoDescription: "",
+    seoKeywords: "",
+    seoCategory: "",
     hasVariants: false, variants: [], categoryIds: [],
     description: "", additionalInfo: "", tagline: "", points: "", whyYouLoveIt: buildWhyYouLoveItDraft(),
     images: [], isActive: true, inStock: true,
@@ -364,6 +367,9 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     packOptions: sanitizePackOptions(d.packOptions),
     marketplaceLinks,
     productTag: d.productTag || "",
+    seoDescription: d.seoDescription || "",
+    seoKeywords: Array.isArray(d.seoKeywords) ? d.seoKeywords.join(", ") : (d.seoKeywords || ""),
+    seoCategory: d.seoCategory || "",
     hasVariants: d.hasVariants || false,
     variants: (d.variants || []).map(v => ({ ...v, preview: v.images || [] })),
     categoryIds: d.categoryIds || [],
@@ -741,6 +747,9 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         productUrl: normalizedProductUrl,
         marketplaceLinks: sanitizeMarketplaceLinks(form.marketplaceLinks),
         productTag: String(form.productTag || "").trim(),
+        seoDescription: String(form.seoDescription || "").trim(),
+        seoKeywords: String(form.seoKeywords || "").trim(),
+        seoCategory: String(form.seoCategory || "").trim(),
         hasVariants: form.hasVariants,
         price: form.hasVariants ? null : Number(form.price),
         mrp: form.hasVariants ? null : Number(form.mrp),
@@ -900,6 +909,50 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               placeholder="e.g. Top Seller, Best Seller, New Launch"
               value={form.productTag || ""}
               onChange={e => setForm({ ...form, productTag: e.target.value })}
+              className="w-full border border-gray-200 p-2.5 rounded-lg"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="border rounded-2xl bg-white p-5 space-y-4">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">SEO Details</h2>
+          <p className="mt-1 text-xs text-gray-500">
+            These fields help product SEO. If SEO Description is left empty, you can still fall back to the main product description later.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="lg:col-span-2">
+            <label className="text-xs font-semibold text-gray-600 block mb-1">SEO Description</label>
+            <textarea
+              placeholder="Write a focused SEO description for this product"
+              value={form.seoDescription || ""}
+              onChange={e => setForm({ ...form, seoDescription: e.target.value })}
+              className="w-full border border-gray-200 p-2.5 rounded-lg"
+              rows={3}
+            />
+          </div>
+          <div className="lg:col-span-2">
+            <label className="text-xs font-semibold text-gray-600 block mb-1">SEO Keywords</label>
+            <input
+              type="text"
+              placeholder="ceramide moisturizer, gel moisturizer, face moisturizer India"
+              value={form.seoKeywords || ""}
+              onChange={e => setForm({ ...form, seoKeywords: e.target.value })}
+              className="w-full border border-gray-200 p-2.5 rounded-lg"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Add comma-separated keywords.
+            </p>
+          </div>
+          <div className="lg:col-span-2">
+            <label className="text-xs font-semibold text-gray-600 block mb-1">SEO Category</label>
+            <input
+              type="text"
+              placeholder="Face Moisturizer"
+              value={form.seoCategory || ""}
+              onChange={e => setForm({ ...form, seoCategory: e.target.value })}
               className="w-full border border-gray-200 p-2.5 rounded-lg"
             />
           </div>
