@@ -16,7 +16,7 @@ import * as LucideIcons from "lucide-react";
 import {
   Truck, ShieldCheck, BadgeCheck, Package,
   X, ChevronLeft, ChevronRight, ChevronDown, Star, Sparkles, Leaf, Heart, Shield, Droplets, ImagePlus,
-  ZoomIn, ShoppingCart, Lock,
+  ZoomIn, ShoppingCart, Lock, Copy,
   Wallet
 } from "lucide-react";
 import ProductCard from "../components/ProductCard";
@@ -510,6 +510,27 @@ const normalizeColorKey = (value = "") =>
 
 const normalizeCouponCode = (value = "") =>
   String(value || "");
+
+const sanitizeCouponData = (coupon) => {
+  if (!coupon) return null;
+  const code = normalizeCouponCode(coupon.code).trim();
+  const discountPercent = Number(coupon.discountPercent || 0);
+  const forcedPrice = Number(coupon.forcedPrice || 0);
+  const hasDiscount = discountPercent > 0;
+  const hasForcedPrice = forcedPrice > 0;
+
+  if (!code || (!hasDiscount && !hasForcedPrice)) return null;
+
+  return {
+    id: coupon.id || "",
+    name: String(coupon.name || "").trim(),
+    code,
+    discountPercent,
+    forcedPrice: hasForcedPrice ? forcedPrice : null,
+    isActive: coupon.isActive !== false,
+    isVisible: coupon.isVisible !== false,
+  };
+};
 
 const formatIngredientTitle = (src = "", index = 0) => {
   try {
@@ -1865,6 +1886,7 @@ const ProductDetail = () => {
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponMessage, setCouponMessage] = useState({ type: "", text: "" });
+  const [liveAssignedCoupon, setLiveAssignedCoupon] = useState(null);
   const [selectedPackId, setSelectedPackId] = useState("");
   const [collagenAddonCount, setCollagenAddonCount] = useState(0);
   // const [footerHeight, setFooterHeight] = useState(0);
@@ -2265,8 +2287,43 @@ const ProductDetail = () => {
   const packMrp = selectedPack
     ? Number(selectedPack.mrp > 0 ? selectedPack.mrp : selectedPack.price || 0)
     : mrp;
+  const assignedCouponId = useMemo(
+    () => String(product?.couponId || product?.couponSnapshot?.id || product?.coupon?.id || "").trim(),
+    [product?.couponId, product?.couponSnapshot?.id, product?.coupon?.id]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!assignedCouponId) {
+      setLiveAssignedCoupon(null);
+      return;
+    }
+
+    const fetchAssignedCoupon = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/coupons/${assignedCouponId}`);
+        if (!res.ok) throw new Error("Failed to fetch assigned coupon");
+        const data = await res.json();
+        if (!cancelled) {
+          setLiveAssignedCoupon(sanitizeCouponData(data));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setLiveAssignedCoupon(null);
+        }
+      }
+    };
+
+    fetchAssignedCoupon();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [assignedCouponId]);
+
   const assignedCoupon = useMemo(() => {
-    const snapshot = product?.couponSnapshot || product?.coupon || null;
+    const snapshot = liveAssignedCoupon || sanitizeCouponData(product?.couponSnapshot) || sanitizeCouponData(product?.coupon) || null;
     if (!snapshot) return null;
     const code = normalizeCouponCode(snapshot.code);
     const discountPercent = Number(snapshot.discountPercent || 0);
@@ -2286,7 +2343,7 @@ const ProductDetail = () => {
       name: snapshot.name || "",
       isVisible: snapshot.isVisible !== false,
     };
-  }, [product?.couponSnapshot, product?.coupon, product?.name]);
+  }, [liveAssignedCoupon, product?.couponSnapshot, product?.coupon, product?.name]);
   const visibleAssignedCoupon = assignedCoupon?.isVisible === false ? null : assignedCoupon;
 
   const couponForcedPrice = appliedCoupon && Number(appliedCoupon?.forcedPrice || 0) > 0
@@ -2494,6 +2551,16 @@ const ProductDetail = () => {
     setCouponCodeInput(visibleAssignedCoupon.code);
     applyCouponCode(visibleAssignedCoupon.code);
   }, [visibleAssignedCoupon, applyCouponCode]);
+
+  const handleCopyAssignedCoupon = useCallback(async () => {
+    if (!visibleAssignedCoupon?.code) return;
+    try {
+      await navigator.clipboard.writeText(visibleAssignedCoupon.code);
+      toast.success("Coupon code copied");
+    } catch {
+      toast.error("Could not copy coupon code");
+    }
+  }, [visibleAssignedCoupon]);
 
   const handleRemoveCoupon = useCallback(() => {
     setAppliedCoupon(null);
@@ -3276,131 +3343,14 @@ const ProductDetail = () => {
         <CartDrawer />
 
         {/* â•â•â•â• HERO â•â•â•â• */}
-        <section className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 pb-4 sm:pt-14">
-          <div className="grid grid-cols-1 gap-5 sm:gap-7 lg:grid-cols-2 lg:gap-16">
+        <section className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 pb-4 sm:pt-12">
+          <div className="grid grid-cols-1 gap-5 sm:gap-7 lg:grid-cols-2 lg:gap-10 xl:gap-12">
 
             {/* â”€â”€ LEFT: IMAGES â”€â”€ */}
-            <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-start">
-              {galleryCount > 1 && (
+            <div className="flex flex-col gap-3 sm:gap-4 lg:sticky lg:top-[164px] lg:self-start lg:h-fit">
+              <div className="flex flex-1 flex-col gap-3 sm:gap-4">
                 <div
-                  ref={thumbsRef}
-                  className="order-2 flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory lg:order-1 lg:h-[494px] lg:w-[92px] lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0"
-                  style={{ scrollbarWidth: "none" }}
-                >
-                  {displayImages.length > 0 ? (
-                    displayImages
-                      .slice(0, hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : displayImages.length)
-                      .map((img, i) => (
-                        <button
-                          key={img}
-                          onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
-                          className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300
-                          ${selectedImage === img ? "shadow-sm" : "hover:border-gray-200"}`}
-                          style={{
-                            width: "64px",
-                            height: "64px",
-                            borderColor: selectedImage === img ? "#f2b9b3" : "#f3e2df",
-                            backgroundColor: selectedImage === img ? "#fff5f4" : "#ffffff",
-                          }}
-                        >
-                          <img
-                            loading="lazy"
-                            src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-                            alt={`${product.name} gallery thumbnail ${i + 1}`}
-                            width="148"
-                            height="148"
-                            className="h-full w-full object-cover"
-                          />
-                        </button>
-                      ))
-                  ) : (
-                    Array.from({
-                      length: Math.min(
-                        images.length,
-                        hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : 5
-                      ),
-                    }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex-shrink-0 rounded-[16px] bg-gray-100 animate-pulse"
-                        style={{ width: "64px", height: "64px" }}
-                      />
-                    ))
-                  )}
-                  {(!hasThumbnailOverflow || showAllThumbnails) && productVideos.map((video) => {
-                    const isSelected = selectedVideoUrl === video.embedUrl;
-                    return (
-                      <button
-                        key={video.id}
-                        onClick={() => { stopAuto(); setSelectedVideoUrl(video.embedUrl); setSelectedVideoPlaying(true); }}
-                        className="relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300"
-                        style={{
-                          width: "64px",
-                          height: "64px",
-                          borderColor: isSelected ? "#f2b9b3" : "#f3e2df",
-                          backgroundColor: isSelected ? "#fff5f4" : "#ffffff",
-                        }}
-                        aria-label={`Play ${video.title}`}
-                        title={video.title}
-                      >
-                        {video.thumb ? (
-                          <img loading="lazy" src={video.thumb} alt={video.title} width="148" height="148" className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="h-full w-full bg-black/80" />
-                        )}
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-[13px] text-[#1f1f1f] shadow-sm">▶</span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                  {hasThumbnailOverflow && !showAllThumbnails && (
-                    <button
-                      type="button"
-                      onClick={handleOverflowThumbClick}
-                      className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedGalleryIndex >= overflowStartIndex ? "shadow-sm" : "hover:border-gray-200"
-                        }`}
-                      style={{
-                        width: "64px",
-                        height: "64px",
-                        borderColor: selectedGalleryIndex >= overflowStartIndex ? "#f2b9b3" : "#f3e2df",
-                        backgroundColor: selectedGalleryIndex >= overflowStartIndex ? "#fff5f4" : "#ffffff",
-                      }}
-                      aria-label={`View ${overflowCount} more gallery items`}
-                      title={`+${overflowCount} more`}
-                    >
-                      {images[overflowStartIndex] ? (
-                        <img
-                          loading="lazy"
-                          src={`${images[overflowStartIndex]}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-                          alt={`${product.name} gallery thumbnail ${overflowStartIndex + 1}`}
-                          width="148"
-                          height="148"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : productVideos[overflowStartIndex - images.length]?.thumb ? (
-                        <img
-                          loading="lazy"
-                          src={productVideos[overflowStartIndex - images.length].thumb}
-                          alt={productVideos[overflowStartIndex - images.length].title}
-                          width="148"
-                          height="148"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-black/70" />
-                      )}
-                      <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-lg font-semibold text-white">
-                        +{overflowCount}
-                      </span>
-                    </button>
-                  )}
-                </div>
-              )}
-
-              <div className="order-1 flex flex-1 flex-col gap-3 sm:gap-4 lg:order-2">
-                <div
-                  className={`relative overflow-hidden rounded-[18px] sm:rounded-[24px] border border-[#f4dfdb] bg-[#fff5f4] select-none group ${selectedVideoUrl ? "cursor-default" : "cursor-zoom-in"}`}
+                  className={`relative overflow-hidden rounded-[18px] sm:rounded-[24px] border border-[#f4dfdb] bg-[#fff5f4] select-none group shadow-[0_18px_40px_rgba(69,39,34,0.06)] ${selectedVideoUrl ? "cursor-default" : "cursor-zoom-in"}`}
                   onTouchStart={e => setTouchStartX(e.targetTouches[0].clientX)}
                   onTouchMove={e => setTouchEndX(e.targetTouches[0].clientX)}
                   onTouchEnd={handleSwipe}
@@ -3493,17 +3443,126 @@ const ProductDetail = () => {
                     </div>
                   )}
                 </div>
-
-                <MarketplaceButtons
-                  links={marketplaceLinks}
-                  theme={detailTheme}
-                  className="px-4 py-2 sm:px-5"
-                />
               </div>
+
+              {galleryCount > 1 && (
+                <div
+                  ref={thumbsRef}
+                  className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory"
+                  style={{ scrollbarWidth: "none" }}
+                >
+                  {displayImages.length > 0 ? (
+                    displayImages
+                      .slice(0, hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : displayImages.length)
+                      .map((img, i) => (
+                        <button
+                          key={img}
+                          onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
+                          className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedImage === img ? "shadow-sm" : "hover:border-gray-200"}`}
+                          style={{
+                            width: "72px",
+                            height: "72px",
+                            borderColor: selectedImage === img ? "#f2b9b3" : "#f3e2df",
+                            backgroundColor: selectedImage === img ? "#fff5f4" : "#ffffff",
+                          }}
+                        >
+                          <img
+                            loading="lazy"
+                            src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                            alt={`${product.name} gallery thumbnail ${i + 1}`}
+                            width="148"
+                            height="148"
+                            className="h-full w-full object-cover"
+                          />
+                        </button>
+                      ))
+                  ) : (
+                    Array.from({
+                      length: Math.min(
+                        images.length,
+                        hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : 5
+                      ),
+                    }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex-shrink-0 rounded-[16px] bg-gray-100 animate-pulse"
+                        style={{ width: "72px", height: "72px" }}
+                      />
+                    ))
+                  )}
+                  {(!hasThumbnailOverflow || showAllThumbnails) && productVideos.map((video) => {
+                    const isSelected = selectedVideoUrl === video.embedUrl;
+                    return (
+                      <button
+                        key={video.id}
+                        onClick={() => { stopAuto(); setSelectedVideoUrl(video.embedUrl); setSelectedVideoPlaying(true); }}
+                        className="relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300"
+                        style={{
+                          width: "72px",
+                          height: "72px",
+                          borderColor: isSelected ? "#f2b9b3" : "#f3e2df",
+                          backgroundColor: isSelected ? "#fff5f4" : "#ffffff",
+                        }}
+                        aria-label={`Play ${video.title}`}
+                        title={video.title}
+                      >
+                        {video.thumb ? (
+                          <img loading="lazy" src={video.thumb} alt={video.title} width="148" height="148" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="h-full w-full bg-black/80" />
+                        )}
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-[13px] text-[#1f1f1f] shadow-sm">▶</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                  {hasThumbnailOverflow && !showAllThumbnails && (
+                    <button
+                      type="button"
+                      onClick={handleOverflowThumbClick}
+                      className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedGalleryIndex >= overflowStartIndex ? "shadow-sm" : "hover:border-gray-200"}`}
+                      style={{
+                        width: "72px",
+                        height: "72px",
+                        borderColor: selectedGalleryIndex >= overflowStartIndex ? "#f2b9b3" : "#f3e2df",
+                        backgroundColor: selectedGalleryIndex >= overflowStartIndex ? "#fff5f4" : "#ffffff",
+                      }}
+                      aria-label={`View ${overflowCount} more gallery items`}
+                      title={`+${overflowCount} more`}
+                    >
+                      {images[overflowStartIndex] ? (
+                        <img
+                          loading="lazy"
+                          src={`${images[overflowStartIndex]}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                          alt={`${product.name} gallery thumbnail ${overflowStartIndex + 1}`}
+                          width="148"
+                          height="148"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : productVideos[overflowStartIndex - images.length]?.thumb ? (
+                        <img
+                          loading="lazy"
+                          src={productVideos[overflowStartIndex - images.length].thumb}
+                          alt={productVideos[overflowStartIndex - images.length].title}
+                          width="148"
+                          height="148"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-black/70" />
+                      )}
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-lg font-semibold text-white">
+                        +{overflowCount}
+                      </span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* â”€â”€ RIGHT: INFO â”€â”€ */}
-            <div className="flex flex-col gap-4 sm:gap-5 lg:sticky lg:top-24 h-fit">
+            <div className="flex flex-col gap-4 sm:gap-5 h-fit">
               <button onClick={() => navigate(-1)} className="text-xs text-gray-400 hover:text-gray-700 w-fit flex items-center gap-1 transition">
                 <ChevronLeft className="w-3.5 h-3.5" /> Back
               </button>
@@ -3529,81 +3588,72 @@ const ProductDetail = () => {
 
               {visibleAssignedCoupon && (
                 <div className="space-y-3">
-
-                  {/* ── TICKET CARD ── */}
-                  <div
-                    className="relative flex items-stretch rounded-2xl border-2 border-dashed border-pink-300 bg-white overflow-hidden cursor-pointer hover:border-pink-500 hover:shadow-md transition-all duration-200"
-                    onClick={handleApplyAssignedCoupon}
-                  >
-
-                    {/* Decorative spark */}
-                    <span className="absolute -top-1.5 -right-1.5 text-pink-400 text-lg leading-none select-none pointer-events-none z-10">✦</span>
-
-                    {/* COL 1 — ticket icon */}
-                    <div className="flex items-center justify-center px-4 py-4 flex-shrink-0 border-r-2 border-dashed border-pink-300">
-                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V8l4-4h4l8.59 8.59a2 2 0 010 2.82z" stroke="#e91e8c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <circle cx="7" cy="7" r="1.2" fill="#e91e8c" />
-                      </svg>
-                    </div>
-
-                    {/* COL 2 — label + pill, grows to fill */}
-                    <div className="flex flex-col items-start justify-center px-4 py-4 flex-1 gap-1.5 min-w-0">
-                      <span className="text-sm sm:text-base font-black uppercase tracking-wide text-pink-700">
-                        Coupon Code
-                      </span>
-                      <span className="w-full flex items-center justify-center py-2 rounded-full bg-pink-600 text-white font-black text-base sm:text-lg tracking-wide">
-                        {visibleAssignedCoupon.code}
-                      </span>
-                    </div>
-
-                    {/* COL 3 — FLAT % OFF badge, fills height */}
-                    <div className="flex flex-col items-center justify-center bg-yellow-200 px-6 py-4 flex-shrink-0 w-[140px] sm:w-[160px]">
-                      <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-green-800 leading-tight">FLAT</span>
-                      <div className="flex items-baseline gap-0.5">
-                        <span className="text-3xl sm:text-4xl font-black text-green-800 leading-none">{visibleAssignedCoupon.discountPercent}%</span>
-                        <span className="text-sm sm:text-base font-black text-green-800 leading-none">OFF</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ── INPUT ROW ── */}
-                  <div className="flex items-center rounded-2xl border border-pink-200 bg-white overflow-hidden">
-                    <div className="pl-4 pr-2 flex-shrink-0">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V8l4-4h4l8.59 8.59a2 2 0 010 2.82z" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <circle cx="7" cy="7" r="1" fill="#d1d5db" />
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      value={couponCodeInput}
-                      onChange={(e) => setCouponCodeInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
-                      placeholder="Enter coupon code"
-                      className="flex-1 py-3.5 px-2 text-sm text-gray-700 bg-transparent focus:outline-none placeholder:text-gray-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleApplyCoupon}
-                      className={`flex-shrink-0 px-6 py-3.5 text-sm font-bold text-white transition-colors rounded-r-2xl ${appliedCoupon ? "bg-green-700" : "bg-gray-900 hover:bg-gray-700"
-                        }`}
-                    >
-                      {appliedCoupon ? "✔ Applied" : "Apply"}
-                    </button>
-                  </div>
-
-                  {/* ── AVAILABLE HINT ── */}
                   {!appliedCoupon && (
-                    <div className="flex items-center gap-1.5 px-1">
-                      <span className="text-xs text-gray-400 font-medium">Available:</span>
+                    <div
+                      className="grid min-h-[102px] grid-cols-[1fr_auto] overflow-hidden rounded-[22px] border bg-white"
+                      style={{
+                        borderColor: detailTheme.borderSoft,
+                        boxShadow: "0 10px 28px rgba(69,39,34,0.04)",
+                      }}
+                    >
                       <button
                         type="button"
                         onClick={handleApplyAssignedCoupon}
-                        className="flex items-center gap-1.5 text-xs font-semibold text-pink-600 hover:underline transition"
+                        className="grid min-h-[102px] grid-rows-[auto_1fr] text-left transition hover:bg-[rgba(69,39,34,0.02)]"
                       >
-                        <span className="w-2 h-2 rounded-full bg-pink-600 flex-shrink-0" />
-                        {visibleAssignedCoupon.code} • {visibleAssignedCoupon.discountPercent}% off
+                        <div
+                          className="border-b px-5 py-2.5 sm:px-6"
+                          style={{
+                            borderColor: detailTheme.borderSoft,
+                            backgroundColor: detailTheme.reviewSurface || "#fff8f7",
+                          }}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="block text-[10px] font-medium uppercase tracking-[0.18em] text-gray-400">
+                              Coupon Code
+                            </span>
+                            {visibleAssignedCoupon.name && (
+                              <span
+                                className="truncate text-[12px] font-semibold sm:text-[13px]"
+                                style={{ color: detailTheme.accent }}
+                              >
+                                {visibleAssignedCoupon.name}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-1 flex-col items-center justify-center gap-1 px-5 py-2 sm:px-6">
+                          <span
+                            className="block w-full text-center text-[17px] font-semibold sm:text-[18px]"
+                            style={{ color: detailTheme.heading }}
+                          >
+                            {visibleAssignedCoupon.code}
+                          </span>
+                          <span
+                            className="block w-full text-center text-[12px] font-medium sm:text-[13px]"
+                            style={{ color: detailTheme.subtleText || "#6b7280" }}
+                          >
+                            {Number(visibleAssignedCoupon?.forcedPrice || 0) > 0
+                              ? `Price reduced to ₹${Number(visibleAssignedCoupon.forcedPrice).toLocaleString("en-IN")}`
+                              : `${Number(visibleAssignedCoupon?.discountPercent || 0)}% off`}
+                          </span>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleCopyAssignedCoupon}
+                        className="flex min-w-[68px] items-center justify-center border-l text-gray-500 transition hover:text-gray-700"
+                        style={{
+                          borderColor: detailTheme.borderSoft,
+                          backgroundColor: "#fff",
+                        }}
+                        aria-label="Copy coupon code"
+                        title="Copy coupon code"
+                      >
+                        <div className="flex h-full w-full items-center justify-center hover:bg-[rgba(69,39,34,0.03)]">
+                          <Copy className="h-5 w-5" strokeWidth={1.9} />
+                        </div>
                       </button>
                     </div>
                   )}
@@ -3623,11 +3673,6 @@ const ProductDetail = () => {
                         Remove
                       </button>
                     </div>
-                  )}
-
-                  {/* ── ERROR ── */}
-                  {!appliedCoupon && couponMessage.text && couponMessage.type === "error" && (
-                    <p className="text-xs font-medium px-1 text-pink-600">✘ {couponMessage.text}</p>
                   )}
                 </div>
               )}

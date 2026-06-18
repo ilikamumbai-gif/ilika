@@ -114,6 +114,26 @@ const normalizeIndianPhone = (phone = "") =>
   String(phone).replace(/\D/g, "").slice(-10);
 const normalizeCouponCode = (value = "") =>
   String(value || "").trim().toUpperCase();
+const sanitizeCouponData = (coupon) => {
+  if (!coupon) return null;
+
+  const code = normalizeCouponCode(coupon?.code);
+  const discountPercent = Number(coupon?.discountPercent || 0);
+  const forcedPrice = Number(coupon?.forcedPrice || 0);
+  const hasDiscount = discountPercent > 0;
+  const hasForcedPrice = forcedPrice > 0;
+
+  if (!code || (!hasDiscount && !hasForcedPrice)) return null;
+
+  return {
+    id: String(coupon?.id || "").trim(),
+    code,
+    discountPercent,
+    forcedPrice: hasForcedPrice ? forcedPrice : null,
+    isActive: coupon?.isActive !== false,
+    isVisible: coupon?.isVisible !== false,
+  };
+};
 const guestAddressStorageKey = "guest_checkout_addresses";
 const guestVerifiedPhonesStorageKey = "guest_verified_phones";
 const GIFT_WRAP_FEE = 99;
@@ -123,8 +143,9 @@ const getAddonPrice = (item = {}) => {
   return Number.isFinite(selectedAddOnPrice) && selectedAddOnPrice > 0 ? selectedAddOnPrice : 0;
 };
 
-const getEligibleCouponForCheckoutItem = (item = {}) => {
-  const snapshot = item?.couponSnapshot || item?.coupon || null;
+const getEligibleCouponForCheckoutItem = (item = {}, liveCouponMap = {}) => {
+  const couponId = String(item?.couponId || item?.couponSnapshot?.id || item?.coupon?.id || "").trim();
+  const snapshot = liveCouponMap[couponId] || sanitizeCouponData(item?.couponSnapshot) || sanitizeCouponData(item?.coupon) || null;
   if (!snapshot) return null;
 
   const code = normalizeCouponCode(snapshot?.code);
@@ -150,11 +171,11 @@ const getEligibleCouponForCheckoutItem = (item = {}) => {
   };
 };
 
-const applyCheckoutCouponToItem = (item = {}, appliedCode = "") => {
+const applyCheckoutCouponToItem = (item = {}, appliedCode = "", liveCouponMap = {}) => {
   const normalizedAppliedCode = normalizeCouponCode(appliedCode);
   if (!normalizedAppliedCode) return item;
 
-  const eligibleCoupon = getEligibleCouponForCheckoutItem(item);
+  const eligibleCoupon = getEligibleCouponForCheckoutItem(item, liveCouponMap);
   if (!eligibleCoupon || eligibleCoupon.code !== normalizedAppliedCode) return item;
 
   const quantity = Math.max(Number(item?.quantity) || 1, 1);
@@ -216,6 +237,7 @@ const Checkout = () => {
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL;
+  const [liveCouponMap, setLiveCouponMap] = useState({});
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCheckoutCouponCode, setAppliedCheckoutCouponCode] = useState("");
   const [couponFeedback, setCouponFeedback] = useState({ type: "", text: "" });
@@ -588,6 +610,52 @@ const Checkout = () => {
   };
 
   // ─── CALCULATIONS ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    const couponIds = Array.from(
+      new Set(
+        cartItems
+          .map((item) => String(item?.couponId || item?.couponSnapshot?.id || item?.coupon?.id || "").trim())
+          .filter(Boolean)
+      )
+    );
+
+    if (!couponIds.length) {
+      setLiveCouponMap({});
+      return;
+    }
+
+    const fetchCoupons = async () => {
+      try {
+        const responses = await Promise.all(
+          couponIds.map(async (couponId) => {
+            const res = await fetch(`${API_URL}/api/coupons/${couponId}`);
+            if (!res.ok) return null;
+            const data = await res.json();
+            return sanitizeCouponData(data);
+          })
+        );
+
+        if (cancelled) return;
+
+        const nextMap = responses.reduce((acc, coupon) => {
+          if (coupon?.id) acc[coupon.id] = coupon;
+          return acc;
+        }, {});
+
+        setLiveCouponMap(nextMap);
+      } catch {
+        if (!cancelled) setLiveCouponMap({});
+      }
+    };
+
+    fetchCoupons();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [API_URL, cartItems]);
+
   const cartSubtotal = useMemo(
     () => cartItems.reduce(
       (acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1),
@@ -596,8 +664,8 @@ const Checkout = () => {
     [cartItems]
   );
   const checkoutItems = useMemo(
-    () => cartItems.map((item) => applyCheckoutCouponToItem(item, appliedCheckoutCouponCode)),
-    [cartItems, appliedCheckoutCouponCode]
+    () => cartItems.map((item) => applyCheckoutCouponToItem(item, appliedCheckoutCouponCode, liveCouponMap)),
+    [cartItems, appliedCheckoutCouponCode, liveCouponMap]
   );
   const subtotal = useMemo(
     () => checkoutItems.reduce(
@@ -626,7 +694,7 @@ const Checkout = () => {
   useEffect(() => {
     if (!appliedCheckoutCouponCode) return;
     const hasMatch = cartItems.some((item) => {
-      const eligibleCoupon = getEligibleCouponForCheckoutItem(item);
+      const eligibleCoupon = getEligibleCouponForCheckoutItem(item, liveCouponMap);
       return eligibleCoupon?.code === appliedCheckoutCouponCode;
     });
 
@@ -634,7 +702,7 @@ const Checkout = () => {
       setAppliedCheckoutCouponCode("");
       setCouponFeedback({ type: "", text: "" });
     }
-  }, [appliedCheckoutCouponCode, cartItems]);
+  }, [appliedCheckoutCouponCode, cartItems, liveCouponMap]);
 
   const handleApplyCheckoutCoupon = () => {
     const normalizedCode = normalizeCouponCode(couponCodeInput);
@@ -644,7 +712,7 @@ const Checkout = () => {
     }
 
     const matchedItems = cartItems.filter((item) => {
-      const eligibleCoupon = getEligibleCouponForCheckoutItem(item);
+      const eligibleCoupon = getEligibleCouponForCheckoutItem(item, liveCouponMap);
       return eligibleCoupon?.code === normalizedCode;
     });
 

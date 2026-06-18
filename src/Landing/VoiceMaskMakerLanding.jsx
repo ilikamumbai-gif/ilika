@@ -52,6 +52,30 @@ import {
   Lightbulb,
 } from "lucide-react";
 
+const normalizeCouponCode = (value = "") =>
+  String(value || "").trim().toUpperCase();
+
+const sanitizeCouponData = (coupon) => {
+  if (!coupon) return null;
+
+  const code = normalizeCouponCode(coupon?.code);
+  const discountPercent = Number(coupon?.discountPercent || 0);
+  const forcedPrice = Number(coupon?.forcedPrice || 0);
+  const hasDiscount = discountPercent > 0;
+  const hasForcedPrice = forcedPrice > 0;
+
+  if (!code || (!hasDiscount && !hasForcedPrice)) return null;
+
+  return {
+    id: String(coupon?.id || "").trim(),
+    code,
+    discountPercent,
+    forcedPrice: hasForcedPrice ? forcedPrice : null,
+    isActive: coupon?.isActive !== false,
+    isVisible: coupon?.isVisible !== false,
+  };
+};
+
 const features = [
   {
     icon: Volume2,
@@ -236,6 +260,7 @@ const productAngles = [
 const VoiceMaskMakerLanding = () => {
   const [secs, setSecs] = useState(23 * 60 + 47);
   const [couponApplied, setCouponApplied] = useState(false);
+  const [liveCoupon, setLiveCoupon] = useState(null);
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { products = [], loading } = useProducts();
@@ -298,9 +323,47 @@ const VoiceMaskMakerLanding = () => {
 
   const productSlug = getProductSlug(targetProduct);
   const productPath = productSlug ? `/product/${productSlug}` : "/product/voice-face-mask-maker";
+  const assignedCouponId = String(targetProduct?.couponId || targetProduct?.couponSnapshot?.id || targetProduct?.coupon?.id || "").trim();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!assignedCouponId) {
+      setLiveCoupon(null);
+      return;
+    }
+
+    const fetchAssignedCoupon = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/coupons/${assignedCouponId}`);
+        if (!res.ok) throw new Error("Failed to fetch assigned coupon");
+        const data = await res.json();
+        if (!cancelled) setLiveCoupon(sanitizeCouponData(data));
+      } catch {
+        if (!cancelled) setLiveCoupon(null);
+      }
+    };
+
+    fetchAssignedCoupon();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [assignedCouponId]);
+
+  const assignedCoupon = useMemo(
+    () => liveCoupon || sanitizeCouponData(targetProduct?.couponSnapshot) || sanitizeCouponData(targetProduct?.coupon) || null,
+    [liveCoupon, targetProduct?.couponSnapshot, targetProduct?.coupon]
+  );
+
+  const couponCode = assignedCoupon?.code || "ILIKADIY";
+  const couponForcedPrice = Number(assignedCoupon?.forcedPrice || 0) > 0 ? Number(assignedCoupon.forcedPrice) : null;
+  const couponPercent = Number(assignedCoupon?.discountPercent || 0);
   const discountedPrice = hasLivePrice
     ? couponApplied
-      ? Math.round(productPrice * 0.85)
+      ? (couponForcedPrice
+          ? Math.min(productPrice, couponForcedPrice)
+          : Math.max(0, Number((productPrice - ((productPrice * couponPercent) / 100)).toFixed(2))))
       : productPrice
     : null;
   const effectiveSavings =
@@ -312,7 +375,10 @@ const VoiceMaskMakerLanding = () => {
     : "Loading price...";
   const mrpLabel = hasLiveMrp ? `₹${productMrp.toLocaleString("en-IN")}` : "MRP unavailable";
 
-  const handleApplyCoupon = () => setCouponApplied(true);
+  const handleApplyCoupon = () => {
+    if (!assignedCoupon) return;
+    setCouponApplied(true);
+  };
 
   const handleBuyNow = async () => {
     if (!targetProduct || !hasLivePrice || !Number.isFinite(discountedPrice)) {
@@ -328,8 +394,10 @@ const VoiceMaskMakerLanding = () => {
       images: [productImage],
       discountApplied: couponApplied
         ? {
-            code: "ILIKADIY",
-            percent: 15,
+            code: couponCode,
+            percent: couponForcedPrice && hasLivePrice && productPrice > 0
+              ? Number((((productPrice - discountedPrice) / productPrice) * 100).toFixed(2))
+              : couponPercent,
             amount: hasLivePrice ? Math.max(productPrice - discountedPrice, 0) : 0,
             basedOn: "selling_price",
           }
@@ -403,7 +471,7 @@ const VoiceMaskMakerLanding = () => {
               <button
                 type="button"
                 onClick={handleApplyCoupon}
-                disabled={!hasLivePrice}
+                disabled={!hasLivePrice || !assignedCoupon}
                 className={`inline-flex h-auto min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] border border-dashed px-3 py-2 text-[13px] font-semibold tracking-[0.03em] transition sm:h-[48px] sm:min-w-[320px] sm:flex-1 sm:px-4 sm:py-0 sm:text-[16px] sm:tracking-[0.04em] ${
                   couponApplied
                     ? "border-[#F0C24A] bg-[#FFD54A] text-[#5C3A00]"
@@ -412,10 +480,12 @@ const VoiceMaskMakerLanding = () => {
               >
                 <Tag className="h-3.5 w-3.5" />
                 {couponApplied
-                  ? `Coupon Applied: ilikaDIY · Price Locked at ${priceLabel}`
+                  ? `Coupon Applied: ${couponCode} · ${couponForcedPrice ? `Price Locked at ${priceLabel}` : `${couponPercent}% Off`}`
                   : hasLivePrice
-                    ? `Use Code: ilikaDIY · Get 15% Off`
-                    : "Use Code: ilikaDIY · Waiting for live price"}
+                    ? assignedCoupon
+                      ? `Use Code: ${couponCode} · ${couponForcedPrice ? `Price ${priceLabel}` : `Get ${couponPercent}% Off`}`
+                      : "Coupon unavailable right now"
+                    : "Waiting for live price"}
                 {!couponApplied && (
                   <span className="hidden animate-bounce items-center gap-1 rounded-full border border-[#E4B63E] bg-[#FFF1C2] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.08em] text-[#7A4D00] sm:inline-flex">
                     <MousePointerClick className="h-3 w-3" />
@@ -802,7 +872,14 @@ const VoiceMaskMakerLanding = () => {
           <em className="text-[rgba(255,255,255,0.75)]">Every Single Day?</em>
         </h2>
         <p className="relative z-[1] mb-9 text-[16px] font-light text-[rgba(255,255,255,0.88)]">
-          Use code <strong>ilikaDIY</strong> for Flat 15% off · Inclusive of all taxes · Fast delivery across India
+          {assignedCoupon ? (
+            <>
+              Use code <strong>{couponCode}</strong>{" "}
+              {couponForcedPrice ? `for special price ${priceLabel}` : `for ${couponPercent}% off`} · Inclusive of all taxes · Fast delivery across India
+            </>
+          ) : (
+            <>Inclusive of all taxes · Fast delivery across India</>
+          )}
         </p>
 
         <div className="relative z-[1]">
