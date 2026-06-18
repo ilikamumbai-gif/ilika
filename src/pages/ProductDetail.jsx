@@ -3963,32 +3963,43 @@ const ProductDetail = () => {
           >
             <section className="max-w-7xl mx-auto px-3 sm:px-6 mb-6 sm:mb-8">
               <div
-                className="overflow-hidden rounded-[22px]"
+                className="overflow-hidden rounded-[26px] border shadow-[0_16px_40px_rgba(69,39,34,0.05)]"
                 style={{
+                  borderColor: detailTheme.borderSoft,
                   backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : detailTheme.pageBg,
                 }}
               >
-                <div className="px-3 pt-2 pb-2 sm:px-4 sm:pb-3">
+                <div
+                  className="border-b px-4 pt-3 pb-3 sm:px-5 sm:pt-4 sm:pb-4"
+                  style={{
+                    borderColor: detailTheme.borderSoft,
+                    backgroundColor: detailTheme.reviewSurface,
+                  }}
+                >
                   <Heading heading="Why You Love It" style={{ color: detailTheme.heading }} />
                 </div>
 
                 <div
-                  className={`grid ${whyLoveItItems.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"}`}
+                  className={`grid ${whyLoveItItems.length === 1 ? "grid-cols-1" : "grid-cols-2 lg:grid-cols-4"}`}
                 >
                   {whyLoveItItems.map((item, index) => {
                     const IconComponent = resolveWhyLoveItIcon(item.icon);
                     const borderClass = `
-                    
+                      ${index % 2 === 1 ? "border-l" : ""}
+                      ${index >= 2 ? "border-t lg:border-t-0" : ""}
                       ${index % 2 === 1 ? "sm:border-l" : ""}
-                      ${index >= 2 ? "sm:border-t lg:border-t-0" : ""}
+                      ${index >= 2 ? "sm:border-t" : ""}
                       ${index > 0 ? "lg:border-l" : ""}
                     `;
 
                     return (
                       <div
                         key={item.id || index}
-                        className={`flex h-full flex-col items-center justify-start px-4 py-4 text-center sm:px-5 sm:py-5 ${borderClass}`}
-                        style={{ borderColor: detailTheme.borderSoft }}
+                        className={`flex h-full flex-col items-center justify-start px-4 py-5 text-center sm:px-5 sm:py-6 ${borderClass}`}
+                        style={{
+                          borderColor: detailTheme.borderSoft,
+                          backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : hexToRgba(detailTheme.reviewSurface, 0.65),
+                        }}
                       >
                         {IconComponent ? (
                           <span
