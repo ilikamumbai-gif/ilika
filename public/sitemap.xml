@@ -139,6 +139,24 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://ilika.in/about/why-ilika</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/about/quality-promise</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/about/ingredient-philosophy</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://ilika.in/contact</loc>
     <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>

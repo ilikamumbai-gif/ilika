@@ -43,6 +43,9 @@ const RollerAndGuasha = lazy(() => import("../pages/RollerAndGuasha"));
 const HairRemoval = lazy(() => import("../pages/HairRemoval"));
 const ShopAll = lazy(() => import("../pages/ShopAll"));
 const About = lazy(() => import("../pages/About"));
+const WhyIlika = lazy(() => import("../pages/WhyIlika"));
+const QualityPromise = lazy(() => import("../pages/QualityPromise"));
+const IngredientPhilosophy = lazy(() => import("../pages/IngredientPhilosophy"));
 const Combos = lazy(() => import("../pages/Combos"));
 const ComboDetail = lazy(() => import("../pages/ComboDetail"));
 const GlowTherapyCombo = lazy(() => import("../pages/GlowTherapyCombo"));
@@ -140,6 +143,9 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/termsandcondition") return { title: "Terms & Conditions", description: "Read Ilika terms and conditions." };
   if (pathname === "/return") return { title: "Return Policy", description: "Review Ilika return and refund policy." };
   if (pathname === "/about") return { title: "About Us", description: "Learn more about Ilika." };
+  if (pathname === "/about/why-ilika") return { title: "Why Ilika", description: "Learn why customers choose Ilika." };
+  if (pathname === "/about/quality-promise") return { title: "Quality Promise", description: "Discover Ilika's quality promise." };
+  if (pathname === "/about/ingredient-philosophy") return { title: "Ingredient Philosophy", description: "Learn about Ilika's ingredient philosophy." };
   if (pathname === "/contact") return { title: "Contact Us", description: "Get in touch with Ilika support." };
   if (pathname === "/feedback") return { title: "Feedback", description: "Share your feedback with Ilika." };
   if (pathname === "/warranty-registration") return { title: "Warranty Registration", description: "Register import product warranty with Ilika support." };
@@ -313,6 +319,9 @@ const NavRoutes = () => {
         <Route path="/termsandcondition" element={renderLazy(TermsCondition)} />
         <Route path="/return" element={renderLazy(Return)} />
         <Route path="/about" element={renderLazy(About)} />
+        <Route path="/about/why-ilika" element={renderLazy(WhyIlika)} />
+        <Route path="/about/quality-promise" element={renderLazy(QualityPromise)} />
+        <Route path="/about/ingredient-philosophy" element={renderLazy(IngredientPhilosophy)} />
         <Route path="/contact" element={renderLazy(Contact)} />
         <Route path="/feedback" element={renderLazy(Feedback)} />
         <Route path="/warranty-registration" element={renderLazy(WarrantyRegistration)} />
