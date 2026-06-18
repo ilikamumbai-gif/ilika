@@ -522,6 +522,7 @@ const Home = () => {
                     offset={isMobile ? 0 : skinStart}
                     limit={isMobile ? undefined : getVisibleCount(skinTotal)}
                   />
+                  
                 </div>
               ) : (
                 <p className="text-center text-white">
