@@ -123,10 +123,10 @@ const MyCtmRoutine = () => {
             })}
           </div>
 
-          <div className="flex justify-center px-0 pb-1 pt-3 sm:pb-3">
+          <div className="px-0 pb-1 pt-3 sm:pb-3">
             <Link
               to="/ctm"
-              className="inline-flex w-full max-w-[260px] items-center justify-center gap-2 rounded-full border border-[#e9d5d5] bg-white px-5 py-2.5 text-sm font-semibold text-[#8b3135] transition hover:bg-[#fff5f6] sm:w-auto sm:max-w-none"
+              className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#2f2f2f] bg-[#b34140] px-5 text-base font-semibold text-white transition hover:bg-[#7b403f] hover:opacity-95 sm:mt-6"
             >
               Explore Our CTM
               <ChevronRight className="h-4 w-4" />

@@ -227,7 +227,7 @@ const Home = () => {
           <Banner
             className="mt-0 bg-[#fdecef]"
             slides={[
-                {
+              {
                 desktopSrc: maskBannerDesktop,
                 mobileSrc: maskBannerMobile,
                 linkUrl: "/voice-mask-maker",
@@ -245,7 +245,7 @@ const Home = () => {
               //   linkUrl: "/mask-combo#mask-combo-4in1",
               //   alt: "Mask Combo Banner",
               // },
-            
+
             ]}
             imageFit="contain"
             autoSlideMs={5000}
@@ -263,6 +263,8 @@ const Home = () => {
 
           {/* <SkinTypeBanner /> */}
 
+
+          {/* CATERGORY NAV AND TRENDING PICKS  */}
           {isMobile ? (
             <>
               <LazyMountSection minHeight={220}>
@@ -305,7 +307,7 @@ const Home = () => {
                 </Suspense>
               </LazyMountSection>
 
-              
+
             </>
           ) : (
             <>
@@ -353,45 +355,7 @@ const Home = () => {
           )}
 
 
-          <LazyMountSection
-            minHeight={360}
-            className=" py-6"
-          >
-            <Suspense fallback={<div className="h-40" />}>
-              <Heading
-                heading="The Anti-Aging Ritual"
-                sub={"Curated skincare for visibly younger-looking skin"}
-              />
-
-              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
-                <Link
-                  to="/skin"
-                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
-                >
-                  View All
-                </Link>
-              </div>
-
-              <ProductList
-                mobileScroll
-
-                priorityNames={["Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow",
-                  "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask",
-                  "Ilika Collagen Serum",
-                  "Ilika Retinol Anti-Aging Facial Oil",
-                  ]}
-                limit={4}
-              />
-            </Suspense>
-          </LazyMountSection>
-
-          <LazyMountSection minHeight={340}>
-            <Suspense fallback={<div className="h-32" />}>
-              <MyCtmRoutine />
-            </Suspense>
-          </LazyMountSection>
-
-
+          {/* HAIRCARE RANGE */}
           <LazyMountSection minHeight={620}>
             <Suspense fallback={<div className="h-40" />}>
 
@@ -458,10 +422,54 @@ const Home = () => {
             </Suspense>
           </LazyMountSection>
 
+
+          {/* CTM ROUTINE */}
+          <LazyMountSection minHeight={340}>
+            <Suspense fallback={<div className="h-32" />}>
+              <MyCtmRoutine />
+            </Suspense>
+          </LazyMountSection>
+
+
+
+          {/* ANTI AGING RITUAL */}
+          <LazyMountSection
+            minHeight={360}
+            className="bg-[#c0392b12] py-6"
+          >
+            <Suspense fallback={<div className="h-40" />}>
+              <Heading
+                heading="The Anti-Aging Ritual"
+                sub={"Curated skincare for visibly younger-looking skin"}
+              />
+
+              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
+                <Link
+                  to="/skin"
+                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
+                >
+                  View All
+                </Link>
+              </div>
+
+              <ProductList
+                mobileScroll
+
+                priorityNames={["Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow",
+                  "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask",
+                  "Ilika Collagen Serum",
+                  "Ilika Retinol Anti-Aging Facial Oil",
+                ]}
+                limit={4}
+              />
+            </Suspense>
+          </LazyMountSection>
+
+
+
+          {/* SKIN CARE RANGE */}
           <LazyMountSection minHeight={620}>
             <Suspense fallback={<div className="h-40" />}>
-
-              {/* SKIN CARE */}
               <Banner
                 className="mt-0 md:h-[60vh]"
                 src={bannerSkincare}
@@ -471,7 +479,7 @@ const Home = () => {
                 imageFit={isMobile ? "contain" : "cover"}
               />
 
-             <Carousel
+              <Carousel
                 heading={"What Does Your Skin Need Today?"}
                 subheading={"Target every skin concern with personalized skincare"}
                 items={SKIN_CAROUSEL_ITEMS}
@@ -521,10 +529,12 @@ const Home = () => {
             </Suspense>
           </LazyMountSection>
 
+
+          {/* APPLIANCES RANGE*/}
           <LazyMountSection minHeight={620}>
             <Suspense fallback={<div className="h-40" />}>
 
-              {/* APPLIANCES */}
+
               <Banner
                 className="mt-0 md:h-[38vh] lg:h-[42vh]"
                 src={BannerStyle}
@@ -584,27 +594,26 @@ const Home = () => {
           </LazyMountSection>
 
 
-
-
-
-
-          
-
           {/* MANIFESTO */}
           <LazyMountSection minHeight={150}>
             <Suspense fallback={<div className="h-24" />}>
               <Menifesto />
             </Suspense>
           </LazyMountSection>
-{/* TESTIMONIAL */}
+
+
+          {/* TESTIMONIAL */}
           <LazyMountSection minHeight={340}>
             <section className="min-h-[320px] lg:min-h-[340px] flex flex-col justify-center">
-              <Heading heading="Loved By Thousands" sub="Real experiences from the ilikä community"/>
+              <Heading heading="Loved By Thousands" sub="Real experiences from the ilikä community" />
               <Suspense fallback={<div className="h-24" />}>
                 <TestimonialList />
               </Suspense>
             </section>
           </LazyMountSection>
+
+
+          {/* TRUST STRIP  */}
           <LazyMountSection minHeight={120}>
             <section className="mx-auto max-w-7xl px-4 pb-3 sm:px-6 lg:px-8">
               <div className="overflow-hidden bg-white">
@@ -615,11 +624,9 @@ const Home = () => {
                     return (
                       <div
                         key={item.title}
-                        className={`flex min-h-[92px] flex-col items-center justify-center px-3 py-4 text-center sm:min-h-[108px] sm:px-4 sm:py-5 ${
-                          index < HOME_SUPPORT_ITEMS.length - 1 ? "md:border-r md:border-[#f1e4e4]" : ""
-                        } ${index % 2 === 0 ? "border-r border-[#f7eded] md:border-r md:border-[#f1e4e4]" : ""} ${
-                          index < 2 ? "border-b border-[#f7eded] md:border-b-0" : ""
-                        }`}
+                        className={`flex min-h-[92px] flex-col items-center justify-center px-3 py-4 text-center sm:min-h-[108px] sm:px-4 sm:py-5 ${index < HOME_SUPPORT_ITEMS.length - 1 ? "md:border-r md:border-[#f1e4e4]" : ""
+                          } ${index % 2 === 0 ? "border-r border-[#f7eded] md:border-r md:border-[#f1e4e4]" : ""} ${index < 2 ? "border-b border-[#f7eded] md:border-b-0" : ""
+                          }`}
                       >
                         <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fff6f7] text-[#d99aa1] sm:h-10 sm:w-10">
                           <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
@@ -639,6 +646,7 @@ const Home = () => {
           </LazyMountSection>
 
 
+          {/* FOOTER */}
           <Suspense fallback={<div className="h-32" />}>
             <Footer />
           </Suspense>

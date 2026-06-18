@@ -200,6 +200,35 @@ const sanitizeInTheBoxItems = (items = []) => {
     .filter(Boolean);
 };
 
+const sanitizeFaqItems = (items = []) => {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((item, index) => {
+      if (typeof item === "string") {
+        const question = String(item || "").trim();
+        if (!question) return null;
+        return {
+          id: `faq-${index + 1}`,
+          question,
+          answer: "",
+        };
+      }
+
+      const question = String(item?.question || item?.title || "").trim();
+      const answer = String(item?.answer || item?.description || "").trim();
+
+      if (!question && !answer) return null;
+
+      return {
+        id: String(item?.id || `faq-${index + 1}`),
+        question,
+        answer,
+      };
+    })
+    .filter(Boolean);
+};
+
 const PRODUCT_URL_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const sanitizeProductUrlValue = (value = "") =>
@@ -307,6 +336,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     beforeAfter: [], hasBeforeAfter: false,
     ingredients: [],
     inTheBox: [],
+    faqs: [],
     hasVideo: false,
     videos: [],
     warranty: "",   // ✅ NEW
@@ -358,6 +388,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         .filter(Boolean)
       : [],
     inTheBox: sanitizeInTheBoxItems(d.inTheBox),
+    faqs: sanitizeFaqItems(d.faqs),
     videos: (d.videos || []).map(v => ({ ...v })),
     hasVideo: !!(d.videos?.length),
     warranty: d.warranty || "",   // ✅ NEW
@@ -693,6 +724,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         });
       }
 
+      const faqData = sanitizeFaqItems(form.faqs);
+
       /* change log */
       if (initialData?.price && Number(initialData.price) !== Number(form.price))
         await logActivity(`${admin?.username || "Admin"} changed price of ${form.name} from ₹${initialData.price} to ₹${form.price}`);
@@ -724,6 +757,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         beforeAfter: beforeAfterData,
         ingredients: ingredientsData,
         inTheBox: sanitizeInTheBoxItems(inTheBoxData),
+        faqs: faqData,
         videos: videoData,
         warranty: form.warranty || "",   // ✅ NEW
         warrantyTerms: form.warranty === "import"
@@ -1596,6 +1630,90 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition"
         >
           + Add Box Item
+        </button>
+      </div>
+
+      {/* PRODUCT FAQ */}
+      <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+        <div>
+          <p className="font-semibold text-sm">Product FAQ (Optional)</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Add frequently asked questions for this product. These will appear on the product detail page after customer reviews.
+          </p>
+        </div>
+
+        {(form.faqs || []).map((item, idx) => (
+          <div key={item.id || idx} className="border rounded-xl p-4 bg-white space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-700">FAQ {idx + 1}</span>
+              <button
+                type="button"
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    faqs: (prev.faqs || []).filter((_, i) => i !== idx),
+                  }))
+                }
+                className="text-red-500 text-xs hover:underline"
+              >
+                Remove
+              </button>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">
+                Question
+              </label>
+              <input
+                type="text"
+                placeholder="Enter FAQ question"
+                value={item.question || ""}
+                onChange={(e) =>
+                  setForm((prev) => {
+                    const updated = [...(prev.faqs || [])];
+                    updated[idx] = { ...updated[idx], question: e.target.value };
+                    return { ...prev, faqs: updated };
+                  })
+                }
+                className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">
+                Answer
+              </label>
+              <textarea
+                rows={4}
+                placeholder="Enter FAQ answer"
+                value={item.answer || ""}
+                onChange={(e) =>
+                  setForm((prev) => {
+                    const updated = [...(prev.faqs || [])];
+                    updated[idx] = { ...updated[idx], answer: e.target.value };
+                    return { ...prev, faqs: updated };
+                  })
+                }
+                className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              />
+            </div>
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={() =>
+            setForm((prev) => ({
+              ...prev,
+              faqs: [
+                ...(prev.faqs || []),
+                { id: crypto.randomUUID(), question: "", answer: "" },
+              ],
+            }))
+          }
+          className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+        >
+          + Add FAQ
         </button>
       </div>
 

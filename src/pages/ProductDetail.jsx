@@ -122,6 +122,31 @@ const resolveWhyLoveItIcon = (value = "") => {
   return null;
 };
 
+const sanitizeProductFaqs = (items = []) => {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((item, index) => {
+      if (typeof item === "string") {
+        const question = String(item || "").trim();
+        if (!question) return null;
+        return { id: `faq-${index + 1}`, question, answer: "" };
+      }
+
+      const question = String(item?.question || item?.title || "").trim();
+      const answer = String(item?.answer || item?.description || "").trim();
+
+      if (!question && !answer) return null;
+
+      return {
+        id: String(item?.id || `faq-${index + 1}`),
+        question,
+        answer,
+      };
+    })
+    .filter(Boolean);
+};
+
 const sanitizeWhyYouLoveItItems = (items = [], legacyItems = [], fallbackBenefits = []) => {
   const source = Array.isArray(items) && items.length
     ? items
@@ -763,50 +788,9 @@ const BeforeAfterSlider = ({
   beforeImage, afterImage,
   beforeLabel = "Before", afterLabel = "After"
 }) => {
-  const [pos, setPos] = useState(0); // start at BEFORE
+  const [pos, setPos] = useState(50); // start centered
   const containerRef = useRef(null);
   const isActive = useRef(false);
-
-  const hasAnimated = useRef(false);
-  const isVisible = useRef(false);
-
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.5 && !hasAnimated.current) {
-          startAnimation();
-        }
-      },
-      { threshold: [0, 0.5, 1] }  // â† 0.5 is reliable; 0.95 often never fires on mobile
-    );
-
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-
-  const startAnimation = () => {
-    if (hasAnimated.current) return;
-    hasAnimated.current = true;
-
-    // STEP 1: Show FULL BEFORE and HOLD
-    setPos(100);
-
-    // Hold BEFORE clearly
-    setTimeout(() => {
-      // STEP 2: Animate to FULL AFTER
-      setPos(0);
-    }, 1200); // <-- important pause
-
-    // Hold AFTER clearly, then go to middle
-    setTimeout(() => {
-      // STEP 3: Settle to MIDDLE
-      setPos(50);
-    }, 2800);
-  };
 
 
   const calcPos = (clientX) => {
@@ -1106,13 +1090,13 @@ const ProductReviewCard = ({ review, theme }) => {
 
   return (
     <article
-      className="w-[88%] sm:w-[48%] lg:w-[32%] xl:w-[30%] shrink-0 snap-start rounded-[24px] border bg-white p-4 sm:p-5 shadow-[0_10px_24px_rgba(69,39,34,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(69,39,34,0.08)]"
+      className="w-[88%] sm:basis-[calc(50%-8px)] sm:max-w-[calc(50%-8px)] lg:basis-[calc(50%-8px)] lg:max-w-[calc(50%-8px)] xl:basis-[calc(50%-8px)] xl:max-w-[calc(50%-8px)] shrink-0 snap-start rounded-[24px] border bg-white p-4 sm:p-4 shadow-[0_10px_24px_rgba(69,39,34,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(69,39,34,0.08)]"
       style={{ borderColor: theme.borderSoft }}
     >
-      <div className="mb-4 flex items-start justify-between gap-3">
+      <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0 flex items-center gap-3">
           <div
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold"
             style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
           >
             {review?.name?.[0]?.toUpperCase() || "U"}
@@ -1130,22 +1114,21 @@ const ProductReviewCard = ({ review, theme }) => {
           {[1, 2, 3, 4, 5].map((starIndex) => (
             <Star
               key={starIndex}
-              className={`h-3.5 w-3.5 ${
-                starIndex <= Number(review?.rating || 0)
+              className={`h-3.5 w-3.5 ${starIndex <= Number(review?.rating || 0)
                   ? "fill-yellow-400 text-yellow-400"
                   : "text-gray-200"
-              }`}
+                }`}
             />
           ))}
         </div>
       </div>
 
-      <p className="text-[13px] leading-6 text-[#5f5552] sm:text-[14px] sm:leading-7">
+      <p className="text-[13px] leading-5.5 text-[#5f5552] sm:text-[14px] sm:leading-6">
         {review?.comment || "Loved it."}
       </p>
 
       {reviewImages.length > 0 ? (
-        <div className={`mt-4 grid gap-2 ${reviewImages.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+        <div className={`mt-3 grid gap-2 ${reviewImages.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
           {reviewImages.slice(0, 2).map((img, imageIndex) => (
             <img
               key={imageIndex}
@@ -1154,7 +1137,7 @@ const ProductReviewCard = ({ review, theme }) => {
               loading="lazy"
               width="320"
               height="220"
-              className="h-36 w-full rounded-[18px] object-cover"
+              className="h-28 w-full rounded-[18px] object-cover sm:h-32"
             />
           ))}
         </div>
@@ -1163,11 +1146,25 @@ const ProductReviewCard = ({ review, theme }) => {
   );
 };
 
-const ProductReviewCarouselSection = ({ reviews = [], theme, productName, onWriteReview }) => {
+const ProductReviewCarouselSection = ({
+  reviews = [],
+  theme,
+  productName,
+  onWriteReview,
+  className = "",
+}) => {
   const sliderRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const reviewCount = reviews.length;
+  const averageRating = reviewCount
+    ? (
+      reviews.reduce((sum, review) => sum + Number(review?.rating || 0), 0) / reviewCount
+    ).toFixed(1)
+    : "0.0";
+  const recommendedCount = reviews.filter((review) => Number(review?.rating || 0) >= 4).length;
+  const recommendedPercent = reviewCount ? Math.round((recommendedCount / reviewCount) * 100) : 0;
 
   const scroll = (direction) => {
     const slider = sliderRef.current;
@@ -1208,34 +1205,103 @@ const ProductReviewCarouselSection = ({ reviews = [], theme, productName, onWrit
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
-      <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
-        <div className="flex-1 min-w-0 sm:min-w-[260px]">
+    <section className={className}>
+      <div className="mb-5 flex items-start gap-4">
+       
+        <div className="min-w-0 flex-1">
           <Heading
             heading="Customer Reviews"
             sub={`Real reviews from ${productName || "our"} customers`}
             align="left"
             subVariant="paragraph"
-            subClassName="!max-w-4xl !text-gray-500"
+            subClassName="!max-w-3xl !text-[#718096]"
           />
         </div>
+      </div>
 
-        <div className="flex items-center justify-between gap-3 sm:justify-end">
+      <div
+        className="mb-5 grid grid-cols-1 gap-3 rounded-[24px] border bg-white px-4 py-4 shadow-[0_12px_30px_rgba(69,39,34,0.05)] md:grid-cols-[minmax(0,1fr)_auto] md:items-center sm:px-5 sm:py-4"
+        style={{ borderColor: theme.borderSoft }}
+      >
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+          <div className="flex items-center gap-3">
+            <div className="text-center">
+              <div className="text-[34px] font-semibold leading-none" style={{ color: theme.accent }}>
+                {averageRating}
+              </div>
+              <div className="mt-2 flex items-center justify-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((starIndex) => (
+                  <Star
+                    key={starIndex}
+                    className={`h-3.5 w-3.5 ${starIndex <= Math.round(Number(averageRating))
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-200"
+                      }`}
+                  />
+                ))}
+              </div>
+              <p className="mt-1 text-[11px] text-[#6b7280]">
+                Based on {reviewCount} review{reviewCount === 1 ? "" : "s"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 border-t pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0" style={{ borderColor: theme.borderSoft }}>
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+              style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
+            >
+              <Star className="h-4 w-4 fill-current" />
+            </div>
+            <div>
+              <p className="text-[26px] font-semibold leading-none" style={{ color: theme.accent }}>
+                {recommendedPercent}%
+              </p>
+              <p className="mt-1 text-[11px] leading-4 text-[#6b7280]">
+                Customers recommended this product
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 border-t pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0" style={{ borderColor: theme.borderSoft }}>
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+              style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
+            >
+              <ShieldCheck className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: theme.accent }}>
+                Verified
+              </p>
+              <p className="mt-1 text-[11px] leading-4 text-[#6b7280]">
+                All reviews are from verified buyers
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="md:pl-4">
           <button
             onClick={onWriteReview}
             data-track-event="write_review_click"
             data-track-label={productName}
-            className="inline-flex items-center justify-center gap-2.5 rounded-[22px] px-5 py-3 text-sm font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition hover:translate-y-[-1px] sm:px-6"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition hover:translate-y-[-1px] md:w-auto"
             style={{ backgroundColor: theme.primary, color: theme.onPrimary }}
           >
             <Star className="h-4 w-4 fill-current" />
             Write a Review
           </button>
+        </div>
+      </div>
+
+      {reviews.length > 0 ? (
+        <div className="relative">
           {reviews.length > 1 ? (
-            <div className="hidden md:flex items-center gap-2">
+            <>
               <button
                 onClick={() => scroll("left")}
-                className="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md transition hover:bg-[#fff7f8]"
+                className="hidden md:flex absolute left-0 top-1/2 z-10 h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border bg-white shadow-[0_12px_28px_rgba(69,39,34,0.08)] transition hover:bg-[#fff7f8]"
                 style={{ borderColor: theme.borderSoft, color: theme.accent }}
                 aria-label="Previous reviews"
               >
@@ -1243,34 +1309,32 @@ const ProductReviewCarouselSection = ({ reviews = [], theme, productName, onWrit
               </button>
               <button
                 onClick={() => scroll("right")}
-                className="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md transition hover:bg-[#fff7f8]"
+                className="hidden md:flex absolute right-0 top-1/2 z-10 h-11 w-11 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border bg-white shadow-[0_12px_28px_rgba(69,39,34,0.08)] transition hover:bg-[#fff7f8]"
                 style={{ borderColor: theme.borderSoft, color: theme.accent }}
                 aria-label="Next reviews"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
-            </div>
+            </>
           ) : null}
-        </div>
-      </div>
 
-      {reviews.length > 0 ? (
-        <div
-          ref={sliderRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={stopDrag}
-          onMouseUp={stopDrag}
-          className="overflow-x-auto scroll-smooth scrollbar-hide cursor-grab select-none touch-pan-x snap-x snap-mandatory px-0.5 pb-1"
-        >
-          <div className="flex gap-3 sm:gap-5">
-            {reviews.map((review, index) => (
-              <ProductReviewCard
-                key={review?.id || review?._id || `${review?.name || "review"}-${index}`}
-                review={review}
-                theme={theme}
-              />
-            ))}
+          <div
+            ref={sliderRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={stopDrag}
+            onMouseUp={stopDrag}
+            className="overflow-x-auto scroll-smooth scrollbar-hide cursor-grab select-none touch-pan-x snap-x snap-mandatory px-0.5 pb-1 md:px-4"
+          >
+            <div className="flex gap-3 sm:gap-4">
+              {reviews.map((review, index) => (
+                <ProductReviewCard
+                  key={review?.id || review?._id || `${review?.name || "review"}-${index}`}
+                  review={review}
+                  theme={theme}
+                />
+              ))}
+            </div>
           </div>
         </div>
       ) : (
@@ -1288,6 +1352,70 @@ const ProductReviewCarouselSection = ({ reviews = [], theme, productName, onWrit
           </button>
         </div>
       )}
+    </section>
+  );
+};
+
+const ProductFaqSection = ({ faqs = [], theme, className = "" }) => {
+  const [openIndex, setOpenIndex] = useState(-1);
+
+  if (!faqs.length) return null;
+
+  return (
+    <section className={className}>
+      <div className="mb-5 flex items-start gap-4">
+      
+        <div className="min-w-0 flex-1">
+          <Heading
+            heading="Product FAQs"
+           
+            align="left"
+            subVariant="paragraph"
+            subClassName="!max-w-md !text-[#718096]"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {faqs.map((faq, index) => {
+          const isOpen = openIndex === index;
+
+          return (
+            <div
+              key={faq.id || `${faq.question}-${index}`}
+              className="overflow-hidden rounded-[22px] border bg-white shadow-[0_10px_24px_rgba(69,39,34,0.04)]"
+              style={{ borderColor: theme.borderSoft }}
+            >
+              <button
+                type="button"
+                onClick={() => setOpenIndex((prev) => (prev === index ? -1 : index))}
+                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
+              >
+                <span className="text-[13px] font-semibold leading-6 sm:text-[14px]" style={{ color: theme.heading }}>
+                  {faq.question}
+                </span>
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition ${isOpen ? "rotate-180" : ""}`}
+                  style={{ borderColor: theme.accentSoft, color: theme.accent }}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </span>
+              </button>
+
+              {isOpen ? (
+                <div
+                  className="border-t px-5 pb-5 pt-0 sm:px-6"
+                  style={{ borderColor: theme.borderSoft, backgroundColor: theme.reviewSurface }}
+                >
+                  <p className="pt-4 text-[12.5px] leading-6 text-gray-600 sm:text-[13px]">
+                    {faq.answer || "Answer will be updated soon."}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 };
@@ -1480,64 +1608,64 @@ const ReviewForm = ({ product, onReviewAdded, theme, onSubmitted, submitLabel = 
             </div>
           </div>
           <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
-                  Upload Image (Optional)
-                </label>
-                <label
-                  className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dashed bg-white px-4 py-4 transition"
-                  style={{ borderColor: theme.accentSoft }}
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+              Upload Image (Optional)
+            </label>
+            <label
+              className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dashed bg-white px-4 py-4 transition"
+              style={{ borderColor: theme.accentSoft }}
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition"
+                  style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
                 >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition"
-                      style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
+                  <ImagePlus className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold leading-5" style={{ color: theme.heading }}>
+                    {reviewImages.length > 0 ? `${reviewImages.length} image${reviewImages.length > 1 ? "s" : ""} selected` : "Choose images"}
+                  </p>
+                  <p className="truncate text-xs text-gray-400">
+                    JPG, PNG or WEBP
+                  </p>
+                </div>
+              </div>
+              <span
+                className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition group-hover:opacity-90"
+                style={{ backgroundColor: theme.accent, color: "#ffffff" }}
+              >
+                Browse
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
+            <p className="text-[11px] text-gray-400 mt-1">
+              Upload 1-2 images (Max 2MB each)
+            </p>
+            {reviewImages.length > 0 && (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {reviewImages.map((img, i) => (
+                  <div key={i} className="relative aspect-square w-full rounded-xl overflow-hidden border">
+                    <img src={img} loading="lazy" alt={`${product?.name || "Product"} review image ${i + 1}`} width="160" height="160" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReviewImages(prev => prev.filter((_, index) => index !== i))
+                      }
+                      className="absolute top-1 right-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded"
                     >
-                      <ImagePlus className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold leading-5" style={{ color: theme.heading }}>
-                        {reviewImages.length > 0 ? `${reviewImages.length} image${reviewImages.length > 1 ? "s" : ""} selected` : "Choose images"}
-                      </p>
-                      <p className="truncate text-xs text-gray-400">
-                        JPG, PNG or WEBP
-                      </p>
-                    </div>
+                      Remove
+                    </button>
                   </div>
-                  <span
-                    className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition group-hover:opacity-90"
-                    style={{ backgroundColor: theme.accent, color: "#ffffff" }}
-                  >
-                    Browse
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                </label>
-                <p className="text-[11px] text-gray-400 mt-1">
-                  Upload 1-2 images (Max 2MB each)
-                </p>
-                {reviewImages.length > 0 && (
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    {reviewImages.map((img, i) => (
-                      <div key={i} className="relative aspect-square w-full rounded-xl overflow-hidden border">
-                        <img src={img} loading="lazy" alt={`${product?.name || "Product"} review image ${i + 1}`} width="160" height="160" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setReviewImages(prev => prev.filter((_, index) => index !== i))
-                          }
-                          className="absolute top-1 right-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -2777,6 +2905,10 @@ const ProductDetail = () => {
     () => (Array.isArray(product?.reviews) ? product.reviews : []),
     [product?.reviews]
   );
+  const productFaqs = useMemo(
+    () => sanitizeProductFaqs(product?.faqs),
+    [product?.faqs]
+  );
 
   const rating = product?.rating || 4;
   const beforeAfterPairs = product?.beforeAfter || [];
@@ -3159,28 +3291,28 @@ const ProductDetail = () => {
                     displayImages
                       .slice(0, hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : displayImages.length)
                       .map((img, i) => (
-                      <button
-                        key={img}
-                        onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
-                        className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300
+                        <button
+                          key={img}
+                          onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
+                          className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300
                           ${selectedImage === img ? "shadow-sm" : "hover:border-gray-200"}`}
-                        style={{
-                          width: "64px",
-                          height: "64px",
-                          borderColor: selectedImage === img ? "#f2b9b3" : "#f3e2df",
-                          backgroundColor: selectedImage === img ? "#fff5f4" : "#ffffff",
-                        }}
-                      >
-                        <img
-                          loading="lazy"
-                          src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-                          alt={`${product.name} gallery thumbnail ${i + 1}`}
-                          width="148"
-                          height="148"
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
-                    ))
+                          style={{
+                            width: "64px",
+                            height: "64px",
+                            borderColor: selectedImage === img ? "#f2b9b3" : "#f3e2df",
+                            backgroundColor: selectedImage === img ? "#fff5f4" : "#ffffff",
+                          }}
+                        >
+                          <img
+                            loading="lazy"
+                            src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                            alt={`${product.name} gallery thumbnail ${i + 1}`}
+                            width="148"
+                            height="148"
+                            className="h-full w-full object-cover"
+                          />
+                        </button>
+                      ))
                   ) : (
                     Array.from({
                       length: Math.min(
@@ -3226,9 +3358,8 @@ const ProductDetail = () => {
                     <button
                       type="button"
                       onClick={handleOverflowThumbClick}
-                      className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${
-                        selectedGalleryIndex >= overflowStartIndex ? "shadow-sm" : "hover:border-gray-200"
-                      }`}
+                      className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedGalleryIndex >= overflowStartIndex ? "shadow-sm" : "hover:border-gray-200"
+                        }`}
                       style={{
                         width: "64px",
                         height: "64px",
@@ -3309,9 +3440,8 @@ const ProductDetail = () => {
                               loading="lazy"
                               src={selectedVideo.thumb}
                               alt={selectedVideo.title || "Product video thumbnail"}
-                              className={`h-full w-full bg-[#fff5f4] ${
-                                selectedVideo?.isShort ? "object-contain" : "object-contain"
-                              }`}
+                              className={`h-full w-full bg-[#fff5f4] ${selectedVideo?.isShort ? "object-contain" : "object-contain"
+                                }`}
                             />
                           ) : (
                             <div className="h-full w-full bg-[#fff5f4]" />
@@ -3989,7 +4119,7 @@ const ProductDetail = () => {
             </section>
           </DeferredSection>
         )}
-        
+
 
         {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
         <DeferredSection
@@ -4093,7 +4223,7 @@ const ProductDetail = () => {
           >
             <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
               <div className="mb-4 sm:mb-5">
-                <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }}/>
+                <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }} />
               </div>
 
               <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
@@ -4123,7 +4253,7 @@ const ProductDetail = () => {
             </section>
           </DeferredSection>
         )}
-        
+
 
 
 
@@ -4156,7 +4286,7 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-{activeInfoTab !== "reviews" && product.videos?.length > 0 && (
+        {activeInfoTab !== "reviews" && product.videos?.length > 0 && (
           <DeferredSection
             minHeight={360}
             placeholder={
@@ -4207,42 +4337,74 @@ const ProductDetail = () => {
         )}
 
         <DeferredSection
-          minHeight={340}
+          minHeight={productFaqs.length > 0 ? 420 : 340}
           placeholder={
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-12" aria-hidden="true">
-              <div className="mb-6 space-y-3">
-                <SkeletonBlock className="h-8 w-56" />
-                <SkeletonBlock className="h-4 w-72" />
-              </div>
-              <div className="flex gap-4 overflow-hidden">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="w-full rounded-[24px] border border-[#f1e2df] bg-white p-4 sm:w-[48%] lg:w-[32%]">
-                    <div className="mb-4 flex items-center gap-3">
-                      <SkeletonBlock className="h-11 w-11 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <SkeletonBlock className="h-4 w-28" />
-                        <SkeletonBlock className="h-3 w-20" />
+            <div className="max-w-7xl mx-auto mb-12 px-4 sm:px-6" aria-hidden="true">
+              <div className={`grid grid-cols-1 gap-6 ${productFaqs.length > 0 ? "xl:grid-cols-10" : ""}`}>
+                <div className={productFaqs.length > 0 ? "xl:col-span-7" : ""}>
+                  <div className="mb-6 space-y-3">
+                    <SkeletonBlock className="h-8 w-56" />
+                    <SkeletonBlock className="h-4 w-72" />
+                  </div>
+                  <div className="flex gap-4 overflow-hidden">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div key={index} className="w-full rounded-[24px] border border-[#f1e2df] bg-white p-4 sm:w-[48%] lg:w-[32%]">
+                        <div className="mb-4 flex items-center gap-3">
+                          <SkeletonBlock className="h-11 w-11 rounded-full" />
+                          <div className="flex-1 space-y-2">
+                            <SkeletonBlock className="h-4 w-28" />
+                            <SkeletonBlock className="h-3 w-20" />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <SkeletonBlock className="h-4 w-full" />
+                          <SkeletonBlock className="h-4 w-[88%]" />
+                          <SkeletonBlock className="h-4 w-[74%]" />
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-2">
+                    ))}
+                  </div>
+                </div>
+
+                {productFaqs.length > 0 ? (
+                  <div className="xl:col-span-3">
+                    <div className="mb-6 space-y-3">
+                      <SkeletonBlock className="h-8 w-40" />
                       <SkeletonBlock className="h-4 w-full" />
-                      <SkeletonBlock className="h-4 w-[88%]" />
-                      <SkeletonBlock className="h-4 w-[74%]" />
+                    </div>
+                    <div className="space-y-3">
+                      {Array.from({ length: Math.min(productFaqs.length, 3) }).map((_, index) => (
+                        <div key={index} className="rounded-[24px] border border-[#f1e2df] bg-white px-5 py-5 sm:px-6">
+                          <SkeletonBlock className="h-5 w-[75%]" />
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                ) : null}
               </div>
             </div>
           }
         >
-          <ProductReviewCarouselSection
-            reviews={productReviews}
-            theme={detailTheme}
-            productName={product?.name}
-            onWriteReview={() => setShowReviewModal(true)}
-          />
+          <div className={`max-w-7xl mx-auto mb-8 px-4 sm:px-6 ${productFaqs.length > 0 ? "grid grid-cols-1 gap-6 xl:grid-cols-10" : ""}`}>
+              <ProductReviewCarouselSection
+                reviews={productReviews}
+                theme={detailTheme}
+                productName={product?.name}
+                onWriteReview={() => setShowReviewModal(true)}
+                className={productFaqs.length > 0 ? "xl:col-span-7 xl:pr-5" : ""}
+              />
+
+              {productFaqs.length > 0 ? (
+                <div className="xl:col-span-3 xl:border-l xl:pl-5" style={{ borderColor: detailTheme.borderSoft }}>
+                  <ProductFaqSection
+                    faqs={productFaqs}
+                    theme={detailTheme}
+                  />
+                </div>
+              ) : null}
+          </div>
         </DeferredSection>
-          
+
         {/* â•â•â•â• RELATED PRODUCTS â•â•â•â• */}
         {relatedProducts.length > 0 && (
           <DeferredSection
