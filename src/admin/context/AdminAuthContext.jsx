@@ -4,9 +4,25 @@ import { getApiUrl, handleApiError, API_URL } from "../../utils/api";
 
 const AdminAuthContext = createContext(null);
 
-export const AdminAuthProvider = ({ children }) => {
+const getStoredAdminSession = () => {
+  if (typeof window === "undefined") return null;
 
-  const [admin, setAdmin] = useState(null);
+  try {
+    const storedAdmin = localStorage.getItem("admin");
+    const rawSession = localStorage.getItem("admin_session");
+    return {
+      storedAdmin,
+      session: rawSession ? JSON.parse(rawSession) : null,
+    };
+  } catch {
+    return {
+      storedAdmin: null,
+      session: null,
+    };
+  }
+};
+
+export const AdminAuthProvider = ({ children }) => {
 
   /* ================= SESSION CONFIG ================= */
 
@@ -38,19 +54,36 @@ export const AdminAuthProvider = ({ children }) => {
   };
 
 
+  const [admin, setAdmin] = useState(() => {
+    const { storedAdmin, session } = getStoredAdminSession();
+
+    if (storedAdmin && isSessionValid(session)) {
+      try {
+        return JSON.parse(storedAdmin);
+      } catch {
+        return null;
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("admin");
+      localStorage.removeItem("admin_session");
+    }
+
+    return null;
+  });
+
   /* ================= LOAD ADMIN ================= */
 
   useEffect(() => {
-
-    const storedAdmin = localStorage.getItem("admin");
-
-    const session = JSON.parse(
-      localStorage.getItem("admin_session")
-    );
+    const { storedAdmin, session } = getStoredAdminSession();
 
     if (storedAdmin && isSessionValid(session)) {
-
-      setAdmin(JSON.parse(storedAdmin));
+      try {
+        setAdmin(JSON.parse(storedAdmin));
+      } catch {
+        setAdmin(null);
+      }
 
     } else {
 

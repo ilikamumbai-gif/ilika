@@ -4604,57 +4604,6 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-        {hasInTheBox && (
-          <DeferredSection
-            minHeight={280}
-            placeholder={
-              <div className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-8" aria-hidden="true">
-                <SkeletonBlock className="mb-5 h-8 w-48" />
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <div key={index} className="space-y-3 text-center">
-                      <SkeletonBlock className="mx-auto h-24 w-24 rounded-[18px] sm:h-32 sm:w-32" />
-                      <SkeletonBlock className="mx-auto h-4 w-24" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            }
-          >
-            <section className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-8">
-              <div className="mb-4 sm:mb-5">
-                <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }} />
-              </div>
-
-              <div className="grid grid-cols-3 gap-x-1 gap-y-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
-                {inTheBoxItems.map((item, index) => (
-                  <div key={item.id || index} className="flex min-w-0 flex-col items-center rounded-[18px] bg-white/70 px-1 py-1.5 text-center sm:w-[128px] sm:bg-transparent sm:px-0 sm:py-0">
-                    {item.image ? (
-                      <img
-                        loading={index < 2 ? "eager" : "lazy"}
-                        src={item.image}
-                        alt={item.title || `Box item ${index + 1}`}
-                        className="h-24 w-auto max-w-full rounded-[18px] object-contain sm:h-32"
-                      />
-                    ) : null}
-                    {item.title ? (
-                      <p className="mt-2 text-[11px] font-medium leading-4 sm:mt-3 sm:text-[13px] sm:leading-5" style={{ color: detailTheme.heading }}>
-                        {item.title}
-                      </p>
-                    ) : null}
-                    {item.subtitle ? (
-                      <p className="mt-1 text-[11px] leading-4 text-gray-500 sm:text-xs sm:leading-5">
-                        {item.subtitle}
-                      </p>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </section>
-          </DeferredSection>
-        )}
-
-
         {/* â•â•â•â• PRODUCT BANNERS â•â•â•â• */}
         {((product.banners?.length > 0) || product.bannerImage) && (
           <DeferredSection
@@ -4784,6 +4733,39 @@ const ProductDetail = () => {
             </div>
           }
         >
+          {hasInTheBox && (
+            <section className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-8">
+              <div className="mb-4 sm:mb-5">
+                <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }} />
+              </div>
+
+              <div className="grid grid-cols-3 gap-x-1 gap-y-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
+                {inTheBoxItems.map((item, index) => (
+                  <div key={item.id || index} className="flex min-w-0 flex-col items-center rounded-[18px] bg-white/70 px-1 py-1.5 text-center sm:w-[128px] sm:bg-transparent sm:px-0 sm:py-0">
+                    {item.image ? (
+                      <img
+                        loading={index < 2 ? "eager" : "lazy"}
+                        src={item.image}
+                        alt={item.title || `Box item ${index + 1}`}
+                        className="h-24 w-auto max-w-full rounded-[18px] object-contain sm:h-32"
+                      />
+                    ) : null}
+                    {item.title ? (
+                      <p className="mt-2 text-[11px] font-medium leading-4 sm:mt-3 sm:text-[13px] sm:leading-5" style={{ color: detailTheme.heading }}>
+                        {item.title}
+                      </p>
+                    ) : null}
+                    {item.subtitle ? (
+                      <p className="mt-1 text-[11px] leading-4 text-gray-500 sm:text-xs sm:leading-5">
+                        {item.subtitle}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
           <section ref={detailsTabsRef} className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10">
             <div className="hidden md:block overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
