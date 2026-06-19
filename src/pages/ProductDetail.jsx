@@ -3698,7 +3698,7 @@ const ProductDetail = () => {
               <div>
                 {productTagLabel && (
                   <span
-                    className="mb-3 inline-flex rounded-[12px] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] shadow-[0_10px_24px_rgba(69,39,34,0.12)]"
+                    className="mb-3 inline-flex max-w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] shadow-[0_10px_24px_rgba(69,39,34,0.12)] sm:rounded-[12px] sm:px-3.5 sm:text-[11px] sm:tracking-[0.08em]"
                     style={{
                       backgroundColor: detailTheme.accent,
                       color: detailTheme.onPrimary || "#ffffff",
@@ -3852,7 +3852,7 @@ const ProductDetail = () => {
                         <div>
                           {topPriceBadgeLabel && (
                             <span
-                              className="mb-3 inline-flex rounded-[12px] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] shadow-[0_10px_24px_rgba(69,39,34,0.12)]"
+                              className="mb-3 inline-flex max-w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] shadow-[0_10px_24px_rgba(69,39,34,0.12)] sm:rounded-[12px] sm:px-3.5 sm:text-[11px] sm:tracking-[0.08em]"
                               style={{
                                 backgroundColor: detailTheme.accent,
                                 color: detailTheme.onPrimary || "#ffffff",
@@ -4216,7 +4216,7 @@ const ProductDetail = () => {
                     <div>
                       {topPriceBadgeLabel && (
                         <span
-                          className="mb-3 inline-flex rounded-[12px] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] shadow-[0_10px_24px_rgba(69,39,34,0.12)]"
+                          className="mb-3 inline-flex max-w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] shadow-[0_10px_24px_rgba(69,39,34,0.12)] sm:rounded-[12px] sm:px-3.5 sm:text-[11px] sm:tracking-[0.08em]"
                           style={{
                             backgroundColor: detailTheme.accent,
                             color: detailTheme.onPrimary || "#ffffff",
@@ -4747,17 +4747,17 @@ const ProductDetail = () => {
           <DeferredSection
             minHeight={320}
             placeholder={
-              <div className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4" aria-hidden="true">
+              <div className="w-full mx-auto px-4 sm:px-6 mb-12" aria-hidden="true">
                 <SkeletonBlock className="h-56 w-full rounded-[24px] sm:h-72" />
               </div>
             }
           >
-            <section className="w-full mx-auto px-4 sm:px-6 mb-12 space-y-4">
+            <section className="w-full mx-auto px-4 sm:px-6 mb-12">
               {(product.banners?.length > 0
                 ? product.banners
                 : [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
               ).filter(b => b?.url).map((banner, idx) => (
-                <div key={idx} className="shadow-sm">
+                <div key={idx}>
                   <img loading="lazy"
                     src={banner.url}
                     alt={banner.alt || `Product Banner ${idx + 1}`}

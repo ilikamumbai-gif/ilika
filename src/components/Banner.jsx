@@ -52,6 +52,7 @@ const Banner = ({
   const activeSlides = normalizedSlides.length > 0 ? normalizedSlides : matchedBanners;
   const hasMultiple = activeSlides.length > 1;
   const aspectRatio = `${width} / ${height}`;
+  const shouldUseNaturalHeight = preserveFullImage || imageFit === "contain";
 
   useEffect(() => {
     setActiveIndex(0);
@@ -105,7 +106,7 @@ const Banner = ({
   return (
     <section
       className={`relative w-full overflow-hidden ${className}`}
-      style={preserveFullImage ? undefined : { aspectRatio }}
+      style={shouldUseNaturalHeight ? undefined : { aspectRatio }}
     >
       <div
         className={`flex transition-transform duration-500 ease-in-out ${
@@ -129,7 +130,7 @@ const Banner = ({
                 src={desktopSrc}
                 alt={resolvedAlt}
                 className={
-                  preserveFullImage
+                  shouldUseNaturalHeight
                     ? `block w-full h-auto ${imageFit === "contain" ? "object-contain" : "object-cover"}`
                     : `w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`
                 }
