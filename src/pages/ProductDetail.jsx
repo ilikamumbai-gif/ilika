@@ -4740,8 +4740,6 @@ const ProductDetail = () => {
         )}
 
 
-
-
         {/* â•â•â•â• PRODUCT BANNERS â•â•â•â• */}
         {activeInfoTab !== "reviews" && ((product.banners?.length > 0) || product.bannerImage) && (
           <DeferredSection

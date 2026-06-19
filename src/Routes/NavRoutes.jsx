@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect } from "react";
-import { Routes, Route, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate, Navigate, useParams } from "react-router-dom";
 import { markCurrentPageAsLastVisited, trackVisitorEvent } from "../utils/visitorAnalytics";
 import { trackPageView } from "../utils/pixel";
 import AdminProtectedRoute from "../admin/components/AdminProtectedRoute";
@@ -265,14 +265,25 @@ const renderLazy = (Component) => (
   </Suspense>
 );
 
+const ProductDetailRoute = () => {
+  const { productUrl = "" } = useParams();
+  return (
+    <Suspense fallback={<RouteLoader />}>
+      <ProductDetail key={productUrl} />
+    </Suspense>
+  );
+};
+
 const NavRoutes = () => {
+  const location = useLocation();
+
   return (
     <>
       <PixelPageTracker />
       <VisitorPageTracker />
       <UrlCanonicalizer />
       <RouteSeo />
-      <Routes>
+      <Routes location={location} key={`${location.pathname}${location.search}${location.hash}`}>
         <Route path="/" element={renderLazy(Home)} />
         <Route path="/offer" element={renderLazy(Offer)} />
         <Route
@@ -312,7 +323,7 @@ const NavRoutes = () => {
         />
 
         <Route path="/blog/:slug" element={renderLazy(BlogDetail)} />
-        <Route path="/product/:productUrl" element={renderLazy(ProductDetail)} />
+        <Route path="/product/:productUrl" element={<ProductDetailRoute />} />
         <Route path="/category/:categorySlug" element={renderLazy(CategoryProducts)} />
 
         <Route path="/privacy" element={renderLazy(Privacy)} />
