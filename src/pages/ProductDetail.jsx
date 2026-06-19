@@ -863,12 +863,11 @@ const BeforeAfterSlider = ({
   beforeImage, afterImage,
   beforeLabel = "Before", afterLabel = "After"
 }) => {
-  const [pos, setPos] = useState(50); // start centered
   const containerRef = useRef(null);
   const isActive = useRef(false);
   const beforeMaskRef = useRef(null);
   const dividerRef = useRef(null);
-  const frameRef = useRef(null);
+  const posRef = useRef(50);
 
   const applySliderPosition = useCallback((nextPos) => {
     if (beforeMaskRef.current) {
@@ -880,29 +879,15 @@ const BeforeAfterSlider = ({
   }, []);
 
   useEffect(() => {
-    applySliderPosition(pos);
-  }, [pos, applySliderPosition]);
-
-  useEffect(() => {
-    return () => {
-      if (frameRef.current) {
-        window.cancelAnimationFrame(frameRef.current);
-      }
-    };
-  }, []);
+    applySliderPosition(posRef.current);
+  }, [applySliderPosition]);
 
   const calcPos = (clientX) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const clamped = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
+    posRef.current = clamped;
     applySliderPosition(clamped);
-    if (frameRef.current) {
-      window.cancelAnimationFrame(frameRef.current);
-    }
-    frameRef.current = window.requestAnimationFrame(() => {
-      setPos(clamped);
-      frameRef.current = null;
-    });
   };
 
   const onPointerDown = (e) => { e.preventDefault(); e.stopPropagation(); isActive.current = true; containerRef.current.setPointerCapture(e.pointerId); calcPos(e.clientX); };
@@ -934,7 +919,7 @@ const BeforeAfterSlider = ({
         ref={beforeMaskRef}
         className="absolute inset-0 pointer-events-none"
         style={{
-          clipPath: `inset(0 ${100 - pos}% 0 0)`,
+          clipPath: "inset(0 50% 0 0)",
           willChange: "clip-path"
         }}
       >
@@ -953,7 +938,7 @@ const BeforeAfterSlider = ({
         ref={dividerRef}
         className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none"
         style={{
-          left: `calc(${pos}% - 1px)`,
+          left: "calc(50% - 1px)",
           willChange: "left"
         }}
       >
