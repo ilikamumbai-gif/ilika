@@ -2596,6 +2596,12 @@ const ProductDetail = () => {
 
   const effectiveMrp = Number(packMrp) + addonPrice;
   const discount = effectiveMrp ? Math.max(0, Math.round(((effectiveMrp - price) / effectiveMrp) * 100)) : 0;
+  const topPriceBadgePercent = Math.round(
+    Number(previewCouponDisplayPercent || 0) > 0
+      ? Number(previewCouponDisplayPercent || 0)
+      : Number(discount || 0)
+  );
+  const topPriceBadgeLabel = topPriceBadgePercent > 0 ? `FLAT ${topPriceBadgePercent}% OFF` : "";
   const savingAmount = Math.max(0, Number((effectiveMrp - price).toFixed(2)));
   const addonCartSuffix = eligibleForCollagenAddon ? `__addon_${selectedCollagenAddon.count}` : "";
   const packCartSuffix = selectedPack ? `__pack_${selectedPack.id}` : "";
@@ -3165,6 +3171,10 @@ const ProductDetail = () => {
       ...fromCategories,
     ].filter(Boolean);
   }, [product?.name, product?.categoryName]);
+  const productTagLabel = useMemo(
+    () => String(product?.productTag || "").trim(),
+    [product?.productTag]
+  );
 
   const productBreadcrumbJsonLd = useMemo(() => ({
     "@context": "https://schema.org",
@@ -3685,11 +3695,18 @@ const ProductDetail = () => {
 
             {/* Product info */}
             <div className="flex h-fit flex-col gap-3.5 sm:gap-5 xl:pr-4">
-              <button onClick={() => navigate(-1)} className="flex w-fit items-center gap-1 text-xs text-gray-400 transition hover:text-gray-700">
-                <ChevronLeft className="h-3.5 w-3.5" /> Back
-              </button>
-
               <div>
+                {productTagLabel && (
+                  <span
+                    className="mb-3 inline-flex rounded-[12px] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] shadow-[0_10px_24px_rgba(69,39,34,0.12)]"
+                    style={{
+                      backgroundColor: detailTheme.accent,
+                      color: detailTheme.onPrimary || "#ffffff",
+                    }}
+                  >
+                    {productTagLabel}
+                  </span>
+                )}
                 <h1 className="text-[20px] font-luxury font-bold leading-[1.22] sm:text-[1.75rem] xl:text-[2.2rem]" style={{ color: detailTheme.heading }}>
                   {product.name}
                 </h1>
@@ -3829,10 +3846,21 @@ const ProductDetail = () => {
                 className="rounded-[20px] border bg-white p-3.5 shadow-[0_14px_32px_rgba(69,39,34,0.06)] sm:rounded-[24px] sm:p-5 sm:shadow-[0_18px_40px_rgba(69,39,34,0.06)] xl:sticky xl:top-[164px]"
                 style={{ borderColor: detailTheme.borderSoft }}
               >
-                <div className="space-y-4">
+                  <div className="space-y-4">
                     <div className="rounded-[16px] px-4 py-4 sm:rounded-[20px] sm:px-5" style={{ backgroundColor: detailTheme.reviewSurface }}>
                       <div className="flex flex-col gap-3">
                         <div>
+                          {topPriceBadgeLabel && (
+                            <span
+                              className="mb-3 inline-flex rounded-[12px] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] shadow-[0_10px_24px_rgba(69,39,34,0.12)]"
+                              style={{
+                                backgroundColor: detailTheme.accent,
+                                color: detailTheme.onPrimary || "#ffffff",
+                              }}
+                            >
+                              {topPriceBadgeLabel}
+                            </span>
+                          )}
                           {effectiveMrp > price && savingAmount > 0 ? (
                             <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
                               <span className="text-[32px] font-bold leading-none sm:text-[36px]" style={{ color: detailTheme.heading }}>
@@ -4186,6 +4214,17 @@ const ProductDetail = () => {
                 <div className="rounded-[20px] px-4 py-4 sm:px-5" style={{ backgroundColor: detailTheme.reviewSurface }}>
                   <div className="flex flex-col gap-3">
                     <div>
+                      {topPriceBadgeLabel && (
+                        <span
+                          className="mb-3 inline-flex rounded-[12px] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] shadow-[0_10px_24px_rgba(69,39,34,0.12)]"
+                          style={{
+                            backgroundColor: detailTheme.accent,
+                            color: detailTheme.onPrimary || "#ffffff",
+                          }}
+                        >
+                          {topPriceBadgeLabel}
+                        </span>
+                      )}
                       {effectiveMrp > price && savingAmount > 0 ? (
                         <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
                           <span className="text-[32px] font-bold leading-none sm:text-[36px]" style={{ color: detailTheme.heading }}>
