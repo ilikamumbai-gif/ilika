@@ -239,12 +239,55 @@ const normalizeExternalUrl = (value = "") => {
   return `https://${raw}`;
 };
 
-const getMarketplaceLinks = (product = {}) => {
+const getMarketplaceLinks = (product = {}, fallbackPrice = 0) => {
   const source = product?.marketplaceLinks || product || {};
+  const resolvedFallbackPrice = Number(fallbackPrice || 0) || 0;
   return [
-    { key: "amazon", label: "Amazon", url: normalizeExternalUrl(source?.amazon || source?.amazonLink || "") },
-    { key: "flipkart", label: "Flipkart", url: normalizeExternalUrl(source?.flipkart || source?.flipkartLink || "") },
-    { key: "meesho", label: "Meesho", url: normalizeExternalUrl(source?.meesho || source?.meeshoLink || "") },
+    {
+      key: "amazon",
+      label: "Amazon",
+      url: normalizeExternalUrl(source?.amazon || source?.amazonLink || ""),
+      price: Number(
+        source?.amazonPrice ||
+        source?.amazon_price ||
+        source?.amazonSellingPrice ||
+        product?.amazonPrice ||
+        product?.amazon_price ||
+        product?.amazonSellingPrice ||
+        resolvedFallbackPrice ||
+        0
+      ) || null,
+    },
+    {
+      key: "flipkart",
+      label: "Flipkart",
+      url: normalizeExternalUrl(source?.flipkart || source?.flipkartLink || ""),
+      price: Number(
+        source?.flipkartPrice ||
+        source?.flipkart_price ||
+        source?.flipkartSellingPrice ||
+        product?.flipkartPrice ||
+        product?.flipkart_price ||
+        product?.flipkartSellingPrice ||
+        resolvedFallbackPrice ||
+        0
+      ) || null,
+    },
+    {
+      key: "meesho",
+      label: "Meesho",
+      url: normalizeExternalUrl(source?.meesho || source?.meeshoLink || ""),
+      price: Number(
+        source?.meeshoPrice ||
+        source?.meesho_price ||
+        source?.meeshoSellingPrice ||
+        product?.meeshoPrice ||
+        product?.meesho_price ||
+        product?.meeshoSellingPrice ||
+        resolvedFallbackPrice ||
+        0
+      ) || null,
+    },
   ].filter((item) => item.url);
 };
 
@@ -254,46 +297,57 @@ const MARKETPLACE_LOGOS = {
   meesho: "/Images/Meesho.webp",
 };
 
-const MarketplaceButtons = ({ links = [], theme, className = "" }) => {
+const MarketplaceButtons = ({ links = [], className = "" }) => {
   if (!Array.isArray(links) || !links.length) return null;
 
   return (
     <div className={className}>
-      <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Also available on</p>
-      <div className="mt-2 grid grid-cols-3 gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-[#eadfdb]" />
+        <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.28em] text-[#6f625f]">
+          Also available on
+        </p>
+        <div className="h-px flex-1 bg-[#eadfdb]" />
+      </div>
+      <div className="mt-4 -mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+        <div className="flex snap-x snap-mandatory items-stretch gap-3 sm:flex-wrap sm:snap-none">
         {links.map((item) => (
           <a
             key={item.key}
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center p-1 transition hover:scale-105"
+            className="group min-w-[138px] snap-start rounded-[18px] bg-[#fcf8f6] px-4 py-3 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_12px_30px_rgba(181,132,113,0.16)] sm:min-w-[124px] sm:flex-none"
             aria-label={`Buy on ${item.label}`}
           >
-            <img
-              src={MARKETPLACE_LOGOS[item.key]}
-              alt={item.label}
-              loading="lazy"
-              className="h-7 w-7 object-contain"
-            />
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_8px_18px_rgba(43,42,41,0.06)]">
+                <img
+                  src={MARKETPLACE_LOGOS[item.key]}
+                  alt={item.label}
+                  loading="lazy"
+                  className="h-7 w-7 object-contain"
+                />
+              </div>
+              {item.price ? (
+                <span className="text-sm font-semibold leading-none text-[#2b2a29]">
+                  ₹{item.price.toLocaleString("en-IN")}
+                </span>
+              ) : null}
+            </div>
           </a>
         ))}
+        </div>
       </div>
     </div>
   );
 };
 
 const buildTrustStripItems = (product = {}) => [
-  { icon: Wallet, title: "COD Available", subtitle: "Pay on Delivery" },
-  { icon: ShieldCheck, title: "Secure Payment", subtitle: "Protected Checkout" },
-  { icon: Package, title: "Free Delivery", subtitle: "Fast Doorstep Shipping" },
-  ...(product?.warranty
-    ? [{
-      icon: BadgeCheck,
-      title: product.warranty === "manufacturer" ? "18 Month Warranty" : "1 Year Import Warranty",
-      subtitle: product.warranty === "manufacturer" ? "Manufacturer Support" : "Warranty Support",
-    }]
-    : []),
+  { icon: Wallet, title: "COD Available", subtitle: "" },
+  { icon: ShieldCheck, title: "Secure Payment", subtitle: "" },
+  { icon: Package, title: "Free Delivery", subtitle: "" },
+  { icon: Truck, title: "Easy Replacement", subtitle: "", to: "/return" },
 ];
 
 const toAbsoluteUrl = (value = "", fallbackOrigin = "https://ilika.in") => {
@@ -1004,7 +1058,7 @@ const SkeletonBlock = ({ className = "" }) => (
 );
 
 const ProductDetailSectionSkeleton = ({ minHeight = 240, className = "" }) => (
-  <div className={`max-w-7xl mx-auto px-4 sm:px-6 ${className}`} aria-hidden="true">
+  <div className={`max-w-[90rem] mx-auto px-4 sm:px-6 ${className}`} aria-hidden="true">
     <div className="rounded-[26px] border border-[#f1e2df] bg-white p-4 sm:p-6">
       <div className="space-y-4">
         <SkeletonBlock className="h-8 w-52" />
@@ -1028,7 +1082,7 @@ const ProductDetailPageSkeleton = () => (
     <div className="primary-bg-color bg-white">
       <Header />
       <CartDrawer />
-      <main className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 pb-10 sm:pt-14">
+      <main className="max-w-[90rem] mx-auto px-4 sm:px-6 pt-4 pb-10 sm:pt-14">
         <div className="grid grid-cols-1 gap-5 sm:gap-7 lg:grid-cols-2 lg:gap-16">
           <div className="space-y-4">
             <SkeletonBlock className="aspect-square w-full rounded-[24px]" />
@@ -1761,10 +1815,10 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
 
       <div className="bg-white border-t border-gray-100" style={{ boxShadow: "0 -6px 30px rgba(0,0,0,0.10)" }}>
         {/* MAIN ROW */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 py-3">
+        <div className="max-w-[90rem] mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 py-3">
 
           {/* LEFT - product name + thumbnail */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div className="hidden sm:flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {thumbnailImage && (
               <img
                 src={thumbnailImage}
@@ -1783,7 +1837,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
           </div>
 
           {/* RIGHT GROUP - price + buttons */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex w-full sm:w-auto items-center gap-2 sm:gap-3 flex-shrink-0">
 
             {/* PRICE + EMI */}
             <div className="hidden md:flex flex-col items-end justify-center">
@@ -1806,7 +1860,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
             <button
               onClick={onAddToCart}
               disabled={isOutOfStock || isAdding}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap
+              className={`flex flex-1 sm:flex-none items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap
     ${isOutOfStock || isAdding
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "shadow-sm"}`}
@@ -1826,7 +1880,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
             <button
               onClick={onBuyNow}
               disabled={isOutOfStock || isBuying}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap
+              className={`flex flex-1 sm:flex-none items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap
     ${isOutOfStock || isBuying
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "shadow-sm"}`}
@@ -1897,10 +1951,12 @@ const ProductDetail = () => {
 
   // Sticky ATC bar
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const [desktopPriceCardTop, setDesktopPriceCardTop] = useState(164);
   const atcButtonsRef = useRef(null);
   const detailsTabsRef = useRef(null);
   const thumbsRef = useRef(null);
   const autoScrollRef = useRef(null);
+  const desktopPriceCardRef = useRef(null);
   // const footerRef = useRef(null);
 
 
@@ -2066,6 +2122,44 @@ const ProductDetail = () => {
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);// re-register when product loads so ref is valid
+
+  useEffect(() => {
+    const DESKTOP_DEFAULT_TOP = 164;
+    const FOOTER_GAP = 24;
+
+    const updateDesktopPriceCardPosition = () => {
+      if (typeof window === "undefined") return;
+
+      if (window.innerWidth < 1280) {
+        setDesktopPriceCardTop(DESKTOP_DEFAULT_TOP);
+        return;
+      }
+
+      const footerTrigger = document.getElementById("footer-trigger");
+      const cardEl = desktopPriceCardRef.current;
+
+      if (!footerTrigger || !cardEl) {
+        setDesktopPriceCardTop(DESKTOP_DEFAULT_TOP);
+        return;
+      }
+
+      const footerTop = footerTrigger.getBoundingClientRect().top;
+      const cardHeight = cardEl.offsetHeight || 0;
+      const maxTopBeforeFooter = footerTop - cardHeight - FOOTER_GAP;
+      const nextTop = Math.min(DESKTOP_DEFAULT_TOP, maxTopBeforeFooter);
+
+      setDesktopPriceCardTop(nextTop);
+    };
+
+    window.addEventListener("scroll", updateDesktopPriceCardPosition, { passive: true });
+    window.addEventListener("resize", updateDesktopPriceCardPosition);
+    updateDesktopPriceCardPosition();
+
+    return () => {
+      window.removeEventListener("scroll", updateDesktopPriceCardPosition);
+      window.removeEventListener("resize", updateDesktopPriceCardPosition);
+    };
+  }, []);
 
 
   /* Product detail routing uses productUrl only. */
@@ -2373,6 +2467,32 @@ const ProductDetail = () => {
     return COLLAGEN_ADDON_OPTIONS.find((opt) => opt.count === collagenAddonCount) || COLLAGEN_ADDON_OPTIONS[0];
   }, [collagenAddonCount]);
   const addonPrice = eligibleForCollagenAddon ? Number(selectedCollagenAddon?.price || 0) : 0;
+  const previewCouponForcedPrice = visibleAssignedCoupon && Number(visibleAssignedCoupon?.forcedPrice || 0) > 0
+    ? Number(visibleAssignedCoupon.forcedPrice)
+    : null;
+  const previewCouponDiscountAmount = visibleAssignedCoupon && packBasePrice > 0
+    ? (previewCouponForcedPrice
+      ? Number(Math.max(0, packBasePrice - Math.min(packBasePrice, previewCouponForcedPrice)).toFixed(2))
+      : Number(((packBasePrice * Number(visibleAssignedCoupon.discountPercent || 0)) / 100).toFixed(2)))
+    : 0;
+  const previewCouponBasePrice = visibleAssignedCoupon && packBasePrice > 0
+    ? (previewCouponForcedPrice
+      ? Number(Math.min(packBasePrice, previewCouponForcedPrice).toFixed(2))
+      : Number(Math.max(0, packBasePrice - previewCouponDiscountAmount).toFixed(2)))
+    : 0;
+  const previewCouponFinalPrice = visibleAssignedCoupon && packBasePrice > 0
+    ? (previewCouponForcedPrice
+      ? Number(previewCouponForcedPrice.toFixed(2))
+      : Number((previewCouponBasePrice + addonPrice).toFixed(2)))
+    : 0;
+  const previewCouponEffectivePercent = visibleAssignedCoupon && packBasePrice > 0
+    ? Number(((previewCouponDiscountAmount / packBasePrice) * 100).toFixed(2))
+    : 0;
+  const previewCouponDisplayPercent = visibleAssignedCoupon
+    ? Number(visibleAssignedCoupon.discountPercent || 0) > 0
+      ? Number(visibleAssignedCoupon.discountPercent || 0)
+      : previewCouponEffectivePercent
+    : 0;
   const price = Number(baseSellingPrice + addonPrice);
 
   const ingredients = useMemo(() => {
@@ -2809,6 +2929,11 @@ const ProductDetail = () => {
     });
     return `/warranty-registration?${params.toString()}`;
   }, [product]);
+  const warrantyButtonLabel = useMemo(() => {
+    if (product?.warranty === "manufacturer") return "18 Months Warranty";
+    if (product?.warranty === "import") return "Register for 1 Year Warranty";
+    return "";
+  }, [product?.warranty]);
 
   const detailPageBgColor = useMemo(() => {
     return normalizeHexColor(product?.detailPageDefaultBg) || DEFAULT_DETAIL_BG;
@@ -2816,7 +2941,7 @@ const ProductDetail = () => {
 
   const detailTheme = useMemo(() => buildDetailTheme(detailPageBgColor), [detailPageBgColor]);
   const detailCtaColors = useMemo(() => getDetailCtaColors(detailTheme), [detailTheme]);
-  const marketplaceLinks = useMemo(() => getMarketplaceLinks(product), [product]);
+  const marketplaceLinks = useMemo(() => getMarketplaceLinks(product, price), [product, price]);
   const variantPaletteMap = useMemo(() => {
     const map = new Map();
     const palette = Array.isArray(product?.detailPageBgPalette) ? product.detailPageBgPalette : [];
@@ -3154,19 +3279,32 @@ const ProductDetail = () => {
           ) : (
             <p className="text-sm text-gray-400">No warranty terms added yet.</p>
           )}
-          {warrantyRegistrationUrl && (
+          {warrantyButtonLabel && (
             <div className="mt-4">
-              <Link
-                to={warrantyRegistrationUrl}
-                className="inline-flex items-center rounded-full border px-4 py-2 text-xs font-semibold transition"
-                style={{
-                  color: detailTheme.accent,
-                  borderColor: detailTheme.accentSoft,
-                  backgroundColor: detailTheme.reviewSurface,
-                }}
-              >
-                Register Warranty
-              </Link>
+              {product?.warranty === "import" ? (
+                <Link
+                  to={warrantyRegistrationUrl}
+                  className="inline-flex items-center rounded-full border px-4 py-2 text-xs font-semibold transition"
+                  style={{
+                    color: detailTheme.accent,
+                    borderColor: detailTheme.accentSoft,
+                    backgroundColor: detailTheme.reviewSurface,
+                  }}
+                >
+                  {warrantyButtonLabel}
+                </Link>
+              ) : (
+                <span
+                  className="inline-flex items-center rounded-full border px-4 py-2 text-xs font-semibold"
+                  style={{
+                    color: detailTheme.accent,
+                    borderColor: detailTheme.accentSoft,
+                    backgroundColor: detailTheme.reviewSurface,
+                  }}
+                >
+                  {warrantyButtonLabel}
+                </span>
+              )}
             </div>
           )}
         </>
@@ -3277,254 +3415,618 @@ const ProductDetail = () => {
         <CartDrawer />
 
         {/* â•â•â•â• HERO â•â•â•â• */}
-        <section className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 pb-4 sm:pt-12">
-          <div className="grid grid-cols-1 gap-5 sm:gap-7 lg:grid-cols-2 lg:gap-10 xl:gap-12">
+        <section className="relative max-w-[90rem] mx-auto px-3 sm:px-6 pt-3 pb-5 sm:pt-12 sm:pb-8 xl:pr-[23rem]">
+          <div className="grid grid-cols-1 gap-4 sm:gap-7 lg:grid-cols-2 lg:gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] xl:gap-10">
 
-            {/* â”€â”€ LEFT: IMAGES â”€â”€ */}
-            <div className="flex flex-col gap-3 sm:gap-4 lg:sticky lg:top-[164px] lg:self-start lg:h-fit">
-              <div className="flex flex-1 flex-col gap-3 sm:gap-4">
-                <div
-                  className={`relative overflow-hidden rounded-[18px] sm:rounded-[24px] border border-[#f4dfdb] bg-[#fff5f4] select-none group shadow-[0_18px_40px_rgba(69,39,34,0.06)] ${selectedVideoUrl ? "cursor-default" : "cursor-zoom-in"}`}
-                  onTouchStart={e => setTouchStartX(e.targetTouches[0].clientX)}
-                  onTouchMove={e => setTouchEndX(e.targetTouches[0].clientX)}
-                  onTouchEnd={handleSwipe}
-                  onClick={() => {
-                    if (selectedVideoUrl) return;
-                    const idx = images.indexOf(selectedImage);
-                    openLightbox(idx >= 0 ? idx : 0);
-                  }}
-                >
-                  {selectedVideoUrl ? (
-                    <div className="flex aspect-square w-full items-center justify-center bg-[#fff5f4]">
-                      {selectedVideoPlaying ? (
-                        <iframe
-                          src={selectedVideoUrl}
-                          title="Product video preview"
-                          className={
-                            selectedVideo?.isShort
-                              ? "h-full w-auto max-w-full mx-auto"
-                              : "w-full max-h-full aspect-video"
-                          }
-                          style={{ border: "none" }}
-                          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                          allowFullScreen
-                        />
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedVideoPlaying(true);
-                          }}
-                          className="relative h-full w-full overflow-hidden"
-                          aria-label="Play product video"
-                        >
-                          {selectedVideo?.thumb ? (
+            {/* Gallery */}
+            <div className="flex flex-col gap-2.5 sm:gap-4 lg:sticky lg:top-[164px] lg:self-start lg:h-fit">
+              <div className="flex flex-col gap-2.5 sm:gap-3">
+                {galleryCount > 1 && (
+                  <div
+                    ref={thumbsRef}
+                    className="order-2 flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory"
+                    style={{ scrollbarWidth: "none" }}
+                  >
+                    {displayImages.length > 0 ? (
+                      displayImages
+                        .slice(0, hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : displayImages.length)
+                        .map((img, i) => (
+                          <button
+                            key={img}
+                            onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
+                            className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedImage === img ? "shadow-sm" : "hover:border-gray-200"}`}
+                            style={{
+                              width: "64px",
+                              height: "64px",
+                              borderColor: selectedImage === img ? "#f2b9b3" : "#f3e2df",
+                              backgroundColor: selectedImage === img ? "#fff5f4" : "#ffffff",
+                            }}
+                          >
                             <img
                               loading="lazy"
-                              src={selectedVideo.thumb}
-                              alt={selectedVideo.title || "Product video thumbnail"}
-                              className={`h-full w-full bg-[#fff5f4] ${selectedVideo?.isShort ? "object-contain" : "object-contain"
-                                }`}
+                              src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                              alt={`${product.name} gallery thumbnail ${i + 1}`}
+                              width="148"
+                              height="148"
+                              className="h-full w-full object-cover"
                             />
+                          </button>
+                        ))
+                    ) : (
+                      Array.from({
+                        length: Math.min(
+                          images.length,
+                          hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : 5
+                        ),
+                      }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex-shrink-0 rounded-[16px] bg-gray-100 animate-pulse"
+                          style={{ width: "64px", height: "64px" }}
+                        />
+                      ))
+                    )}
+                    {(!hasThumbnailOverflow || showAllThumbnails) && productVideos.map((video) => {
+                      const isSelected = selectedVideoUrl === video.embedUrl;
+                      return (
+                        <button
+                          key={video.id}
+                          onClick={() => { stopAuto(); setSelectedVideoUrl(video.embedUrl); setSelectedVideoPlaying(true); }}
+                          className="relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300"
+                          style={{
+                            width: "64px",
+                            height: "64px",
+                            borderColor: isSelected ? "#f2b9b3" : "#f3e2df",
+                            backgroundColor: isSelected ? "#fff5f4" : "#ffffff",
+                          }}
+                          aria-label={`Play ${video.title}`}
+                          title={video.title}
+                        >
+                          {video.thumb ? (
+                            <img loading="lazy" src={video.thumb} alt={video.title} width="148" height="148" className="h-full w-full object-cover" />
                           ) : (
-                            <div className="h-full w-full bg-[#fff5f4]" />
+                            <div className="h-full w-full bg-black/80" />
                           )}
                           <span className="absolute inset-0 flex items-center justify-center">
-                            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-black/70 text-2xl leading-none text-white shadow-lg">
-                              ▶
-                            </span>
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-[13px] text-[#1f1f1f] shadow-sm">▶</span>
                           </span>
                         </button>
-                      )}
-                    </div>
-                  ) : selectedImage ? (
-                    <div
-                      className="aspect-square w-full overflow-auto [&::-webkit-scrollbar]:hidden"
-                      style={{ scrollbarWidth: "none" }}
-                    >
-                      <img
-                        loading="eager"
-                        fetchPriority="high"
-                        decoding="sync"
-                        onLoad={() => setIsHeroImageLoaded(true)}
-                        src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-                        alt={product.name}
-                        width="1080"
-                        height="1080"
-                        className="block min-h-full w-full object-contain transition-opacity duration-300 ease-out"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-full aspect-square bg-gray-100 animate-pulse" />
-                  )}
-
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all duration-300 group-hover:bg-black/5">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/82 opacity-0 shadow-md transition-all duration-300 group-hover:opacity-100">
-                      <ZoomIn className="w-5 h-5" style={{ color: detailTheme.heading }} />
-                    </div>
-                  </div>
-
-                  {galleryCount > 1 && (
-                    <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none lg:hidden">
-                      {Array.from({ length: galleryCount }).map((_, i) => (
-                        <span
-                          key={i}
-                          className={`rounded-full transition-all duration-300 ${selectedGalleryIndex === i ? "w-5 h-2" : "w-2 h-2 bg-black/25"}`}
-                          style={selectedGalleryIndex === i ? { backgroundColor: detailTheme.accent } : undefined}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {galleryCount > 1 && (
-                <div
-                  ref={thumbsRef}
-                  className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory"
-                  style={{ scrollbarWidth: "none" }}
-                >
-                  {displayImages.length > 0 ? (
-                    displayImages
-                      .slice(0, hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : displayImages.length)
-                      .map((img, i) => (
-                        <button
-                          key={img}
-                          onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
-                          className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedImage === img ? "shadow-sm" : "hover:border-gray-200"}`}
-                          style={{
-                            width: "72px",
-                            height: "72px",
-                            borderColor: selectedImage === img ? "#f2b9b3" : "#f3e2df",
-                            backgroundColor: selectedImage === img ? "#fff5f4" : "#ffffff",
-                          }}
-                        >
+                      );
+                    })}
+                    {hasThumbnailOverflow && !showAllThumbnails && (
+                      <button
+                        type="button"
+                        onClick={handleOverflowThumbClick}
+                        className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedGalleryIndex >= overflowStartIndex ? "shadow-sm" : "hover:border-gray-200"}`}
+                        style={{
+                          width: "64px",
+                          height: "64px",
+                          borderColor: selectedGalleryIndex >= overflowStartIndex ? "#f2b9b3" : "#f3e2df",
+                          backgroundColor: selectedGalleryIndex >= overflowStartIndex ? "#fff5f4" : "#ffffff",
+                        }}
+                        aria-label={`View ${overflowCount} more gallery items`}
+                        title={`+${overflowCount} more`}
+                      >
+                        {images[overflowStartIndex] ? (
                           <img
                             loading="lazy"
-                            src={`${img}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-                            alt={`${product.name} gallery thumbnail ${i + 1}`}
+                            src={`${images[overflowStartIndex]}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                            alt={`${product.name} gallery thumbnail ${overflowStartIndex + 1}`}
                             width="148"
                             height="148"
                             className="h-full w-full object-cover"
                           />
-                        </button>
-                      ))
-                  ) : (
-                    Array.from({
-                      length: Math.min(
-                        images.length,
-                        hasThumbnailOverflow && !showAllThumbnails ? overflowStartIndex : 5
-                      ),
-                    }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex-shrink-0 rounded-[16px] bg-gray-100 animate-pulse"
-                        style={{ width: "72px", height: "72px" }}
-                      />
-                    ))
-                  )}
-                  {(!hasThumbnailOverflow || showAllThumbnails) && productVideos.map((video) => {
-                    const isSelected = selectedVideoUrl === video.embedUrl;
-                    return (
-                      <button
-                        key={video.id}
-                        onClick={() => { stopAuto(); setSelectedVideoUrl(video.embedUrl); setSelectedVideoPlaying(true); }}
-                        className="relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300"
-                        style={{
-                          width: "72px",
-                          height: "72px",
-                          borderColor: isSelected ? "#f2b9b3" : "#f3e2df",
-                          backgroundColor: isSelected ? "#fff5f4" : "#ffffff",
-                        }}
-                        aria-label={`Play ${video.title}`}
-                        title={video.title}
-                      >
-                        {video.thumb ? (
-                          <img loading="lazy" src={video.thumb} alt={video.title} width="148" height="148" className="h-full w-full object-cover" />
+                        ) : productVideos[overflowStartIndex - images.length]?.thumb ? (
+                          <img
+                            loading="lazy"
+                            src={productVideos[overflowStartIndex - images.length].thumb}
+                            alt={productVideos[overflowStartIndex - images.length].title}
+                            width="148"
+                            height="148"
+                            className="h-full w-full object-cover"
+                          />
                         ) : (
-                          <div className="h-full w-full bg-black/80" />
+                          <div className="h-full w-full bg-black/70" />
                         )}
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-[13px] text-[#1f1f1f] shadow-sm">▶</span>
+                        <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-lg font-semibold text-white">
+                          +{overflowCount}
                         </span>
                       </button>
-                    );
-                  })}
-                  {hasThumbnailOverflow && !showAllThumbnails && (
-                    <button
-                      type="button"
-                      onClick={handleOverflowThumbClick}
-                      className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedGalleryIndex >= overflowStartIndex ? "shadow-sm" : "hover:border-gray-200"}`}
-                      style={{
-                        width: "72px",
-                        height: "72px",
-                        borderColor: selectedGalleryIndex >= overflowStartIndex ? "#f2b9b3" : "#f3e2df",
-                        backgroundColor: selectedGalleryIndex >= overflowStartIndex ? "#fff5f4" : "#ffffff",
-                      }}
-                      aria-label={`View ${overflowCount} more gallery items`}
-                      title={`+${overflowCount} more`}
-                    >
-                      {images[overflowStartIndex] ? (
+                    )}
+                  </div>
+                )}
+
+                <div className="order-1 flex-1 xl:max-w-[640px]">
+                  <div
+                    className={`relative overflow-hidden rounded-[16px] sm:rounded-[24px] border border-[#f4dfdb] bg-[#fff5f4] select-none group shadow-[0_14px_28px_rgba(69,39,34,0.06)] sm:shadow-[0_18px_40px_rgba(69,39,34,0.06)] ${selectedVideoUrl ? "cursor-default" : "cursor-zoom-in"}`}
+                    onTouchStart={(e) => setTouchStartX(e.targetTouches[0].clientX)}
+                    onTouchMove={(e) => setTouchEndX(e.targetTouches[0].clientX)}
+                    onTouchEnd={handleSwipe}
+                    onClick={() => {
+                      if (selectedVideoUrl) return;
+                      const idx = images.indexOf(selectedImage);
+                      openLightbox(idx >= 0 ? idx : 0);
+                    }}
+                  >
+                    {selectedVideoUrl ? (
+                      <div className="flex aspect-square w-full items-center justify-center bg-[#fff5f4]">
+                        {selectedVideoPlaying ? (
+                          <iframe
+                            src={selectedVideoUrl}
+                            title="Product video preview"
+                            className={
+                              selectedVideo?.isShort
+                                ? "h-full w-auto max-w-full mx-auto"
+                                : "w-full max-h-full aspect-video"
+                            }
+                            style={{ border: "none" }}
+                            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedVideoPlaying(true);
+                            }}
+                            className="relative h-full w-full overflow-hidden"
+                            aria-label="Play product video"
+                          >
+                            {selectedVideo?.thumb ? (
+                              <img
+                                loading="lazy"
+                                src={selectedVideo.thumb}
+                                alt={selectedVideo.title || "Product video thumbnail"}
+                                className="h-full w-full bg-[#fff5f4] object-contain"
+                              />
+                            ) : (
+                              <div className="h-full w-full bg-[#fff5f4]" />
+                            )}
+                            <span className="absolute inset-0 flex items-center justify-center">
+                              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-black/70 text-2xl leading-none text-white shadow-lg">
+                                ▶
+                              </span>
+                            </span>
+                          </button>
+                        )}
+                      </div>
+                    ) : selectedImage ? (
+                      <div
+                        className="aspect-square w-full overflow-auto [&::-webkit-scrollbar]:hidden"
+                        style={{ scrollbarWidth: "none" }}
+                      >
                         <img
-                          loading="lazy"
-                          src={`${images[overflowStartIndex]}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
-                          alt={`${product.name} gallery thumbnail ${overflowStartIndex + 1}`}
-                          width="148"
-                          height="148"
-                          className="h-full w-full object-cover"
+                          loading="eager"
+                          fetchPriority="high"
+                          decoding="sync"
+                          onLoad={() => setIsHeroImageLoaded(true)}
+                          src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
+                          alt={product.name}
+                          width="1080"
+                          height="1080"
+                          className="block min-h-full w-full object-contain transition-opacity duration-300 ease-out"
                         />
-                      ) : productVideos[overflowStartIndex - images.length]?.thumb ? (
-                        <img
-                          loading="lazy"
-                          src={productVideos[overflowStartIndex - images.length].thumb}
-                          alt={productVideos[overflowStartIndex - images.length].title}
-                          width="148"
-                          height="148"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-black/70" />
-                      )}
-                      <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-lg font-semibold text-white">
-                        +{overflowCount}
-                      </span>
-                    </button>
-                  )}
+                      </div>
+                    ) : (
+                      <div className="w-full aspect-square bg-gray-100 animate-pulse" />
+                    )}
+
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all duration-300 group-hover:bg-black/5">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/82 opacity-0 shadow-md transition-all duration-300 group-hover:opacity-100">
+                        <ZoomIn className="w-5 h-5" style={{ color: detailTheme.heading }} />
+                      </div>
+                    </div>
+
+                    {galleryCount > 1 && (
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none xl:hidden">
+                        {Array.from({ length: galleryCount }).map((_, i) => (
+                          <span
+                            key={i}
+                            className={`rounded-full transition-all duration-300 ${selectedGalleryIndex === i ? "w-5 h-2" : "w-2 h-2 bg-black/25"}`}
+                            style={selectedGalleryIndex === i ? { backgroundColor: detailTheme.accent } : undefined}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
 
-            {/* â”€â”€ RIGHT: INFO â”€â”€ */}
-            <div className="flex flex-col gap-4 sm:gap-5 h-fit">
-              <button onClick={() => navigate(-1)} className="text-xs text-gray-400 hover:text-gray-700 w-fit flex items-center gap-1 transition">
-                <ChevronLeft className="w-3.5 h-3.5" /> Back
+            {/* Product info */}
+            <div className="flex h-fit flex-col gap-3.5 sm:gap-5 xl:pr-4">
+              <button onClick={() => navigate(-1)} className="flex w-fit items-center gap-1 text-xs text-gray-400 transition hover:text-gray-700">
+                <ChevronLeft className="h-3.5 w-3.5" /> Back
               </button>
 
-              {product.hasVariants && <div className="sm:hidden">{renderVariantSelector()}</div>}
-
               <div>
-                <h1 className="text-[28px] sm:text-3xl font-luxury font-bold leading-tight" style={{ color: detailTheme.heading }}>{product.name}</h1>
-                <p className="text-sm leading-6 text-gray-500 mt-1.5">{product.shortInfo || "Deep nourishment & long lasting hydration"}</p>
+                <h1 className="text-[20px] font-luxury font-bold leading-[1.22] sm:text-[1.75rem] xl:text-[2.2rem]" style={{ color: detailTheme.heading }}>
+                  {product.name}
+                </h1>
+                <p className="hidden sm:block mt-2 text-[14px] leading-6 text-gray-500 sm:text-[15px]">
+                  {product.shortInfo || "Deep nourishment & long lasting hydration"}
+                </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ backgroundColor: detailTheme.ratingBg, color: getContrastText(detailTheme.ratingBg) }}>
-                  <Star className="w-3 h-3 fill-white" /><span>{rating.toFixed(1)}</span>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: detailTheme.ratingBg, color: getContrastText(detailTheme.ratingBg) }}>
+                  <Star className="h-3 w-3 fill-white" />
+                  <span>{rating.toFixed(1)}</span>
                 </div>
                 <span className="text-xs text-gray-400">Verified Reviews</span>
               </div>
 
-              {/* Variants */}
-              {product.hasVariants && (
-                <div className="hidden sm:block">{renderVariantSelector()}</div>
+              {product.hasVariants && <div>{renderVariantSelector()}</div>}
+
+              {packOptions.length > 0 && (
+                <div className="px-0 py-0">
+                  <p className="mb-3 text-sm font-semibold leading-snug sm:text-base" style={{ color: detailTheme.heading }}>
+                    Select Quantity
+                  </p>
+                  <div
+                    className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3"
+                    style={{ scrollbarWidth: "none" }}
+                  >
+                    {packOptions.map((pack) => {
+                      const active = selectedPack?.id === pack.id;
+                      const packDiscount = pack.mrp > pack.price
+                        ? Math.round(((pack.mrp - pack.price) / pack.mrp) * 100)
+                        : 0;
+                      return (
+                        <button
+                          key={pack.id}
+                          type="button"
+                          onClick={() => setSelectedPackId(pack.id)}
+                          className={`min-w-[132px] snap-start rounded-[18px] border px-3 py-3 text-left transition sm:min-w-0 sm:px-4 sm:py-4 ${active ? "shadow-sm" : ""}`}
+                          style={
+                            active
+                              ? {
+                                borderColor: detailTheme.accent,
+                                backgroundColor: detailTheme.isDefaultWhite ? "#fffafa" : hexToRgba(detailTheme.accentSoft, 0.14),
+                                boxShadow: `0 10px 24px ${hexToRgba(detailTheme.accentSoft, 0.22)}`,
+                              }
+                              : {
+                                borderColor: detailTheme.borderSoft,
+                                backgroundColor: "#fff",
+                              }
+                          }
+                        >
+                          <p className="text-[13px] font-semibold leading-tight sm:text-[15px]" style={{ color: detailTheme.heading }}>
+                            {pack.label}
+                          </p>
+                          <p className="mt-2 text-[22px] font-bold leading-none sm:text-[24px]" style={{ color: active ? detailTheme.accent : detailTheme.price }}>
+                            ₹{pack.price.toLocaleString("en-IN")}
+                          </p>
+                          {packDiscount > 0 ? (
+                            <p className="mt-1 text-[11px] font-medium leading-4 text-gray-400">
+                              {pack.mrp > 0 ? `MRP ₹${pack.mrp.toLocaleString("en-IN")}` : ""} {pack.mrp > 0 ? "· " : ""}{packDiscount}% off
+                            </p>
+                          ) : (
+                            <p className="mt-1 text-[11px] font-medium leading-4 text-gray-400">
+                              Final price
+                            </p>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
 
+              {eligibleForCollagenAddon && (
+                <div className="rounded-[18px] border p-3 sm:rounded-2xl" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
+                  <p className="mb-2 text-sm font-semibold" style={{ color: detailTheme.heading }}>
+                    Add Extra Collagen Peptide Packs
+                  </p>
+                  <div className="rounded-xl border border-gray-200 bg-white p-2 sm:p-3">
+                    <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-4">
+                      <div className="h-[72px] w-full overflow-hidden rounded-xl bg-[#f8f6f5] sm:h-[84px] sm:min-w-[96px] sm:w-[96px]">
+                        <img
+                          loading="lazy"
+                          src="/Images/Peptide.jpeg"
+                          alt="Collagen peptide pack"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div className="flex min-h-9 items-center justify-center rounded-lg bg-[#f7f4f4] px-2 py-1.5">
+                          <p className="text-center text-base font-semibold leading-tight text-[#2B2A29] sm:text-xl">
+                            Collagen Peptide Pack
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="inline-flex min-h-9 items-center rounded-lg px-3 py-1.5 font-semibold leading-snug text-[#2B2A29]">
+                            <span className="text-sm">
+                              {collagenAddonCount > 0
+                                ? selectedCollagenAddon.label
+                                : "No extra pack (Included)"}
+                            </span>
+                          </div>
+                          <div className="inline-flex w-full justify-between overflow-hidden rounded-lg border border-gray-200 self-start sm:w-auto sm:self-auto">
+                            <button
+                              type="button"
+                              onClick={() => setCollagenAddonCount((prev) => Math.max(0, Number(prev || 0) - 1))}
+                              className="h-9 w-10 border-r border-gray-300 text-base font-semibold leading-none text-[#111827] transition hover:bg-white/70 sm:h-8 sm:w-8"
+                              aria-label="Decrease peptide pack count"
+                            >
+                              -
+                            </button>
+                            <span className="inline-flex h-9 min-w-[34px] flex-1 items-center justify-center border-r border-gray-300 text-sm font-semibold text-[#111827] sm:h-8 sm:flex-none">
+                              {collagenAddonCount}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setCollagenAddonCount((prev) => Math.min(3, Number(prev || 0) + 1))}
+                              className="h-9 w-10 text-base font-semibold leading-none text-[#111827] transition hover:bg-white/70 sm:h-8 sm:w-8"
+                              aria-label="Increase peptide pack count"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-sm font-medium text-[#3F4E63]">
+                          {selectedCollagenAddon.price > 0 ? `Add-on price: +₹${selectedCollagenAddon.price}` : "Included with product"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile purchase card */}
+              <div className="h-fit lg:col-span-2 xl:hidden">
+              <div
+                className="rounded-[20px] border bg-white p-3.5 shadow-[0_14px_32px_rgba(69,39,34,0.06)] sm:rounded-[24px] sm:p-5 sm:shadow-[0_18px_40px_rgba(69,39,34,0.06)] xl:sticky xl:top-[164px]"
+                style={{ borderColor: detailTheme.borderSoft }}
+              >
+                <div className="space-y-4">
+                    <div className="rounded-[16px] px-4 py-4 sm:rounded-[20px] sm:px-5" style={{ backgroundColor: detailTheme.reviewSurface }}>
+                      <div className="flex flex-col gap-3">
+                        <div>
+                          {effectiveMrp > price && savingAmount > 0 ? (
+                            <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
+                              <span className="text-[32px] font-bold leading-none sm:text-[36px]" style={{ color: detailTheme.heading }}>
+                                ₹{price.toLocaleString("en-IN")}
+                              </span>
+                              <span className="text-[15px] font-semibold leading-none text-gray-400 line-through sm:text-[18px]">
+                                ₹{effectiveMrp.toLocaleString("en-IN")}
+                              </span>
+                              <span className="text-[15px] font-bold leading-none sm:text-[17px]" style={{ color: "#0a8f45" }}>
+                                ↓ ₹{savingAmount.toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                              <span className="text-[30px] font-bold sm:text-3xl" style={{ color: detailTheme.price }}>
+                                ₹{price.toLocaleString("en-IN")}
+                              </span>
+                              {effectiveMrp > 0 && (
+                                <span className="text-xs text-gray-400 line-through sm:text-sm">
+                                  MRP ₹{effectiveMrp.toLocaleString("en-IN")}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {visibleAssignedCoupon && previewCouponFinalPrice > 0 ? (
+                            <div
+                              className="mt-3 flex items-center justify-between gap-3 rounded-[14px] border px-3 py-2.5"
+                              style={{ borderColor: detailTheme.accentLine, backgroundColor: "#fff" }}
+                            >
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: detailTheme.accent }}>
+                                  Coupon offer
+                                </p>
+                                <p className="mt-1 text-[13px] font-semibold leading-4" style={{ color: detailTheme.heading }}>
+                                  {previewCouponDisplayPercent > 0
+                                    ? `${Math.round(previewCouponDisplayPercent)}% OFF`
+                                    : visibleAssignedCoupon.code}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-[10px] uppercase tracking-[0.12em] text-gray-400">Final price</p>
+                                <p className="mt-1 text-[18px] font-bold leading-none" style={{ color: detailTheme.price }}>
+                                  ₹{previewCouponFinalPrice.toLocaleString("en-IN")}
+                                </p>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+
+                    </div>
+                  </div>
+
+                  {visibleAssignedCoupon && (
+                    <div className="space-y-3">
+                      {!appliedCoupon && (
+                        <div
+                          className="grid min-h-[96px] grid-cols-[1fr_auto] overflow-hidden rounded-[18px] border bg-white"
+                          style={{
+                            borderColor: detailTheme.borderSoft,
+                            boxShadow: "0 10px 28px rgba(69,39,34,0.04)",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={handleApplyAssignedCoupon}
+                            className="grid min-h-[96px] grid-rows-[auto_1fr] text-left transition hover:bg-[rgba(69,39,34,0.02)]"
+                          >
+                            <div
+                              className="border-b px-5 py-2.5"
+                              style={{
+                                borderColor: detailTheme.borderSoft,
+                                backgroundColor: detailTheme.reviewSurface || "#fff8f7",
+                              }}
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <span className="block text-[10px] font-medium uppercase tracking-[0.18em] text-gray-400">
+                                  Coupon Code
+                                </span>
+                                {visibleAssignedCoupon.name && (
+                                  <span
+                                    className="truncate text-[12px] font-semibold"
+                                    style={{ color: detailTheme.accent }}
+                                  >
+                                    {visibleAssignedCoupon.name}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex flex-1 flex-col items-center justify-center gap-1 px-5 py-2">
+                              <span
+                                className="block w-full text-center text-[17px] font-semibold"
+                                style={{ color: detailTheme.heading }}
+                              >
+                                {visibleAssignedCoupon.code}
+                              </span>
+                              <span
+                                className="block w-full text-center text-[12px] font-medium"
+                                style={{ color: detailTheme.subtleText || "#6b7280" }}
+                              >
+                                {Number(visibleAssignedCoupon?.forcedPrice || 0) > 0
+                                  ? `Price reduced to ₹${Number(visibleAssignedCoupon.forcedPrice).toLocaleString("en-IN")}`
+                                  : `${Number(visibleAssignedCoupon?.discountPercent || 0)}% off`}
+                              </span>
+                            </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleCopyAssignedCoupon}
+                            className="flex min-w-[68px] items-center justify-center border-l text-gray-500 transition hover:text-gray-700"
+                            style={{
+                              borderColor: detailTheme.borderSoft,
+                              backgroundColor: "#fff",
+                            }}
+                            aria-label="Copy coupon code"
+                            title="Copy coupon code"
+                          >
+                            <div className="flex h-full w-full items-center justify-center hover:bg-[rgba(69,39,34,0.03)]">
+                              <Copy className="h-5 w-5" strokeWidth={1.9} />
+                            </div>
+                          </button>
+                        </div>
+                      )}
+
+                      {appliedCoupon && (
+                        <div className="flex items-center gap-3 rounded-2xl border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-3">
+                          <span className="text-base leading-none text-green-700">✔</span>
+                          <p className="flex-1 text-xs font-bold text-green-700">
+                            {appliedCoupon.code} applied — {Number(appliedCoupon?.forcedPrice || 0) > 0 ? `price locked at ₹${Number(appliedCoupon.forcedPrice).toLocaleString("en-IN")}` : `${appliedCoupon.discountPercent}% off your order!`}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={handleRemoveCoupon}
+                            className="text-[11px] text-green-700 underline transition hover:text-green-900"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div ref={atcButtonsRef} className="flex flex-col gap-2.5">
+                      <button
+                        onClick={handleBuyNow}
+                        disabled={isOutOfStock || isBuying}
+                        className={`w-full rounded-[18px] py-3.5 text-sm font-semibold transition min-h-[52px] sm:min-h-[54px] sm:rounded-2xl ${isOutOfStock || isBuying ? "cursor-not-allowed bg-gray-300 text-gray-500" : "shadow-sm hover:opacity-90"}`}
+                        style={isOutOfStock || isBuying ? undefined : detailCtaColors.buyNow}
+                      >
+                        {isBuying ? "Processing..." : !isOutOfStock ? "Buy Now" : "Out of Stock"}
+                      </button>
+
+                      <button
+                        onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
+                        disabled={isAdding}
+                        className={`w-full rounded-[18px] py-3.5 text-sm font-semibold transition min-h-[52px] sm:min-h-[54px] sm:rounded-2xl ${isAdding ? "bg-gray-300 text-gray-500" : ""}`}
+                        style={isAdding ? undefined : detailCtaColors.addToCart}
+                      >
+                        {isAdding
+                          ? "Adding..."
+                          : !isOutOfStock
+                            ? "Add To Cart"
+                            : "Notify Me"}
+                      </button>
+                    </div>
+
+                    {trustStripItems.length > 0 && (
+                      <div className="border-t pt-4" style={{ borderColor: detailTheme.borderSoft }}>
+                        <div className="grid grid-cols-2 gap-2.5">
+                        {trustStripItems.map((item) => {
+                          const TrustIcon = item.icon;
+                          const TrustItemTag = item.to ? Link : "div";
+                          return (
+                            <TrustItemTag
+                              key={item.title}
+                              {...(item.to ? { to: item.to } : {})}
+                              className="flex min-w-0 items-start gap-2.5 rounded-[16px] border px-3 py-3"
+                              style={{
+                                borderColor: detailTheme.borderSoft,
+                                backgroundColor: detailTheme.isDefaultWhite ? "#fffdfd" : hexToRgba(detailTheme.accentSoft, 0.08),
+                              }}
+                            >
+                              <span
+                                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                                style={{
+                                  color: detailTheme.accent,
+                                  backgroundColor: detailTheme.isDefaultWhite ? "#fff7f6" : hexToRgba(detailTheme.accentSoft, 0.18),
+                                }}
+                              >
+                                <TrustIcon className="h-4 w-4" />
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-[13px] font-semibold leading-4" style={{ color: detailTheme.heading }}>
+                                  {item.title}
+                                </p>
+                                <p className="mt-1 text-[11px] leading-4 text-gray-500">
+                                  {item.subtitle}
+                                </p>
+                              </div>
+                            </TrustItemTag>
+                          );
+                        })}
+                        </div>
+                      </div>
+                    )}
+
+                    {warrantyButtonLabel && (
+                      product?.warranty === "import" ? (
+                        <Link
+                          to={warrantyRegistrationUrl}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold"
+                          style={{
+                            color: detailTheme.accent,
+                            borderColor: detailTheme.accentLine,
+                            backgroundColor: detailTheme.reviewSurface,
+                          }}
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          {warrantyButtonLabel}
+                        </Link>
+                      ) : (
+                        <div
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold"
+                          style={{
+                            color: detailTheme.accent,
+                            borderColor: detailTheme.accentLine,
+                            backgroundColor: detailTheme.reviewSurface,
+                          }}
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          {warrantyButtonLabel}
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {visibleAssignedCoupon && (
-                <div className="space-y-3">
+                <div className="hidden space-y-3 xl:block">
                   {!appliedCoupon && (
                     <div
-                      className="grid min-h-[102px] grid-cols-[1fr_auto] overflow-hidden rounded-[22px] border bg-white"
+                      className="grid min-h-[96px] grid-cols-[1fr_auto] overflow-hidden rounded-[18px] border bg-white sm:min-h-[102px] sm:rounded-[22px]"
                       style={{
                         borderColor: detailTheme.borderSoft,
                         boxShadow: "0 10px 28px rgba(69,39,34,0.04)",
@@ -3536,7 +4038,7 @@ const ProductDetail = () => {
                         className="grid min-h-[102px] grid-rows-[auto_1fr] text-left transition hover:bg-[rgba(69,39,34,0.02)]"
                       >
                         <div
-                          className="border-b px-5 py-2.5 sm:px-6"
+                          className="border-b px-5 py-2.5"
                           style={{
                             borderColor: detailTheme.borderSoft,
                             backgroundColor: detailTheme.reviewSurface || "#fff8f7",
@@ -3548,7 +4050,7 @@ const ProductDetail = () => {
                             </span>
                             {visibleAssignedCoupon.name && (
                               <span
-                                className="truncate text-[12px] font-semibold sm:text-[13px]"
+                                className="truncate text-[12px] font-semibold"
                                 style={{ color: detailTheme.accent }}
                               >
                                 {visibleAssignedCoupon.name}
@@ -3556,15 +4058,15 @@ const ProductDetail = () => {
                             )}
                           </div>
                         </div>
-                        <div className="flex flex-1 flex-col items-center justify-center gap-1 px-5 py-2 sm:px-6">
+                        <div className="flex flex-1 flex-col items-center justify-center gap-1 px-5 py-2">
                           <span
-                            className="block w-full text-center text-[17px] font-semibold sm:text-[18px]"
+                            className="block w-full text-center text-[17px] font-semibold"
                             style={{ color: detailTheme.heading }}
                           >
                             {visibleAssignedCoupon.code}
                           </span>
                           <span
-                            className="block w-full text-center text-[12px] font-medium sm:text-[13px]"
+                            className="block w-full text-center text-[12px] font-medium"
                             style={{ color: detailTheme.subtleText || "#6b7280" }}
                           >
                             {Number(visibleAssignedCoupon?.forcedPrice || 0) > 0
@@ -3592,17 +4094,16 @@ const ProductDetail = () => {
                     </div>
                   )}
 
-                  {/* ── SUCCESS BANNER ── */}
                   {appliedCoupon && (
-                    <div className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
-                      <span className="text-green-700 text-base leading-none">✔</span>
-                      <p className="text-xs font-bold flex-1 text-green-700">
+                    <div className="flex items-center gap-3 rounded-2xl border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-3">
+                      <span className="text-base leading-none text-green-700">✔</span>
+                      <p className="flex-1 text-xs font-bold text-green-700">
                         {appliedCoupon.code} applied — {Number(appliedCoupon?.forcedPrice || 0) > 0 ? `price locked at ₹${Number(appliedCoupon.forcedPrice).toLocaleString("en-IN")}` : `${appliedCoupon.discountPercent}% off your order!`}
                       </p>
                       <button
                         type="button"
                         onClick={handleRemoveCoupon}
-                        className="text-[11px] text-green-700 underline hover:text-green-900 transition"
+                        className="text-[11px] text-green-700 underline transition hover:text-green-900"
                       >
                         Remove
                       </button>
@@ -3611,274 +4112,181 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              {packOptions.length > 0 && (
-                <div className="rounded-[22px] sm:rounded-[26px] border px-3 py-3.5 sm:px-5 sm:py-5" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
-                  <p className="mb-3 text-sm sm:text-base font-semibold leading-snug" style={{ color: detailTheme.heading }}>
-                    Selected Quantity:
-                    <span className="ml-2 font-normal">{selectedQuantityLabel || "Standard pack"}</span>
-                  </p>
-                  <div className="flex flex-wrap gap-2.5 sm:gap-3">
-                    {packOptions.map((pack) => {
-                      const active = selectedPack?.id === pack.id;
-                      return (
-                        <button
-                          key={pack.id}
-                          type="button"
-                          onClick={() => setSelectedPackId(pack.id)}
-                          className={`min-w-[84px] sm:min-w-[96px] rounded-[14px] border px-3 py-2.5 sm:px-4 sm:py-3 text-left transition ${active ? "shadow-sm" : ""}`}
-                          style={
-                            active
-                              ? {
-                                borderColor: detailTheme.heading,
-                                backgroundColor: detailTheme.heading,
-                              }
-                              : {
-                                borderColor: detailTheme.borderSoft,
-                                backgroundColor: "#fff",
-                              }
-                          }
+              {marketplaceLinks.length > 0 && (
+                <div className="pt-2">
+                  <MarketplaceButtons links={marketplaceLinks} />
+                </div>
+              )}
+            </div>
+
+          </div>
+
+          <div
+            className="hidden xl:fixed xl:block xl:w-[21rem] xl:z-30"
+            style={{
+              top: `${desktopPriceCardTop}px`,
+              right: "1.5rem",
+            }}
+          >
+            <div
+              ref={desktopPriceCardRef}
+              className="rounded-[24px] border bg-white p-4 shadow-[0_18px_40px_rgba(69,39,34,0.06)] sm:p-5"
+              style={{ borderColor: detailTheme.borderSoft }}
+            >
+              <div className="space-y-4">
+                <div className="rounded-[20px] px-4 py-4 sm:px-5" style={{ backgroundColor: detailTheme.reviewSurface }}>
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      {effectiveMrp > price && savingAmount > 0 ? (
+                        <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
+                          <span className="text-[32px] font-bold leading-none sm:text-[36px]" style={{ color: detailTheme.heading }}>
+                            ₹{price.toLocaleString("en-IN")}
+                          </span>
+                          <span className="text-[15px] font-semibold leading-none text-gray-400 line-through sm:text-[18px]">
+                            ₹{effectiveMrp.toLocaleString("en-IN")}
+                          </span>
+                          <span className="text-[15px] font-bold leading-none sm:text-[17px]" style={{ color: "#0a8f45" }}>
+                            ↓ ₹{savingAmount.toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                          <span className="text-[30px] font-bold sm:text-3xl" style={{ color: detailTheme.price }}>
+                            ₹{price.toLocaleString("en-IN")}
+                          </span>
+                          {effectiveMrp > 0 && (
+                            <span className="text-xs text-gray-400 line-through sm:text-sm">
+                              MRP ₹{effectiveMrp.toLocaleString("en-IN")}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {visibleAssignedCoupon && previewCouponFinalPrice > 0 ? (
+                        <div
+                          className="mt-3 flex items-center justify-between gap-3 rounded-[14px] border px-3 py-2.5"
+                          style={{ borderColor: detailTheme.accentLine, backgroundColor: "#fff" }}
                         >
-                          <p
-                            className="text-[13px] sm:text-[15px] font-semibold leading-none sm:text-base"
-                            style={{ color: active ? "#FFFFFF" : detailTheme.heading }}
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: detailTheme.accent }}>
+                              Coupon offer
+                            </p>
+                            <p className="mt-1 text-[13px] font-semibold leading-4" style={{ color: detailTheme.heading }}>
+                              {previewCouponDisplayPercent > 0
+                                ? `${Math.round(previewCouponDisplayPercent)}% OFF`
+                                : visibleAssignedCoupon.code}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[10px] uppercase tracking-[0.12em] text-gray-400">Final price</p>
+                            <p className="mt-1 text-[18px] font-bold leading-none" style={{ color: detailTheme.price }}>
+                              ₹{previewCouponFinalPrice.toLocaleString("en-IN")}
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2.5">
+                  <button
+                    onClick={handleBuyNow}
+                    disabled={isOutOfStock || isBuying}
+                    className={`w-full rounded-2xl py-3.5 text-sm font-semibold transition min-h-[54px] ${isOutOfStock || isBuying ? "cursor-not-allowed bg-gray-300 text-gray-500" : "shadow-sm hover:opacity-90"}`}
+                    style={isOutOfStock || isBuying ? undefined : detailCtaColors.buyNow}
+                  >
+                    {isBuying ? "Processing..." : !isOutOfStock ? "Buy Now" : "Out of Stock"}
+                  </button>
+
+                  <button
+                    onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
+                    disabled={isAdding}
+                    className={`w-full rounded-2xl py-3.5 text-sm font-semibold transition min-h-[54px] ${isAdding ? "bg-gray-300 text-gray-500" : ""}`}
+                    style={isAdding ? undefined : detailCtaColors.addToCart}
+                  >
+                    {isAdding
+                      ? "Adding..."
+                      : !isOutOfStock
+                        ? "Add To Cart"
+                        : "Notify Me"}
+                  </button>
+                </div>
+
+                {trustStripItems.length > 0 && (
+                  <div className="space-y-2 border-t pt-4" style={{ borderColor: detailTheme.borderSoft }}>
+                    {trustStripItems.map((item) => {
+                      const TrustIcon = item.icon;
+                      const TrustItemTag = item.to ? Link : "div";
+                      return (
+                        <TrustItemTag
+                          key={item.title}
+                          {...(item.to ? { to: item.to } : {})}
+                          className="flex items-start gap-3"
+                        >
+                          <span
+                            className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                            style={{
+                              color: detailTheme.accent,
+                              backgroundColor: detailTheme.isDefaultWhite ? "#fff7f6" : hexToRgba(detailTheme.accentSoft, 0.18),
+                            }}
                           >
-                            {pack.label}
-                          </p>
-                          {/* <p
-                            className="mt-2 text-xs leading-none sm:text-[13px]"
-                            style={{ color: active ? "rgba(255,255,255,0.72)" : "#6b7280" }}
-                          >
-                            ₹{Number(pack.price || 0).toLocaleString("en-IN")}
-                          </p> */}
-                        </button>
+                            <TrustIcon className="h-4.5 w-4.5" />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold leading-5" style={{ color: detailTheme.heading }}>
+                              {item.title}
+                            </p>
+                            <p className="text-xs leading-5 text-gray-500">
+                              {item.subtitle}
+                            </p>
+                          </div>
+                        </TrustItemTag>
                       );
                     })}
                   </div>
-                </div>
-              )}
+                )}
 
-
-
-
-              {/* Price box */}
-              <div className="rounded-[22px] sm:rounded-[26px] px-4 py-4 sm:px-6 sm:py-5" style={{ backgroundColor: detailTheme.reviewSurface }}>
-                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-                  <div>
-                    {effectiveMrp > price && savingAmount > 0 ? (
-                      <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
-                        <span className="text-[26px] sm:text-[36px] font-bold leading-none" style={{ color: detailTheme.heading }}>
-                          ₹{price.toLocaleString("en-IN")}
-                        </span>
-                        <span className="text-[14px] sm:text-[18px] font-semibold leading-none text-gray-400 line-through">
-                          ₹{effectiveMrp.toLocaleString("en-IN")}
-                        </span>
-                        <span className="text-[16px] sm:text-[24px] font-bold leading-none" style={{ color: "#0a8f45" }}>⬇︎
-                          ₹{savingAmount.toLocaleString("en-IN")}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-baseline flex-wrap gap-2 sm:gap-3">
-                        <span className="text-[28px] sm:text-3xl font-bold" style={{ color: detailTheme.price }}>
-                          ₹{price.toLocaleString("en-IN")}
-                        </span>
-                        {effectiveMrp > 0 && (
-                          <span className="text-xs sm:text-sm text-gray-400 line-through">
-                            MRP ₹{effectiveMrp.toLocaleString("en-IN")}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
-                      <span>Inclusive of all taxes</span>
-                      {effectiveMrp > price && savingAmount > 0 ? (
-                        <span className="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold" style={{ borderColor: detailTheme.borderSoft, color: detailTheme.price }}>
-                          Price dropped
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {product?.warranty === "import" && warrantyRegistrationUrl && (
+                {warrantyButtonLabel && (
+                  product?.warranty === "import" ? (
                     <Link
                       to={warrantyRegistrationUrl}
-                      className="inline-flex w-full sm:w-auto items-center justify-center gap-2 text-xs font-semibold px-3 py-2.5 rounded-xl border self-start sm:self-auto"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold"
                       style={{
                         color: detailTheme.accent,
                         borderColor: detailTheme.accentLine,
                         backgroundColor: detailTheme.reviewSurface,
                       }}
                     >
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      Register Import Warranty
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      {warrantyButtonLabel}
                     </Link>
-                  )}
-                </div>
-              </div>
-
-              {eligibleForCollagenAddon && (
-                <div className="rounded-2xl border p-3" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
-                  <p className="text-sm font-semibold mb-2" style={{ color: detailTheme.heading }}>
-                    Add Extra Collagen Peptide Packs
-                  </p>
-                  <div className="rounded-xl border border-gray-200 bg-white p-2 sm:p-3">
-                    <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4">
-                      <div className="w-full sm:w-[96px] sm:min-w-[96px] h-[72px] sm:h-[84px] rounded-xl overflow-hidden bg-[#f8f6f5]">
-                        <img
-                          loading="lazy"
-                          src="/Images/Peptide.jpeg"
-                          alt="Collagen peptide pack"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0 space-y-2">
-                        <div className="min-h-9 rounded-lg bg-[#f7f4f4] flex items-center justify-center px-2 py-1.5">
-                          <p className="text-base sm:text-xl font-semibold text-[#2B2A29] text-center leading-tight">
-                            Collagen Peptide Pack
-                          </p>
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
-                          <div className="min-h-9 rounded-lg px-3 py-1.5 inline-flex items-center font-semibold leading-snug text-[#2B2A29]">
-                            <span className="text-sm">
-                              {collagenAddonCount > 0
-                                ? selectedCollagenAddon.label
-                                : "No extra pack (Included)"}
-                            </span>
-                          </div>
-                          <div className="inline-flex items-center rounded-lg border border-gray-200 overflow-hidden self-start sm:self-auto w-full sm:w-auto justify-between">
-                            <button
-                              type="button"
-                              onClick={() => setCollagenAddonCount((prev) => Math.max(0, Number(prev || 0) - 1))}
-                              className="h-9 w-10 sm:h-8 sm:w-8 text-base font-semibold leading-none text-[#111827] hover:bg-white/70 transition border-r border-gray-300"
-                              aria-label="Decrease peptide pack count"
-                            >
-                              -
-                            </button>
-                            <span className="h-9 sm:h-8 min-w-[34px] inline-flex items-center justify-center text-sm font-semibold text-[#111827] border-r border-gray-300 flex-1 sm:flex-none">
-                              {collagenAddonCount}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setCollagenAddonCount((prev) => Math.min(3, Number(prev || 0) + 1))}
-                              className="h-9 w-10 sm:h-8 sm:w-8 text-base font-semibold leading-none text-[#111827] hover:bg-white/70 transition"
-                              aria-label="Increase peptide pack count"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                        <p className="text-sm font-medium text-[#3F4E63]">
-                          {selectedCollagenAddon.price > 0 ? `Add-on price: +₹${selectedCollagenAddon.price}` : "Included with product"}
-                        </p>
-                      </div>
+                  ) : (
+                    <div
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold"
+                      style={{
+                        color: detailTheme.accent,
+                        borderColor: detailTheme.accentLine,
+                        backgroundColor: detailTheme.reviewSurface,
+                      }}
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      {warrantyButtonLabel}
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ATC + Buy Now — observed by IntersectionObserver for sticky bar */}
-              <div ref={atcButtonsRef} className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
-
-                <button
-                  onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
-                  disabled={isAdding}
-                  className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition min-h-[54px]
-                ${isAdding ?
-                      "bg-gray-300 text-gray-500" : ""}`}
-                  style={isAdding ? undefined : detailCtaColors.addToCart}
-                >
-                  {isAdding
-                    ? "Adding..."
-                    : !isOutOfStock
-                      ? "Add To Cart"
-                      : "Notify Me"}
-                </button>
-
-                {/* Buy Now (same style) */}
-                <button
-                  onClick={handleBuyNow}
-                  disabled={isOutOfStock || isBuying}
-                  className={`flex-1 py-3.5 rounded-2xl text-sm font-semibold transition min-h-[54px]
-                    ${isOutOfStock ||
-                      isBuying
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "hover:opacity-90 shadow-sm"}`}
-                  style={isOutOfStock || isBuying ? undefined : detailCtaColors.buyNow}
-                >
-                  {isBuying ? "Processing..." : !isOutOfStock ? "Buy Now" : "Out of Stock"}
-                </button>
-
+                  )
+                )}
               </div>
-
             </div>
-
           </div>
         </section>
 
-        {trustStripItems.length > 0 && (
-          <DeferredSection
-            minHeight={110}
-            placeholder={
-              <div className="max-w-7xl mx-auto px-3 sm:px-6 mb-4 sm:mb-5" aria-hidden="true">
-                <div className="grid grid-cols-2 gap-3 rounded-[18px] border border-[#f1e2df] bg-white p-3 sm:grid-cols-4 sm:p-4">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <SkeletonBlock className="h-10 w-10 shrink-0 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <SkeletonBlock className="h-4 w-24" />
-                        <SkeletonBlock className="h-3 w-20" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            }
-          >
-            <section className="max-w-7xl mx-auto px-3 sm:px-6 mb-4 sm:mb-5">
-              <div
-                className="overflow-hidden rounded-[18px] border"
-                style={{
-                  backgroundColor: detailTheme.isDefaultWhite ? "#fff7f6" : detailTheme.reviewSurface,
-                  borderColor: detailTheme.borderSoft,
-                }}
-              >
-                <div className="grid grid-cols-2 lg:grid-cols-4">
-                  {trustStripItems.map(({ icon: Icon, title, subtitle }, index) => (
-                    <div
-                      key={title}
-                      className={`flex items-center gap-2.5 px-3 py-3.5 sm:px-5 sm:py-4 ${index % 2 === 1 ? "border-l" : ""} ${index >= 2 ? "border-t lg:border-t-0" : ""} ${index > 0 ? "lg:border-l" : ""}`}
-                      style={{ borderColor: detailTheme.borderSoft }}
-                    >
-                      <span
-                        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full"
-                        style={{
-                          color: detailTheme.accent,
-                          backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : hexToRgba(detailTheme.accentSoft, 0.18),
-                        }}
-                      >
-                        <Icon className="h-4.5 w-4.5" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[13px] sm:text-sm font-semibold leading-5" style={{ color: detailTheme.heading }}>
-                          {title}
-                        </p>
-                        <p className="mt-0.5 text-[11px] sm:text-xs leading-4 sm:leading-5" style={{ color: detailTheme.isDefaultWhite ? "#6b7280" : hexToRgba(detailTheme.heading, 0.7) }}>
-                          {subtitle}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          </DeferredSection>
-        )}
-
+        <div className="xl:pr-[23rem]">
 
         {whyLoveItItems.length > 0 && (
           <DeferredSection
             minHeight={220}
             placeholder={
-              <div className="max-w-7xl mx-auto px-3 sm:px-6 mb-6 sm:mb-8" aria-hidden="true">
+              <div className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-6 sm:mb-8" aria-hidden="true">
                 <div className="rounded-[22px] border border-[#f1e2df] bg-white p-4 sm:p-5">
                   <SkeletonBlock className="h-8 w-48" />
                   <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -3895,16 +4303,16 @@ const ProductDetail = () => {
               </div>
             }
           >
-            <section className="max-w-7xl mx-auto px-3 sm:px-6 mb-6 sm:mb-8">
+            <section className="max-w-[90rem] mx-auto px-3 sm:px-6 mb-5 sm:mb-8">
               <div
-                className="overflow-hidden rounded-[26px] border shadow-[0_16px_40px_rgba(69,39,34,0.05)]"
+                className="overflow-hidden rounded-[20px] border shadow-[0_12px_28px_rgba(69,39,34,0.05)] sm:rounded-[26px] sm:shadow-[0_16px_40px_rgba(69,39,34,0.05)]"
                 style={{
                   borderColor: detailTheme.borderSoft,
                   backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : detailTheme.pageBg,
                 }}
               >
                 <div
-                  className="border-b px-4 pt-3 pb-3 sm:px-5 sm:pt-4 sm:pb-4"
+                  className="border-b px-4 py-3 sm:px-5 sm:pt-4 sm:pb-4"
                   style={{
                     borderColor: detailTheme.borderSoft,
                     backgroundColor: detailTheme.reviewSurface,
@@ -3920,16 +4328,15 @@ const ProductDetail = () => {
                     const IconComponent = resolveWhyLoveItIcon(item.icon);
                     const borderClass = `
                       ${index % 2 === 1 ? "border-l" : ""}
-                      ${index >= 2 ? "border-t lg:border-t-0" : ""}
-                      ${index % 2 === 1 ? "sm:border-l" : ""}
-                      ${index >= 2 ? "sm:border-t" : ""}
+                      ${index >= 2 ? "border-t" : ""}
                       ${index > 0 ? "lg:border-l" : ""}
+                      ${index < 4 ? "lg:border-t-0" : ""}
                     `;
 
                     return (
                       <div
                         key={item.id || index}
-                        className={`flex h-full flex-col items-center justify-start px-4 py-5 text-center sm:px-5 sm:py-6 ${borderClass}`}
+                        className={`flex h-full flex-col items-center justify-start px-4 py-4 text-center sm:px-5 sm:py-6 ${borderClass}`}
                         style={{
                           borderColor: detailTheme.borderSoft,
                           backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : hexToRgba(detailTheme.reviewSurface, 0.65),
@@ -3954,7 +4361,7 @@ const ProductDetail = () => {
                         </h3>
                         {item.description ? (
                           <p
-                            className="mt-1.5 max-w-[280px] text-[13px] sm:text-sm leading-6 sm:leading-6"
+                            className="mt-1.5 max-w-[300px] text-[13px] leading-6 sm:text-sm sm:leading-6"
                             style={{ color: detailTheme.isDefaultWhite ? "#4b5563" : hexToRgba(detailTheme.heading, 0.78) }}
                           >
                             {item.description}
@@ -3976,24 +4383,24 @@ const ProductDetail = () => {
             minHeight={420}
             placeholder={<ProductDetailSectionSkeleton minHeight={420} className="mb-16" />}
           >
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
-              <div className="flex items-center gap-3 mb-8">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
-                <div className="flex items-center gap-2 px-5 py-2.5 border rounded-full" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentLine }}>
+            <section className="max-w-[90rem] mx-auto px-3 sm:px-6 mb-12 sm:mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
+              <div className="mb-6 flex items-center gap-3 sm:mb-8">
+                <div className="hidden h-px flex-1 bg-gradient-to-r from-transparent sm:block" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
+                <div className="flex items-center gap-2 rounded-full border px-4 py-2 sm:px-5 sm:py-2.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentLine }}>
                   <Leaf className="w-4 h-4" style={{ color: detailTheme.accent }} /><span className="text-sm font-semibold" style={{ color: detailTheme.accent }}>See the Difference</span>
                 </div>
-                <div className="h-px flex-1 bg-gradient-to-l from-transparent" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
+                <div className="hidden h-px flex-1 bg-gradient-to-l from-transparent sm:block" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
               </div>
-              <div className="space-y-10">
+              <div className="space-y-8 sm:space-y-10">
                 {beforeAfterPairs.map((pair, idx) => (
-                  <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                  <div key={idx} className="grid grid-cols-1 items-center gap-6 sm:gap-8 lg:grid-cols-2">
                     <div className={idx % 2 === 1 ? "lg:order-2" : ""}>
                       <BeforeAfterSlider beforeImage={pair.before} afterImage={pair.after} beforeLabel={pair.beforeLabel || "Before"} afterLabel={pair.afterLabel || "After"} />
-                      <p className="text-center text-xs text-gray-400 mt-2"> ← Drag slider to compare → </p>
+                      <p className="mt-2 text-center text-[11px] text-gray-400 sm:text-xs"> ← Drag slider to compare → </p>
                     </div>
-                    <div className={`flex flex-col justify-center space-y-4 ${idx % 2 === 1 ? "lg:order-1" : ""}`}>
+                    <div className={`flex flex-col justify-center space-y-3 sm:space-y-4 ${idx % 2 === 1 ? "lg:order-1" : ""}`}>
                       {pair.duration && (<span className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold border rounded-full px-3.5 py-1.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentSoft, color: detailTheme.accent }}><Sparkles className="w-3 h-3" /> {pair.duration}</span>)}
-                      {pair.title && (<h3 className="text-3xl font-luxury font-bold leading-snug" style={{ color: detailTheme.heading }}>{pair.title}</h3>)}
+                      {pair.title && (<h3 className="text-[28px] font-luxury font-bold leading-tight sm:text-3xl" style={{ color: detailTheme.heading }}>{pair.title}</h3>)}
                       {pair.description && (<p className="text-sm text-gray-500 leading-relaxed">{pair.description}</p>)}
                       <div className="grid grid-cols-2 gap-3 mt-2">
                         <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.borderSoft }}>
@@ -4018,7 +4425,7 @@ const ProductDetail = () => {
           <DeferredSection
             minHeight={420}
             placeholder={
-              <div className="max-w-7xl mx-auto px-4 sm:px-4 mb-6 py-6 sm:py-6" aria-hidden="true">
+              <div className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-6 py-6 sm:py-6" aria-hidden="true">
                 <div className="rounded-[20px] border border-[#f1e2df] bg-white p-4 sm:p-6">
                   <div className="mb-7 flex justify-center">
                     <SkeletonBlock className="h-10 w-56" />
@@ -4033,7 +4440,7 @@ const ProductDetail = () => {
             }
           >
             <section
-              className="max-w-7xl mx-auto px-4 sm:px-4 mb-6 py-6 sm:py-6"
+              className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-6 py-6 sm:py-6"
               style={{
 
                 borderRadius: "20px",
@@ -4042,14 +4449,14 @@ const ProductDetail = () => {
                   : detailTheme.benefitGradient,
               }}
             >
-              <div className="text-center mb-7 sm:mb-8 px-2">
-                <h2 className="text-4xl sm:text-5xl font-light tracking-tight" >
+              <div className="text-center mb-6 sm:mb-8 px-2">
+                <h2 className="text-3xl sm:text-5xl font-light tracking-tight" >
                   Key Ingredients
                 </h2>
               </div>
 
               <div
-                className="relative px-2 sm:px-7 select-none"
+                className="relative px-1 sm:px-7 select-none"
                 onPointerDown={handleIngredientPointerDown}
                 onPointerMove={handleIngredientPointerMove}
                 onPointerUp={handleIngredientPointerEnd}
@@ -4063,14 +4470,14 @@ const ProductDetail = () => {
                   <>
                     <button
                       onClick={() => scrollIngredientTrackByCards(-1)}
-                      className="absolute left-0 sm:left-1 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center transition bg-white/90 text-black border border-black/15 shadow-sm hover:bg-white"
+                      className="absolute left-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/15 bg-white/90 text-black shadow-sm transition hover:bg-white sm:left-1 sm:flex"
                       aria-label="Previous ingredient cards"
                     >
                       <ChevronLeft className="w-7 h-7" />
                     </button>
                     <button
                       onClick={() => scrollIngredientTrackByCards(1)}
-                      className="absolute right-0 sm:right-1 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center transition bg-white/90 text-black border border-black/15 shadow-sm hover:bg-white"
+                      className="absolute right-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/15 bg-white/90 text-black shadow-sm transition hover:bg-white sm:right-1 sm:flex"
                       aria-label="Next ingredient cards"
                     >
                       <ChevronRight className="w-7 h-7" />
@@ -4115,7 +4522,7 @@ const ProductDetail = () => {
         <DeferredSection
           minHeight={360}
           placeholder={
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10" aria-hidden="true">
+            <div className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10" aria-hidden="true">
               <div className="rounded-[28px] border border-[#f1e2df] bg-white p-4 sm:p-6">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, index) => (
@@ -4132,7 +4539,7 @@ const ProductDetail = () => {
             </div>
           }
         >
-          <section ref={detailsTabsRef} className="max-w-7xl mx-auto px-4 sm:px-6 mb-10">
+          <section ref={detailsTabsRef} className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10">
             <div className="hidden md:block overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
               <div className="grid auto-cols-fr grid-flow-col border-b border-gray-100 bg-[#fcf7f7]">
                 {infoTabs.map((tab) => {
@@ -4198,12 +4605,12 @@ const ProductDetail = () => {
           <DeferredSection
             minHeight={280}
             placeholder={
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-8" aria-hidden="true">
+              <div className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-8" aria-hidden="true">
                 <SkeletonBlock className="mb-5 h-8 w-48" />
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, index) => (
                     <div key={index} className="space-y-3 text-center">
-                      <SkeletonBlock className="mx-auto h-28 w-28 rounded-[18px] sm:h-32 sm:w-32" />
+                      <SkeletonBlock className="mx-auto h-24 w-24 rounded-[18px] sm:h-32 sm:w-32" />
                       <SkeletonBlock className="mx-auto h-4 w-24" />
                     </div>
                   ))}
@@ -4211,14 +4618,14 @@ const ProductDetail = () => {
               </div>
             }
           >
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
+            <section className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-8">
               <div className="mb-4 sm:mb-5">
                 <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }} />
               </div>
 
-              <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
+              <div className="grid grid-cols-3 gap-x-1 gap-y-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
                 {inTheBoxItems.map((item, index) => (
-                  <div key={item.id || index} className="flex min-w-0 flex-col items-center rounded-[18px] bg-white/70 px-2 py-2 text-center sm:w-[128px] sm:bg-transparent sm:px-0 sm:py-0">
+                  <div key={item.id || index} className="flex min-w-0 flex-col items-center rounded-[18px] bg-white/70 px-1 py-1.5 text-center sm:w-[128px] sm:bg-transparent sm:px-0 sm:py-0">
                     {item.image ? (
                       <img
                         loading={index < 2 ? "eager" : "lazy"}
@@ -4228,7 +4635,7 @@ const ProductDetail = () => {
                       />
                     ) : null}
                     {item.title ? (
-                      <p className="mt-2.5 text-[13px] font-medium leading-5 sm:mt-3 sm:text-sm" style={{ color: detailTheme.heading }}>
+                      <p className="mt-2 text-[11px] font-medium leading-4 sm:mt-3 sm:text-[13px] sm:leading-5" style={{ color: detailTheme.heading }}>
                         {item.title}
                       </p>
                     ) : null}
@@ -4329,7 +4736,7 @@ const ProductDetail = () => {
         <DeferredSection
           minHeight={productFaqs.length > 0 ? 420 : 340}
           placeholder={
-            <div className="max-w-7xl mx-auto mb-12 px-4 sm:px-6" aria-hidden="true">
+            <div className="max-w-[90rem] mx-auto mb-12 px-4 sm:px-6" aria-hidden="true">
               <div className={`grid grid-cols-1 gap-6 ${productFaqs.length > 0 ? "xl:grid-cols-10" : ""}`}>
                 <div className={productFaqs.length > 0 ? "xl:col-span-7" : ""}>
                   <div className="mb-6 space-y-3">
@@ -4375,7 +4782,7 @@ const ProductDetail = () => {
             </div>
           }
         >
-          <div className={`max-w-7xl mx-auto mb-8 px-4 sm:px-6 ${productFaqs.length > 0 ? "grid grid-cols-1 gap-6 xl:grid-cols-10" : ""}`}>
+          <div className={`max-w-[90rem] mx-auto mb-8 px-4 sm:px-6 ${productFaqs.length > 0 ? "grid grid-cols-1 gap-6 xl:grid-cols-10" : ""}`}>
               <ProductReviewCarouselSection
                 reviews={productReviews}
                 theme={detailTheme}
@@ -4400,7 +4807,7 @@ const ProductDetail = () => {
           <DeferredSection
             minHeight={360}
             placeholder={
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-2" aria-hidden="true">
+              <div className="max-w-[90rem] mx-auto px-4 sm:px-6 pb-2" aria-hidden="true">
                 <div className="mb-6 flex items-center gap-3">
                   <SkeletonBlock className="h-6 w-1 rounded-full" />
                   <SkeletonBlock className="h-7 w-44" />
@@ -4420,7 +4827,7 @@ const ProductDetail = () => {
               </div>
             }
           >
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-2">
+            <section className="max-w-[90rem] mx-auto px-4 sm:px-6 pb-2">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
                 <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>You may also like</h2>
@@ -4439,6 +4846,7 @@ const ProductDetail = () => {
 
         {/* Bottom padding so sticky bar doesn't cover content */}
         <div className="h-24" />
+        </div>
       </div>
       <div>
         {/* <Footer ref={footerRef} /> */}
