@@ -866,13 +866,43 @@ const BeforeAfterSlider = ({
   const [pos, setPos] = useState(50); // start centered
   const containerRef = useRef(null);
   const isActive = useRef(false);
+  const beforeMaskRef = useRef(null);
+  const dividerRef = useRef(null);
+  const frameRef = useRef(null);
 
+  const applySliderPosition = useCallback((nextPos) => {
+    if (beforeMaskRef.current) {
+      beforeMaskRef.current.style.clipPath = `inset(0 ${100 - nextPos}% 0 0)`;
+    }
+    if (dividerRef.current) {
+      dividerRef.current.style.left = `calc(${nextPos}% - 1px)`;
+    }
+  }, []);
+
+  useEffect(() => {
+    applySliderPosition(pos);
+  }, [pos, applySliderPosition]);
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current) {
+        window.cancelAnimationFrame(frameRef.current);
+      }
+    };
+  }, []);
 
   const calcPos = (clientX) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const clamped = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
-    setPos(clamped);
+    applySliderPosition(clamped);
+    if (frameRef.current) {
+      window.cancelAnimationFrame(frameRef.current);
+    }
+    frameRef.current = window.requestAnimationFrame(() => {
+      setPos(clamped);
+      frameRef.current = null;
+    });
   };
 
   const onPointerDown = (e) => { e.preventDefault(); e.stopPropagation(); isActive.current = true; containerRef.current.setPointerCapture(e.pointerId); calcPos(e.clientX); };
@@ -901,6 +931,7 @@ const BeforeAfterSlider = ({
 
       {/* BEFORE - clipped from the right using clip-path */}
       <div
+        ref={beforeMaskRef}
         className="absolute inset-0 pointer-events-none"
         style={{
           clipPath: `inset(0 ${100 - pos}% 0 0)`,
@@ -919,6 +950,7 @@ const BeforeAfterSlider = ({
 
       {/* DIVIDER LINE */}
       <div
+        ref={dividerRef}
         className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none"
         style={{
           left: `calc(${pos}% - 1px)`,
