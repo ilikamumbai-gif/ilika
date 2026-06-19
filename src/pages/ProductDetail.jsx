@@ -4370,6 +4370,49 @@ const ProductDetail = () => {
 
         <div className="xl:pr-[23rem]">
 
+        {/* BEFORE / AFTER */}
+        {hasBeforeAfter && (
+          <DeferredSection
+            minHeight={420}
+            placeholder={<ProductDetailSectionSkeleton minHeight={420} className="mb-16" />}
+          >
+            <section className="max-w-[90rem] mx-auto px-3 sm:px-6 mb-12 sm:mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
+              <div className="mb-6 flex items-center gap-3 sm:mb-8">
+                <div className="hidden h-px flex-1 bg-gradient-to-r from-transparent sm:block" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
+                <div className="flex items-center gap-2 rounded-full border px-4 py-2 sm:px-5 sm:py-2.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentLine }}>
+                  <Leaf className="w-4 h-4" style={{ color: detailTheme.accent }} /><span className="text-sm font-semibold" style={{ color: detailTheme.accent }}>See the Difference</span>
+                </div>
+                <div className="hidden h-px flex-1 bg-gradient-to-l from-transparent sm:block" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
+              </div>
+              <div className="space-y-8 sm:space-y-10">
+                {beforeAfterPairs.map((pair, idx) => (
+                  <div key={idx} className="grid grid-cols-1 items-center gap-6 sm:gap-8 lg:grid-cols-2">
+                    <div className={idx % 2 === 1 ? "lg:order-2" : ""}>
+                      <BeforeAfterSlider beforeImage={pair.before} afterImage={pair.after} beforeLabel={pair.beforeLabel || "Before"} afterLabel={pair.afterLabel || "After"} />
+                      <p className="mt-2 text-center text-[11px] text-gray-400 sm:text-xs"> ← Drag slider to compare → </p>
+                    </div>
+                    <div className={`flex flex-col justify-center space-y-3 sm:space-y-4 ${idx % 2 === 1 ? "lg:order-1" : ""}`}>
+                      {pair.duration && (<span className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold border rounded-full px-3.5 py-1.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentSoft, color: detailTheme.accent }}><Sparkles className="w-3 h-3" /> {pair.duration}</span>)}
+                      {pair.title && (<h3 className="text-[28px] font-luxury font-bold leading-tight sm:text-3xl" style={{ color: detailTheme.heading }}>{pair.title}</h3>)}
+                      {pair.description && (<p className="text-sm text-gray-500 leading-relaxed">{pair.description}</p>)}
+                      <div className="grid grid-cols-2 gap-3 mt-2">
+                        <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.borderSoft }}>
+                          <p className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: detailTheme.accent }}>Before</p>
+                          <p className="text-xs text-gray-500 leading-relaxed">{pair.beforeDesc || "Before using the product"}</p>
+                        </div>
+                        <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.priceMuted, borderColor: detailTheme.borderPrice }}>
+                          <p className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: detailTheme.price }}>After</p>
+                          <p className="text-xs text-gray-500 leading-relaxed">{pair.afterDesc || "After consistent use"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </DeferredSection>
+        )}
+
         {whyLoveItItems.length > 0 && (
           <DeferredSection
             minHeight={220}
@@ -4464,52 +4507,8 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-
-        {/* BEFORE / AFTER */}
-        {hasBeforeAfter && (
-          <DeferredSection
-            minHeight={420}
-            placeholder={<ProductDetailSectionSkeleton minHeight={420} className="mb-16" />}
-          >
-            <section className="max-w-[90rem] mx-auto px-3 sm:px-6 mb-12 sm:mb-16" data-track-visible="before_after_viewed" data-track-label={product.name}>
-              <div className="mb-6 flex items-center gap-3 sm:mb-8">
-                <div className="hidden h-px flex-1 bg-gradient-to-r from-transparent sm:block" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
-                <div className="flex items-center gap-2 rounded-full border px-4 py-2 sm:px-5 sm:py-2.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentLine }}>
-                  <Leaf className="w-4 h-4" style={{ color: detailTheme.accent }} /><span className="text-sm font-semibold" style={{ color: detailTheme.accent }}>See the Difference</span>
-                </div>
-                <div className="hidden h-px flex-1 bg-gradient-to-l from-transparent sm:block" style={{ "--tw-gradient-to": detailTheme.accentLine }} />
-              </div>
-              <div className="space-y-8 sm:space-y-10">
-                {beforeAfterPairs.map((pair, idx) => (
-                  <div key={idx} className="grid grid-cols-1 items-center gap-6 sm:gap-8 lg:grid-cols-2">
-                    <div className={idx % 2 === 1 ? "lg:order-2" : ""}>
-                      <BeforeAfterSlider beforeImage={pair.before} afterImage={pair.after} beforeLabel={pair.beforeLabel || "Before"} afterLabel={pair.afterLabel || "After"} />
-                      <p className="mt-2 text-center text-[11px] text-gray-400 sm:text-xs"> ← Drag slider to compare → </p>
-                    </div>
-                    <div className={`flex flex-col justify-center space-y-3 sm:space-y-4 ${idx % 2 === 1 ? "lg:order-1" : ""}`}>
-                      {pair.duration && (<span className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold border rounded-full px-3.5 py-1.5" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.accentSoft, color: detailTheme.accent }}><Sparkles className="w-3 h-3" /> {pair.duration}</span>)}
-                      {pair.title && (<h3 className="text-[28px] font-luxury font-bold leading-tight sm:text-3xl" style={{ color: detailTheme.heading }}>{pair.title}</h3>)}
-                      {pair.description && (<p className="text-sm text-gray-500 leading-relaxed">{pair.description}</p>)}
-                      <div className="grid grid-cols-2 gap-3 mt-2">
-                        <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.reviewSurface, borderColor: detailTheme.borderSoft }}>
-                          <p className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: detailTheme.accent }}>Before</p>
-                          <p className="text-xs text-gray-500 leading-relaxed">{pair.beforeDesc || "Before using the product"}</p>
-                        </div>
-                        <div className="border rounded-2xl p-4" style={{ backgroundColor: detailTheme.priceMuted, borderColor: detailTheme.borderPrice }}>
-                          <p className="text-[12px] font-bold uppercase tracking-widest mb-1" style={{ color: detailTheme.price }}>After</p>
-                          <p className="text-xs text-gray-500 leading-relaxed">{pair.afterDesc || "After consistent use"}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </DeferredSection>
-        )}
-
         {/* INGREDIENTS SECTION */}
-        {activeInfoTab !== "reviews" && hasIngredients && (
+        {hasIngredients && (
           <DeferredSection
             minHeight={420}
             placeholder={
@@ -4605,91 +4604,7 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-
-        {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
-        <DeferredSection
-          minHeight={360}
-          placeholder={
-            <div className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10" aria-hidden="true">
-              <div className="rounded-[28px] border border-[#f1e2df] bg-white p-4 sm:p-6">
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <SkeletonBlock key={index} className="h-12 w-full rounded-xl" />
-                  ))}
-                </div>
-                <div className="mt-6 space-y-3">
-                  <SkeletonBlock className="h-4 w-full" />
-                  <SkeletonBlock className="h-4 w-[92%]" />
-                  <SkeletonBlock className="h-4 w-[80%]" />
-                  <SkeletonBlock className="h-40 w-full rounded-2xl" />
-                </div>
-              </div>
-            </div>
-          }
-        >
-          <section ref={detailsTabsRef} className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10">
-            <div className="hidden md:block overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
-              <div className="grid auto-cols-fr grid-flow-col border-b border-gray-100 bg-[#fcf7f7]">
-                {infoTabs.map((tab) => {
-                  const isActive = activeInfoTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveInfoTab(tab.id)}
-                      className="relative px-5 py-5 text-center text-sm font-semibold uppercase tracking-[0.03em] transition"
-                      style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
-                    >
-                      {tab.label}
-                      <span
-                        className={`absolute bottom-0 left-0 h-[3px] w-full origin-left transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0"}`}
-                        style={{ backgroundColor: detailTheme.accent }}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="p-7 lg:p-8">
-                <div className="min-w-0">
-                  {renderInfoPanel(activeInfoTab)}
-                </div>
-              </div>
-            </div>
-
-            <div className="md:hidden space-y-3">
-              {infoTabs.map((tab) => {
-                const isActive = mobileOpenInfoTab === tab.id;
-
-                return (
-                  <div key={tab.id} className="overflow-hidden rounded-[22px] border border-gray-100 bg-white shadow-sm">
-                    <button
-                      type="button"
-                      onClick={() => setMobileOpenInfoTab(isActive ? null : tab.id)}
-                      className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
-                    >
-                      <span className="text-sm font-semibold uppercase tracking-[0.05em]" style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}>
-                        {tab.label}
-                      </span>
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform duration-200 ${isActive ? "rotate-180" : ""}`}
-                        style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
-                      />
-                    </button>
-
-                    {isActive ? (
-                      <div className="border-t border-gray-100 px-4 py-4">
-                        {renderInfoPanel(tab.id)}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        </DeferredSection>
-
-        {activeInfoTab !== "reviews" && hasInTheBox && (
+        {hasInTheBox && (
           <DeferredSection
             minHeight={280}
             placeholder={
@@ -4741,7 +4656,7 @@ const ProductDetail = () => {
 
 
         {/* â•â•â•â• PRODUCT BANNERS â•â•â•â• */}
-        {activeInfoTab !== "reviews" && ((product.banners?.length > 0) || product.bannerImage) && (
+        {((product.banners?.length > 0) || product.bannerImage) && (
           <DeferredSection
             minHeight={320}
             placeholder={
@@ -4769,7 +4684,8 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-        {activeInfoTab !== "reviews" && product.videos?.length > 0 && (
+
+        {product.videos?.length > 0 && (
           <DeferredSection
             minHeight={360}
             placeholder={
@@ -4868,6 +4784,68 @@ const ProductDetail = () => {
             </div>
           }
         >
+          {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
+          <section ref={detailsTabsRef} className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10">
+            <div className="hidden md:block overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
+              <div className="grid auto-cols-fr grid-flow-col border-b border-gray-100 bg-[#fcf7f7]">
+                {infoTabs.map((tab) => {
+                  const isActive = activeInfoTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveInfoTab(tab.id)}
+                      className="relative px-5 py-5 text-center text-sm font-semibold uppercase tracking-[0.03em] transition"
+                      style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
+                    >
+                      {tab.label}
+                      <span
+                        className={`absolute bottom-0 left-0 h-[3px] w-full origin-left transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0"}`}
+                        style={{ backgroundColor: detailTheme.accent }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="p-7 lg:p-8">
+                <div className="min-w-0">
+                  {renderInfoPanel(activeInfoTab)}
+                </div>
+              </div>
+            </div>
+
+            <div className="md:hidden space-y-3">
+              {infoTabs.map((tab) => {
+                const isActive = mobileOpenInfoTab === tab.id;
+
+                return (
+                  <div key={tab.id} className="overflow-hidden rounded-[22px] border border-gray-100 bg-white shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => setMobileOpenInfoTab(isActive ? null : tab.id)}
+                      className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                    >
+                      <span className="text-sm font-semibold uppercase tracking-[0.05em]" style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}>
+                        {tab.label}
+                      </span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ${isActive ? "rotate-180" : ""}`}
+                        style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
+                      />
+                    </button>
+
+                    {isActive ? (
+                      <div className="border-t border-gray-100 px-4 py-4">
+                        {renderInfoPanel(tab.id)}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
           <div className={`max-w-[90rem] mx-auto mb-8 px-4 sm:px-6 ${productFaqs.length > 0 ? "grid grid-cols-1 gap-6 xl:grid-cols-10" : ""}`}>
               <ProductReviewCarouselSection
                 reviews={productReviews}

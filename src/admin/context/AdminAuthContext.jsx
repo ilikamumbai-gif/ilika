@@ -1,13 +1,12 @@
 import React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { getApiUrl, handleApiError, API_URL } from "../../utils/api";
 
 const AdminAuthContext = createContext(null);
 
 export const AdminAuthProvider = ({ children }) => {
 
   const [admin, setAdmin] = useState(null);
-
-  const API = `${import.meta.env.VITE_API_URL}/api`;
 
   /* ================= SESSION CONFIG ================= */
 
@@ -68,8 +67,12 @@ export const AdminAuthProvider = ({ children }) => {
   const login = async (username, password) => {
 
     try {
+      if (!API_URL) {
+        handleApiError("AdminAuth", new Error("VITE_API_URL is missing"));
+        return false;
+      }
 
-      const res = await fetch(`${API}/admin-login`, {
+      const res = await fetch(getApiUrl("/api/admin-login"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,7 +102,7 @@ export const AdminAuthProvider = ({ children }) => {
 
       try {
 
-        await fetch(`${API}/admin-log`, {
+        await fetch(getApiUrl("/api/admin-log"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -120,7 +123,7 @@ export const AdminAuthProvider = ({ children }) => {
 
     } catch (err) {
 
-      console.error("Login error", err);
+      handleApiError("AdminAuth", err);
 
       return false;
 
@@ -138,7 +141,7 @@ export const AdminAuthProvider = ({ children }) => {
 
     try {
 
-      await fetch(`${API}/admin-log`, {
+      await fetch(getApiUrl("/api/admin-log"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -167,7 +170,7 @@ export const AdminAuthProvider = ({ children }) => {
     if (!currentAdmin?.id) return;
 
     try {
-      const res = await fetch(`${API}/admins`, {
+      const res = await fetch(getApiUrl("/api/admins"), {
         headers: {
           "Content-Type": "application/json",
           "x-admin-id": currentAdmin.id,
@@ -188,7 +191,7 @@ export const AdminAuthProvider = ({ children }) => {
       setAdmin(mergedAdmin);
       localStorage.setItem("admin", JSON.stringify(mergedAdmin));
     } catch (err) {
-      console.log("Admin refresh failed");
+      handleApiError("AdminAuth", err);
     }
   };
 
