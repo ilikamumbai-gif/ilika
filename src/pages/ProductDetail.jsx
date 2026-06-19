@@ -3176,6 +3176,55 @@ const ProductDetail = () => {
     ],
   }), [product?.name, canonicalPath]);
 
+  const productJsonLd = useMemo(() => {
+    if (!product || product.isActive === false) return null;
+
+    const categoryValue = Array.isArray(product?.seoCategory)
+      ? product.seoCategory.filter(Boolean).join(", ")
+      : String(product?.seoCategory || product?.categoryName || product?.category || "").trim();
+
+    const keywordValue = Array.isArray(seoProductKeywords)
+      ? seoProductKeywords.join(", ")
+      : String(seoProductKeywords || "").trim();
+
+    const normalizedPrice = Number(price || 0) > 0 ? Number(price).toFixed(2) : null;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: String(product?.name || "").trim(),
+      description: seoProductDescription,
+      image: seoProductImage ? [seoProductImage] : undefined,
+      brand: {
+        "@type": "Brand",
+        name: "Ilika",
+      },
+      category: categoryValue || undefined,
+      keywords: keywordValue || undefined,
+      sku: String(product?._id || product?.id || product?.docId || "").trim() || undefined,
+      offers: normalizedPrice
+        ? {
+            "@type": "Offer",
+            url: `https://ilika.in${canonicalPath}`,
+            priceCurrency: "INR",
+            price: normalizedPrice,
+            availability: isOutOfStock
+              ? "https://schema.org/OutOfStock"
+              : "https://schema.org/InStock",
+            itemCondition: "https://schema.org/NewCondition",
+          }
+        : undefined,
+    };
+  }, [
+    product,
+    seoProductKeywords,
+    price,
+    seoProductDescription,
+    seoProductImage,
+    canonicalPath,
+    isOutOfStock,
+  ]);
+
   useSeo({
     title: seoProductTitle,
     description: seoProductDescription,
@@ -3185,7 +3234,7 @@ const ProductDetail = () => {
     type: "product",
     robots: product && product.isActive !== false ? "index, follow" : "noindex, follow",
     keywords: seoProductKeywords,
-    jsonLd: product && product.isActive !== false ? [productBreadcrumbJsonLd] : null,
+    jsonLd: product && product.isActive !== false ? [productBreadcrumbJsonLd, productJsonLd].filter(Boolean) : null,
   });
 
   useEffect(() => {
