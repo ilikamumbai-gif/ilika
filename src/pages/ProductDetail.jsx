@@ -904,7 +904,7 @@ const BeforeAfterSlider = ({
         className="absolute inset-0 pointer-events-none"
         style={{
           clipPath: `inset(0 ${100 - pos}% 0 0)`,
-          transition: "clip-path 0.9s ease"
+          willChange: "clip-path"
         }}
       >
         <img loading="lazy"
@@ -922,7 +922,7 @@ const BeforeAfterSlider = ({
         className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none"
         style={{
           left: `calc(${pos}% - 1px)`,
-          transition: "left 0.9s ease"
+          willChange: "left"
         }}
       >
         {/* HANDLE CIRCLE */}
