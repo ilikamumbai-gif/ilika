@@ -225,6 +225,8 @@ const RouteSeo = () => {
   const { pathname } = useLocation();
   const seo = getRouteSeo(pathname);
   const isAdminPath = pathname.startsWith("/admin");
+  const isHomePage = pathname === "/";
+  const isProductDetailPage = pathname.startsWith("/product/");
   const pageTitle = pathname === "/" ? seo.title : `${seo.title} | Ilika`;
 
   const organizationJsonLd = {
@@ -236,14 +238,14 @@ const RouteSeo = () => {
     sameAs: ["https://www.instagram.com/", "https://www.facebook.com/"],
   };
 
-  const websiteJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Ilika",
-    url: `${SITE_URL}/`,
-  };
-
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(pathname, seo.title);
+  const routeJsonLd = isAdminPath
+    ? null
+    : isHomePage
+      ? [organizationJsonLd]
+      : isProductDetailPage
+        ? null
+        : [organizationJsonLd, breadcrumbJsonLd];
 
   useSeo({
     title: pageTitle,
@@ -251,7 +253,7 @@ const RouteSeo = () => {
     path: pathname,
     robots: isAdminPath ? "noindex, nofollow" : "index, follow",
     keywords: seo.keywords,
-    jsonLd: isAdminPath ? null : [organizationJsonLd, websiteJsonLd, breadcrumbJsonLd],
+    jsonLd: routeJsonLd,
   });
 
   return null;

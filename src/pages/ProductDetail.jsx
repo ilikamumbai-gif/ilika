@@ -3289,7 +3289,7 @@ const ProductDetail = () => {
     keywords: seoProductKeywords,
     jsonLd:
       product && product.isActive !== false && productMatchesCurrentRoute
-        ? [productBreadcrumbJsonLd, productJsonLd].filter(Boolean)
+        ? [productJsonLd].filter(Boolean)
         : null,
   });
 
