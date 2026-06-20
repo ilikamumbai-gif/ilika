@@ -845,7 +845,7 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
               <div className="flex items-center justify-center gap-1.5 pt-1">
                 <ShieldCheck className="w-3 h-3 text-[#801f1f]" />
                 <span className="text-[10px] text-[#801f1f] font-semibold">
-                  {product.warranty === "manufacturer" ? "18 Months Manufacturer Warranty" : "1 Year Import Warranty"}
+                  {product.warranty === "manufacturer" ? "18 Months Warranty" : "1 Year Warranty"}
                 </span>
               </div>
             )}
@@ -1310,81 +1310,122 @@ const ProductReviewCarouselSection = ({
         </div>
       </div>
 
-      <div
-        className="mb-5 grid grid-cols-1 gap-3 rounded-[24px] border bg-white px-4 py-4 shadow-[0_12px_30px_rgba(69,39,34,0.05)] md:grid-cols-[minmax(0,1fr)_auto] md:items-center sm:px-5 sm:py-4"
-        style={{ borderColor: theme.borderSoft }}
-      >
-        <div className="grid grid-cols-3 gap-0 sm:grid-cols-3 sm:gap-4">
-          <div className="flex items-center justify-center px-1 text-center sm:justify-start sm:px-0 sm:text-left">
-            <div className="text-center">
-              <div className="text-[28px] font-semibold leading-none sm:text-[34px]" style={{ color: theme.accent }}>
-                {averageRating}
+      {reviews.length > 0 ? (
+        <div
+          className="mb-5 grid grid-cols-1 gap-3 rounded-[24px] border bg-white px-4 py-4 shadow-[0_12px_30px_rgba(69,39,34,0.05)] md:grid-cols-[minmax(0,1fr)_auto] md:items-center sm:px-5 sm:py-4"
+          style={{ borderColor: theme.borderSoft }}
+        >
+          <div className="grid grid-cols-3 gap-0 sm:grid-cols-3 sm:gap-4">
+            <div className="flex items-center justify-center px-1 text-center sm:justify-start sm:px-0 sm:text-left">
+              <div className="text-center">
+                <div className="text-[28px] font-semibold leading-none sm:text-[34px]" style={{ color: theme.accent }}>
+                  {averageRating}
+                </div>
+                <div className="mt-1.5 flex items-center justify-center gap-0.5 sm:mt-2">
+                  {[1, 2, 3, 4, 5].map((starIndex) => (
+                    <Star
+                      key={starIndex}
+                      className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${starIndex <= Math.round(Number(averageRating))
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-200"
+                        }`}
+                    />
+                  ))}
+                </div>
+                <p className="mt-1 text-[10px] leading-4 text-[#6b7280] sm:text-[11px]">
+                  {`Based on ${reviewCount} review${reviewCount === 1 ? "" : "s"}`}
+                </p>
               </div>
-              <div className="mt-1.5 flex items-center justify-center gap-0.5 sm:mt-2">
-                {[1, 2, 3, 4, 5].map((starIndex) => (
-                  <Star
-                    key={starIndex}
-                    className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${starIndex <= Math.round(Number(averageRating))
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-200"
-                      }`}
-                  />
-                ))}
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-2 border-l px-2 text-center sm:flex-row sm:items-center sm:justify-start sm:gap-3 sm:border-l sm:px-0 sm:text-left sm:pl-4" style={{ borderColor: theme.borderSoft }}>
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10"
+                style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
+              >
+                <Star className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" />
               </div>
-              <p className="mt-1 text-[10px] leading-4 text-[#6b7280] sm:text-[11px]">
-                Based on {reviewCount} review{reviewCount === 1 ? "" : "s"}
-              </p>
+              <div>
+                <p className="text-[22px] font-semibold leading-none sm:text-[26px]" style={{ color: theme.accent }}>
+                  {recommendedPercent}%
+                </p>
+                <p className="mt-1 text-[10px] leading-4 text-[#6b7280] sm:text-[11px]">
+                  Customers recommended this product
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-2 border-l px-2 text-center sm:flex-row sm:items-center sm:justify-start sm:gap-3 sm:border-l sm:px-0 sm:text-left sm:pl-4" style={{ borderColor: theme.borderSoft }}>
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10"
+                style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
+              >
+                <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] sm:text-[13px] sm:tracking-[0.12em]" style={{ color: theme.accent }}>
+                  Verified
+                </p>
+                <p className="mt-1 text-[10px] leading-4 text-[#6b7280] sm:text-[11px]">
+                  All reviews are from verified buyers
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center gap-2 border-l px-2 text-center sm:flex-row sm:items-center sm:justify-start sm:gap-3 sm:border-l sm:px-0 sm:text-left sm:pl-4" style={{ borderColor: theme.borderSoft }}>
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10"
-              style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
+          <div className="md:pl-4">
+            <button
+              onClick={onWriteReview}
+              data-track-event="write_review_click"
+              data-track-label={productName}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition hover:translate-y-[-1px] md:w-auto"
+              style={{ backgroundColor: theme.primary, color: theme.onPrimary }}
             >
-              <Star className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" />
-            </div>
-            <div>
-              <p className="text-[22px] font-semibold leading-none sm:text-[26px]" style={{ color: theme.accent }}>
-                {recommendedPercent}%
-              </p>
-              <p className="mt-1 text-[10px] leading-4 text-[#6b7280] sm:text-[11px]">
-                Customers recommended this product
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-center gap-2 border-l px-2 text-center sm:flex-row sm:items-center sm:justify-start sm:gap-3 sm:border-l sm:px-0 sm:text-left sm:pl-4" style={{ borderColor: theme.borderSoft }}>
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10"
-              style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
-            >
-              <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] sm:text-[13px] sm:tracking-[0.12em]" style={{ color: theme.accent }}>
-                Verified
-              </p>
-              <p className="mt-1 text-[10px] leading-4 text-[#6b7280] sm:text-[11px]">
-                All reviews are from verified buyers
-              </p>
-            </div>
+              <Star className="h-4 w-4 fill-current" />
+              Write a Review
+            </button>
           </div>
         </div>
+      ) : (
+        <div
+          className="mb-5 flex flex-col gap-5 rounded-[24px] border bg-white px-5 py-5 shadow-[0_12px_30px_rgba(69,39,34,0.05)] sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between"
+          style={{ borderColor: theme.borderSoft }}
+        >
+          <div className="flex items-start gap-4">
+            <div
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
+              style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}
+            >
+              <Star className="h-6 w-6" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-lg font-semibold leading-tight sm:text-xl" style={{ color: theme.heading }}>
+                Be first to try and review
+              </p>
+              <p className="mt-1 text-sm leading-6 text-[#6b7280]">
+                Share your experience with {productName || "this product"} and help the next shopper buy with confidence.
+              </p>
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ backgroundColor: theme.reviewSurface, color: theme.accent }}>
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Verified buyers only
+              </div>
+            </div>
+          </div>
 
-        <div className="md:pl-4">
-          <button
-            onClick={onWriteReview}
-            data-track-event="write_review_click"
-            data-track-label={productName}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition hover:translate-y-[-1px] md:w-auto"
-            style={{ backgroundColor: theme.primary, color: theme.onPrimary }}
-          >
-            <Star className="h-4 w-4 fill-current" />
-            Write a Review
-          </button>
+          <div className="md:pl-4">
+            <button
+              onClick={onWriteReview}
+              data-track-event="write_review_click"
+              data-track-label={productName}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition hover:translate-y-[-1px] md:w-auto"
+              style={{ backgroundColor: theme.primary, color: theme.onPrimary }}
+            >
+              <Star className="h-4 w-4 fill-current" />
+              Write the First Review
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {reviews.length > 0 ? (
         <div className="relative">
@@ -1433,7 +1474,7 @@ const ProductReviewCarouselSection = ({
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full" style={{ backgroundColor: theme.reviewSurface }}>
             <Star className="h-7 w-7" style={{ color: theme.accentSoft }} />
           </div>
-          <p className="text-sm text-gray-500">No reviews yet</p>
+          <p className="text-sm text-gray-500">Be first to try and review</p>
           <button
             onClick={onWriteReview}
             className="mt-4 text-sm font-semibold"
@@ -1915,7 +1956,7 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
           <div className="border-t py-1.5 flex items-center justify-center gap-1.5" style={{ backgroundColor: theme.reviewSurface, borderColor: theme.borderSoft }}>
             <ShieldCheck className="w-3 h-3 flex-shrink-0" style={{ color: theme.accent }} />
             <span className="text-[10px] font-semibold tracking-wide" style={{ color: theme.accent }}>
-              {product.warranty === "manufacturer" ? "18 Months Manufacturer Warranty" : "1 Year Import Warranty"}
+              {product.warranty === "manufacturer" ? "18 Months Warranty" : "1 Year Warranty"}
             </span>
           </div>
         )}
@@ -2957,7 +2998,7 @@ const ProductDetail = () => {
   }, [product]);
   const warrantyButtonLabel = useMemo(() => {
     if (product?.warranty === "manufacturer") return "18 Months Warranty";
-    if (product?.warranty === "import") return "Register for 1 Year Warranty";
+    if (product?.warranty === "import") return "1 Year Warranty";
     return "";
   }, [product?.warranty]);
 
