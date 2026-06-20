@@ -1227,8 +1227,8 @@ const ProductReviewCard = ({ review, theme }) => {
               alt={`${review?.name || "Customer"} review ${imageIndex + 1}`}
               loading="lazy"
               width="320"
-              height="220"
-              className="h-28 w-full rounded-[18px] object-cover sm:h-32"
+              height="320"
+              className="aspect-square w-full rounded-[18px] object-cover"
             />
           ))}
         </div>
@@ -1967,7 +1967,7 @@ const ProductDetail = () => {
 
   // Sticky ATC bar
   const [showStickyBar, setShowStickyBar] = useState(false);
-  const [desktopPriceCardTop, setDesktopPriceCardTop] = useState(164);
+  const [desktopPriceCardTop, setDesktopPriceCardTop] = useState(148);
   const atcButtonsRef = useRef(null);
   const detailsTabsRef = useRef(null);
   const thumbsRef = useRef(null);
@@ -2140,7 +2140,7 @@ const ProductDetail = () => {
   }, []);// re-register when product loads so ref is valid
 
   useEffect(() => {
-    const DESKTOP_DEFAULT_TOP = 164;
+    const DESKTOP_DEFAULT_TOP = 148;
     const FOOTER_GAP = 24;
 
     const updateDesktopPriceCardPosition = () => {
