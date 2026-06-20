@@ -6,6 +6,7 @@ import { useProducts } from "../admin/context/ProductContext";
 import OptimizedImage from "./OptimizedImage";
 import { MiniDividerStrip } from "./MiniDivider";
 import { getProductSlug } from "../utils/slugify";
+import { BEST_SELLER_PRODUCT_NAMES } from "../constants/bestSellerProducts";
 
 const Nav = lazy(() => import("./Nav"));
 const SearchBar = lazy(() =>
@@ -17,20 +18,6 @@ const DESKTOP_MAIN_HEADER_HEIGHT = 68;
 const DESKTOP_SUBHEADER_HEIGHT = 42;
 const MOBILE_MAIN_HEADER_HEIGHT = 72;
 const MOBILE_SEARCH_PANEL_HEIGHT = 76;
-const BEST_SELLER_PRODUCT_NAMES = [
-  "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
-  "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
-  "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening",
-  "Ilika Blackhead Remover - Bubble Pro | For Deep Pore Cleansing, Blackhead Removal & Hydrated Glowing Skin",
-  "Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow",
-  "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask",
-  "Ilika Hydra Gel Moisturizer | | Lightweight Face Gel for Hydration, Glow & Skin Barrier Support",
-  "Ilika High Frequency Therapy Wand | For Acne Treatment, Skin Rejuvenation, Hair Growth & Scalp Care",
-  "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
-  "Ilika Airwrap Multi-Styler Kit | 5-in-1 Hair Styling Tool for Curling, Straightening, Volumizing & Drying",
-  "Ilika 10 Herbs Herbal Hair Growth Oil | For Hair Fall Control, Hair Growth & Strong Healthy Hair",
-  "Ilika Black Seed Hair Oil | For Premature Grey Hair & Hair Fall Control | Nourishing Scalp Care",
-];
 
 const getProductPreviewImage = (product = {}) =>
   product?.variants?.[0]?.images?.[0] ||
@@ -85,10 +72,10 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
       ...baseDesktopSubheaderLinks,
       {
         label: "Best Seller",
-        to: "/products",
+        to: "/best-seller",
         children: bestSellerChildren.length
           ? bestSellerChildren
-          : [{ label: "View All Products", to: "/products" }],
+          : [{ label: "View Best Sellers", to: "/best-seller" }],
       },
     ];
   }, [products]);

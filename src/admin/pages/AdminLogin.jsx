@@ -1,8 +1,8 @@
-import React from "react";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
+import { markCurrentPageAsLastVisited, trackVisitorEvent } from "../../utils/visitorAnalytics";
 
 const AdminLogin = () => {
   const { login } = useAdminAuth();
@@ -12,12 +12,25 @@ const AdminLogin = () => {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    trackVisitorEvent({
+      eventType: "page_view",
+      pageUrl: typeof window !== "undefined" ? window.location.href : "/admin/login",
+    });
+    markCurrentPageAsLastVisited();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     const success = await login(form.username, form.password);
     if (success) {
+      trackVisitorEvent({
+        eventType: "login",
+        pageUrl: typeof window !== "undefined" ? window.location.href : "/admin/login",
+      });
+      markCurrentPageAsLastVisited();
       navigate("/admin");
     } else {
       setError("Invalid username or password");

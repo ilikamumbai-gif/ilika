@@ -18,9 +18,9 @@ const ProductList = ({
   let filteredProducts = products.filter((item) => item.isActive !== false);
 
   if (productNames.length > 0) {
-    filteredProducts = filteredProducts.filter((item) =>
-      productNames.includes(item.name)
-    );
+    filteredProducts = productNames
+      .map((name) => filteredProducts.find((item) => item.name === name))
+      .filter(Boolean);
   } else if (categoryId) {
     filteredProducts = filteredProducts.filter((item) =>
       item.categoryIds?.includes(categoryId)
@@ -46,7 +46,7 @@ const ProductList = ({
   }
 
   return (
-    <section className="w-full py-6 sm:py-6">
+    <section className="w-full py-2 sm:py-3">
       <div className="max-w-7xl mx-auto px-4">
         {mobileScroll && (
           <div className="flex gap-4 overflow-x-auto pb-2 sm:hidden scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
