@@ -54,8 +54,13 @@ const ComboDetail = () => {
     ? {
         "@context": "https://schema.org",
         "@type": "Product",
+        "@id": `https://ilika.in${comboPath}#product`,
+        url: `https://ilika.in${comboPath}`,
+        mainEntityOfPage: `https://ilika.in${comboPath}`,
         name: combo.name,
-        image: images.length ? images : [primaryImage],
+        image: (images.length ? images : [primaryImage]).map((image) =>
+          /^https?:\/\//i.test(String(image || "")) ? image : `https://ilika.in${String(image || "").startsWith("/") ? image : `/${image}`}`
+        ),
         description: comboDescription,
         brand: {
           "@type": "Brand",
@@ -76,6 +81,7 @@ const ComboDetail = () => {
     title: combo ? `${combo.name} | Ilika Combo` : "Combo Details | Ilika",
     description: comboDescription,
     path: comboPath,
+    canonical: comboPath,
     image: primaryImage,
     type: combo ? "product" : "website",
     robots: combo ? "index, follow" : "noindex, follow",

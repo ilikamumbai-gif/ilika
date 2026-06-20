@@ -211,7 +211,7 @@ const fetchGoogleAdsAccessToken = async () => {
   return data.access_token;
 };
 
-const VISITOR_ANALYTICS_EVENT_TYPES = new Set(["page_view", "product_view", "add_to_cart"]);
+const VISITOR_ANALYTICS_EVENT_TYPES = new Set(["page_view", "product_view", "add_to_cart", "checkout", "login"]);
 const VISITOR_LOCATION_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
 const VISITOR_ANALYTICS_RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const VISITOR_ANALYTICS_RATE_LIMIT_MAX = 120;
@@ -4393,7 +4393,7 @@ app.post("/api/visitor-analytics", async (req, res) => {
       return res.status(400).json({ error: "pageUrl is required" });
     }
 
-    if (normalizedEventType !== "page_view" && !normalizedProductId && !normalizedProductName) {
+    if (["product_view", "add_to_cart"].includes(normalizedEventType) && !normalizedProductId && !normalizedProductName) {
       return res.status(400).json({ error: "productId or productName is required for this eventType" });
     }
 
@@ -4691,6 +4691,8 @@ app.get("/api/visitor-analytics", async (req, res) => {
           pageViews: 0,
           productViews: 0,
           addToCarts: 0,
+          checkouts: 0,
+          logins: 0,
           lastSeenAt: null,
         });
       }
@@ -4701,6 +4703,8 @@ app.get("/api/visitor-analytics", async (req, res) => {
       if (event.eventType === "page_view") entry.pageViews += 1;
       if (event.eventType === "product_view") entry.productViews += 1;
       if (event.eventType === "add_to_cart") entry.addToCarts += 1;
+      if (event.eventType === "checkout") entry.checkouts += 1;
+      if (event.eventType === "login") entry.logins += 1;
       if (!entry.lastSeenAt || new Date(event.createdAt) > new Date(entry.lastSeenAt)) {
         entry.lastSeenAt = event.createdAt;
       }
@@ -4747,7 +4751,7 @@ app.get("/api/visitor-analytics", async (req, res) => {
         acc[event.eventType] = (acc[event.eventType] || 0) + 1;
         return acc;
       },
-      { page_view: 0, product_view: 0, add_to_cart: 0 }
+      { page_view: 0, product_view: 0, add_to_cart: 0, checkout: 0, login: 0 }
     );
 
     const uniqueVisitors = new Set(filteredEvents.map((event) => event.visitorId).filter(Boolean));
@@ -4773,6 +4777,8 @@ app.get("/api/visitor-analytics", async (req, res) => {
             pageViews: entry.pageViews,
             productViews: entry.productViews,
             addToCarts: entry.addToCarts,
+            checkouts: entry.checkouts,
+            logins: entry.logins,
             lastSeenAt: entry.lastSeenAt,
           }))
           .sort(

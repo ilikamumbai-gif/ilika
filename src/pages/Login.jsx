@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import authImage from "../assets/Images/Banner 2.webp";
 import logo from "/Images/logo2.webp";
 import { Eye, EyeOff } from "lucide-react"; // ✅ ICONS
+import { trackVisitorEvent } from "../utils/visitorAnalytics";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -43,6 +44,12 @@ const Login = () => {
     });
   };
 
+  const trackSuccessfulLogin = () =>
+    trackVisitorEvent({
+      eventType: "login",
+      pageUrl: window.location.href,
+    });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -52,6 +59,7 @@ const Login = () => {
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
       } else {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
+        trackSuccessfulLogin();
       }
       await saveUserToBackend(userCredential.user);
       redirectAfterLogin();
@@ -63,6 +71,7 @@ const Login = () => {
   const handleGoogleAuth = async () => {
     try {
       const result = await signInWithGoogle();
+      trackSuccessfulLogin();
       await saveUserToBackend(result.user);
       redirectAfterLogin();
     } catch (err) {

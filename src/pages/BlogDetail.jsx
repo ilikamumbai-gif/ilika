@@ -104,7 +104,7 @@ const renderSectionBlock = (section, index) => {
   if (section.type === "content-full") {
     return (
       <div key={`${section.id || "section"}_${index}`} className="py-1">
-        <div className="prose max-w-none prose-sm sm:prose-lg prose-headings:text-[#1C371C] prose-p:text-[#385238] prose-p:leading-7 sm:prose-p:leading-8 prose-li:text-[#385238] prose-a:text-[#801f1f]">
+        <div className="prose max-w-none overflow-hidden prose-sm sm:prose-lg prose-headings:break-words prose-headings:text-[#1C371C] prose-p:break-words prose-p:text-[#385238] prose-p:leading-7 sm:prose-p:leading-8 prose-li:break-words prose-li:text-[#385238] prose-a:break-all prose-a:text-[#801f1f] prose-img:w-full prose-img:rounded-2xl prose-img:object-cover prose-video:w-full prose-video:rounded-2xl prose-iframe:w-full prose-table:block prose-table:w-full prose-table:overflow-x-auto">
           <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
         </div>
       </div>
@@ -128,7 +128,7 @@ const renderSectionBlock = (section, index) => {
 
   const contentEl = (
     <div className="py-1">
-      <div className="prose max-w-none prose-sm sm:prose-lg prose-headings:text-[#1C371C] prose-p:text-[#385238] prose-p:leading-7 sm:prose-p:leading-8 prose-li:text-[#385238] prose-a:text-[#801f1f]">
+      <div className="prose max-w-none overflow-hidden prose-sm sm:prose-lg prose-headings:break-words prose-headings:text-[#1C371C] prose-p:break-words prose-p:text-[#385238] prose-p:leading-7 sm:prose-p:leading-8 prose-li:break-words prose-li:text-[#385238] prose-a:break-all prose-a:text-[#801f1f] prose-img:w-full prose-img:rounded-2xl prose-img:object-cover prose-video:w-full prose-video:rounded-2xl prose-iframe:w-full prose-table:block prose-table:w-full prose-table:overflow-x-auto">
         <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
       </div>
     </div>
@@ -459,7 +459,7 @@ const BlogDetail = () => {
         <Header />
         <CartDrawer />
 
-        <main className="mx-auto max-w-6xl px-3 py-6 sm:px-4 sm:py-10">
+        <main className="mx-auto max-w-6xl overflow-x-hidden px-3 py-6 sm:px-4 sm:py-10">
           <Link
             to="/blog"
             className="inline-flex items-center gap-1 rounded-full border border-[#d3ddd3] bg-white px-4 py-2 text-sm font-medium text-[#1C371C] transition hover:bg-[#f2f7f2]"
@@ -470,7 +470,7 @@ const BlogDetail = () => {
           <article className="mt-5 space-y-8 sm:mt-6 sm:space-y-10">
             <header className="border-b border-[#e2ece2] pb-6 sm:pb-8">
               <Heading level="h1" heading={blog.title} align="left" />
-              <p className="mt-3 text-xs leading-6 text-[#5f705f] sm:mt-4 sm:text-sm">
+              <p className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-xs leading-6 text-[#5f705f] sm:mt-4 sm:text-sm">
                 {formattedDate || "Latest"} | {blog.author || "Ilika Team"} | {comments.length} comments
               </p>
             </header>
@@ -487,14 +487,14 @@ const BlogDetail = () => {
                       <button
                         type="button"
                         onClick={handleAddLinkedProductToCart}
-                        className="inline-flex w-full items-center justify-center rounded-[10px] border border-[#b94343] bg-[#b94343] px-6 py-3.5 text-[15px] font-bold text-white transition hover:bg-[#a83b3b] sm:min-w-[200px] sm:w-auto sm:py-4 sm:text-base"
+                        className="inline-flex min-h-[52px] w-full items-center justify-center rounded-[10px] border border-[#b94343] bg-[#b94343] px-5 py-3.5 text-center text-[15px] font-bold text-white transition hover:bg-[#a83b3b] sm:min-w-[200px] sm:w-auto sm:py-4 sm:text-base"
                       >
                         Add To Cart
                       </button>
                     ) : null}
                     <Link
                       to={blogInternalLink}
-                      className="inline-flex w-full items-center justify-center rounded-[10px] border border-[#1f1f1f] bg-white px-6 py-3.5 text-[15px] font-bold text-[#1f1f1f] transition hover:bg-[#f6f2ef] sm:min-w-[200px] sm:w-auto sm:py-4 sm:text-base"
+                      className="inline-flex min-h-[52px] w-full items-center justify-center rounded-[10px] border border-[#1f1f1f] bg-white px-5 py-3.5 text-center text-[15px] font-bold text-[#1f1f1f] transition hover:bg-[#f6f2ef] sm:min-w-[200px] sm:w-auto sm:py-4 sm:text-base"
                     >
                       Visit Product
                     </Link>
@@ -519,30 +519,95 @@ const BlogDetail = () => {
             {contentSections.map((section, index) => renderSectionBlock(section, index))}
 
             {blogInternalLinks.length > 0 && (
-              <section className="rounded-[28px] border border-[#e2ece2] bg-[#f8fbf8] p-5 sm:p-6">
-                <div className="flex flex-col gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#801f1f]">
-                    More Internal Links
-                  </p>
-                  <h2 className="text-xl font-semibold text-[#1C371C] sm:text-2xl">
-                    Continue Reading
-                  </h2>
-                  <p className="text-sm leading-6 text-[#5f705f]">
-                    Explore more pages connected to this topic.
-                  </p>
+              <section className="relative overflow-hidden rounded-[32px] border border-[#dfe8df] bg-[linear-gradient(135deg,#f7fbf7_0%,#eef5ee_55%,#fdf8f4_100%)] p-5 shadow-[0_18px_50px_rgba(28,55,28,0.06)] sm:p-7">
+                <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-40 bg-[radial-gradient(circle_at_top,_rgba(185,67,67,0.12),_transparent_65%)] lg:block" />
+
+                <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="max-w-2xl">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8d3434]">
+                      Continue Exploring
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <h2 className="text-xl font-semibold tracking-tight text-[#163016] sm:text-2xl lg:text-[2rem]">
+                        Related Reads & Product Pages
+                      </h2>
+                      <span className="rounded-full border border-[#d4dfd4] bg-white/80 px-3 py-1 text-xs font-semibold text-[#4f654f]">
+                        {blogInternalLinks.length} links
+                      </span>
+                    </div>
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-[#587058] sm:text-[15px]">
+                      Jump into the next useful page without losing context. These links are picked to keep the journey relevant and easy to follow.
+                    </p>
+                  </div>
+
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  {blogInternalLinks.map((item) => (
+                <div className="relative mt-6 flex flex-wrap gap-2.5 sm:gap-3">
+                  {blogInternalLinks.map((item, index) => (
                     <Link
-                      key={item.id}
+                      key={`${item.id}-pill`}
                       to={item.url}
-                      className="group flex items-center justify-between gap-3 rounded-2xl border border-[#d9e4d9] bg-white px-4 py-4 text-sm font-semibold text-[#1C371C] transition hover:-translate-y-0.5 hover:border-[#b8cdb8] hover:bg-[#fdfefe]"
+                      className="group inline-flex max-w-full items-center gap-2.5 rounded-full border border-[#d7e2d7] bg-white px-3.5 py-2.5 text-xs font-semibold text-[#1C371C] shadow-[0_8px_20px_rgba(28,55,28,0.05)] transition duration-300 hover:-translate-y-0.5 hover:border-[#bfd1bf] hover:bg-[#fcfffc] hover:shadow-[0_12px_24px_rgba(28,55,28,0.08)] sm:gap-3 sm:px-5 sm:py-3 sm:text-sm"
                     >
-                      <span>{item.label}</span>
-                      <span className="text-[#801f1f] transition group-hover:translate-x-0.5">{"->"}</span>
+                      <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-[#f4e5e2] px-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#8d3434]">
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0 break-words leading-tight">{item.label}</span>
+                      <span className="shrink-0 text-[#8d3434] transition group-hover:translate-x-0.5">-&gt;</span>
                     </Link>
                   ))}
+                </div>
+
+                <div className="hidden relative mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+                  <Link
+                    to={blogInternalLinks[0].url}
+                    className="group rounded-[28px] border border-[#d9e4d9] bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-[#bfd1bf] hover:shadow-[0_16px_35px_rgba(28,55,28,0.08)] sm:p-6"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <span className="inline-flex rounded-full bg-[#f4e5e2] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8d3434]">
+                          Featured Link
+                        </span>
+                        <h3 className="mt-4 text-xl font-semibold leading-snug text-[#1C371C] sm:text-2xl">
+                          {blogInternalLinks[0].label}
+                        </h3>
+                        <p className="mt-3 max-w-md text-sm leading-6 text-[#5f705f]">
+                          Open this page for a closely connected product or topic that naturally extends what you just read.
+                        </p>
+                      </div>
+                      <span className="grid h-11 w-11 shrink-0 place-content-center rounded-full border border-[#e2ece2] bg-[#f8fbf8] text-lg text-[#8d3434] transition group-hover:translate-x-1">
+                        →
+                      </span>
+                    </div>
+                  </Link>
+
+                  <div className="grid gap-3">
+                    {blogInternalLinks.slice(1).map((item, index) => (
+                      <Link
+                        key={item.id}
+                        to={item.url}
+                        className="group flex items-center justify-between gap-4 rounded-2xl border border-[#d9e4d9] bg-white/95 px-4 py-4 transition duration-300 hover:-translate-y-0.5 hover:border-[#bfd1bf] hover:bg-white hover:shadow-[0_12px_28px_rgba(28,55,28,0.06)] sm:px-5"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8d3434]">
+                            Link {String(index + 2).padStart(2, "0")}
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-[#1C371C] sm:text-[15px]">
+                            {item.label}
+                          </p>
+                        </div>
+                        <span className="shrink-0 text-base text-[#8d3434] transition group-hover:translate-x-1">
+                          →
+                        </span>
+                      </Link>
+                    ))}
+
+                    {blogInternalLinks.length === 1 ? (
+                      <div className="rounded-2xl border border-dashed border-[#d6e0d6] bg-white/60 px-4 py-4 text-sm leading-6 text-[#6b7f6b]">
+                        More related links can be added from the admin blog editor, and they will appear here automatically.
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </section>
             )}
@@ -571,7 +636,7 @@ const BlogDetail = () => {
 
               <button
                 disabled={posting}
-                className="rounded-xl bg-[#1C371C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163016] disabled:opacity-60"
+                className="w-full rounded-xl bg-[#1C371C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163016] disabled:opacity-60 sm:w-auto"
               >
                 {posting ? "Posting..." : "Post Comment"}
               </button>

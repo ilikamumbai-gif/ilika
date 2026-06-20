@@ -8,6 +8,8 @@ import {
   Eye,
   MousePointerClick,
   Users,
+  CreditCard,
+  LogIn,
 } from "lucide-react";
 import AdminLayout from "../../components/AdminLayout";
 import { useAdminAuth } from "../../context/AdminAuthContext";
@@ -195,6 +197,8 @@ const buildActivityByLocationRows = (events = []) => {
         pageViews: 0,
         productViews: 0,
         addToCarts: 0,
+        checkouts: 0,
+        logins: 0,
       });
     }
 
@@ -204,6 +208,8 @@ const buildActivityByLocationRows = (events = []) => {
     if (event?.eventType === "page_view") group.pageViews += 1;
     if (event?.eventType === "product_view") group.productViews += 1;
     if (event?.eventType === "add_to_cart") group.addToCarts += 1;
+    if (event?.eventType === "checkout") group.checkouts += 1;
+    if (event?.eventType === "login") group.logins += 1;
   });
 
   return Array.from(groups.values())
@@ -214,6 +220,8 @@ const buildActivityByLocationRows = (events = []) => {
       pageViews: group.pageViews,
       productViews: group.productViews,
       addToCarts: group.addToCarts,
+      checkouts: group.checkouts,
+      logins: group.logins,
     }))
     .sort((a, b) => b.eventCount - a.eventCount || b.visitorCount - a.visitorCount || a.locationLabel.localeCompare(b.locationLabel));
 };
@@ -294,7 +302,7 @@ const buildDerivedSummary = (events = []) => {
       }
       return accumulator;
     },
-    { page_view: 0, product_view: 0, add_to_cart: 0 }
+    { page_view: 0, product_view: 0, add_to_cart: 0, checkout: 0, login: 0 }
   );
 
   return {
@@ -460,7 +468,7 @@ const LocationActivityCard = ({ rows = [], loading }) => (
       </div>
       <div>
         <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-gray-800">Activity by Location</h2>
-        <p className="text-xs text-gray-500">Location-wise event counts for pages, product views, and cart activity.</p>
+        <p className="text-xs text-gray-500">Location-wise event counts for pages, product views, cart activity, checkouts, and logins.</p>
       </div>
     </div>
 
@@ -480,13 +488,15 @@ const LocationActivityCard = ({ rows = [], loading }) => (
                 </p>
               </div>
               <span className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-blue-700">
-                {row.pageViews} / {row.productViews} / {row.addToCarts}
+                {row.pageViews} / {row.productViews} / {row.addToCarts} / {row.checkouts} / {row.logins}
               </span>
             </div>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-600">
               <span className="rounded-full bg-white px-2.5 py-1">page_view: {row.pageViews}</span>
               <span className="rounded-full bg-white px-2.5 py-1">product_view: {row.productViews}</span>
               <span className="rounded-full bg-white px-2.5 py-1">add_to_cart: {row.addToCarts}</span>
+              <span className="rounded-full bg-white px-2.5 py-1">checkout: {row.checkouts}</span>
+              <span className="rounded-full bg-white px-2.5 py-1">login: {row.logins}</span>
             </div>
           </div>
         ))
@@ -512,7 +522,7 @@ const LocationAnalytics = () => {
       totalVisitors: 0,
       totalSessions: 0,
       totalEvents: 0,
-      eventCounts: { page_view: 0, product_view: 0, add_to_cart: 0 },
+      eventCounts: { page_view: 0, product_view: 0, add_to_cart: 0, checkout: 0, login: 0 },
       byCountry: [],
       byState: [],
       byCity: [],
@@ -652,7 +662,7 @@ const LocationAnalytics = () => {
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">Location Analytics</h1>
         <p className="mt-0.5 text-sm text-gray-400">
-          Anonymous visitor activity by page, product, cart action, and approximate IP-based location.
+          Anonymous visitor activity by page, product, cart action, checkout, login, and approximate IP-based location.
         </p>
       </div>
 
@@ -722,6 +732,8 @@ const LocationAnalytics = () => {
               <option value="page_view">page_view</option>
               <option value="product_view">product_view</option>
               <option value="add_to_cart">add_to_cart</option>
+              <option value="checkout">checkout</option>
+              <option value="login">login</option>
             </select>
           </label>
 
@@ -789,7 +801,7 @@ const LocationAnalytics = () => {
         </div>
       ) : null}
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
         <StatCard
           title="Total visitors"
           value={loading ? "..." : visibleSummary.totalVisitors.toLocaleString("en-IN")}
@@ -817,6 +829,20 @@ const LocationAnalytics = () => {
           hint="Cart actions by anonymous visitors"
           icon={ShoppingCart}
           tone="emerald"
+        />
+        <StatCard
+          title="Checkouts"
+          value={loading ? "..." : visibleSummary.eventCounts.checkout.toLocaleString("en-IN")}
+          hint="Checkout page visits"
+          icon={CreditCard}
+          tone="amber"
+        />
+        <StatCard
+          title="Logins"
+          value={loading ? "..." : visibleSummary.eventCounts.login.toLocaleString("en-IN")}
+          hint="Successful login events"
+          icon={LogIn}
+          tone="blue"
         />
       </div>
 

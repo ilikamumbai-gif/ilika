@@ -3207,7 +3207,7 @@ const ProductDetail = () => {
   }), [product?.name, canonicalPath]);
 
   const productJsonLd = useMemo(() => {
-    if (!product || product.isActive === false) return null;
+    if (!product || product.isActive === false || !productMatchesCurrentRoute) return null;
 
     const categoryValue = Array.isArray(product?.seoCategory)
       ? product.seoCategory.filter(Boolean).join(", ")
@@ -3218,13 +3218,26 @@ const ProductDetail = () => {
       : String(seoProductKeywords || "").trim();
 
     const normalizedPrice = Number(price || 0) > 0 ? Number(price).toFixed(2) : null;
+    const productUrl = `https://ilika.in${canonicalPath}`;
+    const reviewCount = productReviews.length;
+    const averageRating = reviewCount
+      ? Number(
+          (
+            productReviews.reduce((sum, review) => sum + Number(review?.rating || 0), 0) /
+            reviewCount
+          ).toFixed(1)
+        )
+      : null;
 
     return {
       "@context": "https://schema.org",
       "@type": "Product",
+      "@id": `${productUrl}#product`,
+      url: productUrl,
+      mainEntityOfPage: productUrl,
       name: String(product?.name || "").trim(),
       description: seoProductDescription,
-      image: seoProductImage ? [seoProductImage] : undefined,
+      image: seoProductImage ? [toAbsoluteUrl(seoProductImage)] : undefined,
       brand: {
         "@type": "Brand",
         name: "Ilika",
@@ -3232,10 +3245,18 @@ const ProductDetail = () => {
       category: categoryValue || undefined,
       keywords: keywordValue || undefined,
       sku: String(product?._id || product?.id || product?.docId || "").trim() || undefined,
+      aggregateRating:
+        averageRating && reviewCount
+          ? {
+              "@type": "AggregateRating",
+              ratingValue: averageRating,
+              reviewCount,
+            }
+          : undefined,
       offers: normalizedPrice
         ? {
             "@type": "Offer",
-            url: `https://ilika.in${canonicalPath}`,
+            url: productUrl,
             priceCurrency: "INR",
             price: normalizedPrice,
             availability: isOutOfStock
@@ -3253,6 +3274,8 @@ const ProductDetail = () => {
     seoProductImage,
     canonicalPath,
     isOutOfStock,
+    productMatchesCurrentRoute,
+    productReviews,
   ]);
 
   useSeo({
@@ -3264,7 +3287,10 @@ const ProductDetail = () => {
     type: "product",
     robots: product && product.isActive !== false ? "index, follow" : "noindex, follow",
     keywords: seoProductKeywords,
-    jsonLd: product && product.isActive !== false ? [productBreadcrumbJsonLd, productJsonLd].filter(Boolean) : null,
+    jsonLd:
+      product && product.isActive !== false && productMatchesCurrentRoute
+        ? [productBreadcrumbJsonLd, productJsonLd].filter(Boolean)
+        : null,
   });
 
   useEffect(() => {

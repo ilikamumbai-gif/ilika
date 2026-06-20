@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { trackInitiateCheckout, trackPurchase, trackAddPaymentInfo } from "../utils/pixel";
 import { trackGtmBeginCheckout, savePendingGtmPurchase } from "../utils/gtm";
+import { trackVisitorEvent } from "../utils/visitorAnalytics";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, signOut } from "firebase/auth";
 import { auth, firebaseConfig } from "../firebase/firebaseConfig";
@@ -241,6 +242,13 @@ const Checkout = () => {
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCheckoutCouponCode, setAppliedCheckoutCouponCode] = useState("");
   const [couponFeedback, setCouponFeedback] = useState({ type: "", text: "" });
+
+  useEffect(() => {
+    trackVisitorEvent({
+      eventType: "checkout",
+      pageUrl: window.location.href,
+    });
+  }, []);
 
   // ─── OTP STATE ────────────────────────────────────────────────────────────
   const [otpSent, setOtpSent] = useState(false);

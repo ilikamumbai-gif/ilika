@@ -8,7 +8,7 @@ const ADD_TO_CART_CACHE_KEY = "ilika.analytics.addToCart";
 const LOCATION_CACHE_KEY = "ilika.analytics.location";
 const PUBLIC_IP_CACHE_KEY = "ilika.analytics.publicIp";
 
-const EVENT_TYPES = new Set(["page_view", "product_view", "add_to_cart"]);
+const EVENT_TYPES = new Set(["page_view", "product_view", "add_to_cart", "checkout", "login"]);
 const ADD_TO_CART_DEBOUNCE_MS = 1500;
 
 const isBrowser = typeof window !== "undefined";
