@@ -3946,10 +3946,10 @@ const ProductDetail = () => {
                               style={{ borderColor: detailTheme.accentLine, backgroundColor: "#fff" }}
                             >
                               <div className="min-w-0 flex-1">
-                                <p className="text-[11px] font-semibold tracking-[0.08em]" style={{ color: detailTheme.accent }}>
+                                <p className="text-[11px] font-semibold tracking-[0.08em] sm:text-[8px]" style={{ color: detailTheme.accent }}>
                                   After Coupon Applied
                                 </p>
-                                <p className="mt-1 text-[20px] font-bold leading-none" style={{ color: detailTheme.heading }}>
+                                <p className="mt-1 text-[18px] font-bold leading-none" style={{ color: detailTheme.heading }}>
                                   {previewCouponDisplayPercent > 0
                                     ? `${Math.round(previewCouponDisplayPercent)}% OFF`
                                     : visibleAssignedCoupon.code}
@@ -4280,10 +4280,10 @@ const ProductDetail = () => {
                           style={{ borderColor: detailTheme.accentLine, backgroundColor: "#fff" }}
                         >
                           <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: detailTheme.accent }}>
+                            <p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: detailTheme.accent }}>
                               After Coupon applied
                             </p>
-                            <p className="mt-1 text-[13px] font-semibold leading-4" style={{ color: detailTheme.heading }}>
+                            <p className="mt-1 text-[15px] font-semibold leading-4" style={{ color: detailTheme.heading }}>
                               {previewCouponDisplayPercent > 0
                                 ? `${Math.round(previewCouponDisplayPercent)}% OFF`
                                 : visibleAssignedCoupon.code}
