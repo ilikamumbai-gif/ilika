@@ -860,78 +860,95 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    BEFORE / AFTER SLIDER
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-const BeforeAfterSlider = ({
+const BeforeAfterSlider = React.memo(({
   beforeImage, afterImage,
   beforeLabel = "Before", afterLabel = "After"
 }) => {
-  const beforeMaskRef = useRef(null);
-  const dividerRef = useRef(null);
+  const sliderRootRef = useRef(null);
+  const frameRef = useRef(null);
+  const pendingPositionRef = useRef(50);
 
   const applySliderPosition = useCallback((nextPos) => {
     const clampedPos = Math.min(100, Math.max(0, Number(nextPos || 0)));
+    pendingPositionRef.current = clampedPos;
 
-    if (beforeMaskRef.current) {
-      beforeMaskRef.current.style.clipPath = `inset(0 ${100 - clampedPos}% 0 0)`;
-    }
-
-    if (dividerRef.current) {
-      dividerRef.current.style.left = `calc(${clampedPos}% - 1px)`;
+    if (sliderRootRef.current) {
+      sliderRootRef.current.style.setProperty("--before-after-position", `${clampedPos}%`);
     }
   }, []);
 
   useEffect(() => {
     applySliderPosition(50);
+
+    return () => {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
   }, [applySliderPosition]);
 
   const handlePositionInput = useCallback((event) => {
-    applySliderPosition(event.target.value);
+    pendingPositionRef.current = event.target.value;
+
+    if (frameRef.current) return;
+
+    frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = null;
+      applySliderPosition(pendingPositionRef.current);
+    });
   }, [applySliderPosition]);
 
   return (
     <div
+      ref={sliderRootRef}
       className="relative w-full overflow-hidden rounded-2xl shadow-md select-none"
-      style={{ aspectRatio: "16/12", userSelect: "none", WebkitUserSelect: "none" }}
+      style={{
+        "--before-after-position": "50%",
+        aspectRatio: "16/12",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+      }}
     >
       {/* AFTER - full background */}
-      <img loading="lazy"
+      <img
+        loading="lazy"
         src={afterImage}
         alt={afterLabel}
         width="1200"
         height="900"
         draggable={false}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        className="absolute inset-0 h-full w-full object-cover pointer-events-none"
       />
 
-      {/* BEFORE - clipped from the right using clip-path */}
+      {/* BEFORE - clipped with a width mask so dragging stays smoother */}
       <div
-        ref={beforeMaskRef}
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-y-0 left-0 overflow-hidden pointer-events-none"
         style={{
-          clipPath: "inset(0 50% 0 0)",
-          willChange: "clip-path"
+          width: "var(--before-after-position)",
+          willChange: "width",
         }}
       >
-        <img loading="lazy"
+        <img
+          loading="lazy"
           src={beforeImage}
           alt={beforeLabel}
           width="1200"
           height="900"
           draggable={false}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 h-full w-full min-w-full max-w-none object-cover"
         />
       </div>
 
       {/* DIVIDER LINE */}
       <div
-        ref={dividerRef}
-        className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none"
+        className="absolute top-0 bottom-0 w-[2px] -translate-x-1/2 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none"
         style={{
-          left: "calc(50% - 1px)",
-          willChange: "left"
+          left: "var(--before-after-position)",
+          willChange: "left",
         }}
       >
         {/* HANDLE CIRCLE */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 bg-white rounded-full shadow-xl flex items-center justify-center border border-gray-100 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white shadow-xl pointer-events-none">
           <ChevronLeft className="w-3 h-3 text-[#801f1f]" />
           <ChevronRight className="w-3 h-3 text-[#801f1f]" />
         </div>
@@ -952,12 +969,13 @@ const BeforeAfterSlider = ({
         step="1"
         defaultValue="50"
         onInput={handlePositionInput}
+        onChange={handlePositionInput}
         className="absolute inset-0 z-10 h-full w-full cursor-ew-resize opacity-0"
         aria-label="Compare before and after image"
       />
     </div>
   );
-};
+});
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    VIDEO EMBED URL HELPER
@@ -3804,12 +3822,12 @@ const ProductDetail = () => {
                             active
                               ? {
                                 borderColor: detailTheme.accent,
-                                backgroundColor: detailTheme.isDefaultWhite ? "#fffafa" : hexToRgba(detailTheme.accentSoft, 0.14),
+                                backgroundColor: detailTheme.isDefaultWhite ? "#fffafa" : "#ffffff",
                                 boxShadow: `0 10px 24px ${hexToRgba(detailTheme.accentSoft, 0.22)}`,
                               }
                               : {
                                 borderColor: detailTheme.borderSoft,
-                                backgroundColor: "#fff",
+                                backgroundColor: detailTheme.isDefaultWhite ? "#fff" : detailTheme.pageBg,
                               }
                           }
                         >
@@ -4411,7 +4429,11 @@ const ProductDetail = () => {
               </div>
               <div className="space-y-8 sm:space-y-10">
                 {beforeAfterPairs.map((pair, idx) => (
-                  <div key={idx} className="grid grid-cols-1 items-center gap-6 sm:gap-8 lg:grid-cols-2">
+                  <div
+                    key={idx}
+                    className="grid grid-cols-1 items-center gap-6 sm:gap-8 lg:grid-cols-2"
+                    style={{ contentVisibility: "auto", containIntrinsicSize: "760px" }}
+                  >
                     <div className={idx % 2 === 1 ? "lg:order-2" : ""}>
                       <BeforeAfterSlider beforeImage={pair.before} afterImage={pair.after} beforeLabel={pair.beforeLabel || "Before"} afterLabel={pair.afterLabel || "After"} />
                       <p className="mt-2 text-center text-[11px] text-gray-400 sm:text-xs"> ← Drag slider to compare → </p>
