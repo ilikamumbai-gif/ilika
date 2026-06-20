@@ -82,13 +82,8 @@ const formatDebugLocation = (location = {}) => {
   return [location?.state, location?.country].filter(Boolean).join(", ") || "none";
 };
 
-const isIndiaLabel = (label = "") => {
-  const normalized = String(label || "").trim().toLowerCase();
-  return normalized === "india" || normalized === "in";
-};
-
 const DEFAULT_LOCATION_LIST_LIMIT = 5;
-const BLOCKED_IPS = new Set(["160.25.128.77"]);
+const BLOCKED_IPS = new Set(["160.25.128.77", "160.25.128.43"]);
 
 const normalizeText = (value) => String(value || "").trim();
 
@@ -374,7 +369,30 @@ const buildLocationAnalyticsCsv = (events = []) => {
   return [headers, ...rows].map((row) => row.map(escapeCsvValue).join(",")).join("\n");
 };
 
-const StatCard = ({ title, value, hint, icon: Icon, tone = "pink" }) => {
+const buildRecentVisitorRows = (events = [], limit = 25) => {
+  const seenVisitors = new Set();
+  const rows = [];
+
+  for (const event of events) {
+    const visitorKey =
+      normalizeText(event?.visitorId) ||
+      normalizeText(event?.sessionId) ||
+      normalizeText(event?.id) ||
+      `event-${rows.length}`;
+
+    if (seenVisitors.has(visitorKey)) continue;
+
+    seenVisitors.add(visitorKey);
+    rows.push(event);
+
+    if (rows.length >= limit) break;
+  }
+
+  return rows;
+};
+
+const StatCard = ({ title, value, hint, icon, tone = "pink" }) => {
+  const Icon = icon;
   const tones = {
     pink: "bg-pink-50 text-pink-600",
     blue: "bg-blue-50 text-blue-600",
@@ -398,37 +416,41 @@ const StatCard = ({ title, value, hint, icon: Icon, tone = "pink" }) => {
   );
 };
 
-const LocationSummaryCard = ({ title, rows, icon: Icon }) => (
-  <div className="rounded-2xl border border-gray-200 bg-white p-5">
-    <div className="mb-4 flex items-center gap-3">
-      <div className="grid h-10 w-10 place-content-center rounded-2xl bg-gray-100 text-gray-700">
-        <Icon size={18} />
-      </div>
-      <div>
-        <h3 className="text-sm font-bold text-gray-900">{title}</h3>
-        <p className="text-xs text-gray-500">Unique anonymous visitors by location</p>
-      </div>
-    </div>
+const LocationSummaryCard = ({ title, rows, icon }) => {
+  const Icon = icon;
 
-    <div className="space-y-3">
-      {rows.length === 0 ? (
-        <p className="rounded-xl bg-gray-50 px-3 py-4 text-sm text-gray-400">No data for current filters</p>
-      ) : (
-        rows.slice(0, 8).map((row) => (
-          <div key={row.label} className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 px-3 py-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-gray-800">{row.label}</p>
-              <p className="text-xs text-gray-500">{row.events} events</p>
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="grid h-10 w-10 place-content-center rounded-2xl bg-gray-100 text-gray-700">
+          <Icon size={18} />
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-gray-900">{title}</h3>
+          <p className="text-xs text-gray-500">Unique anonymous visitors by location</p>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {rows.length === 0 ? (
+          <p className="rounded-xl bg-gray-50 px-3 py-4 text-sm text-gray-400">No data for current filters</p>
+        ) : (
+          rows.slice(0, 8).map((row) => (
+            <div key={row.label} className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 px-3 py-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-gray-800">{row.label}</p>
+                <p className="text-xs text-gray-500">{row.events} events</p>
+              </div>
+              <span className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-700">
+                {row.visitors} visitors
+              </span>
             </div>
-            <span className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-700">
-              {row.visitors} visitors
-            </span>
-          </div>
-        ))
-      )}
+          ))
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const LocationActivityCard = ({ rows = [], loading }) => (
   <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
@@ -512,10 +534,16 @@ const LocationAnalytics = () => {
     [payload.events]
   );
   const visibleSummary = useMemo(() => buildDerivedSummary(visibleEvents), [visibleEvents]);
-  const visibleFilterOptions = useMemo(
-    () => buildFilterOptionsFromEvents(visibleEvents),
-    [visibleEvents]
-  );
+  const visibleFilterOptions = useMemo(() => {
+    const fallbackOptions = buildFilterOptionsFromEvents(visibleEvents);
+
+    return {
+      countries: payload.filterOptions?.countries?.length ? payload.filterOptions.countries : fallbackOptions.countries,
+      states: payload.filterOptions?.states?.length ? payload.filterOptions.states : fallbackOptions.states,
+      cities: payload.filterOptions?.cities?.length ? payload.filterOptions.cities : fallbackOptions.cities,
+      products: payload.filterOptions?.products?.length ? payload.filterOptions.products : fallbackOptions.products,
+    };
+  }, [payload.filterOptions, visibleEvents]);
 
   const downloadFilteredCsv = () => {
     if (!visibleEvents.length) return;
@@ -594,11 +622,11 @@ const LocationAnalytics = () => {
           throw new Error(data?.error || "Failed to load location analytics");
         }
 
-        setPayload({
+        setPayload((current) => ({
           events: Array.isArray(data?.events) ? data.events : [],
-          summary: data?.summary || payload.summary,
-          filterOptions: data?.filterOptions || payload.filterOptions,
-        });
+          summary: data?.summary || current.summary,
+          filterOptions: data?.filterOptions || current.filterOptions,
+        }));
       } catch (loadError) {
         console.error("Location analytics load error:", loadError);
         setError(loadError.message || "Failed to load location analytics");
@@ -610,10 +638,13 @@ const LocationAnalytics = () => {
     load();
   }, [filters, getAdminAuthHeaders, refreshSignal]);
 
-  const recentEvents = useMemo(() => visibleEvents.slice(0, 25), [visibleEvents]);
+  const recentVisitors = useMemo(() => buildRecentVisitorRows(visibleEvents, 25), [visibleEvents]);
   const countrySummaryRows = useMemo(
-    () => visibleSummary.byCountry.filter((row) => isIndiaLabel(row.label)),
-    [visibleSummary.byCountry]
+    () => {
+      if (!filters.country) return visibleSummary.byCountry;
+      return visibleSummary.byCountry.filter((row) => normalizeLabel(row.label) === normalizeLabel(filters.country));
+    },
+    [filters.country, visibleSummary.byCountry]
   );
 
   return (
@@ -695,6 +726,20 @@ const LocationAnalytics = () => {
           </label>
 
           <label className="block">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Country</span>
+            <select
+              value={filters.country}
+              onChange={(e) => setFilters((prev) => ({ ...prev, country: e.target.value, state: "", city: "" }))}
+              className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none transition focus:border-pink-400"
+            >
+              <option value="">All countries</option>
+              {visibleFilterOptions.countries.map((item) => (
+                <option key={item} value={item}>{item}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">State</span>
             <select
               value={filters.state}
@@ -722,7 +767,7 @@ const LocationAnalytics = () => {
             </select>
           </label>
 
-          <label className="block md:col-span-2">
+          <label className="block md:col-span-2 xl:col-span-1">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Product</span>
             <select
               value={filters.product}
@@ -836,21 +881,26 @@ const LocationAnalytics = () => {
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-gray-800">Recent Visitors</h2>
-              <p className="text-xs text-gray-500">Latest anonymous visitor events across pages, product views, and carts.</p>
+              <p className="text-xs text-gray-500">Latest filtered activity per anonymous visitor across pages, product views, and carts.</p>
             </div>
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
-              {visibleEvents.length.toLocaleString("en-IN")} events
-            </span>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-gray-600">
+              <span className="rounded-full bg-gray-100 px-3 py-1">
+                {recentVisitors.length.toLocaleString("en-IN")} visitors
+              </span>
+              <span className="rounded-full bg-gray-100 px-3 py-1">
+                {visibleEvents.length.toLocaleString("en-IN")} events
+              </span>
+            </div>
           </div>
 
           <div className="space-y-3 lg:hidden">
             {loading ? (
               <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">Loading visitor analytics...</p>
-            ) : recentEvents.length === 0 ? (
-              <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">No visitor events found for current filters</p>
+            ) : recentVisitors.length === 0 ? (
+              <p className="rounded-xl bg-gray-50 px-3 py-8 text-center text-sm text-gray-400">No recent visitors found for current filters</p>
             ) : (
-              recentEvents.map((event) => (
-                <div key={event.id} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+              recentVisitors.map((event, index) => (
+                <div key={event.id || `${event.visitorId || event.sessionId || "visitor"}-${index}`} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-800">{formatDateTime(event.createdAt)}</p>
@@ -908,7 +958,7 @@ const LocationAnalytics = () => {
               <thead>
                 <tr className="border-b border-gray-100 text-left text-xs uppercase tracking-[0.12em] text-gray-500">
                   <th className="px-3 py-3">Time</th>
-                  <th className="px-3 py-3">Event</th>
+                  <th className="px-3 py-3">Latest Event</th>
                   <th className="px-3 py-3">Visitor / Session</th>
                   <th className="px-3 py-3">Location</th>
                   <th className="px-3 py-3">Page</th>
@@ -923,13 +973,13 @@ const LocationAnalytics = () => {
                   <tr>
                     <td colSpan="9" className="px-3 py-10 text-center text-sm text-gray-400">Loading visitor analytics...</td>
                   </tr>
-                ) : recentEvents.length === 0 ? (
+                ) : recentVisitors.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="px-3 py-10 text-center text-sm text-gray-400">No visitor events found for current filters</td>
+                    <td colSpan="9" className="px-3 py-10 text-center text-sm text-gray-400">No recent visitors found for current filters</td>
                   </tr>
                 ) : (
-                  recentEvents.map((event) => (
-                    <tr key={event.id} className="border-b border-gray-100 align-top">
+                  recentVisitors.map((event, index) => (
+                    <tr key={event.id || `${event.visitorId || event.sessionId || "visitor"}-${index}`} className="border-b border-gray-100 align-top">
                       <td className="px-3 py-3 text-gray-700">{formatDateTime(event.createdAt)}</td>
                       <td className="px-3 py-3">
                         <span className="rounded-full bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-700">

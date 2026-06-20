@@ -278,7 +278,7 @@ const NavRoutes = () => {
   const location = useLocation();
 
   return (
-    <>
+    <AdminAuthProvider>
       <PixelPageTracker />
       <VisitorPageTracker />
       <UrlCanonicalizer />
@@ -364,21 +364,19 @@ const NavRoutes = () => {
 
         <Route
           path="/admin/login"
-          element={<AdminAuthProvider>{renderLazy(AdminLogin)}</AdminAuthProvider>}
+          element={renderLazy(AdminLogin)}
         />
 
         <Route
           path="/admin/*"
           element={
-            <AdminAuthProvider>
-              <AdminProtectedRoute>
-                {renderLazy(AdminRoutes)}
-              </AdminProtectedRoute>
-            </AdminAuthProvider>
+            <AdminProtectedRoute>
+              {renderLazy(AdminRoutes)}
+            </AdminProtectedRoute>
           }
         />
       </Routes>
-    </>
+    </AdminAuthProvider>
   );
 };
 

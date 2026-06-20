@@ -292,7 +292,7 @@ const normalizeAnalyticsUrl = (value) => {
 };
 
 const stripIpv6Prefix = (ip = "") => String(ip || "").replace(/^::ffff:/i, "").trim();
-const VISITOR_ANALYTICS_EXCLUDED_IPS = new Set(["160.25.128.119"]);
+const VISITOR_ANALYTICS_EXCLUDED_IPS = new Set(["160.25.128.119", "160.25.128.43"]);
 
 const getForwardedHeaderCandidates = (value) =>
   String(value || "")
@@ -4539,6 +4539,7 @@ app.get("/api/visitor-analytics", async (req, res) => {
 
       if (startDate && createdAtDate < startDate) return false;
       if (endDate && createdAtDate > endDate) return false;
+      if (normalizedEventType && event.eventType !== normalizedEventType) return false;
       if (!matchesCountry) return false;
       if (normalizedState && trimToLength(event.ipLocation?.state, 120) !== normalizedState) return false;
       if (normalizedCity && trimToLength(event.ipLocation?.city, 120) !== normalizedCity) return false;
