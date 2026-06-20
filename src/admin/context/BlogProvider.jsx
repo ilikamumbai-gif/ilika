@@ -17,12 +17,13 @@ const BlogProvider = ({ children }) => {
   const fetchBlogs = async () => {
 
     try {
+      setLoadingBlogs(true);
 
       const res = await fetch(`${API}/api/blogs`);
 
       const data = await res.json();
 
-      setBlogs(data);
+      setBlogs(Array.isArray(data) ? data : []);
 
     } catch (err) {
 
@@ -54,14 +55,22 @@ const BlogProvider = ({ children }) => {
         body: JSON.stringify(blog),
       });
 
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload?.error || "Failed to add blog");
+      }
+
       const newBlog = await res.json();
 
       // update state without refetch
       setBlogs(prev => [newBlog, ...prev]);
+      await fetchBlogs();
+      return newBlog;
 
     } catch (err) {
 
       console.error("Add blog failed:", err);
+      throw err;
 
     }
 
@@ -82,22 +91,25 @@ const BlogProvider = ({ children }) => {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to update blog");
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload?.error || "Failed to update blog");
       }
+
+      const updatedBlog = await res.json();
 
       setBlogs((prev) =>
         prev.map((item) =>
           item.id === id
             ? {
                 ...item,
-                ...blog,
-                id,
-                excerpt: blog.shortDesc ?? blog.excerpt ?? item.excerpt,
-                updatedAt: Date.now(),
+                ...updatedBlog,
+                id: updatedBlog?.id || id,
               }
             : item
         )
       );
+      await fetchBlogs();
+      return updatedBlog;
 
     } catch (err) {
 

@@ -170,12 +170,14 @@ const AddBlog = () => {
 
   const [uploading, setUploading] = useState(false);
   const [loadingBlog, setLoadingBlog] = useState(isEditMode);
+  const [submitError, setSubmitError] = useState("");
 
   const createInitialBlog = () => ({
     title: "",
     image: "",
     author: "",
     internalLink: "",
+    internalLinks: [{ id: "internal-link-1", label: "", url: "" }],
     shortDesc: "",
     content: "",
     contentSections: [
@@ -198,6 +200,21 @@ const AddBlog = () => {
     }));
   };
 
+  const normalizeInternalLinks = (links = [], fallbackInternalLink = "") => {
+    const source = Array.isArray(links) ? links : [];
+    const normalized = source.map((item, index) => ({
+      id: item?.id || `internal-link-${index + 1}`,
+      label: item?.label || item?.title || "",
+      url: item?.url || item?.path || "",
+    }));
+
+    if (normalized.length > 0) return normalized;
+    if (fallbackInternalLink) {
+      return [{ id: "internal-link-1", label: "Visit Product", url: fallbackInternalLink }];
+    }
+    return [{ id: "internal-link-1", label: "", url: "" }];
+  };
+
   const [blog, setBlog] = useState(createInitialBlog);
   const [preview, setPreview] = useState(null);
 
@@ -215,6 +232,7 @@ const AddBlog = () => {
         image: entry.image || "",
         author: entry.author || "",
         internalLink: entry.internalLink || "",
+        internalLinks: normalizeInternalLinks(entry.internalLinks, entry.internalLink || ""),
         shortDesc: entry.shortDesc || entry.excerpt || "",
         content: entry.content || "",
         contentSections: normalizeSections(entry.contentSections),
@@ -297,6 +315,37 @@ const AddBlog = () => {
     }));
   };
 
+  const addInternalLink = () => {
+    setBlog((prev) => ({
+      ...prev,
+      internalLinks: [
+        ...(Array.isArray(prev.internalLinks) ? prev.internalLinks : []),
+        { id: `internal-link-${Date.now()}`, label: "", url: "" },
+      ],
+    }));
+  };
+
+  const updateInternalLink = (linkId, patch) => {
+    setBlog((prev) => ({
+      ...prev,
+      internalLinks: (Array.isArray(prev.internalLinks) ? prev.internalLinks : []).map((item) =>
+        item.id === linkId ? { ...item, ...patch } : item
+      ),
+    }));
+  };
+
+  const removeInternalLink = (linkId) => {
+    setBlog((prev) => {
+      const nextLinks = (Array.isArray(prev.internalLinks) ? prev.internalLinks : []).filter(
+        (item) => item.id !== linkId
+      );
+      return {
+        ...prev,
+        internalLinks: nextLinks.length ? nextLinks : [{ id: "internal-link-1", label: "", url: "" }],
+      };
+    });
+  };
+
 
 
   /* IMAGE UPLOAD */
@@ -362,24 +411,33 @@ const AddBlog = () => {
   const submitBlog = async (e) => {
 
     e.preventDefault();
+    setSubmitError("");
 
     const payload = {
       ...blog,
       excerpt: blog.shortDesc,
+      internalLinks: (Array.isArray(blog.internalLinks) ? blog.internalLinks : []).filter(
+        (item) => String(item?.url || "").trim()
+      ),
       contentSections: blog.contentSections.filter(
         (section) => section.content?.trim() || section.image
       ),
     };
 
-    if (isEditMode) {
-      await updateBlog(id, payload);
-      await logActivity(`Updated blog: ${blog.title}`);
-    } else {
-      await addBlog(payload);
-      await logActivity(`Created blog: ${blog.title}`);
-    }
+    try {
+      if (isEditMode) {
+        await updateBlog(id, payload);
+        await logActivity(`Updated blog: ${blog.title}`);
+      } else {
+        await addBlog(payload);
+        await logActivity(`Created blog: ${blog.title}`);
+      }
 
-    navigate("/admin/blogs");
+      navigate("/admin/blogs");
+    } catch (error) {
+      console.error("Blog save failed:", error);
+      setSubmitError(error?.message || "Failed to save blog");
+    }
 
   };
 
@@ -403,6 +461,11 @@ const AddBlog = () => {
           onSubmit={submitBlog}
           className="space-y-5"
         >
+          {submitError ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {submitError}
+            </div>
+          ) : null}
 
           <input
             name="title"
@@ -452,6 +515,52 @@ const AddBlog = () => {
             value={blog.internalLink}
             onChange={handleChange}
           />
+
+          <div className="rounded-xl border border-gray-200 p-4 space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold">Extra Internal Links</h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  These links will be shown at the end of the blog.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="border px-3 py-1.5 rounded text-sm"
+                onClick={addInternalLink}
+              >
+                + Add Link
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {(Array.isArray(blog.internalLinks) ? blog.internalLinks : []).map((item, index) => (
+                <div key={item.id} className="grid gap-3 rounded-lg border border-gray-200 p-3 md:grid-cols-[1fr_1.4fr_auto]">
+                  <input
+                    type="text"
+                    placeholder={`Link label ${index + 1}`}
+                    className="w-full border p-2 rounded"
+                    value={item.label || ""}
+                    onChange={(e) => updateInternalLink(item.id, { label: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="/blog/another-post or /product/your-product"
+                    className="w-full border p-2 rounded"
+                    value={item.url || ""}
+                    onChange={(e) => updateInternalLink(item.id, { url: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    className="border border-red-300 text-red-600 px-3 py-2 rounded text-sm"
+                    onClick={() => removeInternalLink(item.id)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
 
           <textarea

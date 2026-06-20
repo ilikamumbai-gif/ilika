@@ -3020,13 +3020,51 @@ const createBlogSlug = (value = "") =>
     .replace(/^-+|-+$/g, "")
     .replace(/-{2,}/g, "-");
 
+const normalizeBlogInternalLinkPath = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return "";
+  return raw.startsWith("/") ? raw : `/${raw}`;
+};
+
+const normalizeBlogInternalLinks = (links = [], fallbackInternalLink = "") => {
+  const source = Array.isArray(links) ? links : [];
+  const seen = new Set();
+  const normalized = [];
+
+  source.forEach((item, index) => {
+    const url = normalizeBlogInternalLinkPath(item?.url || item?.path || item?.href || "");
+    if (!url) return;
+    const key = url.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    normalized.push({
+      id: String(item?.id || `internal-link-${index + 1}`),
+      label: String(item?.label || item?.title || "").trim() || `Related Link ${normalized.length + 1}`,
+      url,
+    });
+  });
+
+  const fallbackUrl = normalizeBlogInternalLinkPath(fallbackInternalLink);
+  if (fallbackUrl && !seen.has(fallbackUrl.toLowerCase())) {
+    normalized.unshift({
+      id: "internal-link-primary",
+      label: "Visit Product",
+      url: fallbackUrl,
+    });
+  }
+
+  return normalized;
+};
+
 app.post("/api/blogs", async (req, res) => {
   try {
-    const { title, image, author, shortDesc, content, internalLink, contentSections } = req.body;
+    const { title, image, author, shortDesc, content, internalLink, internalLinks, contentSections } = req.body;
     if (!title) return res.status(400).json({ error: "Title required" });
 
     const now = Date.now();
-    const normalizedInternalLink = String(internalLink || "").trim();
+    const normalizedInternalLink = normalizeBlogInternalLinkPath(internalLink);
+    const normalizedInternalLinks = normalizeBlogInternalLinks(internalLinks, normalizedInternalLink);
     const blogData = {
       title: title || "",
       image: image || "",
@@ -3035,6 +3073,7 @@ app.post("/api/blogs", async (req, res) => {
       content: content || "",
       shortDesc: shortDesc || "",
       internalLink: normalizedInternalLink,
+      internalLinks: normalizedInternalLinks,
       contentSections: Array.isArray(contentSections) ? contentSections : [],
       slug: createBlogSlug(title),
       createdAt: now,
@@ -3119,9 +3158,13 @@ app.put("/api/blogs/:id", async (req, res) => {
     const nextShortDesc = String(
       req.body?.shortDesc ?? req.body?.excerpt ?? existing.shortDesc ?? existing.excerpt ?? ""
     );
-    const normalizedInternalLink = String(
+    const normalizedInternalLink = normalizeBlogInternalLinkPath(
       req.body?.internalLink ?? existing.internalLink ?? ""
-    ).trim();
+    );
+    const normalizedInternalLinks = normalizeBlogInternalLinks(
+      req.body?.internalLinks ?? existing.internalLinks,
+      normalizedInternalLink
+    );
     const updatedBlog = {
       title: nextTitle,
       image: req.body?.image ?? existing.image ?? "",
@@ -3130,6 +3173,7 @@ app.put("/api/blogs/:id", async (req, res) => {
       shortDesc: nextShortDesc,
       content: req.body?.content ?? existing.content ?? "",
       internalLink: normalizedInternalLink,
+      internalLinks: normalizedInternalLinks,
       contentSections: Array.isArray(req.body?.contentSections)
         ? req.body.contentSections
         : Array.isArray(existing.contentSections)

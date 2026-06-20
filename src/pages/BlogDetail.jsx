@@ -21,6 +21,36 @@ const normalizeInternalLink = (value = "") => {
   return raw.startsWith("/") ? raw : `/${raw}`;
 };
 
+const normalizeInternalLinks = (links = [], fallbackInternalLink = "") => {
+  const source = Array.isArray(links) ? links : [];
+  const seen = new Set();
+  const normalized = [];
+
+  source.forEach((item, index) => {
+    const url = normalizeInternalLink(item?.url || item?.path || item?.href || "");
+    if (!url) return;
+    const key = url.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    normalized.push({
+      id: String(item?.id || `internal-link-${index + 1}`),
+      label: String(item?.label || item?.title || "").trim() || `Related Link ${normalized.length + 1}`,
+      url,
+    });
+  });
+
+  const fallbackUrl = normalizeInternalLink(fallbackInternalLink);
+  if (fallbackUrl && !seen.has(fallbackUrl.toLowerCase())) {
+    normalized.unshift({
+      id: "internal-link-primary",
+      label: "Visit Product",
+      url: fallbackUrl,
+    });
+  }
+
+  return normalized;
+};
+
 const normalizeRoutePath = (value = "") =>
   String(value || "")
     .trim()
@@ -287,6 +317,10 @@ const BlogDetail = () => {
     () => normalizeInternalLink(blog?.internalLink),
     [blog?.internalLink]
   );
+  const blogInternalLinks = useMemo(
+    () => normalizeInternalLinks(blog?.internalLinks, blog?.internalLink),
+    [blog?.internalLinks, blog?.internalLink]
+  );
 
   const linkedProduct = useMemo(() => {
     if (!blogInternalLink || !Array.isArray(products) || products.length === 0) return null;
@@ -483,6 +517,35 @@ const BlogDetail = () => {
             </div>
 
             {contentSections.map((section, index) => renderSectionBlock(section, index))}
+
+            {blogInternalLinks.length > 0 && (
+              <section className="rounded-[28px] border border-[#e2ece2] bg-[#f8fbf8] p-5 sm:p-6">
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#801f1f]">
+                    More Internal Links
+                  </p>
+                  <h2 className="text-xl font-semibold text-[#1C371C] sm:text-2xl">
+                    Continue Reading
+                  </h2>
+                  <p className="text-sm leading-6 text-[#5f705f]">
+                    Explore more pages connected to this topic.
+                  </p>
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  {blogInternalLinks.map((item) => (
+                    <Link
+                      key={item.id}
+                      to={item.url}
+                      className="group flex items-center justify-between gap-3 rounded-2xl border border-[#d9e4d9] bg-white px-4 py-4 text-sm font-semibold text-[#1C371C] transition hover:-translate-y-0.5 hover:border-[#b8cdb8] hover:bg-[#fdfefe]"
+                    >
+                      <span>{item.label}</span>
+                      <span className="text-[#801f1f] transition group-hover:translate-x-0.5">{"->"}</span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
           </article>
 
           <section ref={commentsSectionRef} className="mt-10 border-t border-[#e2ece2] pt-6 sm:mt-12 sm:pt-8">
