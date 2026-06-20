@@ -863,46 +863,16 @@ const BeforeAfterSlider = ({
   beforeImage, afterImage,
   beforeLabel = "Before", afterLabel = "After"
 }) => {
-  const containerRef = useRef(null);
-  const isActive = useRef(false);
-  const beforeMaskRef = useRef(null);
-  const dividerRef = useRef(null);
-  const posRef = useRef(50);
+  const [position, setPosition] = useState(50);
 
-  const applySliderPosition = useCallback((nextPos) => {
-    if (beforeMaskRef.current) {
-      beforeMaskRef.current.style.clipPath = `inset(0 ${100 - nextPos}% 0 0)`;
-    }
-    if (dividerRef.current) {
-      dividerRef.current.style.left = `calc(${nextPos}% - 1px)`;
-    }
-  }, []);
-
-  useEffect(() => {
-    applySliderPosition(posRef.current);
-  }, [applySliderPosition]);
-
-  const calcPos = (clientX) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const clamped = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
-    posRef.current = clamped;
-    applySliderPosition(clamped);
+  const handlePositionChange = (event) => {
+    setPosition(Number(event.target.value || 50));
   };
-
-  const onPointerDown = (e) => { e.preventDefault(); e.stopPropagation(); isActive.current = true; containerRef.current.setPointerCapture(e.pointerId); calcPos(e.clientX); };
-  const onPointerMove = (e) => { if (!isActive.current) return; e.preventDefault(); e.stopPropagation(); calcPos(e.clientX); };
-  const onPointerUp = (e) => { e.preventDefault(); e.stopPropagation(); isActive.current = false; };
 
   return (
     <div
-      ref={containerRef}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
       className="relative w-full overflow-hidden rounded-2xl shadow-md select-none"
-      style={{ aspectRatio: "16/12", touchAction: "none", userSelect: "none", WebkitUserSelect: "none", cursor: "col-resize" }}
+      style={{ aspectRatio: "16/12", userSelect: "none", WebkitUserSelect: "none" }}
     >
       {/* AFTER - full background */}
       <img loading="lazy"
@@ -916,11 +886,9 @@ const BeforeAfterSlider = ({
 
       {/* BEFORE - clipped from the right using clip-path */}
       <div
-        ref={beforeMaskRef}
         className="absolute inset-0 pointer-events-none"
         style={{
-          clipPath: "inset(0 50% 0 0)",
-          willChange: "clip-path"
+          clipPath: `inset(0 ${100 - position}% 0 0)`
         }}
       >
         <img loading="lazy"
@@ -935,11 +903,9 @@ const BeforeAfterSlider = ({
 
       {/* DIVIDER LINE */}
       <div
-        ref={dividerRef}
         className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none"
         style={{
-          left: "calc(50% - 1px)",
-          willChange: "left"
+          left: `calc(${position}% - 1px)`
         }}
       >
         {/* HANDLE CIRCLE */}
@@ -956,6 +922,17 @@ const BeforeAfterSlider = ({
       <span className="absolute top-4 right-4 bg-black/55 text-white text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm pointer-events-none tracking-wide">
         {afterLabel}
       </span>
+
+      <input
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        value={position}
+        onChange={handlePositionChange}
+        className="absolute inset-0 z-10 h-full w-full cursor-ew-resize opacity-0"
+        aria-label="Compare before and after image"
+      />
     </div>
   );
 };
