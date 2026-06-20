@@ -321,6 +321,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   const { categories } = useCategories();
   const { coupons = [] } = useCoupons();
   const fileInputRef = useRef(null);
+  const view360InputRef = useRef(null);
   const ingredientInputRef = useRef(null);
   const { admin } = useAdminAuth();
 
@@ -335,7 +336,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     seoCategory: "",
     hasVariants: false, variants: [], categoryIds: [],
     description: "", additionalInfo: "", tagline: "", points: "", whyYouLoveIt: buildWhyYouLoveItDraft(),
-    images: [], isActive: true, inStock: true,
+    images: [], view360Images: [], isActive: true, inStock: true,
     beforeAfter: [], hasBeforeAfter: false,
     ingredients: [],
     inTheBox: [],
@@ -381,6 +382,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     points: d.benefits ? d.benefits.join(", ") : "",
     whyYouLoveIt: buildWhyYouLoveItDraft(d.whyYouLoveIt, d.whyLoveIt, d.benefits),
     images: d.images || [],
+    view360Images: d.view360Images || [],
     isActive: d.isActive ?? true,
     inStock: d.inStock ?? true,
     beforeAfter: (d.beforeAfter || []).map(p => ({ ...p, _beforeFile: null, _afterFile: null })),
@@ -411,6 +413,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
   const [form, setForm] = useState(fromInitial(initialData));
   const [previewImages, setPreviewImages] = useState(initialData.images || []);
+  const [preview360Images, setPreview360Images] = useState(initialData.view360Images || []);
   const [previewIngredientImages, setPreviewIngredientImages] = useState(
     Array.isArray(initialData.ingredients)
       ? initialData.ingredients.map((item) => (typeof item === "string" ? item : item?.image || item?.url || "")).filter(Boolean)
@@ -428,6 +431,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     if (!initialData || Object.keys(initialData).length === 0) return;
     setForm(fromInitial(initialData));
     setPreviewImages(initialData.images || []);
+    setPreview360Images(initialData.view360Images || []);
     setSubmitError("");
     setProductUrlTouched(Boolean(initialData?.id || initialData?.docId || initialData?._id));
     setPreviewIngredientImages(
@@ -440,9 +444,10 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
   useEffect(() => {
     return () => {
       previewImages.forEach(img => { if (img.startsWith("blob:")) URL.revokeObjectURL(img); });
+      preview360Images.forEach(img => { if (img.startsWith("blob:")) URL.revokeObjectURL(img); });
       previewIngredientImages.forEach(img => { if (img.startsWith("blob:")) URL.revokeObjectURL(img); });
     };
-  }, [previewImages, previewIngredientImages]);
+  }, [previewImages, preview360Images, previewIngredientImages]);
 
   const isEditMode = Boolean(initialData?.id || initialData?.docId || initialData?._id);
   const normalizedProductUrl = sanitizeProductUrlValue(form.productUrl);
@@ -491,6 +496,16 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     setForm(prev => ({ ...prev, images: prev.images.filter((_, j) => j !== i) }));
     setPreviewImages(prev => prev.filter((_, j) => j !== i));
   };
+  const handle360ImageSelect = (files) => {
+    const arr = Array.from(files || []);
+    if (!arr.length) return;
+    setForm(prev => ({ ...prev, view360Images: [...(prev.view360Images || []), ...arr] }));
+    setPreview360Images(prev => [...prev, ...arr.map(f => URL.createObjectURL(f))]);
+  };
+  const remove360Image = (i) => {
+    setForm(prev => ({ ...prev, view360Images: (prev.view360Images || []).filter((_, j) => j !== i) }));
+    setPreview360Images(prev => prev.filter((_, j) => j !== i));
+  };
   const handleIngredientSelect = (files) => {
     const arr = Array.from(files);
     setForm(prev => ({ ...prev, ingredients: [...(prev.ingredients || []), ...arr] }));
@@ -538,6 +553,17 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     prvs.splice(to, 0, mp);
     setForm({ ...form, ingredients: imgs });
     setPreviewIngredientImages(prvs);
+  };
+  const handle360ImageReorder = (from, to) => {
+    if (from === to) return;
+    const imgs = [...(form.view360Images || [])];
+    const prvs = [...preview360Images];
+    const [mi] = imgs.splice(from, 1);
+    const [mp] = prvs.splice(from, 1);
+    imgs.splice(to, 0, mi);
+    prvs.splice(to, 0, mp);
+    setForm({ ...form, view360Images: imgs });
+    setPreview360Images(prvs);
   };
   const handleVariantReorder = (vi, from, to) => {
     from = Number(from); to = Number(to);
@@ -656,6 +682,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         imageUrls.push(await getDownloadURL(r));
       }
 
+      const view360ImageUrls = [];
+      for (const file of (form.view360Images || [])) {
+        if (typeof file === "string") { view360ImageUrls.push(file); continue; }
+        const r = ref(storage, `products/${crypto.randomUUID()}-${file.name}`);
+        await uploadBytes(r, file);
+        view360ImageUrls.push(await getDownloadURL(r));
+      }
+
       /* variants */
       let variantData = [];
       if (form.hasVariants) {
@@ -762,6 +796,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         tagline: form.tagline,
         whyYouLoveIt: whyYouLoveItData,
         images: imageUrls,
+        view360Images: view360ImageUrls,
         isActive: form.isActive, inStock: form.inStock,
         beforeAfter: beforeAfterData,
         ingredients: ingredientsData,
@@ -786,6 +821,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
       setForm(emptyForm);
       setPreviewImages([]);
+      setPreview360Images([]);
       setPreviewIngredientImages([]);
       setProductUrlTouched(false);
     } catch (err) {
@@ -1426,6 +1462,55 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           ))}
         </div>
       )}
+
+      <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+        <div>
+          <p className="font-semibold text-sm">360° Product View Images</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Optional ordered images for the 360° viewer. Main product gallery images remain unchanged.
+          </p>
+        </div>
+
+        <div
+          className="border-2 border-dashed p-5 rounded-xl text-center cursor-pointer bg-white"
+          onClick={() => view360InputRef.current?.click()}
+        >
+          <input
+            ref={view360InputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            hidden
+            onChange={e => handle360ImageSelect(e.target.files)}
+          />
+          <h3 className="font-semibold">Upload 360° Product View Images</h3>
+          <p className="text-xs text-gray-500 mt-1">Drag to reorder. Save keeps this exact order.</p>
+        </div>
+
+        {preview360Images.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {preview360Images.map((img, i) => (
+              <div
+                key={i}
+                draggable
+                onDragStart={e => e.dataTransfer.setData("drag360Index", i)}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => handle360ImageReorder(Number(e.dataTransfer.getData("drag360Index")), i)}
+                className="relative cursor-move"
+              >
+                <img loading="lazy" src={img} className="h-24 w-full object-cover rounded border" />
+                <button
+                  type="button"
+                  onClick={() => remove360Image(i)}
+                  className="absolute top-1 right-1 bg-black text-white text-xs px-2 rounded"
+                >
+                  X
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* BEFORE / AFTER IMAGES */}
       <div className="border rounded-xl p-5 space-y-4 bg-gray-50">

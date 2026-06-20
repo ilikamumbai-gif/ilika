@@ -63,6 +63,13 @@ const flattenImages = (product) => {
         },
       ])
     : [];
+  const view360Images = Array.isArray(product?.view360Images)
+    ? product.view360Images.map((url, index) => ({
+        url,
+        label: `360 View ${index + 1}`,
+        group: "360 Product View",
+      }))
+    : [];
 
   return [
     ...mainImages.map((url, index) => ({
@@ -71,6 +78,7 @@ const flattenImages = (product) => {
       group: "Main Images",
     })),
     ...variantImages,
+    ...view360Images,
     ...ingredientImages,
     ...inTheBoxImages,
     ...beforeAfterImages,

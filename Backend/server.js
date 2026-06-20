@@ -1514,9 +1514,11 @@ const resolveProductSeoFields = async (product = {}) => ({
 
 const formatProductForApi = async (product = {}, id = "") => {
   const seoFields = await resolveProductSeoFields(product);
+  const { urls: view360Images = [] } = normalizeProductImageUrlArray(product?.view360Images);
   return {
     ...product,
     ...seoFields,
+    view360Images,
     id: id || product?.id || "",
   };
 };
@@ -2125,6 +2127,36 @@ const normalizeProductVideos = (videos = []) => {
     .filter((video) => Boolean(video.url));
 };
 
+const normalizeProductImageUrlArray = (values = []) => {
+  if (!Array.isArray(values)) return { urls: [] };
+
+  const seen = new Set();
+  const urls = [];
+
+  for (const value of values) {
+    const text = String(value || "").trim();
+    if (!text) continue;
+
+    let normalized;
+    try {
+      const url = new URL(text);
+      if (!/^https?:$/i.test(url.protocol)) {
+        return { error: `Invalid image URL: ${text}` };
+      }
+      normalized = url.toString();
+    } catch {
+      return { error: `Invalid image URL: ${text}` };
+    }
+
+    const key = normalized.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    urls.push(normalized);
+  }
+
+  return { urls };
+};
+
 const parseWhyLoveItText = (value = "") => {
   const text = String(value || "").trim();
   if (!text) return { title: "", description: "" };
@@ -2617,6 +2649,9 @@ app.post("/api/products", async (req, res) => {
     });
     if (error) return res.status(409).json({ error });
 
+    const { urls: view360Images = [], error: view360ImageError } = normalizeProductImageUrlArray(req.body?.view360Images);
+    if (view360ImageError) return res.status(400).json({ error: view360ImageError });
+
     const productData = {
       ...req.body,
       productUrl,
@@ -2626,6 +2661,7 @@ app.post("/api/products", async (req, res) => {
       seoKeywords: normalizeProductSeoText(req.body?.seoKeywords, 1000),
       seoCategory: await normalizeSeoCategoryValue(req.body?.seoCategory, req.body),
       videos: normalizeProductVideos(req.body?.videos),
+      view360Images,
       whyYouLoveIt: hasWhyYouLoveIt
         ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
         : hasLegacyWhyLoveIt
@@ -2802,6 +2838,12 @@ app.put("/api/products/:id", async (req, res) => {
     });
     if (error) return res.status(409).json({ error });
 
+    const hasView360Images = Object.prototype.hasOwnProperty.call(req.body || {}, "view360Images");
+    const { urls: view360Images = [], error: view360ImageError } = normalizeProductImageUrlArray(
+      hasView360Images ? req.body?.view360Images : existingData?.view360Images
+    );
+    if (view360ImageError) return res.status(400).json({ error: view360ImageError });
+
     const updateData = {
       ...req.body,
       productUrl,
@@ -2818,6 +2860,7 @@ app.put("/api/products/:id", async (req, res) => {
         categoryIds: Array.isArray(req.body?.categoryIds) ? req.body.categoryIds : existingData?.categoryIds,
       }),
       videos: normalizeProductVideos(req.body?.videos),
+      view360Images,
       whyYouLoveIt: hasWhyYouLoveIt
         ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
         : hasLegacyWhyLoveIt
@@ -2883,6 +2926,12 @@ app.put("/admin/products/edit/:id", async (req, res) => {
     });
     if (error) return res.status(409).json({ error });
 
+    const hasView360Images = Object.prototype.hasOwnProperty.call(req.body || {}, "view360Images");
+    const { urls: view360Images = [], error: view360ImageError } = normalizeProductImageUrlArray(
+      hasView360Images ? req.body?.view360Images : existingData?.view360Images
+    );
+    if (view360ImageError) return res.status(400).json({ error: view360ImageError });
+
     const updateData = {
       ...req.body,
       productUrl,
@@ -2899,6 +2948,7 @@ app.put("/admin/products/edit/:id", async (req, res) => {
         categoryIds: Array.isArray(req.body?.categoryIds) ? req.body.categoryIds : existingData?.categoryIds,
       }),
       videos: normalizeProductVideos(req.body?.videos),
+      view360Images,
       whyYouLoveIt: hasWhyYouLoveIt
         ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
         : hasLegacyWhyLoveIt

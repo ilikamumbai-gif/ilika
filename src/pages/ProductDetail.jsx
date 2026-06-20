@@ -20,6 +20,7 @@ import {
   Wallet
 } from "lucide-react";
 import ProductCard from "../components/ProductCard";
+import Lazy360ViewButton from "../components/product/Lazy360ViewButton";
 import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 import { useSeo } from "../hooks/useSeo";
@@ -863,11 +864,28 @@ const BeforeAfterSlider = ({
   beforeImage, afterImage,
   beforeLabel = "Before", afterLabel = "After"
 }) => {
-  const [position, setPosition] = useState(50);
+  const beforeMaskRef = useRef(null);
+  const dividerRef = useRef(null);
 
-  const handlePositionChange = (event) => {
-    setPosition(Number(event.target.value || 50));
-  };
+  const applySliderPosition = useCallback((nextPos) => {
+    const clampedPos = Math.min(100, Math.max(0, Number(nextPos || 0)));
+
+    if (beforeMaskRef.current) {
+      beforeMaskRef.current.style.clipPath = `inset(0 ${100 - clampedPos}% 0 0)`;
+    }
+
+    if (dividerRef.current) {
+      dividerRef.current.style.left = `calc(${clampedPos}% - 1px)`;
+    }
+  }, []);
+
+  useEffect(() => {
+    applySliderPosition(50);
+  }, [applySliderPosition]);
+
+  const handlePositionInput = useCallback((event) => {
+    applySliderPosition(event.target.value);
+  }, [applySliderPosition]);
 
   return (
     <div
@@ -886,9 +904,11 @@ const BeforeAfterSlider = ({
 
       {/* BEFORE - clipped from the right using clip-path */}
       <div
+        ref={beforeMaskRef}
         className="absolute inset-0 pointer-events-none"
         style={{
-          clipPath: `inset(0 ${100 - position}% 0 0)`
+          clipPath: "inset(0 50% 0 0)",
+          willChange: "clip-path"
         }}
       >
         <img loading="lazy"
@@ -903,9 +923,11 @@ const BeforeAfterSlider = ({
 
       {/* DIVIDER LINE */}
       <div
+        ref={dividerRef}
         className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none"
         style={{
-          left: `calc(${position}% - 1px)`
+          left: "calc(50% - 1px)",
+          willChange: "left"
         }}
       >
         {/* HANDLE CIRCLE */}
@@ -928,8 +950,8 @@ const BeforeAfterSlider = ({
         min="0"
         max="100"
         step="1"
-        value={position}
-        onChange={handlePositionChange}
+        defaultValue="50"
+        onInput={handlePositionInput}
         className="absolute inset-0 z-10 h-full w-full cursor-ew-resize opacity-0"
         aria-label="Compare before and after image"
       />
@@ -2498,6 +2520,10 @@ const ProductDetail = () => {
       })
       .filter(Boolean);
   }, [product?.ingredients]);
+  const product360Images = useMemo(() => {
+    const raw = Array.isArray(product?.view360Images) ? product.view360Images : [];
+    return raw.map((item) => String(item || "").trim()).filter(Boolean);
+  }, [product?.view360Images]);
   const inTheBoxItems = useMemo(() => sanitizeInTheBoxItems(product?.inTheBox), [product?.inTheBox]);
   const getIngredientCardsPerView = useCallback(() => {
     if (typeof window === "undefined") return 4;
@@ -3684,6 +3710,15 @@ const ProductDetail = () => {
                     )}
                   </div>
                 </div>
+
+                {product360Images.length > 0 && (
+                  <div className="order-3 flex justify-center pt-1 sm:justify-start">
+                    <Lazy360ViewButton
+                      images={product360Images}
+                      productName={product?.name || ""}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
