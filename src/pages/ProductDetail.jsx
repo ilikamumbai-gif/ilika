@@ -603,7 +603,7 @@ const formatIngredientTitle = (src = "", index = 0) => {
   }
 };
 
-const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe, theme }) => {
+const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe, theme }) => {
   const ctaColors = getDetailCtaColors(theme);
   const mediaItems = useMemo(() => {
     const imageItems = (Array.isArray(images) ? images : []).map((src, index) => ({
@@ -800,6 +800,13 @@ const ImageLightbox = ({ images, videos = [], initialIndex = 0, onClose, product
                   )}
                 </button>
               ))}
+              {view360Images.length > 0 && (
+                <Lazy360ViewButton
+                  images={view360Images}
+                  productName={product?.name || ""}
+                  className="aspect-square w-full rounded-xl border-2 border-transparent px-1 py-0 text-center text-[11px] font-bold leading-tight whitespace-normal shadow-none hover:border-gray-200"
+                />
+              )}
             </div>
           </div>
 
@@ -2971,6 +2978,11 @@ const ProductDetail = () => {
   }, [scheduleIngredientLoopNormalize]);
 
   const openLightbox = (index) => { stopAuto(); setLightboxIndex(index); setLightboxOpen(true); };
+  const openVideoLightbox = (videoIndex) => {
+    stopAuto();
+    setLightboxIndex(images.length + Math.max(0, videoIndex));
+    setLightboxOpen(true);
+  };
 
   const EXCLUDED = "new";
   const relatedProducts = useMemo(() => {
@@ -3521,6 +3533,7 @@ const ProductDetail = () => {
         <ImageLightbox
           images={images}
           videos={productVideos}
+          view360Images={product360Images}
           initialIndex={lightboxIndex}
           onClose={() => setLightboxOpen(false)}
           product={product}
@@ -3570,7 +3583,7 @@ const ProductDetail = () => {
                 {galleryCount > 1 && (
                   <div
                     ref={thumbsRef}
-                    className="order-2 flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory"
+                    className="order-2 -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 snap-x snap-mandatory sm:mx-0 sm:gap-2 sm:px-0"
                     style={{ scrollbarWidth: "none" }}
                   >
                     {displayImages.length > 0 ? (
@@ -3582,8 +3595,8 @@ const ProductDetail = () => {
                             onClick={() => { stopAuto(); setSelectedImage(img); setSelectedVideoUrl(""); setSelectedVideoPlaying(false); }}
                             className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedImage === img ? "shadow-sm" : "hover:border-gray-200"}`}
                             style={{
-                              width: "64px",
-                              height: "64px",
+                              width: "56px",
+                              height: "56px",
                               borderColor: selectedImage === img ? "#f2b9b3" : "#f3e2df",
                               backgroundColor: selectedImage === img ? "#fff5f4" : "#ffffff",
                             }}
@@ -3608,7 +3621,7 @@ const ProductDetail = () => {
                         <div
                           key={i}
                           className="flex-shrink-0 rounded-[16px] bg-gray-100 animate-pulse"
-                          style={{ width: "64px", height: "64px" }}
+                          style={{ width: "56px", height: "56px" }}
                         />
                       ))
                     )}
@@ -3617,11 +3630,16 @@ const ProductDetail = () => {
                       return (
                         <button
                           key={video.id}
-                          onClick={() => { stopAuto(); setSelectedVideoUrl(video.embedUrl); setSelectedVideoPlaying(true); }}
+                          onClick={() => {
+                            stopAuto();
+                            setSelectedVideoUrl(video.embedUrl);
+                            setSelectedVideoPlaying(true);
+                            openVideoLightbox(productVideos.findIndex((item) => item.embedUrl === video.embedUrl));
+                          }}
                           className="relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300"
                           style={{
-                            width: "64px",
-                            height: "64px",
+                            width: "56px",
+                            height: "56px",
                             borderColor: isSelected ? "#f2b9b3" : "#f3e2df",
                             backgroundColor: isSelected ? "#fff5f4" : "#ffffff",
                           }}
@@ -3634,19 +3652,26 @@ const ProductDetail = () => {
                             <div className="h-full w-full bg-black/80" />
                           )}
                           <span className="absolute inset-0 flex items-center justify-center">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-[13px] text-[#1f1f1f] shadow-sm">▶</span>
+                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/92 text-[12px] text-[#1f1f1f] shadow-sm sm:h-8 sm:w-8 sm:text-[13px]">▶</span>
                           </span>
                         </button>
                       );
                     })}
+                    {product360Images.length > 0 && (
+                      <Lazy360ViewButton
+                        images={product360Images}
+                        productName={product?.name || ""}
+                        className="h-14 w-14 shrink-0 snap-start rounded-[16px] border border-[#f3e2df] px-1 py-0 text-center text-[10px] font-bold leading-tight whitespace-normal shadow-none hover:border-[#d9b5aa] hover:shadow-sm sm:h-16 sm:w-16 sm:text-[11px]"
+                      />
+                    )}
                     {hasThumbnailOverflow && !showAllThumbnails && (
                       <button
                         type="button"
                         onClick={handleOverflowThumbClick}
                         className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedGalleryIndex >= overflowStartIndex ? "shadow-sm" : "hover:border-gray-200"}`}
                         style={{
-                          width: "64px",
-                          height: "64px",
+                          width: "56px",
+                          height: "56px",
                           borderColor: selectedGalleryIndex >= overflowStartIndex ? "#f2b9b3" : "#f3e2df",
                           backgroundColor: selectedGalleryIndex >= overflowStartIndex ? "#fff5f4" : "#ffffff",
                         }}
@@ -3674,7 +3699,7 @@ const ProductDetail = () => {
                         ) : (
                           <div className="h-full w-full bg-black/70" />
                         )}
-                        <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-lg font-semibold text-white">
+                        <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-base font-semibold text-white sm:text-lg">
                           +{overflowCount}
                         </span>
                       </button>
@@ -3689,7 +3714,10 @@ const ProductDetail = () => {
                     onTouchMove={(e) => setTouchEndX(e.targetTouches[0].clientX)}
                     onTouchEnd={handleSwipe}
                     onClick={() => {
-                      if (selectedVideoUrl) return;
+                      if (selectedVideoUrl) {
+                        openVideoLightbox(selectedVideoIndex);
+                        return;
+                      }
                       const idx = images.indexOf(selectedImage);
                       openLightbox(idx >= 0 ? idx : 0);
                     }}
@@ -3778,14 +3806,6 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                {product360Images.length > 0 && (
-                  <div className="order-3 flex justify-center pt-1 sm:justify-start">
-                    <Lazy360ViewButton
-                      images={product360Images}
-                      productName={product?.name || ""}
-                    />
-                  </div>
-                )}
               </div>
             </div>
 
@@ -3803,10 +3823,10 @@ const ProductDetail = () => {
                     {productTagLabel}
                   </span>
                 )}
-                <h1 className="text-[24px] font-luxury font-bold leading-[1.22] sm:text-[1.75rem] xl:text-[2.2rem]" style={{ color: detailTheme.heading }}>
+                <h1 className="text-[20px] font-luxury font-bold leading-[1.18] sm:text-[1.75rem] xl:text-[2.2rem]" style={{ color: detailTheme.heading }}>
                   {product.name}
                 </h1>
-                <p className="hidden sm:block mt-2 text-[14px] leading-6 text-gray-500 sm:text-[15px]">
+                <p className="mt-2 text-[14px] leading-6 text-gray-500 sm:text-[15px]">
                   {product.shortInfo || "Deep nourishment & long lasting hydration"}
                 </p>
               </div>
@@ -3983,7 +4003,7 @@ const ProductDetail = () => {
                           )}
                           {visibleAssignedCoupon && previewCouponFinalPrice > 0 ? (
                             <div
-                              className="mt-3 grid grid-cols-2 items-start gap-3 rounded-[14px] border px-3 py-2.5"
+                              className="mt-3 grid grid-cols-1 items-start gap-3 rounded-[14px] border px-3 py-2.5 min-[420px]:grid-cols-2"
                               style={{ borderColor: detailTheme.accentLine, backgroundColor: "#fff" }}
                             >
                               <div className="min-w-0 flex-1">
@@ -4069,7 +4089,7 @@ const ProductDetail = () => {
                     </div>
                   )}
 
-                  <div ref={atcButtonsRef} className="grid grid-cols-2 gap-2.5">
+                  <div ref={atcButtonsRef} className="grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2">
                       <button
                         onClick={handleBuyNow}
                         disabled={isOutOfStock || isBuying}
@@ -4095,7 +4115,7 @@ const ProductDetail = () => {
 
                     {trustStripItems.length > 0 && (
                       <div className="border-t pt-4" style={{ borderColor: detailTheme.borderSoft }}>
-                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2.5">
+                        <div className="grid grid-cols-1 gap-1.5 min-[420px]:grid-cols-2 sm:gap-2.5">
                         {trustStripItems.map((item) => {
                           const TrustIcon = item.icon;
                           const TrustItemTag = item.to ? Link : "div";
