@@ -3565,7 +3565,7 @@ const ProductDetail = () => {
           <div className="grid grid-cols-1 gap-4 sm:gap-7 lg:grid-cols-2 lg:gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] xl:gap-10">
 
             {/* Gallery */}
-            <div className="flex flex-col gap-2.5 sm:gap-4 lg:sticky lg:top-[164px] lg:self-start lg:h-fit">
+            <div className="flex flex-col gap-2.5 sm:gap-4 lg:self-start">
               <div className="flex flex-col gap-2.5 sm:gap-3">
                 {galleryCount > 1 && (
                   <div

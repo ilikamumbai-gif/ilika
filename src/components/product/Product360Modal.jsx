@@ -52,7 +52,10 @@ const Product360Modal = ({ images = [], productName = "", onClose }) => {
           </div>
 
           <div className="min-h-0 flex-1 px-3 pb-3 pt-3 sm:px-6 sm:pb-6 sm:pt-5">
-            <div className="h-full min-h-[60vh] sm:min-h-[70vh]">
+            <div
+              className="mx-auto aspect-square w-full"
+              style={{ maxWidth: "min(860px, calc(92vh - 12rem))" }}
+            >
               <Product360Viewer
                 key={images.join("|")}
                 images={images}
