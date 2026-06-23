@@ -53,14 +53,14 @@ const HAIR_CAROUSEL_ITEMS = [
   { title: "Scalp Hydration", image: "/Images/hairc4.webp", bgColor: "", link: "/hair/care" },
 ];
 const SKIN_CAROUSEL_ITEMS = [
-  { title: "Bright & Glowing Skin", image: "/Images/skinc1.webp", bgColor: "", link: "/skin" },
-  { title: "Acne & Pimple Care", image: "/Images/skinc2.webp", bgColor: "", link: "/skin" },
-  { title: "Deep Hydration", image: "/Images/skinc3.webp", bgColor: "", link: "/skin" },
-  { title: "Dark Spot Reduction", image: "/Images/skinc4.webp", bgColor: "", link: "/skin" },
-  { title: "Anti-Aging Care", image: "/Images/skinc5.webp", bgColor: "", link: "/skin" },
-  { title: "Skin Barrier Repair", image: "/Images/skinc6.webp", bgColor: "", link: "/skin" },
-  { title: "Soft & Smooth Skin", image: "/Images/skinc7.webp", bgColor: "", link: "/skin" },
-  { title: "Oil Control Care", image: "/Images/skinc8.webp", bgColor: "", link: "/skin" },
+  { title: "Bright & Glowing Skin", image: "/Images/skinc1.webp", bgColor: "#f7b4c9", link: "/skin" },
+  { title: "Acne & Pimple Care", image: "/Images/skinc2.webp", bgColor: "#f6e285", link: "/skin" },
+  { title: "Deep Hydration", image: "/Images/skinc3.webp", bgColor: "#93caf6", link: "/skin" },
+  { title: "Dark Spot Reduction", image: "/Images/skinc4.webp", bgColor: "#cce8a9", link: "/skin" },
+  { title: "Anti-Aging Care", image: "/Images/skinc5.webp", bgColor: "#ceb2f4", link: "/skin" },
+  { title: "Skin Barrier Repair", image: "/Images/skinc6.webp", bgColor: "#f6e7c7", link: "/skin" },
+  { title: "Soft & Smooth Skin", image: "/Images/skinc7.webp", bgColor: "#ef5360", link: "/skin" },
+  { title: "Oil Control Care", image: "/Images/skinc8.webp", bgColor: "#d8b9a1", link: "/skin" },
 ];
 
 const HOME_SUPPORT_ITEMS = [
@@ -373,11 +373,18 @@ const Home = () => {
               />
 
 
-
-              <Carousel
-                heading={"What’s Your Hair Craving Today?"}
+               <Carousel
+               heading={"What’s Your Hair Craving Today?"}
                 subheading={"Healthy, shiny hair begins with the Right Care."}
                 items={HAIR_CAROUSEL_ITEMS}
+                sectionClassName="bg-black pt-6 pb-6 sm:pt-6 sm:pb-6"
+                containerClassName="px-4 sm:px-6"
+                headingClassName="text-white"
+                subheadingClassName="text-[#b65b57]"
+                titleClassName="text-white/90 text-[20px] sm:text-[18px] font-semibold"
+                arrowClassName="border-white/10 bg-white text-[#111] hover:bg-[#f5ede6]"
+                itemWidthClassName="w-[170px] sm:w-[190px]"
+                circleClassName="w-[146px] h-[146px] sm:w-[170px] sm:h-[170px]"
               />
               <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
                 <Link
@@ -472,24 +479,32 @@ const Home = () => {
           {/* SKIN CARE RANGE */}
           <LazyMountSection minHeight={620}>
             <Suspense fallback={<div className="h-40" />}>
-              <Banner
+              {/* <Banner
                 className="mt-0 md:h-[60vh]"
                 src={bannerSkincare}
                 mobileSrc={skinMobile}
                 linkUrl="/skin"
                 bannerKey="home-skincare"
                 imageFit={isMobile ? "contain" : "cover"}
-              />
+              /> */}
 
               <Carousel
                 heading={"What Does Your Skin Need Today?"}
                 subheading={"Target every skin concern with personalized skincare"}
                 items={SKIN_CAROUSEL_ITEMS}
+                sectionClassName="bg-black pt-6 pb-6 sm:pt-6 sm:pb-6"
+                containerClassName="px-4 sm:px-6"
+                headingClassName="text-white"
+                subheadingClassName="text-[#b65b57]"
+                titleClassName="text-white/90 text-[20px] sm:text-[18px] font-semibold"
+                arrowClassName="border-white/10 bg-white text-[#111] hover:bg-[#f5ede6]"
+                itemWidthClassName="w-[170px] sm:w-[190px]"
+                circleClassName="w-[146px] h-[146px] sm:w-[170px] sm:h-[170px]"
               />
-              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
+              <div className="max-w-7xl mx-auto px-4 flex mt-1 mb-1 justify-end sm:-mt-4 sm:mb-2">
                 <Link
                   to="/skin"
-                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
+                  className="text-xs sm:text-[15px] font-semibold text-[#b65b57] underline underline-offset-4 hover:text-white transition"
                 >
                   View All
                 </Link>

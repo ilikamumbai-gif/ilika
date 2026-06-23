@@ -1,14 +1,13 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { FaLeaf } from "react-icons/fa";
+import { IoWaterOutline } from "react-icons/io5";
+import { Sparkles } from "lucide-react";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import CtmCard from "../components/CtmCard";
-import { Link, useNavigate } from "react-router-dom";
-
-import { FaLeaf } from "react-icons/fa";
-import { IoWaterOutline } from "react-icons/io5";
-import { Sparkles } from "lucide-react";
 
 const steps = [
   {
@@ -32,8 +31,6 @@ const steps = [
 ];
 
 const Ctm = () => {
-  const navigate = useNavigate();
-
   return (
     <>
       <MiniDivider />
@@ -42,52 +39,62 @@ const Ctm = () => {
         <Header />
         <CartDrawer />
 
-        {/* ── HERO ─────────────────────────────────────────────── */}
-        <section
-          className="bg-[#1C371C] relative overflow-hidden cursor-pointer"
-          onClick={() => navigate("/ctmkit")}
-        >
-          <div className="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-red-200 opacity-[0.1] pointer-events-none" />
-          <div className="absolute right-32 -bottom-16 w-48 h-48 rounded-full bg-red-300 opacity-[0.2] pointer-events-none" />
+        <section className="relative bg-[#efb08d]">
+          <img
+            src="/Images/bannerctm.png"
+            alt="Build your own skincare routine"
+            className="block w-full h-auto"
+          />
 
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex flex-col md:flex-row items-center justify-between gap-8 sm:gap-10">
-            {/* Text */}
-            <div className="flex-1 text-center md:text-left">
-              <span className="inline-block border border-white border-opacity-30 text-green-200 text-[10px] tracking-[3px] uppercase font-sans font-semibold px-4 py-1.5 rounded-full mb-5 sm:mb-6">
-                Custom Skincare Routine
-              </span>
+          <div className="absolute inset-0">
+            <div className="mx-auto flex h-full max-w-7xl items-center px-4 sm:px-7 lg:px-10">
+              <div className="max-w-[40rem] text-[#2e221c]">
+                <p className="font-sans text-[1.35rem] font-black uppercase leading-[0.94] tracking-[-0.03em] sm:text-[2.25rem] md:text-[3rem] lg:text-[4.1rem]">
+                  Build Your Own
+                </p>
+                <p className="font-sans text-[1.35rem] font-black uppercase leading-[0.94] tracking-[-0.03em] text-[#b4573e] sm:text-[2.25rem] md:text-[3rem] lg:text-[4.1rem]">
+                  Skincare
+                  <span className="ml-2 sm:ml-3 text-[#2e221c]">Routine</span>
+                </p>
 
-              <h1 className="text-white font-serif leading-tight mb-4 sm:mb-5 text-4xl sm:text-5xl md:text-6xl">
-                The CTM
-                <br />
-                <span className="italic text-[#e96161]">Ritual</span>
-              </h1>
+                <div className="mt-2 flex max-w-[30rem] items-center gap-3 sm:mt-4 sm:gap-5">
+                  <div className="h-px flex-1 bg-[#b4573e]/60" />
+                  <div className="text-sm text-[#b4573e] sm:text-lg">&#9829;</div>
+                  <div className="h-px flex-1 bg-[#b4573e]/60" />
+                </div>
 
-              <p className="text-white text-opacity-70 text-sm sm:text-base font-sans font-light leading-relaxed mb-6 sm:mb-8 max-w-md mx-auto md:mx-0">
-                Cleanse. Tone. Moisturize. Three steps to transform your skin —
-                choose your perfect trio at a special bundled price.
-              </p>
+                <p className="mt-3 max-w-[28rem] font-sans text-[0.78rem] font-medium text-[#3a2d26] sm:mt-5 sm:text-lg md:text-xl">
+                  Any Cleanser <span className="text-[#b4573e]">+</span> Any Toner{" "}
+                  <span className="text-[#b4573e]">+</span> Any Moisturizer
+                </p>
 
-              <Link to="/ctmkit" onClick={(e) => e.stopPropagation()}>
-                <button className="bg-white text-[#1C371C] px-8 sm:px-9 py-3 sm:py-3.5 rounded-full text-sm font-sans font-semibold tracking-wide hover:bg-green-100 transition-colors duration-200">
-                  Build My Kit →
-                </button>
-              </Link>
-            </div>
+                <div className="mt-5 flex items-end gap-3 sm:mt-8 sm:gap-5">
+                  <div>
+                    <p className="font-sans text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[#2e221c] sm:text-sm md:text-base">
+                      For Just
+                    </p>
+                    <div className="mt-1 font-sans text-[2.4rem] font-black leading-none text-[#b4573e] sm:text-[3.5rem] md:text-[4.4rem] lg:text-[5.1rem]">
+                      Rs.699
+                    </div>
+                  </div>
+                  <div className="mb-1 h-10 w-px bg-[#b4573e]/55 sm:mb-3 sm:h-16 md:h-20" />
+                  <p className="mb-1 font-sans text-base font-black uppercase tracking-[0.06em] text-[#2e221c] sm:mb-3 sm:text-2xl md:text-3xl">
+                    Only
+                  </p>
+                </div>
 
-            {/* CTM image */}
-            <div className="group flex-shrink-0 flex justify-center md:justify-end w-full md:w-auto overflow-hidden">
-              <img
-                loading="lazy"
-                src="/Images/CTM.png"
-                alt="CTM skincare routine"
-                className="w-[240px] sm:w-[300px] md:w-[360px] h-auto object-contain drop-shadow-xl transition-transform duration-500 ease-out group-hover:scale-105"
-              />
+                <Link
+                  to="/ctmkit"
+                  className="mt-5 inline-flex items-center rounded-full bg-[#1f4a22] px-4 py-2.5 font-sans text-[0.72rem] font-semibold uppercase tracking-[0.04em] text-white transition hover:bg-[#173719] sm:mt-8 sm:px-7 sm:py-3 sm:text-base md:px-9 md:text-xl"
+                >
+                  Create Your Routine
+               
+                </Link>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ── 3-STEP STRIP ─────────────────────────────────────── */}
         <section className="bg-stone-50 border-b border-stone-200">
           <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-stone-200">
             {steps.map((s) => (
@@ -109,7 +116,6 @@ const Ctm = () => {
           </div>
         </section>
 
-        {/* ── CTA CARD ─────────────────────────────────────────── */}
         <section className="px-4 sm:px-6 py-10 sm:py-12">
           <div className="max-w-6xl mx-auto">
             <Link to="/ctmkit" className="block">
@@ -122,17 +128,17 @@ const Ctm = () => {
                     Build Your Own CTM Routine
                   </h2>
                   <p className="font-sans text-sm text-gray-400 font-light">
-                    Pick 1 cleanser + 1 toner + 1 moisturizer — get the trio at ₹699
+                    Pick 1 cleanser + 1 toner + 1 moisturizer - get the trio at Rs. 699
                   </p>
                 </div>
 
                 <div className="flex items-center gap-4 sm:gap-5 flex-shrink-0 w-full md:w-auto justify-between md:justify-end">
                   <div className="text-right">
-                    <p className="font-sans text-xs text-gray-400 line-through mb-0.5">₹999</p>
-                    <p className="font-serif text-3xl sm:text-4xl text-[#1C371C]">₹699</p>
+                    <p className="font-sans text-xs text-gray-400 line-through mb-0.5">Rs. 999</p>
+                    <p className="font-serif text-3xl sm:text-4xl text-[#1C371C]">Rs. 699</p>
                   </div>
                   <div className="bg-[#801f1f] text-white px-5 sm:px-7 py-3 rounded-full font-sans text-sm font-semibold whitespace-nowrap">
-                    Create My Kit →
+                    Create My Kit ->
                   </div>
                 </div>
               </div>
@@ -140,7 +146,6 @@ const Ctm = () => {
           </div>
         </section>
 
-        {/* ── DETAILED SECTIONS ─────────────────────────────────── */}
         <section className="pb-14 sm:pb-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center pb-8 sm:pb-10">

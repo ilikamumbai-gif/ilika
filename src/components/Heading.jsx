@@ -1,6 +1,13 @@
 import React from 'react'
 
-const Heading = ({ heading, sub, align = "center", subVariant = "label", subClassName = "" }) => {
+const Heading = ({
+  heading,
+  sub,
+  align = "center",
+  subVariant = "label",
+  subClassName = "",
+  headingClassName = "",
+}) => {
   const isLeft = align === "left";
   const isParagraphSub = subVariant === "paragraph";
 
@@ -17,8 +24,8 @@ const Heading = ({ heading, sub, align = "center", subVariant = "label", subClas
 
       {/* Main heading */}
       <h1
-        className="max-w-4xl font-semibold leading-[1.08] tracking-tight text-neutral-900
-                   text-2xl sm:text-2xl md:text-3xl lg:text-4xl"
+        className={`max-w-4xl font-semibold leading-[1.08] tracking-tight text-neutral-900
+                   text-2xl sm:text-2xl md:text-3xl lg:text-4xl ${headingClassName}`}
         style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
       >
         {heading}

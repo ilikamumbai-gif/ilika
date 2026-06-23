@@ -83,7 +83,7 @@ const CategoryNav = ({ categories = [] }) => {
 
         <Link
           to="/products"
-          className="mt-5 sm:mt-6 w-full h-11 rounded-md bg-black text-white font-semibold text-base inline-flex items-center justify-center gap-2 hover:opacity-95 transition"
+          className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#2f2f2f] bg-[#b34140] px-5 text-base font-semibold text-white transition hover:bg-[#7b403f] hover:opacity-95 sm:mt-6"
         >
           View all products
           <ArrowRight className="w-4 h-4" />

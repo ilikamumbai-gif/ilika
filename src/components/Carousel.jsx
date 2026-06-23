@@ -7,6 +7,14 @@ const Carousel = ({
   heading = "What Are You Looking For Today?",
   subheading = "this is demo",
   items = [],
+  sectionClassName = "bg-white",
+  containerClassName = "",
+  headingClassName = "",
+  subheadingClassName = "",
+  titleClassName = "",
+  arrowClassName = "",
+  itemWidthClassName = "w-[140px]",
+  circleClassName = "w-[120px] h-[120px] sm:w-[140px] sm:h-[140px]",
 }) => {
   const trackRef = useRef(null);
 
@@ -31,10 +39,15 @@ const Carousel = ({
   };
 
   return (
-    <section className="w-full bg-white pt-10 sm:py-10">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className={`w-full pt-10 sm:py-10 ${sectionClassName}`}>
+      <div className={`max-w-7xl mx-auto px-6 ${containerClassName}`}>
         {/* Heading */}
-        <Heading heading={heading} sub={subheading} />
+        <Heading
+          heading={heading}
+          sub={subheading}
+          headingClassName={headingClassName}
+          subClassName={subheadingClassName}
+        />
 
         <div className="relative">
           {/* Left Arrow */}
@@ -42,7 +55,7 @@ const Carousel = ({
             type="button"
             aria-label="Previous"
             onClick={() => scrollByAmount(-1)}
-            className="hidden md:flex absolute -left-5 top-[40%] -translate-y-1/2 z-10 h-10 w-10 rounded-full border border-[#e0e0e0] bg-white shadow-sm items-center justify-center hover:bg-gray-50 transition"
+            className={`hidden md:flex absolute -left-5 top-[40%] -translate-y-1/2 z-10 h-10 w-10 rounded-full border border-[#e0e0e0] bg-white shadow-sm items-center justify-center hover:bg-gray-50 transition ${arrowClassName}`}
           >
             <ChevronLeft className="w-5 h-5 text-gray-500" />
           </button>
@@ -58,8 +71,7 @@ const Carousel = ({
                 key={item.id}
                 to={item.link}
                 draggable={false}
-                className="relative shrink-0 flex flex-col items-center group"
-                style={{ width: "140px" }}
+                className={`relative shrink-0 flex flex-col items-center group ${itemWidthClassName}`}
               >
                 {/* Badge */}
                 {item.badge ? (
@@ -70,7 +82,7 @@ const Carousel = ({
 
                 {/* Circular Image */}
                 <div
-                  className="w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] rounded-full overflow-hidden transition-transform duration-200 group-hover:scale-105"
+                  className={`${circleClassName} rounded-full overflow-hidden transition-transform duration-200 group-hover:scale-105`}
                   style={{
                     background: item.bgColor || "#e8f5f1",
                   }}
@@ -85,7 +97,7 @@ const Carousel = ({
                 </div>
 
                 {/* Title */}
-                <p className="mt-3 text-center font-semibold text-[#1a1a1a] text-[13px] sm:text-[14px] leading-snug px-1">
+                <p className={`mt-3 text-center font-semibold text-[#1a1a1a] text-[13px] sm:text-[14px] leading-snug px-1 ${titleClassName}`}>
                   {item.title}
                 </p>
               </Link>
@@ -97,7 +109,7 @@ const Carousel = ({
             type="button"
             aria-label="Next"
             onClick={() => scrollByAmount(1)}
-            className="hidden md:flex absolute -right-5 top-[40%] -translate-y-1/2 z-10 h-10 w-10 rounded-full border border-[#e0e0e0] bg-white shadow-sm items-center justify-center hover:bg-gray-50 transition"
+            className={`hidden md:flex absolute -right-5 top-[40%] -translate-y-1/2 z-10 h-10 w-10 rounded-full border border-[#e0e0e0] bg-white shadow-sm items-center justify-center hover:bg-gray-50 transition ${arrowClassName}`}
           >
             <ChevronRight className="w-5 h-5 text-gray-500" />
           </button>
