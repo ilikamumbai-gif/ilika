@@ -39,61 +39,83 @@ const Ctm = () => {
         <Header />
         <CartDrawer />
 
-        <section className="relative bg-[#efb08d]">
-          <img
-            src="/Images/bannerctm.png"
-            alt="Build your own skincare routine"
-            className="block w-full h-auto"
-          />
+        <Link to="/ctmkit" className="block">
+          <section className="relative bg-[#efb08d] cursor-pointer">
+            <picture>
+              <source media="(max-width: 639px)" srcSet="/Images/bannerctmmobile.png" />
+              <img
+                src="/Images/bannerctm.png"
+                alt="Build your own skincare routine"
+                className="block w-full h-auto"
+              />
+            </picture>
 
-          <div className="absolute inset-0">
-            <div className="mx-auto flex h-full max-w-7xl items-center px-4 sm:px-7 lg:px-10">
-              <div className="max-w-[40rem] text-[#2e221c]">
-                <p className="font-sans text-[1.35rem] font-black uppercase leading-[0.94] tracking-[-0.03em] sm:text-[2.25rem] md:text-[3rem] lg:text-[4.1rem]">
-                  Build Your Own
-                </p>
-                <p className="font-sans text-[1.35rem] font-black uppercase leading-[0.94] tracking-[-0.03em] text-[#b4573e] sm:text-[2.25rem] md:text-[3rem] lg:text-[4.1rem]">
-                  Skincare
-                  <span className="ml-2 sm:ml-3 text-[#2e221c]">Routine</span>
-                </p>
+            <div className="absolute inset-0">
+              <div className="mx-auto flex h-full max-w-7xl items-start px-5 pt-[10%] sm:items-center sm:px-7 sm:pt-0 lg:px-10">
+                <div className="max-w-[13rem] text-white sm:max-w-[40rem] sm:text-[#2e221c]">
+                  <p className="font-sans text-[1.2rem] font-black uppercase leading-[0.92] tracking-[-0.03em] sm:text-[2.25rem] md:text-[3rem] lg:text-[4.1rem]">
+                    Build Your Own
+                  </p>
+                  <p className="font-sans text-[1.2rem] font-black uppercase leading-[0.92] tracking-[-0.03em] text-white sm:text-[2.25rem] sm:text-[#b4573e] md:text-[3rem] lg:text-[4.1rem]">
+                    Skincare
+                    <span className="ml-2 text-white sm:ml-3 sm:text-[#2e221c]">Routine</span>
+                  </p>
 
-                <div className="mt-2 flex max-w-[30rem] items-center gap-3 sm:mt-4 sm:gap-5">
-                  <div className="h-px flex-1 bg-[#b4573e]/60" />
-                  <div className="text-sm text-[#b4573e] sm:text-lg">&#9829;</div>
-                  <div className="h-px flex-1 bg-[#b4573e]/60" />
+                  <div className="mt-2 flex max-w-[11rem] items-center gap-2 sm:mt-4 sm:max-w-[30rem] sm:gap-5">
+                    <div className="h-px flex-1 bg-white/55 sm:bg-[#b4573e]/60" />
+                    <div className="text-[10px] text-white sm:text-lg sm:text-[#b4573e]">&#9829;</div>
+                    <div className="h-px flex-1 bg-white/55 sm:bg-[#b4573e]/60" />
+                  </div>
+
+                  <p className="mt-3 max-w-[11rem] font-sans text-[0.7rem] font-medium leading-[1.3] text-white sm:mt-5 sm:max-w-[28rem] sm:text-lg sm:text-[#3a2d26] md:text-xl">
+                    Any Cleanser <span className="text-white sm:text-[#b4573e]">+</span> Any Toner{" "}
+                    <span className="text-white sm:text-[#b4573e]">+</span> Any Moisturizer
+                  </p>
+
+                  <div className="mt-4 hidden items-end gap-2 sm:mt-8 sm:flex sm:gap-5">
+                    <div>
+                      <p className="font-sans text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white sm:text-sm sm:text-[#2e221c] md:text-base">
+                        For Just
+                      </p>
+                      <div className="mt-1 font-sans text-[1.85rem] font-black leading-none text-white sm:text-[3.5rem] sm:text-[#b4573e] md:text-[4.4rem] lg:text-[5.1rem]">
+                        Rs.699
+                      </div>
+                    </div>
+                    <div className="mb-1 h-8 w-px bg-white/45 sm:mb-3 sm:h-16 sm:bg-[#b4573e]/55 md:h-20" />
+                    <p className="mb-1 font-sans text-[0.9rem] font-black uppercase tracking-[0.06em] text-white sm:mb-3 sm:text-2xl sm:text-[#2e221c] md:text-3xl">
+                      Only
+                    </p>
+                  </div>
+
+                  <div className="mt-4 hidden items-center rounded-full bg-[#1f4a22] px-3.5 py-2 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.04em] text-white transition hover:bg-[#173719] sm:mt-8 sm:inline-flex sm:px-7 sm:py-3 sm:text-base md:px-9 md:text-xl">
+                    Create Your Routine
+                  </div>
                 </div>
+              </div>
 
-                <p className="mt-3 max-w-[28rem] font-sans text-[0.78rem] font-medium text-[#3a2d26] sm:mt-5 sm:text-lg md:text-xl">
-                  Any Cleanser <span className="text-[#b4573e]">+</span> Any Toner{" "}
-                  <span className="text-[#b4573e]">+</span> Any Moisturizer
-                </p>
-
-                <div className="mt-5 flex items-end gap-3 sm:mt-8 sm:gap-5">
-                  <div>
-                    <p className="font-sans text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[#2e221c] sm:text-sm md:text-base">
+              <div className="absolute bottom-[8%] right-4 flex flex-col items-end text-white sm:hidden">
+                <div className="flex items-end gap-2">
+                  <div className="text-right">
+                    <p className="font-sans text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white">
                       For Just
                     </p>
-                    <div className="mt-1 font-sans text-[2.4rem] font-black leading-none text-[#b4573e] sm:text-[3.5rem] md:text-[4.4rem] lg:text-[5.1rem]">
+                    <div className="mt-1 font-sans text-[1.85rem] font-black leading-none text-white">
                       Rs.699
                     </div>
                   </div>
-                  <div className="mb-1 h-10 w-px bg-[#b4573e]/55 sm:mb-3 sm:h-16 md:h-20" />
-                  <p className="mb-1 font-sans text-base font-black uppercase tracking-[0.06em] text-[#2e221c] sm:mb-3 sm:text-2xl md:text-3xl">
+                  <div className="mb-1 h-8 w-px bg-white/45" />
+                  <p className="mb-1 font-sans text-[0.9rem] font-black uppercase tracking-[0.06em] text-white">
                     Only
                   </p>
                 </div>
 
-                <Link
-                  to="/ctmkit"
-                  className="mt-5 inline-flex items-center rounded-full bg-[#1f4a22] px-4 py-2.5 font-sans text-[0.72rem] font-semibold uppercase tracking-[0.04em] text-white transition hover:bg-[#173719] sm:mt-8 sm:px-7 sm:py-3 sm:text-base md:px-9 md:text-xl"
-                >
+                <div className="mt-3 inline-flex items-center rounded-full bg-[#1f4a22] px-3.5 py-2 font-sans text-[0.62rem] font-semibold uppercase tracking-[0.04em] text-white transition hover:bg-[#173719]">
                   Create Your Routine
-               
-                </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </Link>
 
         <section className="bg-stone-50 border-b border-stone-200">
           <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-stone-200">

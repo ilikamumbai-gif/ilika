@@ -40,6 +40,8 @@ const maskBannerDesktop = "/Images/mask.webp";
 const maskBannerMobile = "/Images/mask.webp";
 const maskComboBanner24Desktop = "/Images/24.webp";
 const maskComboBanner24Mobile = "/Images/24.webp";
+const homePageCtmBannerDesktop = "/Images/homepagebannerctm.png";
+const homePageCtmBannerMobile = "/Images/homepagebannerctm.png";
 
 
 const HAIR_CAROUSEL_ITEMS = [
@@ -246,6 +248,12 @@ const Home = () => {
                 mobileSrc: end2BannerMobile,
                 linkUrl: "/mask-combo#mask-combo-4in1",
                 alt: "Mask Combo Banner",
+              },
+              {
+                desktopSrc: homePageCtmBannerDesktop,
+                mobileSrc: homePageCtmBannerMobile,
+                linkUrl: "/ctm",
+                alt: "CTM Banner",
               },
 
             ]}
