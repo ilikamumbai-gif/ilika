@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
 import { useSeo } from "../hooks/useSeo";
+import StructuredData from "../components/StructuredData";
 import { useProducts } from "../admin/context/ProductContext";
 import { getProductSlug } from "../utils/slugify";
 
@@ -192,6 +193,15 @@ const Combos = () => {
       buttonVariant: "dark",
     },
   ];
+  const offersSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Ilika Offers",
+    url: "https://ilika.in/offers",
+    description:
+      "Browse seasonal discounts, combo offers, and featured beauty deals from Ilika.",
+    numberOfItems: offerCards.length,
+  };
 
   useSeo({
     title: "Combo Deals | Ilika",
@@ -206,19 +216,11 @@ const Combos = () => {
       "hair care offers",
       "mask maker discount",
     ],
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      name: "Ilika Offers",
-      url: "https://ilika.in/offers",
-      description:
-        "Browse seasonal discounts, combo offers, and featured beauty deals from Ilika.",
-      numberOfItems: offerCards.length,
-    },
   });
 
   return (
     <>
+      <StructuredData schema={offersSchema} />
       <MiniDivider />
 
       <div style={{ background: "#ffffff" }}>

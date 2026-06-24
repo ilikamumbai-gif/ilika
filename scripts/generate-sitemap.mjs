@@ -162,6 +162,7 @@ const resolveApiEndpoints = (env, endpointPath) => {
   if (endpointPath === "/api/blogs") {
     addEndpointCandidates(endpoints, env.SITEMAP_BLOGS_URL, endpointPath);
   }
+  addEndpointCandidates(endpoints, "http://localhost:5000", endpointPath);
 
   return Array.from(endpoints);
 };

@@ -6,6 +6,7 @@ import AdminProtectedRoute from "../admin/components/AdminProtectedRoute";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { AdminAuthProvider } from "../admin/context/AdminAuthContext";
 import { useSeo } from "../hooks/useSeo";
+import StructuredData from "../components/StructuredData";
 import Home from "../pages/Home";
 import Offer from "../pages/Offer";
 import Skin from "../pages/Skin";
@@ -244,7 +245,7 @@ const RouteSeo = () => {
   const routeJsonLd = isAdminPath
     ? null
     : isHomePage
-      ? [organizationJsonLd]
+      ? null
       : isProductDetailPage
         ? null
         : [organizationJsonLd, breadcrumbJsonLd];
@@ -255,10 +256,13 @@ const RouteSeo = () => {
     path: pathname,
     robots: isAdminPath ? "noindex, nofollow" : "index, follow",
     keywords: seo.keywords,
-    jsonLd: routeJsonLd,
   });
 
-  return null;
+  return (
+    <>
+      <StructuredData schema={routeJsonLd} />
+    </>
+  );
 };
 
 const RouteLoader = () => <div className="min-h-screen" aria-busy="true" />;

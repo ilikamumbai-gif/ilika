@@ -160,7 +160,7 @@ const Ctm = () => {
                     <p className="font-serif text-3xl sm:text-4xl text-[#1C371C]">Rs. 699</p>
                   </div>
                   <div className="bg-[#801f1f] text-white px-5 sm:px-7 py-3 rounded-full font-sans text-sm font-semibold whitespace-nowrap">
-                    Create My Kit ->
+                    Create My Kit 
                   </div>
                 </div>
               </div>

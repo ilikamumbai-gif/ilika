@@ -71,6 +71,7 @@ const resolveApiEndpoints = (env, endpointPath) => {
   addEndpointCandidates(endpoints, env.SITEMAP_API_URL, endpointPath);
   addEndpointCandidates(endpoints, env.VITE_API_URL, endpointPath);
   addEndpointCandidates(endpoints, env.SITEMAP_PRODUCTS_URL, endpointPath);
+  addEndpointCandidates(endpoints, "http://localhost:5000", endpointPath);
   return Array.from(endpoints);
 };
 
@@ -138,6 +139,21 @@ const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => 
   const salePrice = Number(product?.salePrice || product?.price || 0);
   const mrp = Number(product?.mrp || 0);
   const price = salePrice > 0 ? salePrice : mrp > 0 ? mrp : null;
+  const reviews = Array.isArray(product?.reviews) ? product.reviews : [];
+  const reviewCount = reviews.length;
+  const averageRating = reviewCount
+    ? Number(
+        (
+          reviews.reduce((sum, review) => sum + Number(review?.rating || 0), 0) / reviewCount
+        ).toFixed(1)
+      )
+    : null;
+  const category = Array.isArray(product?.seoCategory)
+    ? product.seoCategory.filter(Boolean).join(", ")
+    : String(product?.seoCategory || product?.categoryName || product?.category || "").trim();
+  const keywords = Array.isArray(product?.seoKeywords)
+    ? product.seoKeywords.filter(Boolean).join(", ")
+    : String(product?.seoKeywords || "").trim();
 
   if (price) {
     offers.push({
@@ -153,6 +169,8 @@ const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => 
   return {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${canonicalUrl}#product`,
+    mainEntityOfPage: canonicalUrl,
     name: String(product?.name || "Product"),
     description,
     image: [image],
@@ -162,6 +180,16 @@ const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => 
       "@type": "Brand",
       name: "Ilika",
     },
+    category: category || undefined,
+    keywords: keywords || undefined,
+    aggregateRating:
+      averageRating && reviewCount
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: averageRating,
+            reviewCount,
+          }
+        : undefined,
     ...(offers.length ? { offers: offers[0] } : {}),
   };
 };

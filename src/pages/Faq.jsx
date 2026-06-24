@@ -5,6 +5,7 @@ import Heading from "../components/Heading";
 import Footer from "../components/Footer";
 import { ChevronDown } from "lucide-react";
 import { useSeo } from "../hooks/useSeo";
+import StructuredData from "../components/StructuredData";
 
 const faqData = [
   {
@@ -61,24 +62,24 @@ const faqData = [
 
 const Faq = () => {
   const [openIndex, setOpenIndex] = useState(null);
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqData.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
 
   useSeo({
     title: "FAQ | Ilika",
     description: "Frequently asked questions about Ilika orders, delivery, returns, support, and product usage.",
     path: "/faq",
     keywords: ["Ilika FAQ", "delivery", "returns", "customer support", "COD"],
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: faqData.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.answer,
-        },
-      })),
-    },
   });
 
   const toggle = (index) => {
@@ -87,6 +88,7 @@ const Faq = () => {
 
   return (
     <>
+      <StructuredData schema={faqSchema} />
       <MiniDivider />
 
       <div className="primary-bg-color min-h-screen">

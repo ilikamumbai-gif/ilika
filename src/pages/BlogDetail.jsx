@@ -9,6 +9,7 @@ import { useCart } from "../context/CartProvider";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
+import StructuredData from "../components/StructuredData";
 import { buildCartProductSnapshot, getDefaultVariant } from "../utils/productPricing";
 
 const removeInlineImagesFromHtml = (html = "") =>
@@ -372,6 +373,30 @@ const BlogDetail = () => {
     "beauty guide",
     blog?.title || "",
   ].filter(Boolean);
+  const blogSchema = blog
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: blog.title,
+        description: seoDescription,
+        image: [seoImage],
+        author: {
+          "@type": "Organization",
+          name: blog.author || "Ilika Team",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "Ilika",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://ilika.in/Images/logo2.webp",
+          },
+        },
+        datePublished: blog?.createdAt || undefined,
+        dateModified: blog?.updatedAt || blog?.createdAt || undefined,
+        mainEntityOfPage: `https://ilika.in/blog/${blogSlug}`,
+      }
+    : null;
 
   useSeo({
     title: seoTitle,
@@ -382,30 +407,6 @@ const BlogDetail = () => {
     type: "article",
     robots: blog ? "index, follow" : "noindex, follow",
     keywords: seoKeywords,
-    jsonLd: blog
-      ? {
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: blog.title,
-          description: seoDescription,
-          image: [seoImage],
-          author: {
-            "@type": "Organization",
-            name: blog.author || "Ilika Team",
-          },
-          publisher: {
-            "@type": "Organization",
-            name: "Ilika",
-            logo: {
-              "@type": "ImageObject",
-              url: "https://ilika.in/Images/logo2.webp",
-            },
-          },
-          datePublished: blog?.createdAt || undefined,
-          dateModified: blog?.updatedAt || blog?.createdAt || undefined,
-          mainEntityOfPage: `https://ilika.in/blog/${blogSlug}`,
-        }
-      : null,
   });
 
   useEffect(() => {
@@ -417,6 +418,7 @@ const BlogDetail = () => {
   if (loadingBlog) {
     return (
       <>
+        <StructuredData schema={blogSchema} />
         <MiniDivider />
         <div className="min-h-screen bg-white text-[#1C371C]">
           <Header />
@@ -454,6 +456,7 @@ const BlogDetail = () => {
 
   return (
     <>
+      <StructuredData schema={blogSchema} />
       <MiniDivider />
       <div className="min-h-screen bg-white text-[#1C371C]">
         <Header />

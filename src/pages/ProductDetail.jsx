@@ -24,6 +24,7 @@ import Lazy360ViewButton from "../components/product/Lazy360ViewButton";
 import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 import { useSeo } from "../hooks/useSeo";
+import StructuredData from "../components/StructuredData";
 import {
   buildCartProductSnapshot,
   findVariantByQueryValue,
@@ -3330,6 +3331,37 @@ const ProductDetail = () => {
     productMatchesCurrentRoute,
     productReviews,
   ]);
+  const productFaqJsonLd = useMemo(() => {
+    if (!productFaqs.length) return null;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: productFaqs
+        .filter((item) => item?.question && item?.answer)
+        .map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.answer,
+          },
+        })),
+    };
+  }, [productFaqs]);
+  const productStructuredData = useMemo(
+    () =>
+      product && product.isActive !== false && productMatchesCurrentRoute
+        ? [productJsonLd, productBreadcrumbJsonLd, productFaqJsonLd].filter(Boolean)
+        : null,
+    [
+      product,
+      productMatchesCurrentRoute,
+      productJsonLd,
+      productBreadcrumbJsonLd,
+      productFaqJsonLd,
+    ]
+  );
 
   useSeo({
     title: seoProductTitle,
@@ -3340,10 +3372,6 @@ const ProductDetail = () => {
     type: "product",
     robots: product && product.isActive !== false ? "index, follow" : "noindex, follow",
     keywords: seoProductKeywords,
-    jsonLd:
-      product && product.isActive !== false && productMatchesCurrentRoute
-        ? [productJsonLd].filter(Boolean)
-        : null,
   });
 
   useEffect(() => {
@@ -3510,6 +3538,7 @@ const ProductDetail = () => {
 
   return (
     <>
+      <StructuredData schema={productStructuredData} />
       <MiniDivider />
       {showReviewModal && (
         <ReviewModal

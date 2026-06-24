@@ -12,6 +12,7 @@ import CartDrawer from "../components/CartDrawer";
 import { getProductSlug } from "../utils/slugify";
 import { Truck, ShieldCheck, BadgeCheck } from "lucide-react";
 import { useSeo } from "../hooks/useSeo";
+import StructuredData from "../components/StructuredData";
 
 const ComboTab = lazy(() => import("../components/ComboTab"));
 
@@ -88,7 +89,6 @@ const ComboDetail = () => {
     keywords: combo
       ? ["Ilika combo", combo.name, "combo offer", "buy combo online"]
       : ["Ilika combo", "combo offers"],
-    jsonLd: productSchema,
   });
 
   useEffect(() => {
@@ -112,6 +112,7 @@ const ComboDetail = () => {
 
   return (
     <>
+      <StructuredData schema={productSchema} />
       <MiniDivider />
 
       <div className="primary-bg-color">

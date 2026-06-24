@@ -10,6 +10,7 @@ import { useProducts } from "../admin/context/ProductContext";
 import { useCategories } from "../admin/context/CategoryContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
+import StructuredData from "../components/StructuredData";
 
 const splitCategoryNames = (value = "") =>
   String(value || "")
@@ -225,6 +226,21 @@ const CategoryProducts = () => {
       return aliasSlugs.some((aliasSlug) => productNameSlug.includes(aliasSlug));
     });
   }, [products, giftCollection, matchedCategoryIds, groupCategoryIds, targetSlug, targetLooseSlug]);
+  const categorySchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${categoryLabel} Products`,
+    url: `https://ilika.in/category/${canonicalCategorySlug}`,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: filtered.slice(0, 20).map((product, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `https://ilika.in/product/${getProductSlug(product)}`,
+        name: product?.name || "Product",
+      })),
+    },
+  };
 
   useSeo({
     title: `${categoryLabel} Products | Ilika`,
@@ -233,21 +249,6 @@ const CategoryProducts = () => {
     canonical: `/category/${canonicalCategorySlug}`,
     image: filtered?.[0]?.images?.[0] || filtered?.[0]?.imageUrl || "https://ilika.in/Images/logo2.webp",
     keywords: ["Ilika", "category products", categoryLabel, `${categoryLabel} products`],
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      name: `${categoryLabel} Products`,
-      url: `https://ilika.in/category/${canonicalCategorySlug}`,
-      mainEntity: {
-        "@type": "ItemList",
-        itemListElement: filtered.slice(0, 20).map((product, index) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          url: `https://ilika.in/product/${getProductSlug(product)}`,
-          name: product?.name || "Product",
-        })),
-      },
-    },
   });
 
   useEffect(() => {
@@ -258,6 +259,7 @@ const CategoryProducts = () => {
 
   return (
     <>
+      <StructuredData schema={categorySchema} />
       <MiniDivider />
       <div className="primary-bg-color">
         <Header />
