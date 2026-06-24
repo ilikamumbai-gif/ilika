@@ -31,7 +31,14 @@ const Body = () => {
           <Heading level="h1" heading="Body Care Products" />
 
           {hairCategory ? (
-            <ProductList categoryId={hairCategory.id} />
+            <ProductList
+              categoryId={hairCategory.id}
+              structuredData={{
+                title: "Body Care Products | Ilika",
+                description: "Browse Ilika body care products with current pricing and offers.",
+                path: "/skin/body",
+              }}
+            />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>
           )}

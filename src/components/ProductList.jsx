@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useProducts } from "../admin/context/ProductContext";
 import ProductCard from "./ProductCard";
+import StructuredData from "./StructuredData";
+import { buildProductListStructuredData } from "../utils/productListStructuredData";
 
 const ProductList = ({
   categoryId,
@@ -12,6 +14,7 @@ const ProductList = ({
   priorityNames = [],
   priorityCount = 0,
   mobileScroll = false,
+  structuredData = null,
 }) => {
   const { products } = useProducts();
 
@@ -45,8 +48,17 @@ const ProductList = ({
     filteredProducts = filteredProducts.slice(0, limit);
   }
 
+  const listSchema = useMemo(() => {
+    if (!structuredData) return null;
+    return buildProductListStructuredData({
+      ...structuredData,
+      products: filteredProducts,
+    });
+  }, [structuredData, filteredProducts]);
+
   return (
     <section className="w-full py-2 sm:py-3">
+      <StructuredData schema={listSchema} />
       <div className="max-w-7xl mx-auto px-4">
         {mobileScroll && (
           <div className="flex gap-4 overflow-x-auto pb-2 sm:hidden scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

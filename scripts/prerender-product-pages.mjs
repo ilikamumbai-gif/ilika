@@ -4,6 +4,26 @@ import path from "node:path";
 const SITE_URL = "https://ilika.in";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/Images/logo2.webp`;
 const PRODUCT_URL_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const PRODUCT_RETURN_POLICY = {
+  "@type": "MerchantReturnPolicy",
+  applicableCountry: "IN",
+  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+  merchantReturnDays: 7,
+  returnMethod: "https://schema.org/ReturnByMail",
+  returnFees: "https://schema.org/FreeReturn",
+};
+const PRODUCT_SHIPPING_DETAILS = {
+  "@type": "OfferShippingDetails",
+  shippingRate: {
+    "@type": "MonetaryAmount",
+    value: "0",
+    currency: "INR",
+  },
+  shippingDestination: {
+    "@type": "DefinedRegion",
+    addressCountry: "IN",
+  },
+};
 
 const readEnvFile = async (filePath) => {
   try {
@@ -163,6 +183,8 @@ const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => 
       availability: product?.stock === 0 || product?.isOutOfStock ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
       url: canonicalUrl,
       itemCondition: "https://schema.org/NewCondition",
+      shippingDetails: PRODUCT_SHIPPING_DETAILS,
+      hasMerchantReturnPolicy: PRODUCT_RETURN_POLICY,
     });
   }
 

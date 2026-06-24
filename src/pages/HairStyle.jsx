@@ -34,6 +34,11 @@ const HairStyle = () => {
             <ProductList
               categoryId={hairCategory.id}
               priorityNames={[ "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control"]}
+              structuredData={{
+                title: "Hair Styling Products | Ilika",
+                description: "Browse Ilika hair styling products with current pricing and offers.",
+                path: "/hair/styling",
+              }}
             />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>

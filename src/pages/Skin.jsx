@@ -30,7 +30,14 @@ const Skin = () => {
           <Heading level="h1" heading="Skin Care Products" />
 
           {hairCategory ? (
-            <ProductList categoryId={hairCategory.id} />
+            <ProductList
+              categoryId={hairCategory.id}
+              structuredData={{
+                title: "Skin Care Products | Ilika",
+                description: "Browse Ilika skin care products with current pricing and offers.",
+                path: "/skin",
+              }}
+            />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>
           )}

@@ -33,6 +33,11 @@ const Face = () => {
           {hairCategory ? (
             <ProductList
               categoryId={hairCategory.id}
+              structuredData={{
+                title: "Face Care Products | Ilika",
+                description: "Browse Ilika face care products with current pricing and offers.",
+                path: "/skin/face",
+              }}
             />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>

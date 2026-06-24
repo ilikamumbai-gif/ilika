@@ -30,6 +30,11 @@ const Hair = () => {
           {hairCategory ? (
             <ProductList categoryId={hairCategory.id}
               priorityNames={["Ilika Black Seed Hair Oil | For Premature Grey Hair & Hair Fall Control | Nourishing Scalp Care", "Ilika 10 Herbs Herbal Hair Growth Oil | For Hair Fall Control, Hair Growth & Strong Healthy Hair", "Ilika Frizz Control Hair Serum", "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control", "Ilika Airwrap Multi-Styler Kit | 5-in-1 Hair Styling Tool for Curling, Straightening, Volumizing & Drying"]}
+              structuredData={{
+                title: "Hair Products | Ilika",
+                description: "Browse Ilika hair products with current pricing and offers.",
+                path: "/hair",
+              }}
             />
           ) : (
             <p className="text-sm text-gray-500">Loading products...</p>

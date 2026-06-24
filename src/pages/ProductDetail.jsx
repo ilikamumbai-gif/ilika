@@ -24,7 +24,6 @@ import Lazy360ViewButton from "../components/product/Lazy360ViewButton";
 import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 import { useSeo } from "../hooks/useSeo";
-import StructuredData from "../components/StructuredData";
 import {
   buildCartProductSnapshot,
   findVariantByQueryValue,
@@ -43,6 +42,28 @@ const COLLAGEN_ADDON_OPTIONS = [
   { id: "pack2", count: 2, label: "2 Collagen Peptide Packs (32 no.s)", tablets: 32, price: 1499 },
   { id: "pack3", count: 3, label: "3 Collagen Peptide Packs (48 no.s)", tablets: 48, price: 2299 },
 ];
+
+const PRODUCT_RETURN_POLICY = {
+  "@type": "MerchantReturnPolicy",
+  applicableCountry: "IN",
+  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+  merchantReturnDays: 7,
+  returnMethod: "https://schema.org/ReturnByMail",
+  returnFees: "https://schema.org/FreeReturn",
+};
+
+const PRODUCT_SHIPPING_DETAILS = {
+  "@type": "OfferShippingDetails",
+  shippingRate: {
+    "@type": "MonetaryAmount",
+    value: "0",
+    currency: "INR",
+  },
+  shippingDestination: {
+    "@type": "DefinedRegion",
+    addressCountry: "IN",
+  },
+};
 
 const normalizeRouteSlug = (value = "") =>
   String(value || "").trim().toLowerCase();
@@ -3250,119 +3271,6 @@ const ProductDetail = () => {
     [product?.productTag]
   );
 
-  const productBreadcrumbJsonLd = useMemo(() => ({
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://ilika.in/" },
-      { "@type": "ListItem", position: 2, name: "All Products", item: "https://ilika.in/products" },
-      { "@type": "ListItem", position: 3, name: product?.name || "Product", item: `https://ilika.in${canonicalPath}` },
-    ],
-  }), [product?.name, canonicalPath]);
-
-  const productJsonLd = useMemo(() => {
-    if (!product || product.isActive === false || !productMatchesCurrentRoute) return null;
-
-    const categoryValue = Array.isArray(product?.seoCategory)
-      ? product.seoCategory.filter(Boolean).join(", ")
-      : String(product?.seoCategory || product?.categoryName || product?.category || "").trim();
-
-    const keywordValue = Array.isArray(seoProductKeywords)
-      ? seoProductKeywords.join(", ")
-      : String(seoProductKeywords || "").trim();
-
-    const normalizedPrice = Number(price || 0) > 0 ? Number(price).toFixed(2) : null;
-    const productUrl = `https://ilika.in${canonicalPath}`;
-    const reviewCount = productReviews.length;
-    const averageRating = reviewCount
-      ? Number(
-          (
-            productReviews.reduce((sum, review) => sum + Number(review?.rating || 0), 0) /
-            reviewCount
-          ).toFixed(1)
-        )
-      : null;
-
-    return {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "@id": `${productUrl}#product`,
-      url: productUrl,
-      mainEntityOfPage: productUrl,
-      name: String(product?.name || "").trim(),
-      description: seoProductDescription,
-      image: seoProductImage ? [toAbsoluteUrl(seoProductImage)] : undefined,
-      brand: {
-        "@type": "Brand",
-        name: "Ilika",
-      },
-      category: categoryValue || undefined,
-      keywords: keywordValue || undefined,
-      sku: String(product?._id || product?.id || product?.docId || "").trim() || undefined,
-      aggregateRating:
-        averageRating && reviewCount
-          ? {
-              "@type": "AggregateRating",
-              ratingValue: averageRating,
-              reviewCount,
-            }
-          : undefined,
-      offers: normalizedPrice
-        ? {
-            "@type": "Offer",
-            url: productUrl,
-            priceCurrency: "INR",
-            price: normalizedPrice,
-            availability: isOutOfStock
-              ? "https://schema.org/OutOfStock"
-              : "https://schema.org/InStock",
-            itemCondition: "https://schema.org/NewCondition",
-          }
-        : undefined,
-    };
-  }, [
-    product,
-    seoProductKeywords,
-    price,
-    seoProductDescription,
-    seoProductImage,
-    canonicalPath,
-    isOutOfStock,
-    productMatchesCurrentRoute,
-    productReviews,
-  ]);
-  const productFaqJsonLd = useMemo(() => {
-    if (!productFaqs.length) return null;
-
-    return {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: productFaqs
-        .filter((item) => item?.question && item?.answer)
-        .map((item) => ({
-          "@type": "Question",
-          name: item.question,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: item.answer,
-          },
-        })),
-    };
-  }, [productFaqs]);
-  const productStructuredData = useMemo(
-    () =>
-      product && product.isActive !== false && productMatchesCurrentRoute
-        ? [productJsonLd, productBreadcrumbJsonLd, productFaqJsonLd].filter(Boolean)
-        : null,
-    [
-      product,
-      productMatchesCurrentRoute,
-      productJsonLd,
-      productBreadcrumbJsonLd,
-      productFaqJsonLd,
-    ]
-  );
-
   useSeo({
     title: seoProductTitle,
     description: seoProductDescription,
@@ -3538,7 +3446,6 @@ const ProductDetail = () => {
 
   return (
     <>
-      <StructuredData schema={productStructuredData} />
       <MiniDivider />
       {showReviewModal && (
         <ReviewModal
