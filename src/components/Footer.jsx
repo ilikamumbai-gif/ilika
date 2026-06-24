@@ -151,7 +151,7 @@ const Footer = ({ theme = "default" }) => {
         <div className="space-y-3 pb-1 pt-4 text-sm leading-6">
           <div>
             <p className={isBlackTheme ? "font-semibold text-white" : "font-semibold text-[#6f1e1e]"}>
-              ilikä
+              Corporate Office Address
             </p>
             <p className={`mt-1 ${mutedText}`}>
               Office no. 201-202, Hirubai Residency
@@ -335,7 +335,7 @@ const Footer = ({ theme = "default" }) => {
             <div className="mt-3 space-y-2.5 text-xs leading-5">
               <div>
                 <p className={isBlackTheme ? "font-semibold text-white" : "font-semibold text-[#6f1e1e]"}>
-                  ilikä
+                  Corporate Office Address
                 </p>
                 <p className={mutedText}>
                   Office no. 201-202, Hirubai Residency
@@ -377,7 +377,7 @@ const Footer = ({ theme = "default" }) => {
         </div>
 
         <div className={`mt-6 flex flex-col gap-2 border-t ${borderTone} pt-4 text-xs sm:flex-row sm:items-center sm:justify-between`}>
-          <p className={mutedText}>© 2026 ilikä | Powered by PTCGRAM Private Limited</p>
+          <p className={mutedText}>© 2026 Corporate Office Address | Powered by PTCGRAM Private Limited</p>
         </div>
       </div>
     </footer>
@@ -385,3 +385,4 @@ const Footer = ({ theme = "default" }) => {
 };
 
 export default Footer;
+
