@@ -54,6 +54,8 @@ const HAIR_CAROUSEL_ITEMS = [
   { title: "Soft & Shiny Hair", image: "/Images/hairc2.webp", bgColor: "", link: "/hair/care" },
   { title: "Scalp Hydration", image: "/Images/hairc4.webp", bgColor: "", link: "/hair/care" },
 ];
+
+  
 const SKIN_CAROUSEL_ITEMS = [
   { title: "Bright & Glowing Skin", image: "/Images/skinc1.webp", bgColor: "#f7b4c9", link: "/skin" },
   { title: "Acne & Pimple Care", image: "/Images/skinc2.webp", bgColor: "#f6e285", link: "/skin" },
@@ -101,6 +103,263 @@ const getProductImage = (product, fallback) =>
   product?.image ||
   product?.imageUrl ||
   fallback;
+
+const getYouTubeVideoId = (url = "") => {
+  try {
+    if (!url) return "";
+    if (url.includes("youtu.be/")) {
+      return url.split("youtu.be/")[1]?.split(/[?&]/)[0] || "";
+    }
+    if (url.includes("/shorts/")) {
+      return url.split("/shorts/")[1]?.split(/[?&]/)[0] || "";
+    }
+    return new URL(url).searchParams.get("v") || "";
+  } catch {
+    return "";
+  }
+};
+
+const getDriveFileId = (url = "") => {
+  if (!url) return "";
+  const fromFilePath = url.match(/\/d\/([^/]+)/)?.[1];
+  if (fromFilePath) return fromFilePath;
+  try {
+    return new URL(url).searchParams.get("id") || "";
+  } catch {
+    return "";
+  }
+};
+
+const getDriveThumbnailCandidates = (fileId = "") => {
+  const id = String(fileId || "").trim();
+  if (!id) return [];
+
+  return [
+    `https://lh3.googleusercontent.com/d/${id}=w1000`,
+    `https://drive.google.com/thumbnail?id=${id}&sz=w1000`,
+    `https://drive.google.com/uc?export=view&id=${id}`,
+  ];
+};
+
+const getHonestReviewMedia = (url = "", { preview = true } = {}) => {
+  const rawUrl = String(url || "").trim();
+  if (!rawUrl) return { kind: "video", src: "" };
+
+  const withParams = (base, params) => {
+    const queryString = new URLSearchParams(params).toString();
+    return `${base}${base.includes("?") ? "&" : "?"}${queryString}`;
+  };
+
+  try {
+    if (rawUrl.includes("youtube.com") || rawUrl.includes("youtu.be")) {
+      const videoId = getYouTubeVideoId(rawUrl);
+      return videoId
+        ? {
+            kind: "iframe",
+            src: withParams(`https://www.youtube-nocookie.com/embed/${videoId}`, {
+              autoplay: 1,
+              mute: preview ? 1 : 0,
+              playsinline: 1,
+              loop: preview ? 1 : 0,
+              playlist: preview ? videoId : undefined,
+              rel: 0,
+              modestbranding: 1,
+              controls: preview ? 0 : 1,
+              fs: preview ? 0 : 1,
+              disablekb: preview ? 1 : 0,
+            }),
+          }
+        : { kind: "video", src: "" };
+    }
+
+    if (rawUrl.includes("drive.google.com")) {
+      const fileId = getDriveFileId(rawUrl);
+      return fileId
+        ? {
+            kind: preview ? "thumbnail" : "iframe",
+            src: preview
+              ? getDriveThumbnailCandidates(fileId)[0]
+              : withParams(`https://drive.google.com/file/d/${fileId}/preview`, {
+                  autoplay: 1,
+                  mute: 0,
+                  controls: 1,
+                  playsinline: 1,
+                  embedded: 1,
+                }),
+          }
+        : { kind: "video", src: "" };
+    }
+  } catch {
+    return { kind: "video", src: rawUrl };
+  }
+
+  return { kind: "video", src: rawUrl };
+};
+
+const HomeHonestReviewLightbox = ({ item, onClose }) => {
+  const media = getHonestReviewMedia(item?.url, { preview: false });
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose]);
+
+  if (!item || !media.src) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-[430px] overflow-hidden rounded-[30px] bg-black shadow-[0_18px_50px_rgba(0,0,0,0.4)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/55 text-xl text-white transition hover:bg-black/75"
+          aria-label="Close honest review video"
+        >
+          ×
+        </button>
+
+        {media.kind === "iframe" ? (
+          <iframe
+            src={media.src}
+            title={item.title || "Honest review video"}
+            className="h-[78vh] w-full bg-black"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        ) : (
+          <video
+            src={media.src}
+            title={item.title || "Honest review video"}
+            className="h-[78vh] w-full bg-black object-cover"
+            autoPlay
+            loop
+            playsInline
+            preload="metadata"
+            controls
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+const HomeHonestReviewCard = ({ item, onOpen }) => {
+  const media = getHonestReviewMedia(item.url, { preview: true });
+  const driveFileId = item?.url?.includes("drive.google.com") ? getDriveFileId(item.url) : "";
+  const thumbnailCandidates = useMemo(() => {
+    if (media.kind !== "thumbnail") return media.src ? [media.src] : [];
+    if (!driveFileId) return media.src ? [media.src] : [];
+
+    const candidates = getDriveThumbnailCandidates(driveFileId);
+    return media.src && !candidates.includes(media.src) ? [media.src, ...candidates] : candidates;
+  }, [driveFileId, media.kind, media.src]);
+  const [thumbnailIndex, setThumbnailIndex] = useState(0);
+  const thumbnailSrc = thumbnailCandidates[thumbnailIndex] || "";
+
+  return (
+    <div
+      data-home-honest-review-card="true"
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen?.(item)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpen?.(item);
+        }
+      }}
+      className="group relative min-w-[220px] max-w-[220px] shrink-0 snap-start overflow-hidden rounded-[28px] bg-white text-left shadow-[0_12px_30px_rgba(69,39,34,0.12)] sm:min-w-[260px] sm:max-w-[260px]"
+    >
+      {media.kind === "thumbnail" ? (
+        thumbnailSrc ? (
+          <div className="relative h-[420px] w-full overflow-hidden bg-[#e8d8d1] sm:h-[470px]">
+            <img
+              src={thumbnailSrc}
+              alt={item.title || "Honest review preview"}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              onError={() => {
+                setThumbnailIndex((current) =>
+                  current < thumbnailCandidates.length - 1 ? current + 1 : current
+                );
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+          </div>
+        ) : (
+          <div className="relative flex h-[420px] w-full items-end overflow-hidden bg-gradient-to-br from-[#e8d8d1] via-[#f4ebe7] to-[#dbc5bc] p-5 sm:h-[470px]">
+            <div className="max-w-[70%] text-left">
+              <p className="text-sm font-semibold text-[#2f1f1a]">
+                {item.title || "Honest Review"}
+              </p>
+              <p className="mt-1 text-xs text-[#5b4339]">Tap to open video</p>
+            </div>
+          </div>
+        )
+      ) : media.kind === "iframe" ? (
+        <iframe
+          src={media.src}
+          title={item.title || "Honest review video"}
+          className="pointer-events-none h-[420px] w-full bg-black sm:h-[470px]"
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+        />
+      ) : (
+        <video
+          src={media.src}
+          title={item.title || "Honest review video"}
+          className="h-[420px] w-full bg-black object-cover sm:h-[470px]"
+          autoPlay
+          muted
+          defaultMuted
+          loop
+          playsInline
+          preload="metadata"
+          controls={false}
+          onLoadedMetadata={(event) => {
+            event.currentTarget.muted = true;
+            event.currentTarget.defaultMuted = true;
+            event.currentTarget.volume = 0;
+            const playPromise = event.currentTarget.play();
+            if (playPromise && typeof playPromise.catch === "function") {
+              playPromise.catch(() => {});
+            }
+          }}
+        />
+      )}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/75 via-black/20 to-transparent p-4 text-white">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/75">
+          {item.productName}
+        </p>
+        <p className="mt-2 line-clamp-2 text-sm font-medium leading-5 text-white">
+          {item.title || "Honest Review"}
+        </p>
+      </div>
+
+      <span className="pointer-events-none absolute right-4 top-4 z-10 text-white/90">↗</span>
+    </div>
+  );
+};
 
 const LazyMountSection = ({
   children,
@@ -338,6 +597,9 @@ const Home = () => {
   const [skinStart, setSkinStart] = useState(0);
   const [hairStart, setHairStart] = useState(0);
   const [landingStart, setLandingStart] = useState(0);
+  const [activeHonestReview, setActiveHonestReview] = useState(null);
+  const honestReviewsScrollRef = useRef(null);
+  const honestReviewsPausedRef = useRef(false);
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 640 : false
   );
@@ -497,6 +759,101 @@ const Home = () => {
     landingStart,
     landingStart + visibleLandingDesktopCount
   );
+  const homeHonestReviews = useMemo(() => {
+    const uniqueReviews = new Map();
+
+    activeProducts.forEach((product) => {
+      const rawItems = Array.isArray(product?.honestReviews) ? product.honestReviews : [];
+
+      rawItems.forEach((item, index) => {
+          const url = String(item?.url || item || "").trim();
+          if (!url) return;
+
+          const uniqueKey = url.toLowerCase();
+          if (uniqueReviews.has(uniqueKey)) return;
+
+          uniqueReviews.set(uniqueKey, {
+            id: `${product?.id || product?.name || "product"}-honest-review-${index + 1}`,
+            url,
+            title: String(item?.title || "").trim() || "Honest Review",
+            productName: String(product?.name || "").trim() || "Ilika Product",
+            productLink: `/product/${getProductSlug(product)}`,
+          });
+        });
+    });
+
+    return Array.from(uniqueReviews.values());
+  }, [activeProducts]);
+  const autoScrollHonestReviews = useMemo(() => {
+    if (homeHonestReviews.length <= 1) return homeHonestReviews;
+    return [...homeHonestReviews, ...homeHonestReviews, ...homeHonestReviews];
+  }, [homeHonestReviews]);
+
+  useEffect(() => {
+    const container = honestReviewsScrollRef.current;
+    if (!container || homeHonestReviews.length <= 1) return undefined;
+
+    let animationFrameId = 0;
+    let lastTimestamp = 0;
+    const speed = 220;
+
+    const getLoopWidth = () => container.scrollWidth / 3;
+    const setInitialPosition = () => {
+      const loopWidth = getLoopWidth();
+      if (loopWidth > 0) {
+        container.scrollLeft = loopWidth;
+      }
+    };
+
+    setInitialPosition();
+
+    const handleResize = () => {
+      const loopWidth = getLoopWidth();
+      if (loopWidth <= 0) return;
+
+      const normalizedOffset =
+        ((container.scrollLeft % loopWidth) + loopWidth) % loopWidth;
+      container.scrollLeft = loopWidth + normalizedOffset;
+    };
+
+    const step = (timestamp) => {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const delta = timestamp - lastTimestamp;
+      lastTimestamp = timestamp;
+
+      const singleLoopWidth = getLoopWidth();
+      if (singleLoopWidth <= container.clientWidth) {
+        animationFrameId = window.requestAnimationFrame(step);
+        return;
+      }
+
+      if (honestReviewsPausedRef.current) {
+        animationFrameId = window.requestAnimationFrame(step);
+        return;
+      }
+
+      const nextScrollLeft = container.scrollLeft + (speed * delta) / 1000;
+      const maxScrollLeft = singleLoopWidth * 2;
+
+      if (nextScrollLeft >= maxScrollLeft) {
+        container.scrollLeft = nextScrollLeft - singleLoopWidth;
+      } else if (nextScrollLeft <= 0) {
+        container.scrollLeft = nextScrollLeft + singleLoopWidth;
+      } else {
+        container.scrollLeft = nextScrollLeft;
+      }
+
+      animationFrameId = window.requestAnimationFrame(step);
+    };
+
+    window.addEventListener("resize", handleResize);
+    animationFrameId = window.requestAnimationFrame(step);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.cancelAnimationFrame(animationFrameId);
+    };
+  }, [homeHonestReviews]);
 
   const getVisibleCount = (total) => {
     if (total <= 0) return 0;
@@ -1016,6 +1373,57 @@ const Home = () => {
             </Suspense>
           </LazyMountSection>
 
+          {homeHonestReviews.length ? (
+            <LazyMountSection minHeight={520}>
+              <section className="bg-white px-4 py-8 sm:px-6 sm:py-10">
+                <div className="mx-auto max-w-7xl">
+                  <div className="mb-5 flex items-start gap-4">
+                    <div className="min-w-0 flex-1 text-center">
+                      <Heading
+                        heading="Honest Reviews"
+                        sub="Real customer videos, unboxings, and first impressions from the Ilika community."
+                        align="center"
+                        subVariant="paragraph"
+                        subClassName="!max-w-3xl !text-[#587082]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <div
+                      ref={honestReviewsScrollRef}
+                      className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                      style={{ WebkitOverflowScrolling: "touch" }}
+                      onMouseEnter={() => {
+                        honestReviewsPausedRef.current = true;
+                      }}
+                      onMouseLeave={() => {
+                        honestReviewsPausedRef.current = false;
+                      }}
+                      onPointerDown={() => {
+                        honestReviewsPausedRef.current = true;
+                      }}
+                      onPointerUp={() => {
+                        honestReviewsPausedRef.current = false;
+                      }}
+                      onPointerCancel={() => {
+                        honestReviewsPausedRef.current = false;
+                      }}
+                    >
+                      {autoScrollHonestReviews.map((item, index) => (
+                        <HomeHonestReviewCard
+                          key={`${item.id}-${index}`}
+                          item={item}
+                          onOpen={setActiveHonestReview}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </LazyMountSection>
+          ) : null}
+
           <LazyMountSection minHeight={420} placeholder={<LandingPagesSkeleton />}>
             <section className="bg-black px-4 py-8 sm:px-6 sm:py-10">
               <div className="mx-auto max-w-7xl">
@@ -1138,6 +1546,13 @@ const Home = () => {
               </div>
             </section>
           </LazyMountSection>
+
+          {activeHonestReview ? (
+            <HomeHonestReviewLightbox
+              item={activeHonestReview}
+              onClose={() => setActiveHonestReview(null)}
+            />
+          ) : null}
 
 
           {/* MANIFESTO */}

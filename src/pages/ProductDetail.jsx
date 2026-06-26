@@ -1052,9 +1052,20 @@ const getVideoThumbnailUrl = (url = "") => {
   }
   if (raw.includes("drive.google.com")) {
     const id = getDriveFileId(raw);
-    return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w640` : "";
+    return id ? `https://lh3.googleusercontent.com/d/${id}=w1000` : "";
   }
   return "";
+};
+
+const getDriveThumbnailCandidates = (fileId = "") => {
+  const id = String(fileId || "").trim();
+  if (!id) return [];
+
+  return [
+    `https://lh3.googleusercontent.com/d/${id}=w1000`,
+    `https://drive.google.com/thumbnail?id=${id}&sz=w1000`,
+    `https://drive.google.com/uc?export=view&id=${id}`,
+  ];
 };
 
 const sanitizeHonestReviewItems = (items = []) => {
@@ -1072,8 +1083,242 @@ const sanitizeHonestReviewItems = (items = []) => {
         subtitle: String(item?.subtitle || "").trim(),
         description: String(item?.description || "").trim(),
       };
-    })
-    .filter(Boolean);
+      })
+      .filter(Boolean);
+};
+
+const getHonestReviewMedia = (url = "", { preview = true } = {}) => {
+  const rawUrl = String(url || "").trim();
+  if (!rawUrl) return { kind: "video", src: "" };
+
+  const withParams = (base, params) => {
+    const queryString = new URLSearchParams(params).toString();
+    return `${base}${base.includes("?") ? "&" : "?"}${queryString}`;
+  };
+
+  try {
+    if (rawUrl.includes("youtube.com") || rawUrl.includes("youtu.be")) {
+      let videoId = "";
+      if (rawUrl.includes("youtu.be/")) {
+        videoId = rawUrl.split("youtu.be/")[1]?.split(/[?&]/)[0] || "";
+      } else if (rawUrl.includes("/shorts/")) {
+        videoId = rawUrl.split("/shorts/")[1]?.split(/[?&]/)[0] || "";
+      } else {
+        videoId = new URL(rawUrl).searchParams.get("v") || "";
+      }
+
+      return videoId
+        ? {
+            kind: "iframe",
+            src: withParams(`https://www.youtube-nocookie.com/embed/${videoId}`, {
+              autoplay: preview ? 1 : 1,
+              mute: preview ? 1 : 0,
+              playsinline: 1,
+              loop: preview ? 1 : 0,
+              playlist: preview ? videoId : undefined,
+              rel: 0,
+              modestbranding: 1,
+              controls: preview ? 0 : 1,
+              fs: preview ? 0 : 1,
+              disablekb: preview ? 1 : 0,
+            }),
+          }
+        : { kind: "video", src: "" };
+    }
+
+    if (rawUrl.includes("drive.google.com")) {
+      const fileId = getDriveFileId(rawUrl);
+
+      return fileId
+        ? {
+            kind: preview ? "thumbnail" : "iframe",
+            src: preview
+              ? getDriveThumbnailCandidates(fileId)[0]
+              : withParams(`https://drive.google.com/file/d/${fileId}/preview`, {
+                  autoplay: 1,
+                  mute: 0,
+                  controls: 1,
+                  playsinline: 1,
+                  embedded: 1,
+                }),
+          }
+        : { kind: "video", src: "" };
+    }
+  } catch {
+    return { kind: "video", src: rawUrl };
+  }
+
+  return { kind: "video", src: rawUrl };
+};
+
+const HonestReviewPreviewMedia = ({ item, media }) => {
+  const driveFileId = item?.url?.includes("drive.google.com") ? getDriveFileId(item.url) : "";
+  const thumbnailCandidates = useMemo(() => {
+    if (media.kind !== "thumbnail") return media.src ? [media.src] : [];
+    if (!driveFileId) return media.src ? [media.src] : [];
+
+    const candidates = getDriveThumbnailCandidates(driveFileId);
+    return media.src && !candidates.includes(media.src) ? [media.src, ...candidates] : candidates;
+  }, [driveFileId, media.kind, media.src]);
+  const [thumbnailIndex, setThumbnailIndex] = useState(0);
+  const thumbnailSrc = thumbnailCandidates[thumbnailIndex] || "";
+
+  if (media.kind === "thumbnail") {
+    return thumbnailSrc ? (
+      <div className="relative h-[420px] w-full overflow-hidden bg-[#e8d8d1] sm:h-[470px]">
+        <img
+          src={thumbnailSrc}
+          alt={item.title || "Honest review preview"}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={() => {
+            setThumbnailIndex((current) => (
+              current < thumbnailCandidates.length - 1 ? current + 1 : current
+            ));
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        <span className="absolute right-4 top-4 text-white/90">↗</span>
+      </div>
+    ) : (
+      <div className="relative flex h-[420px] w-full items-end overflow-hidden bg-gradient-to-br from-[#e8d8d1] via-[#f4ebe7] to-[#dbc5bc] p-5 sm:h-[470px]">
+        <div className="max-w-[70%] text-left">
+          <p className="text-sm font-semibold text-[#2f1f1a]">
+            {item.title || "Honest Review"}
+          </p>
+          <p className="mt-1 text-xs text-[#5b4339]">Tap to open video</p>
+        </div>
+        <span className="absolute right-4 top-4 text-[#2f1f1a]">↗</span>
+      </div>
+    );
+  }
+
+  if (media.kind === "iframe") {
+    return (
+      <iframe
+        src={media.src}
+        title={item.title || "Honest review video"}
+        className="pointer-events-none h-[420px] w-full bg-black sm:h-[470px]"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+      />
+    );
+  }
+
+  return (
+    <video
+      src={media.src}
+      title={item.title || "Honest review video"}
+      className="h-[420px] w-full bg-black object-cover sm:h-[470px]"
+      autoPlay
+      muted
+      defaultMuted
+      loop
+      playsInline
+      preload="metadata"
+      controls={false}
+      controlsList="nodownload noplaybackrate nofullscreen"
+      onLoadedMetadata={(event) => {
+        event.currentTarget.muted = true;
+        event.currentTarget.defaultMuted = true;
+        event.currentTarget.volume = 0;
+        const playPromise = event.currentTarget.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {});
+        }
+      }}
+    />
+  );
+};
+
+const HonestReviewLightbox = ({ item, onClose }) => {
+  const media = getHonestReviewMedia(item?.url, { preview: false });
+  const [isMuted, setIsMuted] = useState(false);
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose]);
+
+  useEffect(() => {
+    const node = videoRef.current;
+    if (!node) return;
+    node.muted = isMuted;
+    const playPromise = node.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {});
+    }
+  }, [isMuted, item]);
+
+  if (!item || !media.src) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-[430px] overflow-hidden rounded-[30px] bg-black shadow-[0_18px_50px_rgba(0,0,0,0.4)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/55 text-xl text-white transition hover:bg-black/75"
+          aria-label="Close honest review video"
+        >
+          ×
+        </button>
+        {media.kind === "video" ? (
+          <button
+            type="button"
+            onClick={() => setIsMuted((prev) => !prev)}
+            className="absolute left-3 top-3 z-20 flex h-11 min-w-[52px] items-center justify-center rounded-full bg-black/55 px-3 text-sm font-semibold text-white transition hover:bg-black/75"
+            aria-label={isMuted ? "Unmute honest review video" : "Mute honest review video"}
+          >
+            {isMuted ? "Mute" : "Sound"}
+          </button>
+        ) : null}
+
+        {media.kind === "iframe" ? (
+          <iframe
+            src={media.src}
+            title={item.title || "Honest review video"}
+            className="h-[78vh] w-full bg-black"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        ) : (
+          <video
+            ref={videoRef}
+            src={media.src}
+            title={item.title || "Honest review video"}
+            className="h-[78vh] w-full bg-black object-cover"
+            autoPlay
+            muted={isMuted}
+            loop
+            playsInline
+            preload="metadata"
+            controls={false}
+          />
+        )}
+      </div>
+    </div>
+  );
 };
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -1514,6 +1759,7 @@ const ProductReviewCarouselSection = ({
 const HonestReviewsSection = ({
   items = [],
   theme,
+  onOpenReview,
 }) => {
   if (!items.length) return null;
 
@@ -1535,22 +1781,24 @@ const HonestReviewsSection = ({
         style={{ scrollbarWidth: "none" }}
       >
         {items.map((item) => {
+          const media = getHonestReviewMedia(item.url);
+
           return (
             <div
               key={item.id}
-              className="min-w-[220px] max-w-[220px] shrink-0 snap-start overflow-hidden rounded-[28px] bg-white shadow-[0_12px_30px_rgba(69,39,34,0.08)] sm:min-w-[260px] sm:max-w-[260px]"
+              role="button"
+              tabIndex={0}
+              onClick={() => onOpenReview?.(item)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onOpenReview?.(item);
+                }
+              }}
+              className="group relative min-w-[220px] max-w-[220px] shrink-0 snap-start overflow-hidden rounded-[28px] bg-white text-left shadow-[0_12px_30px_rgba(69,39,34,0.08)] sm:min-w-[260px] sm:max-w-[260px]"
               style={{ border: `1px solid ${theme.borderSoft}` }}
             >
-              <video
-                src={item.url}
-                title={item.title || "Honest review video"}
-                className="h-[420px] w-full bg-black object-cover sm:h-[470px]"
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-              />
+              <HonestReviewPreviewMedia item={item} media={media} />
             </div>
           );
         })}
@@ -2065,6 +2313,7 @@ const ProductDetail = () => {
   const [activeInfoTab, setActiveInfoTab] = useState("details");
   const [mobileOpenInfoTab, setMobileOpenInfoTab] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [activeHonestReview, setActiveHonestReview] = useState(null);
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponMessage, setCouponMessage] = useState({ type: "", text: "" });
@@ -3541,8 +3790,8 @@ const ProductDetail = () => {
   return (
     <>
       <MiniDivider />
-      {showReviewModal && (
-        <ReviewModal
+        {showReviewModal && (
+          <ReviewModal
           product={product}
           theme={detailTheme}
           onClose={() => setShowReviewModal(false)}
@@ -4561,6 +4810,12 @@ const ProductDetail = () => {
             </section>
           </DeferredSection>
         )}
+        {activeHonestReview ? (
+          <HonestReviewLightbox
+            item={activeHonestReview}
+            onClose={() => setActiveHonestReview(null)}
+          />
+        ) : null}
 
         {/* INGREDIENTS SECTION */}
         {hasIngredients && (
@@ -4978,6 +5233,7 @@ const ProductDetail = () => {
             <HonestReviewsSection
               items={honestReviews}
               theme={detailTheme}
+              onOpenReview={setActiveHonestReview}
             />
           </div>
 
