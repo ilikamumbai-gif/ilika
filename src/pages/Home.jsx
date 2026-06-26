@@ -32,10 +32,12 @@ import herbalLandingImage from "../Landing/assets/Herbal1.png";
 const hairBannerDesktop = "/Homepage/homepagehairbanner.jpg";
 const hairBannerMobile = "/Homepage/homepagehairbannermobile.jpg";
 const BannerStyle = "/Images/Banner.webp";
-const endBannerDesktop = "/Images/End1.webp";
-const endBannerMobile = "/Images/End1.webp";
-const end2BannerDesktop = "/Images/End2.webp";
-const end2BannerMobile = "/Images/End2.webp";
+const endBannerDesktop = "/Homepage/homepagemaskcome1banner.jpg";
+const endBannerMobile = "/Homepage/homepagemaskcome1banner.jpg";
+const end2BannerDesktop = "/Homepage/homepagemaskcombo2banner.png";
+const end2BannerMobile = "/Homepage/homepagemaskcombo2banner.png";
+const end3BannerDesktop = "/Homepage/homepagemaskcombo3banner.png";
+const end3BannerMobile = "/Homepage/homepagemaskcombo3banner.png";
 const maskBannerDesktop = "/Images/mask.webp";
 const maskBannerMobile = "/Images/mask.webp";
 const homePageCtmBannerDesktop = "/Homepage/homepagebannerctm.jpg";
@@ -540,17 +542,23 @@ const Home = () => {
                 linkUrl: "/mask-combo",
                 alt: "Mask Combo Offer Banner",
               },
-              {
-                desktopSrc: end2BannerDesktop,
-                mobileSrc: end2BannerMobile,
-                linkUrl: "/mask-combo#mask-combo-4in1",
-                alt: "Mask Combo Banner",
-              },
-              {
-                desktopSrc: homePageCtmBannerDesktop,
-                mobileSrc: homePageCtmBannerMobile,
-                linkUrl: "/ctm",
-                alt: "CTM Banner",
+                {
+                  desktopSrc: end2BannerDesktop,
+                  mobileSrc: end2BannerMobile,
+                  linkUrl: "/mask-combo#mask-combo-banner-2",
+                  alt: "Mask Combo Banner",
+                },
+                {
+                  desktopSrc: end3BannerDesktop,
+                  mobileSrc: end3BannerMobile,
+                  linkUrl: "/mask-combo#mask-combo-banner-3",
+                  alt: "24K Gold Mask Combo Banner",
+                },
+                {
+                  desktopSrc: homePageCtmBannerDesktop,
+                  mobileSrc: homePageCtmBannerMobile,
+                  linkUrl: "/ctm",
+                  alt: "CTM Banner",
               },
 
             ]}

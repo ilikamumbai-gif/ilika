@@ -104,7 +104,7 @@ const associatedBrands = [
 const FooterLink = ({ to, icon: Icon, children, mobile = false }) => (
   <Link
     to={to}
-    className={`flex items-center gap-2 text-white/80 transition hover:translate-x-1 hover:text-white ${
+    className={`flex items-center gap-2 text-white transition hover:translate-x-1 hover:text-white ${
       mobile ? "text-[15px] leading-6" : "text-sm"
     }`}
   >
@@ -134,10 +134,10 @@ const Footer = () => {
       key: "contact",
       title: "Get In Touch",
       content: (
-        <div className="space-y-3 pb-1 pt-4 text-sm leading-6 text-white/80">
+        <div className="space-y-3 pb-1 pt-4 text-sm leading-6 text-white">
           <div>
             <p className="font-semibold text-white">Corporate Office Address</p>
-            <p className="mt-1 text-white/65">
+            <p className="mt-1 text-white">
               Office no. 201-202, Hirubai Residency
               <br />
               Virar (West) - 401303, Maharashtra, India.
@@ -211,7 +211,7 @@ const Footer = () => {
           ))}
         </div>
       ) : (
-        <p className="pb-1 pt-4 text-sm leading-6 text-white/50">
+        <p className="pb-1 pt-4 text-sm leading-6 text-white">
           Add brand logos and links in `associatedBrands` inside Footer.jsx.
         </p>
       ),
@@ -225,7 +225,7 @@ const Footer = () => {
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:pt-10">
         <div className="text-center">
           <p
-            className="text-[44px] font-semibold leading-[1.08] tracking-tight text-white sm:text-[54px] lg:text-[62px]"
+            className="text-[44px] font-semibold leading-[1.08] tracking-tight text-white sm:text-[54px] lg:text-[74px] xl:text-[84px]"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
             Elegent. Bright. You.
@@ -234,10 +234,10 @@ const Footer = () => {
             src={logo}
             alt="Ilika"
             width="auto"
-            height={54}
-            className="mx-auto mt-5 h-16 sm:h-20"
+            height={72}
+            className="mx-auto mt-5 h-16 sm:h-20 lg:h-24 xl:h-28"
           />
-          <p className="mx-auto mt-4 max-w-[760px] text-sm leading-7 text-white/70 sm:text-[15px] lg:text-base">
+          <p className="mx-auto mt-4 max-w-[760px] text-sm leading-7 text-white sm:text-[15px] lg:text-base">
             Discover premium yet affordable skin care, hair care, and grooming essentials designed to make everyday beauty feel elegant, bright, and easy.
           </p>
         </div>
@@ -317,12 +317,12 @@ const Footer = () => {
               Get In Touch
             </h4>
 
-            <div className="mt-3 space-y-2.5 text-xs leading-6 text-white/80">
+            <div className="mt-3 space-y-2.5 text-xs leading-6 text-white">
               <div>
                 <p className="font-semibold text-white" style={{ fontFamily: "'Lato', sans-serif" }}>
                   Corporate Office Address
                 </p>
-                <p className="text-white/65">
+                <p className="text-white">
                   Office no. 201-202, Hirubai Residency
                   <br />
                   Virar (West) - 401303, Maharashtra, India.
@@ -443,7 +443,7 @@ const Footer = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs leading-5 text-white/50">
+                <p className="text-xs leading-5 text-white">
                   Add brand logos and links in `associatedBrands` inside Footer.jsx.
                 </p>
               )}
@@ -468,7 +468,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-6 flex flex-col gap-1 border-t border-white/15 pt-3 text-xs sm:flex-row sm:items-center sm:justify-end">
-          <p className="text-white/65">© 2026 Ilika. Powered by PTCGRAM Private Limited</p>
+          <p className="text-white">© 2026 Ilika. Powered by PTCGRAM Private Limited</p>
         </div>
       </div>
     </footer>

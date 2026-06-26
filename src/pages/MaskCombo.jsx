@@ -12,8 +12,12 @@ import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import Banner from "../components/Banner";
 
-const endBannerDesktop = "/Images/End1.webp";
-const endBannerMobile = "/Images/End1.webp";
+const endBannerDesktop = "/OfferPages/24kand4in1banner.png";
+const endBannerMobile = "/OfferPages/24kand4in1bannermobile.png";
+const midBannerDesktop = "/OfferPages/4in1banner.png";
+const midBannerMobile = "/OfferPages/4in1bannermobile.png";
+const thirdBannerDesktop = "/OfferPages/24kbanner.png";
+const thirdBannerMobile = "/OfferPages/24kbannermobile.png";
 
 const normalize = (value = "") =>
   String(value)
@@ -261,27 +265,146 @@ const MaskCombo = () => {
   return (
     <>
       <MiniDivider />
-      <div className="min-h-screen bg-[#fffaf6]">
+      <div className="min-h-screen overflow-x-hidden bg-[#fffaf6]">
         <Header />
         <CartDrawer />
-        <Banner
-          className="mt-0"
-          src={endBannerDesktop}
-          mobileSrc={endBannerMobile}
-          imageFit="contain"
-          preserveFullImage
-          priority
-        />
+        <div className="relative">
+          <Banner
+            className="mt-0"
+            src={endBannerDesktop}
+            mobileSrc={endBannerMobile}
+            imageFit="contain"
+            preserveFullImage
+            priority
+          />
+          <div className="absolute inset-0 items-start px-4 pt-4 sm:flex sm:items-center sm:px-8 sm:pt-0 lg:px-14">
+            <div className="max-w-[92%] text-left text-black sm:max-w-[52%] lg:max-w-[46%]">
+              <p
+                className="text-[2rem] font-bold leading-[0.95] tracking-[-0.03em] sm:text-[3.4rem] sm:font-semibold lg:text-[4.4rem]"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                Glow More,
+                <br />
+                Pay Less
+              </p>
+              <div className="mt-4 h-px w-24 bg-black/60 sm:mt-5 sm:w-32 lg:w-40" />
+              <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-black sm:text-sm sm:font-light lg:text-[1.02rem]">
+                24K Gold Collagen Mask + 4-in-1 Collagen Mask in Just 499
+              </p>
+              <h2
+                className="mt-3 max-w-[34rem] text-sm font-bold leading-[1.5] text-black sm:text-base sm:font-normal lg:text-[1.5rem]"
+                style={{ fontFamily: "'Lato', sans-serif" }}
+              >
+                Your skin&apos;s favourite deal
+              </h2>
+            </div>
+          </div>
+        </div>
 
         <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-4 pt-6 pb-10 sm:px-6 sm:pt-8 sm:pb-12 lg:px-8">
           {offers.map((offer, offerIndex) => (
-            <ComboCard
-              key={offer.id}
-              offer={offer}
-              offerIndex={offerIndex}
-              onAdd={handleAddCombo}
-              isAdding={addingOfferId === offer.id}
-            />
+            <React.Fragment key={offer.id}>
+              <ComboCard
+                offer={offer}
+                offerIndex={offerIndex}
+                onAdd={handleAddCombo}
+                isAdding={addingOfferId === offer.id}
+              />
+              {offerIndex === 0 ? (
+                <div
+                  id="mask-combo-banner-2"
+                  className="relative left-1/2 w-screen max-w-none -translate-x-1/2 overflow-hidden scroll-mt-24"
+                >
+                  <Banner
+                    className="w-full"
+                    src={midBannerDesktop}
+                    mobileSrc={midBannerMobile}
+                    imageFit="contain"
+                    preserveFullImage
+                  />
+                    <div className="absolute inset-0 items-start px-4 pt-4 sm:flex sm:items-center sm:px-8 sm:pt-0 lg:px-14">
+                      <div className="max-w-[92%] text-left text-black sm:max-w-[50%] lg:max-w-[42%]">
+                        <p
+                          className="text-[1.9rem] font-bold leading-[0.95] tracking-[-0.03em] sm:text-[3rem] sm:font-semibold lg:text-[4rem]"
+                          style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                        >
+                        Your Best
+                        <br />
+                        Mask Deal Yet!
+                      </p>
+                          <div className="hidden mt-4 h-px w-24 bg-black/60 sm:mt-5 sm:block sm:w-32 lg:w-40" />
+                          <p className="mt-4 hidden text-[10px] font-bold uppercase tracking-[0.18em] text-black sm:block sm:text-sm sm:font-light lg:text-[1rem]">
+                          Ilika 2 4-in-1 Collegen Mask Just in 449 
+                          </p>
+                          <h2
+                            className="mt-3 hidden text-sm font-bold leading-[1.5] text-black sm:block sm:text-base sm:font-normal lg:text-[1.45rem]"
+                            style={{ fontFamily: "'Lato', sans-serif" }}
+                          >
+                          Glow on, on us
+                        </h2>
+                      </div>
+                      <div className="absolute bottom-5 left-4 sm:hidden">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black">
+                          Ilika 2 4-in-1 Collegen Mask Just in 449
+                        </p>
+                        <h2
+                          className="mt-3 text-sm font-bold leading-[1.5] text-black"
+                          style={{ fontFamily: "'Lato', sans-serif" }}
+                        >
+                          Glow on, on us
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              {offerIndex === 1 ? (
+                <div
+                  id="mask-combo-banner-3"
+                  className="relative left-1/2 w-screen max-w-none -translate-x-1/2 overflow-hidden scroll-mt-24"
+                >
+                  <Banner
+                    className="w-full"
+                    src={thirdBannerDesktop}
+                    mobileSrc={thirdBannerMobile}
+                    imageFit="contain"
+                    preserveFullImage
+                  />
+                    <div className="absolute inset-0 items-start px-4 pt-4 sm:flex sm:items-center sm:px-8 sm:pt-0 lg:px-14">
+                      <div className="max-w-[92%] text-left text-black sm:max-w-[52%] lg:max-w-[46%]">
+                        <p
+                          className="text-[1.9rem] font-bold leading-[0.95] tracking-[-0.03em] sm:text-[3rem] sm:font-semibold lg:text-[4rem]"
+                          style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                        >
+                        2 Masks.
+                        <br />
+                        Pure Gold. ₹500.
+                      </p>
+                        <div className="hidden mt-4 h-px w-24 bg-black/60 sm:mt-5 sm:block sm:w-32 lg:w-40" />
+                        <p className="mt-4 hidden text-[10px] font-bold uppercase tracking-[0.18em] text-black sm:block sm:text-sm sm:font-light lg:text-[1rem]">
+                          Ilika&apos;s 24K Gold Collagen Masks, made for your skin&apos;s best
+                        </p>
+                        <h2
+                          className="mt-3 hidden max-w-[34rem] text-sm font-bold leading-[1.5] text-black sm:block sm:text-base sm:font-normal lg:text-[1.45rem]"
+                          style={{ fontFamily: "'Lato', sans-serif" }}
+                        >
+                          Your glow, our gold
+                        </h2>
+                      </div>
+                      <div className="absolute bottom-5 left-4 sm:hidden">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black">
+                          Ilika&apos;s 24K Gold Collagen Masks, made for your skin&apos;s best
+                        </p>
+                        <h2
+                          className="mt-3 text-sm font-bold leading-[1.5] text-black"
+                          style={{ fontFamily: "'Lato', sans-serif" }}
+                        >
+                          Your glow, our gold
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+            </React.Fragment>
           ))}
         </div>
 
