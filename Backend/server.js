@@ -211,6 +211,137 @@ const fetchGoogleAdsAccessToken = async () => {
   return data.access_token;
 };
 
+const MARKETPLACE_PRICE_CACHE_TTL_MS = 1000 * 60 * 30;
+const marketplacePriceCache = new Map();
+const MARKETPLACE_REQUEST_HEADERS = {
+  "user-agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+  accept:
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "accept-language": "en-IN,en;q=0.9",
+  "cache-control": "no-cache",
+  pragma: "no-cache",
+};
+
+const normalizeMarketplaceFetchUrl = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith("//")) return `https:${raw}`;
+  return `https://${raw}`;
+};
+
+const parseNumericPrice = (value = "") => {
+  const normalized = String(value || "").replace(/[^0-9.]/g, "");
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const decodeMarketplaceHtml = (html = "") =>
+  String(html || "")
+    .replace(/\\u003c/gi, "<")
+    .replace(/\\u003e/gi, ">")
+    .replace(/\\u0026/gi, "&")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&#8377;|&rupee;|&#x20B9;/gi, "₹");
+
+const extractMarketplacePriceFromHtml = (html = "", platform = "") => {
+  const decodedHtml = decodeMarketplaceHtml(html);
+  const platformPatterns = {
+    amazon: [
+      /"priceToPay"\s*:\s*\{\s*"price"\s*:\s*([0-9]+(?:\.[0-9]+)?)/i,
+      /"displayPrice"\s*:\s*"₹?\s*([0-9,]+(?:\.[0-9]+)?)"/i,
+      /class="a-price-whole">\s*([0-9,]+)(?:<|<\/span>)/i,
+      /itemprop="price"[^>]*content="([0-9]+(?:\.[0-9]+)?)"/i,
+      /property="product:price:amount"[^>]*content="([0-9]+(?:\.[0-9]+)?)"/i,
+    ],
+    flipkart: [
+      /"sellingPrice"\s*:\s*\{\s*"amount"\s*:\s*([0-9]+(?:\.[0-9]+)?)/i,
+      /"finalPrice"\s*:\s*([0-9]+(?:\.[0-9]+)?)/i,
+      /class="Nx9bqj[^"]*">\s*₹\s*([0-9,]+(?:\.[0-9]+)?)/i,
+      /class="_30jeq3[^"]*">\s*₹\s*([0-9,]+(?:\.[0-9]+)?)/i,
+      /property="product:price:amount"[^>]*content="([0-9]+(?:\.[0-9]+)?)"/i,
+    ],
+    meesho: [
+      /"discountedPrice"\s*:\s*\{\s*"value"\s*:\s*([0-9]+(?:\.[0-9]+)?)/i,
+      /"selling_price"\s*:\s*"?(?:₹)?\s*([0-9,]+(?:\.[0-9]+)?)"?/i,
+      /"price"\s*:\s*"₹\s*([0-9,]+(?:\.[0-9]+)?)"/i,
+      /property="product:price:amount"[^>]*content="([0-9]+(?:\.[0-9]+)?)"/i,
+      />\s*₹\s*([0-9,]+(?:\.[0-9]+)?)\s*</i,
+    ],
+    generic: [
+      /property="product:price:amount"[^>]*content="([0-9]+(?:\.[0-9]+)?)"/i,
+      /itemprop="price"[^>]*content="([0-9]+(?:\.[0-9]+)?)"/i,
+      /"price"\s*:\s*"?(?:₹)?\s*([0-9,]+(?:\.[0-9]+)?)"?/i,
+    ],
+  };
+
+  const patterns = [
+    ...(platformPatterns[platform] || []),
+    ...platformPatterns.generic,
+  ];
+
+  for (const pattern of patterns) {
+    const match = decodedHtml.match(pattern);
+    const price = parseNumericPrice(match?.[1] || "");
+    if (price != null) return price;
+  }
+
+  return null;
+};
+
+const detectMarketplacePlatform = (url = "") => {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    if (hostname.includes("amazon.")) return "amazon";
+    if (hostname.includes("flipkart.")) return "flipkart";
+    if (hostname.includes("meesho.")) return "meesho";
+  } catch {
+    return "generic";
+  }
+
+  return "generic";
+};
+
+const fetchMarketplacePrice = async (url = "") => {
+  const normalizedUrl = normalizeMarketplaceFetchUrl(url);
+  if (!normalizedUrl) return null;
+
+  const cached = marketplacePriceCache.get(normalizedUrl);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+
+  try {
+    const response = await fetch(normalizedUrl, {
+      headers: MARKETPLACE_REQUEST_HEADERS,
+      redirect: "follow",
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`marketplace_fetch_failed:${response.status}`);
+    }
+
+    const html = await response.text();
+    const platform = detectMarketplacePlatform(normalizedUrl);
+    const price = extractMarketplacePriceFromHtml(html, platform);
+
+    marketplacePriceCache.set(normalizedUrl, {
+      expiresAt: Date.now() + MARKETPLACE_PRICE_CACHE_TTL_MS,
+      value: price,
+    });
+
+    return price;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
 const VISITOR_ANALYTICS_EVENT_TYPES = new Set(["page_view", "product_view", "add_to_cart", "checkout", "login"]);
 const VISITOR_LOCATION_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
 const VISITOR_ANALYTICS_RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -4592,9 +4723,10 @@ app.get("/api/visitor-analytics", async (req, res) => {
 
     query = query.orderBy("createdAt", "desc").limit(5000);
 
-    let snapshot;
+    let analyticsDocs = [];
     try {
-      snapshot = await query.get();
+      const snapshot = await query.get();
+      analyticsDocs = snapshot.docs;
     } catch (queryError) {
       const message = String(queryError?.message || "");
       const needsFallback =
@@ -4607,13 +4739,43 @@ app.get("/api/visitor-analytics", async (req, res) => {
       }
 
       console.warn("VISITOR ANALYTICS QUERY FALLBACK:", message);
-      snapshot = await db
-        .collection("visitorAnalytics")
-        .orderBy("createdAt", "desc")
-        .limit(5000)
-        .get();
+      const batchSize = 1000;
+      const maxDocs = startDate || endDate ? 20000 : 5000;
+      let lastDoc = null;
+      let hasMore = true;
+
+      while (hasMore && analyticsDocs.length < maxDocs) {
+        let fallbackQuery = db.collection("visitorAnalytics");
+
+        if (startDate) {
+          fallbackQuery = fallbackQuery.where("createdAt", ">=", startDate);
+        }
+
+        if (endDate) {
+          fallbackQuery = fallbackQuery.where("createdAt", "<=", endDate);
+        }
+
+        fallbackQuery = fallbackQuery.orderBy("createdAt", "desc").limit(
+          Math.min(batchSize, maxDocs - analyticsDocs.length)
+        );
+
+        if (lastDoc) {
+          fallbackQuery = fallbackQuery.startAfter(lastDoc);
+        }
+
+        const fallbackSnapshot = await fallbackQuery.get();
+        const pageDocs = fallbackSnapshot.docs || [];
+
+        analyticsDocs.push(...pageDocs);
+
+        if (!pageDocs.length || pageDocs.length < batchSize) {
+          hasMore = false;
+        } else {
+          lastDoc = pageDocs[pageDocs.length - 1];
+        }
+      }
     }
-    const queriedEvents = snapshot.docs
+    const queriedEvents = analyticsDocs
       .map(mapVisitorAnalyticsDoc)
       .filter((event) => {
         const clientIp = event?.locationDebug?.clientIp || event?.clientIp || "";
@@ -4799,6 +4961,37 @@ app.get("/api/visitor-analytics", async (req, res) => {
   } catch (error) {
     console.error("VISITOR ANALYTICS FETCH ERROR:", error);
     res.status(500).json({ error: "Failed to fetch visitor analytics" });
+  }
+});
+
+app.get("/api/marketplace-prices", async (req, res) => {
+  try {
+    const amazon = normalizeMarketplaceFetchUrl(req.query?.amazon || "");
+    const flipkart = normalizeMarketplaceFetchUrl(req.query?.flipkart || "");
+    const meesho = normalizeMarketplaceFetchUrl(req.query?.meesho || "");
+
+    const entries = [
+      ["amazon", amazon],
+      ["flipkart", flipkart],
+      ["meesho", meesho],
+    ].filter(([, url]) => url);
+
+    const results = await Promise.all(
+      entries.map(async ([key, url]) => {
+        try {
+          const price = await fetchMarketplacePrice(url);
+          return [key, { url, price, success: price != null }];
+        } catch (error) {
+          console.error(`MARKETPLACE PRICE FETCH ERROR [${key}]:`, error?.message || error);
+          return [key, { url, price: null, success: false }];
+        }
+      })
+    );
+
+    res.json(Object.fromEntries(results));
+  } catch (error) {
+    console.error("MARKETPLACE PRICES API ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch marketplace prices" });
   }
 });
 

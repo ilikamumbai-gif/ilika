@@ -24,6 +24,7 @@ import Lazy360ViewButton from "../components/product/Lazy360ViewButton";
 import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 import { useSeo } from "../hooks/useSeo";
+import { getApiUrl } from "../utils/api";
 import {
   buildCartProductSnapshot,
   findVariantByQueryValue,
@@ -262,54 +263,26 @@ const normalizeExternalUrl = (value = "") => {
   return `https://${raw}`;
 };
 
-const getMarketplaceLinks = (product = {}, fallbackPrice = 0) => {
+const getMarketplaceLinks = (product = {}, livePrices = {}) => {
   const source = product?.marketplaceLinks || product || {};
-  const resolvedFallbackPrice = Number(fallbackPrice || 0) || 0;
   return [
     {
       key: "amazon",
       label: "Amazon",
       url: normalizeExternalUrl(source?.amazon || source?.amazonLink || ""),
-      price: Number(
-        source?.amazonPrice ||
-        source?.amazon_price ||
-        source?.amazonSellingPrice ||
-        product?.amazonPrice ||
-        product?.amazon_price ||
-        product?.amazonSellingPrice ||
-        resolvedFallbackPrice ||
-        0
-      ) || null,
+      price: livePrices?.amazon ?? null,
     },
     {
       key: "flipkart",
       label: "Flipkart",
       url: normalizeExternalUrl(source?.flipkart || source?.flipkartLink || ""),
-      price: Number(
-        source?.flipkartPrice ||
-        source?.flipkart_price ||
-        source?.flipkartSellingPrice ||
-        product?.flipkartPrice ||
-        product?.flipkart_price ||
-        product?.flipkartSellingPrice ||
-        resolvedFallbackPrice ||
-        0
-      ) || null,
+      price: livePrices?.flipkart ?? null,
     },
     {
       key: "meesho",
       label: "Meesho",
       url: normalizeExternalUrl(source?.meesho || source?.meeshoLink || ""),
-      price: Number(
-        source?.meeshoPrice ||
-        source?.meesho_price ||
-        source?.meeshoSellingPrice ||
-        product?.meeshoPrice ||
-        product?.meesho_price ||
-        product?.meeshoSellingPrice ||
-        resolvedFallbackPrice ||
-        0
-      ) || null,
+      price: livePrices?.meesho ?? null,
     },
   ].filter((item) => item.url);
 };
@@ -2027,6 +2000,7 @@ const ProductDetail = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponMessage, setCouponMessage] = useState({ type: "", text: "" });
   const [liveAssignedCoupon, setLiveAssignedCoupon] = useState(null);
+  const [marketplaceLivePrices, setMarketplaceLivePrices] = useState({});
   const [selectedPackId, setSelectedPackId] = useState("");
   const [collagenAddonCount, setCollagenAddonCount] = useState(0);
   // const [footerHeight, setFooterHeight] = useState(0);
@@ -3042,7 +3016,54 @@ const ProductDetail = () => {
 
   const detailTheme = useMemo(() => buildDetailTheme(detailPageBgColor), [detailPageBgColor]);
   const detailCtaColors = useMemo(() => getDetailCtaColors(detailTheme), [detailTheme]);
-  const marketplaceLinks = useMemo(() => getMarketplaceLinks(product, price), [product, price]);
+  const marketplaceSourceLinks = useMemo(() => getMarketplaceLinks(product), [product]);
+  const marketplaceLinks = useMemo(
+    () => getMarketplaceLinks(product, marketplaceLivePrices),
+    [product, marketplaceLivePrices]
+  );
+
+  useEffect(() => {
+    if (!marketplaceSourceLinks.length) {
+      setMarketplaceLivePrices({});
+      return;
+    }
+
+    const controller = new AbortController();
+    const params = new URLSearchParams();
+
+    marketplaceSourceLinks.forEach((item) => {
+      if (item?.key && item?.url) {
+        params.set(item.key, item.url);
+      }
+    });
+
+    const loadMarketplacePrices = async () => {
+      try {
+        const response = await fetch(getApiUrl(`/api/marketplace-prices?${params.toString()}`), {
+          signal: controller.signal,
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data?.error || "Failed to fetch marketplace prices");
+        }
+
+        setMarketplaceLivePrices({
+          amazon: Number(data?.amazon?.price) || null,
+          flipkart: Number(data?.flipkart?.price) || null,
+          meesho: Number(data?.meesho?.price) || null,
+        });
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        setMarketplaceLivePrices({});
+      }
+    };
+
+    loadMarketplacePrices();
+
+    return () => controller.abort();
+  }, [marketplaceSourceLinks]);
+
   const variantPaletteMap = useMemo(() => {
     const map = new Map();
     const palette = Array.isArray(product?.detailPageBgPalette) ? product.detailPageBgPalette : [];
