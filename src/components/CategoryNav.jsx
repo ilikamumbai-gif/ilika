@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Heading from "./Heading";
 
 const CategoryNav = ({ categories = [] }) => {
+  const hasOddMobileItem = categories.length % 2 === 1;
+
   return (
     <section className="w-full bg-white py-12 sm:py-16 lg:py-20">
       <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
@@ -14,8 +16,15 @@ const CategoryNav = ({ categories = [] }) => {
         />
 
         <div className="mt-4 grid grid-cols-2 gap-4 sm:mt-6 md:grid-cols-3 lg:grid-cols-5 lg:gap-6">
-          {categories.map((cat, index) => (
-            <Link to={cat.link} key={index} className="block w-full">
+          {categories.map((cat, index) => {
+            const isLastOddMobileItem = hasOddMobileItem && index === categories.length - 1;
+
+            return (
+            <Link
+              to={cat.link}
+              key={index}
+              className={`block w-full ${isLastOddMobileItem ? "col-span-2 mx-auto max-w-[240px] md:col-span-1 md:max-w-none" : ""}`}
+            >
               <article className="group relative overflow-hidden bg-[#f7f1ee]">
                 {cat.name?.toLowerCase() === "offers" && (
                   <span
@@ -42,7 +51,7 @@ const CategoryNav = ({ categories = [] }) => {
                 </div>
               </article>
             </Link>
-          ))}
+          )})}
         </div>
       </div>
     </section>

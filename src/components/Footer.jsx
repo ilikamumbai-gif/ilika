@@ -187,6 +187,35 @@ const Footer = () => {
         </div>
       ),
     },
+    {
+      key: "brands",
+      title: "Associated Brands",
+      content: associatedBrands.length ? (
+        <div className="flex flex-wrap gap-3 pb-1 pt-4">
+          {associatedBrands.map(({ href, src, alt }) => (
+            <a
+              key={alt}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={alt}
+            >
+              <OptimizedImage
+                src={src}
+                alt={alt}
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-md bg-white p-1 transition hover:scale-110"
+              />
+            </a>
+          ))}
+        </div>
+      ) : (
+        <p className="pb-1 pt-4 text-sm leading-6 text-white/50">
+          Add brand logos and links in `associatedBrands` inside Footer.jsx.
+        </p>
+      ),
+    },
   ];
 
   return (
