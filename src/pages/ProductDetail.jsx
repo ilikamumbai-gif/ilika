@@ -1523,7 +1523,6 @@ const HonestReviewsSection = ({
         <div className="min-w-0 flex-1">
           <Heading
             heading="Honest Reviews"
-            sub="Real customer review videos"
             align="left"
             subVariant="paragraph"
             subClassName="!max-w-3xl !text-[#718096]"

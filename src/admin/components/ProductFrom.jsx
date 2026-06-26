@@ -403,8 +403,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         id: String(item?.id || `honest-review-${index + 1}`),
         url: String(item?.url || "").trim(),
         title: String(item?.title || "").trim(),
-        subtitle: String(item?.subtitle || "").trim(),
-        description: String(item?.description || "").trim(),
       }))
       : [],
     videos: (d.videos || []).map(v => ({ ...v })),
@@ -801,8 +799,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           id: String(item?.id || `honest-review-${index + 1}`),
           url,
           title: String(item?.title || "").trim(),
-          subtitle: String(item?.subtitle || "").trim(),
-          description: String(item?.description || "").trim(),
         });
       }
 
@@ -1955,7 +1951,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         <div>
           <p className="font-semibold text-sm">Honest Reviews (Direct Video)</p>
           <p className="text-xs text-gray-500 mt-1">
-            Upload MP4/video files or paste direct hosted video links. These will appear as clean autoplay review videos above the customer reviews section.
+            Upload MP4/video files or paste direct hosted video links. Keep only the review title here.
           </p>
         </div>
 
@@ -2021,20 +2017,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               onChange={(e) => updateHonestReview(idx, { title: e.target.value })}
               className="w-full border p-2 rounded text-sm"
             />
-            <input
-              type="text"
-              placeholder="Subtitle (optional)"
-              value={item.subtitle || ""}
-              onChange={(e) => updateHonestReview(idx, { subtitle: e.target.value })}
-              className="w-full border p-2 rounded text-sm"
-            />
-            <textarea
-              placeholder="Description (optional)"
-              value={item.description || ""}
-              onChange={(e) => updateHonestReview(idx, { description: e.target.value })}
-              className="w-full border p-2 rounded text-sm"
-              rows={3}
-            />
           </div>
         ))}
 
@@ -2045,7 +2027,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               ...prev,
               honestReviews: [
                 ...(prev.honestReviews || []),
-                { id: crypto.randomUUID(), url: "", title: "", subtitle: "", description: "", _videoFile: null },
+                { id: crypto.randomUUID(), url: "", title: "", _videoFile: null },
               ],
             }))
           }
