@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
 import Heading from "../components/Heading";
+import OptimizedImage from "../components/OptimizedImage";
 import CartDrawer from "../components/CartDrawer";
 import { useCart } from "../context/CartProvider";
 import { auth, storage } from "../firebase/firebaseConfig";
@@ -292,6 +293,7 @@ const MARKETPLACE_LOGOS = {
   flipkart: "/Images/Flipcart.webp",
   meesho: "/Images/Meesho.webp",
 };
+const PRODUCT_DETAIL_PAYMENT_METHOD_IMAGE = "/ProductDetailPage/paymentmethod.webp";
 
 const MarketplaceButtons = ({ links = [], className = "" }) => {
   if (!Array.isArray(links) || !links.length) return null;
@@ -1055,6 +1057,25 @@ const getVideoThumbnailUrl = (url = "") => {
   return "";
 };
 
+const sanitizeHonestReviewItems = (items = []) => {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((item, index) => {
+      const url = String(item?.url || item || "").trim();
+      if (!url) return null;
+
+      return {
+        id: String(item?.id || `honest-review-${index + 1}`),
+        url,
+        title: String(item?.title || "").trim(),
+        subtitle: String(item?.subtitle || "").trim(),
+        description: String(item?.description || "").trim(),
+      };
+    })
+    .filter(Boolean);
+};
+
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STAR RATING
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
@@ -1486,6 +1507,55 @@ const ProductReviewCarouselSection = ({
           </button>
         </div>
       )}
+    </section>
+  );
+};
+
+const HonestReviewsSection = ({
+  items = [],
+  theme,
+}) => {
+  if (!items.length) return null;
+
+  return (
+    <section className="mb-8">
+      <div className="mb-5 flex items-start gap-4">
+        <div className="min-w-0 flex-1">
+          <Heading
+            heading="Honest Reviews"
+            sub="Real customer review videos"
+            align="left"
+            subVariant="paragraph"
+            subClassName="!max-w-3xl !text-[#718096]"
+          />
+        </div>
+      </div>
+
+      <div
+        className="flex gap-3 overflow-x-auto pb-1 scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {items.map((item) => {
+          return (
+            <div
+              key={item.id}
+              className="min-w-[220px] max-w-[220px] shrink-0 snap-start overflow-hidden rounded-[28px] bg-white shadow-[0_12px_30px_rgba(69,39,34,0.08)] sm:min-w-[260px] sm:max-w-[260px]"
+              style={{ border: `1px solid ${theme.borderSoft}` }}
+            >
+              <video
+                src={item.url}
+                title={item.title || "Honest review video"}
+                className="h-[420px] w-full bg-black object-cover sm:h-[470px]"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+              />
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 };
@@ -3219,6 +3289,10 @@ const ProductDetail = () => {
     () => (Array.isArray(product?.reviews) ? product.reviews : []),
     [product?.reviews]
   );
+  const honestReviews = useMemo(
+    () => sanitizeHonestReviewItems(product?.honestReviews),
+    [product?.honestReviews]
+  );
   const productFaqs = useMemo(
     () => sanitizeProductFaqs(product?.faqs),
     [product?.faqs]
@@ -3960,22 +4034,25 @@ const ProductDetail = () => {
                           )}
                           {visibleAssignedCoupon && previewCouponFinalPrice > 0 ? (
                             <div
-                              className="mt-3 grid grid-cols-1 items-start gap-3 rounded-[14px] border px-3 py-2.5 min-[420px]:grid-cols-2"
+                              className="mt-3 grid grid-cols-2 items-start gap-3 rounded-[14px] border px-3 py-3"
                               style={{ borderColor: detailTheme.accentLine, backgroundColor: "#fff" }}
                             >
-                              <div className="min-w-0 flex-1">
-                                <p className="text-[11px] font-semibold tracking-[0.08em] sm:text-[8px]" style={{ color: detailTheme.accent }}>
+                              <div className="min-w-0">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: detailTheme.accent }}>
                                   After Coupon Applied
                                 </p>
-                                <p className="mt-1 text-[18px] font-bold leading-none" style={{ color: detailTheme.heading }}>
+                                <p
+                                  className="mt-1 whitespace-nowrap text-[15px] font-bold leading-none min-[360px]:text-[16px] sm:text-[18px]"
+                                  style={{ color: detailTheme.heading }}
+                                >
                                   {previewCouponDisplayPercent > 0
                                     ? `${Math.round(previewCouponDisplayPercent)}% OFF`
                                     : visibleAssignedCoupon.code}
                                 </p>
                               </div>
-                              <div className="min-w-0 flex h-full flex-col justify-center text-right">
-                                <p className="text-[11px] font-semibold tracking-[0.08em] text-gray-400">Final Price</p>
-                                <p className="mt-1 text-[20px] font-bold leading-none" style={{ color: detailTheme.price }}>
+                              <div className="min-w-0 text-right">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">Final Price</p>
+                                <p className="mt-1 whitespace-nowrap text-[17px] font-bold leading-none min-[360px]:text-[18px]" style={{ color: detailTheme.price }}>
                                   ₹{previewCouponFinalPrice.toLocaleString("en-IN")}
                                 </p>
                               </div>
@@ -4068,11 +4145,27 @@ const ProductDetail = () => {
                             ? "Add To Cart"
                             : "Notify Me"}
                       </button>
+
+                      <div className="min-[420px]:col-span-2">
+                        <OptimizedImage
+                          src={PRODUCT_DETAIL_PAYMENT_METHOD_IMAGE}
+                          alt="Available payment methods"
+                          width={1200}
+                          height={180}
+                          className="h-auto w-full object-contain"
+                        />
+                      </div>
                     </div>
 
                     {trustStripItems.length > 0 && (
-                      <div className="border-t pt-4" style={{ borderColor: detailTheme.borderSoft }}>
-                        <div className="grid grid-cols-1 gap-1.5 min-[420px]:grid-cols-2 sm:gap-2.5">
+                      <div
+                        className="rounded-[18px] border bg-white px-3 py-3"
+                        style={{
+                          borderColor: detailTheme.borderSoft,
+                          boxShadow: "0 10px 24px rgba(69,39,34,0.05)",
+                        }}
+                      >
+                        <div className="grid grid-cols-4 gap-2">
                         {trustStripItems.map((item) => {
                           const TrustIcon = item.icon;
                           const TrustItemTag = item.to ? Link : "div";
@@ -4080,27 +4173,24 @@ const ProductDetail = () => {
                             <TrustItemTag
                               key={item.title}
                               {...(item.to ? { to: item.to } : {})}
-                              className="flex min-w-0 items-center gap-2 px-1 py-1 sm:items-start sm:gap-2.5 sm:rounded-[16px] sm:border sm:px-3 sm:py-3"
-                              style={{
-                                borderColor: "transparent",
-                                backgroundColor: "transparent",
-                              }}
+                              className="flex min-w-0 flex-col items-center justify-start gap-2 px-1 py-1 text-center"
                             >
                               <span
-                                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border"
                                 style={{
                                   color: detailTheme.accent,
-                                  backgroundColor: detailTheme.isDefaultWhite ? "#fff7f6" : hexToRgba(detailTheme.accentSoft, 0.18),
+                                  borderColor: detailTheme.borderSoft,
+                                  backgroundColor: detailTheme.isDefaultWhite ? "#fffdfa" : hexToRgba(detailTheme.accentSoft, 0.16),
                                 }}
                               >
-                                <TrustIcon className="h-4 w-4" />
+                                <TrustIcon className="h-4.5 w-4.5" />
                               </span>
                               <div className="min-w-0">
-                                <p className="text-[13px] font-semibold leading-4" style={{ color: detailTheme.heading }}>
+                                <p
+                                  className="text-[10px] font-semibold leading-[1.25] tracking-[-0.01em] sm:text-[11px]"
+                                  style={{ color: detailTheme.heading }}
+                                >
                                   {item.title}
-                                </p>
-                                <p className="mt-1 text-[11px] leading-4 text-gray-500">
-                                  {item.subtitle}
                                 </p>
                               </div>
                             </TrustItemTag>
@@ -4342,10 +4432,25 @@ const ProductDetail = () => {
                         ? "Add To Cart"
                         : "Notify Me"}
                   </button>
+
+                  <OptimizedImage
+                    src={PRODUCT_DETAIL_PAYMENT_METHOD_IMAGE}
+                    alt="Available payment methods"
+                    width={1200}
+                    height={180}
+                    className="h-auto w-full object-contain"
+                  />
                 </div>
 
                 {trustStripItems.length > 0 && (
-                  <div className="space-y-2 border-t pt-4" style={{ borderColor: detailTheme.borderSoft }}>
+                  <div
+                    className="rounded-[18px] border bg-white px-3 py-3"
+                    style={{
+                      borderColor: detailTheme.borderSoft,
+                      boxShadow: "0 10px 24px rgba(69,39,34,0.05)",
+                    }}
+                  >
+                    <div className="grid grid-cols-4 gap-2">
                     {trustStripItems.map((item) => {
                       const TrustIcon = item.icon;
                       const TrustItemTag = item.to ? Link : "div";
@@ -4353,28 +4458,30 @@ const ProductDetail = () => {
                         <TrustItemTag
                           key={item.title}
                           {...(item.to ? { to: item.to } : {})}
-                          className="flex items-start gap-3"
+                          className="flex min-w-0 flex-col items-center justify-start gap-2 px-1 py-1 text-center"
                         >
                           <span
-                            className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border"
                             style={{
                               color: detailTheme.accent,
-                              backgroundColor: detailTheme.isDefaultWhite ? "#fff7f6" : hexToRgba(detailTheme.accentSoft, 0.18),
+                              borderColor: detailTheme.borderSoft,
+                              backgroundColor: detailTheme.isDefaultWhite ? "#fffdfa" : hexToRgba(detailTheme.accentSoft, 0.16),
                             }}
                           >
                             <TrustIcon className="h-4.5 w-4.5" />
                           </span>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold leading-5" style={{ color: detailTheme.heading }}>
+                            <p
+                              className="text-[10px] font-semibold leading-[1.25] tracking-[-0.01em] sm:text-[11px]"
+                              style={{ color: detailTheme.heading }}
+                            >
                               {item.title}
-                            </p>
-                            <p className="text-xs leading-5 text-gray-500">
-                              {item.subtitle}
                             </p>
                           </div>
                         </TrustItemTag>
                       );
                     })}
+                    </div>
                   </div>
                 )}
 
@@ -4560,13 +4667,14 @@ const ProductDetail = () => {
               <div className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-6 sm:mb-8" aria-hidden="true">
                 <div className="rounded-[22px] border border-[#f1e2df] bg-white p-4 sm:p-5">
                   <SkeletonBlock className="h-8 w-48" />
-                  <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                      <div key={index} className="space-y-3 rounded-[18px] border border-[#f6ecea] p-4">
+                  <div className="mt-5 grid grid-cols-2 gap-2">
+                    {Array.from({ length: 6 }).map((_, index) => (
+                      <div key={index} className="flex items-center gap-3 rounded-full border border-[#f6ecea] px-3 py-2">
                         <SkeletonBlock className="h-10 w-10 rounded-full" />
-                        <SkeletonBlock className="h-4 w-28" />
-                        <SkeletonBlock className="h-3 w-full" />
-                        <SkeletonBlock className="h-3 w-[85%]" />
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <SkeletonBlock className="h-3.5 w-[88%]" />
+                          <SkeletonBlock className="h-3.5 w-[72%]" />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -4592,52 +4700,48 @@ const ProductDetail = () => {
                   <Heading heading="Why You Love It" style={{ color: detailTheme.heading }} />
                 </div>
 
-                <div
-                  className={`grid ${whyLoveItItems.length === 1 ? "grid-cols-1" : "grid-cols-2 lg:grid-cols-4"}`}
-                >
+                <div className="grid grid-cols-2 gap-2 p-3 sm:gap-4 sm:p-5 lg:grid-cols-2">
                   {whyLoveItItems.map((item, index) => {
                     const IconComponent = resolveWhyLoveItIcon(item.icon);
-                    const borderClass = `
-                      ${index % 2 === 1 ? "border-l" : ""}
-                      ${index >= 2 ? "border-t" : ""}
-                      ${index > 0 ? "lg:border-l" : ""}
-                      ${index < 4 ? "lg:border-t-0" : ""}
-                    `;
 
                     return (
                       <div
                         key={item.id || index}
-                        className={`flex h-full items-center justify-start gap-1.5 px-2.5 py-2.5 text-left sm:flex-col sm:items-center sm:justify-start sm:gap-2.5 sm:px-5 sm:py-6 sm:text-center ${borderClass}`}
+                        className="flex min-h-[54px] items-center gap-1.5 rounded-full border px-2.5 py-1 text-left sm:min-h-[76px] sm:gap-3 sm:px-4 sm:py-2.5"
                         style={{
                           borderColor: detailTheme.borderSoft,
                           backgroundColor: detailTheme.isDefaultWhite ? "#ffffff" : hexToRgba(detailTheme.reviewSurface, 0.65),
+                          boxShadow: "0 8px 18px rgba(69,39,34,0.04)",
                         }}
                       >
                         {IconComponent ? (
                           <span
-                            className="inline-flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-full sm:mb-3 sm:h-11 sm:w-11"
+                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border sm:h-11 sm:w-11"
                             style={{
                               color: detailTheme.accent,
-                              backgroundColor: detailTheme.isDefaultWhite ? "#fff6f5" : hexToRgba(detailTheme.accentSoft, 0.16),
+                              borderColor: detailTheme.borderSoft,
+                              backgroundColor: detailTheme.isDefaultWhite ? "#fffdfa" : hexToRgba(detailTheme.accentSoft, 0.16),
                             }}
                           >
-                            <IconComponent className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+                            <IconComponent className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                           </span>
                         ) : null}
-                        <h3
-                          className={`font-semibold leading-5 sm:leading-6 ${IconComponent ? "text-[13px] sm:text-[15px]" : "text-[13px] sm:text-base"}`}
-                          style={{ color: detailTheme.heading }}
-                        >
-                          {item.title}
-                        </h3>
-                        {item.description ? (
-                          <p
-                            className="hidden max-w-[300px] text-[13px] leading-6 sm:mt-1.5 sm:block sm:text-sm sm:leading-6"
-                            style={{ color: detailTheme.isDefaultWhite ? "#4b5563" : hexToRgba(detailTheme.heading, 0.78) }}
+                        <div className="min-w-0">
+                          <h3
+                              className={`font-semibold uppercase leading-[1.05] ${IconComponent ? "text-[9.5px] sm:text-[13px]" : "text-[9.5px] sm:text-[13px]"}`}
+                            style={{ color: detailTheme.heading }}
                           >
-                            {item.description}
-                          </p>
-                        ) : null}
+                            {item.title}
+                          </h3>
+                          {item.description ? (
+                            <p
+                              className="mt-0.5 hidden text-[12px] leading-4 sm:block"
+                              style={{ color: detailTheme.isDefaultWhite ? "#4b5563" : hexToRgba(detailTheme.heading, 0.78) }}
+                            >
+                              {item.description}
+                            </p>
+                          ) : null}
+                        </div>
                       </div>
                     );
                   })}
@@ -4870,6 +4974,13 @@ const ProductDetail = () => {
               })}
             </div>
           </section>
+
+          <div className="max-w-[90rem] mx-auto px-4 sm:px-6">
+            <HonestReviewsSection
+              items={honestReviews}
+              theme={detailTheme}
+            />
+          </div>
 
           <div className={`max-w-[90rem] mx-auto mb-8 px-4 sm:px-6 ${productFaqs.length > 0 ? "grid grid-cols-1 gap-6 xl:grid-cols-10" : ""}`}>
               <ProductReviewCarouselSection

@@ -1,11 +1,9 @@
 export const categoriesData = [
-  { name: "Ilika New", icon: "/Images/New-Cat.webp" ,link:"/newarrival"},
-  // { name: "Gift", icon: "/Images/Gifting-Cate.webp" ,link:"/"},
-  { name: "Face Care", icon: "/Images/Girlskin.webp" ,link:"skin/face"},
-  { name: "Hair Care", icon: "/Images/GirlHair.webp" ,link:"/hair"},
-  { name: "Body Care", icon: "/Images/GirlBody.webp" ,link:"skin/body"},
-  { name: "Appliances", icon: "/Images/GirlApp.webp" ,link:"/grooming"},
-  { name: "Offers", icon: "/Images/Offer-Cat.webp" ,link:"/offers"},
+  { name: "Skin Care", icon: "/Homepage/homepageskincarecat.png", link: "/skin/face" },
+  { name: "Hair Care", icon: "/Homepage/homepagehaircarecat.png", link: "/hair/care" },
+  { name: "Hair Styling", icon: "/Homepage/homepagehairstylingcat.png", link: "/hair/styling" },
+  { name: "Body Care", icon: "/Homepage/homepagebodaycarecat.png", link: "/skin/body" },
+  { name: "Grooming", icon: "/Homepage/homepagegroomingcat.png", link: "/grooming" },
 ];
 
 export const IngredientsData =[

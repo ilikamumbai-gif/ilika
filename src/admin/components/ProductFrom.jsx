@@ -341,6 +341,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     ingredients: [],
     inTheBox: [],
     faqs: [],
+    honestReviews: [],
     hasVideo: false,
     videos: [],
     warranty: "",   // ✅ NEW
@@ -397,6 +398,15 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       : [],
     inTheBox: sanitizeInTheBoxItems(d.inTheBox),
     faqs: sanitizeFaqItems(d.faqs),
+    honestReviews: Array.isArray(d.honestReviews)
+      ? d.honestReviews.map((item, index) => ({
+        id: String(item?.id || `honest-review-${index + 1}`),
+        url: String(item?.url || "").trim(),
+        title: String(item?.title || "").trim(),
+        subtitle: String(item?.subtitle || "").trim(),
+        description: String(item?.description || "").trim(),
+      }))
+      : [],
     videos: (d.videos || []).map(v => ({ ...v })),
     hasVideo: !!(d.videos?.length),
     warranty: d.warranty || "",   // ✅ NEW
@@ -647,6 +657,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     });
   };
 
+  const updateHonestReview = (idx, patch) => {
+    setForm((prev) => {
+      const reviews = [...(prev.honestReviews || [])];
+      reviews[idx] = { ...reviews[idx], ...patch };
+      return { ...prev, honestReviews: reviews };
+    });
+  };
+
   const uploadBAImage = async (file) => {
     const r = ref(storage, `products/beforeafter/${crypto.randomUUID()}-${file.name}`);
     await uploadBytes(r, file);
@@ -661,6 +679,12 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
   const uploadInTheBoxImage = async (file) => {
     const r = ref(storage, `products/in-the-box/${crypto.randomUUID()}-${file.name}`);
+    await uploadBytes(r, file);
+    return getDownloadURL(r);
+  };
+
+  const uploadHonestReviewVideo = async (file) => {
+    const r = ref(storage, `products/honest-reviews/${crypto.randomUUID()}-${file.name}`);
     await uploadBytes(r, file);
     return getDownloadURL(r);
   };
@@ -765,6 +789,22 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       }
 
       const faqData = sanitizeFaqItems(form.faqs);
+      const honestReviewsData = [];
+      for (const [index, item] of Array.from((form.honestReviews || []).entries())) {
+        let url = String(item?.url || "").trim();
+        if (item?._videoFile instanceof File) {
+          url = await uploadHonestReviewVideo(item._videoFile);
+        }
+        if (!url) continue;
+
+        honestReviewsData.push({
+          id: String(item?.id || `honest-review-${index + 1}`),
+          url,
+          title: String(item?.title || "").trim(),
+          subtitle: String(item?.subtitle || "").trim(),
+          description: String(item?.description || "").trim(),
+        });
+      }
 
       /* change log */
       if (initialData?.price && Number(initialData.price) !== Number(form.price))
@@ -802,6 +842,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         ingredients: ingredientsData,
         inTheBox: sanitizeInTheBoxItems(inTheBoxData),
         faqs: faqData,
+        honestReviews: honestReviewsData,
         videos: videoData,
         warranty: form.warranty || "",   // ✅ NEW
         warrantyTerms: form.warranty === "import"
@@ -1910,6 +1951,110 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       {/* ══════════════════════════════════════════════════
           BANNERS — MULTIPLE, OPTIONAL
       ══════════════════════════════════════════════════ */}
+      <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
+        <div>
+          <p className="font-semibold text-sm">Honest Reviews (Direct Video)</p>
+          <p className="text-xs text-gray-500 mt-1">
+            Upload MP4/video files or paste direct hosted video links. These will appear as clean autoplay review videos above the customer reviews section.
+          </p>
+        </div>
+
+        {(form.honestReviews || []).map((item, idx) => (
+          <div key={item.id || idx} className="border rounded-xl p-4 bg-white space-y-3">
+            <div className="flex justify-between">
+              <span className="text-sm font-semibold">Review Video {idx + 1}</span>
+              <button
+                type="button"
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    honestReviews: (prev.honestReviews || []).filter((_, i) => i !== idx),
+                  }))
+                }
+                className="text-red-500 text-xs"
+              >
+                Remove
+              </button>
+            </div>
+            {item.url ? (
+              <div className="overflow-hidden rounded-lg border border-gray-200 bg-black">
+                <video
+                  src={item.url}
+                  className="h-44 w-full object-cover"
+                  muted
+                  playsInline
+                  controls
+                  preload="metadata"
+                />
+              </div>
+            ) : null}
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Upload Video
+              </label>
+              <input
+                type="file"
+                accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  updateHonestReview(idx, {
+                    _videoFile: file,
+                    url: "",
+                    title: file.name.replace(/\.[^/.]+$/, ""),
+                  });
+                }}
+                className="w-full border p-2 rounded text-sm"
+              />
+            </div>
+            <input
+              type="url"
+              placeholder="Or paste direct video URL (MP4/WebM)"
+              value={item.url || ""}
+              onChange={(e) => updateHonestReview(idx, { url: e.target.value, _videoFile: null })}
+              className="w-full border p-2 rounded text-sm"
+            />
+            <input
+              type="text"
+              placeholder="Title (optional)"
+              value={item.title || ""}
+              onChange={(e) => updateHonestReview(idx, { title: e.target.value })}
+              className="w-full border p-2 rounded text-sm"
+            />
+            <input
+              type="text"
+              placeholder="Subtitle (optional)"
+              value={item.subtitle || ""}
+              onChange={(e) => updateHonestReview(idx, { subtitle: e.target.value })}
+              className="w-full border p-2 rounded text-sm"
+            />
+            <textarea
+              placeholder="Description (optional)"
+              value={item.description || ""}
+              onChange={(e) => updateHonestReview(idx, { description: e.target.value })}
+              className="w-full border p-2 rounded text-sm"
+              rows={3}
+            />
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={() =>
+            setForm((prev) => ({
+              ...prev,
+              honestReviews: [
+                ...(prev.honestReviews || []),
+                { id: crypto.randomUUID(), url: "", title: "", subtitle: "", description: "", _videoFile: null },
+              ],
+            }))
+          }
+          className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg"
+        >
+          + Add Review Video
+        </button>
+      </div>
+
       <div className="border rounded-xl p-5 space-y-4 bg-gray-50">
         <div>
           <p className="font-semibold text-sm">Product Banners (Optional)</p>

@@ -13,7 +13,7 @@ import {
 import { Link } from "react-router-dom";
 import OptimizedImage from "./OptimizedImage";
 
-const logo = "/Images/logo2.webp";
+const logo = "/Footer/logo footer.png";
 const amazon = "/Images/Amazon.webp";
 const flipcart = "/Images/Flipcart.webp";
 const meesho = "/Images/Meesho.webp";
@@ -83,10 +83,28 @@ const socials = [
   },
 ];
 
+const associatedBrands = [
+  {
+    href: "https://www.sspackaging.co.in/",
+    src: "/Footer/SS.png",
+    alt: "SS Packaging",
+  },
+  {
+    href: "https://thefuturex.in/",
+    src: "/Footer/tfx.jpeg",
+    alt: "The Future X",
+  },
+  {
+    href: "https://ptcgram.com/",
+    src: "/Footer/ptc.jpeg",
+    alt: "PTCGram Pvt. Ltd.",
+  },
+];
+
 const FooterLink = ({ to, icon: Icon, children, mobile = false }) => (
   <Link
     to={to}
-    className={`flex items-center gap-2 text-inherit transition hover:translate-x-1 hover:opacity-80 ${
+    className={`flex items-center gap-2 text-white/80 transition hover:translate-x-1 hover:text-white ${
       mobile ? "text-[15px] leading-6" : "text-sm"
     }`}
   >
@@ -95,14 +113,8 @@ const FooterLink = ({ to, icon: Icon, children, mobile = false }) => (
   </Link>
 );
 
-const Footer = ({ theme = "default" }) => {
-  const isBlackTheme = theme === "black";
+const Footer = () => {
   const [openSection, setOpenSection] = useState("");
-
-  const footerBg = isBlackTheme ? "bg-[#1f1235] text-[#f3ebff]" : "text-[#4c2020]";
-  const accentText = isBlackTheme ? "text-[#d5bcff]" : "text-[#b25555]";
-  const mutedText = isBlackTheme ? "text-[#decff8]" : "text-[#7a4a4a]";
-  const borderTone = isBlackTheme ? "border-white/15" : "border-[#e2c1c1]";
 
   const mobileSections = [
     {
@@ -115,6 +127,37 @@ const Footer = ({ theme = "default" }) => {
               {link.label}
             </FooterLink>
           ))}
+        </div>
+      ),
+    },
+    {
+      key: "contact",
+      title: "Get In Touch",
+      content: (
+        <div className="space-y-3 pb-1 pt-4 text-sm leading-6 text-white/80">
+          <div>
+            <p className="font-semibold text-white">Corporate Office Address</p>
+            <p className="mt-1 text-white/65">
+              Office no. 201-202, Hirubai Residency
+              <br />
+              Virar (West) - 401303, Maharashtra, India.
+            </p>
+          </div>
+
+          <a href="mailto:customersupport.ilika@gmail.com" className="flex items-start gap-3 transition hover:text-white">
+            <Mail size={16} className="mt-1 shrink-0" />
+            <span>customersupport.ilika@gmail.com</span>
+          </a>
+
+          <a href="tel:+919120879879" className="flex items-start gap-3 transition hover:text-white">
+            <Phone size={16} className="mt-1 shrink-0" />
+            <span>+91 92701 14738</span>
+          </a>
+
+          <div className="flex items-start gap-3">
+            <MapPin size={16} className="mt-1 shrink-0" />
+            <span>Monday - Saturday, 10:00 AM to 6:30 PM IST</span>
+          </div>
         </div>
       ),
     },
@@ -144,67 +187,69 @@ const Footer = ({ theme = "default" }) => {
         </div>
       ),
     },
-    {
-      key: "contact",
-      title: "Get In Touch",
-      content: (
-        <div className="space-y-3 pb-1 pt-4 text-sm leading-6">
-          <div>
-            <p className={isBlackTheme ? "font-semibold text-white" : "font-semibold text-[#6f1e1e]"}>
-              Corporate Office Address
-            </p>
-            <p className={`mt-1 ${mutedText}`}>
-              Office no. 201-202, Hirubai Residency
-              <br />
-              Virar (West) - 401303, Maharashtra, India.
-            </p>
-          </div>
-
-          <a href="mailto:customersupport.ilika@gmail.com" className="flex items-start gap-3 transition hover:opacity-80">
-            <Mail size={16} className="mt-1 shrink-0" />
-            <span>customersupport.ilika@gmail.com</span>
-          </a>
-
-          <a href="tel:+919120879879" className="flex items-start gap-3 transition hover:opacity-80">
-            <Phone size={16} className="mt-1 shrink-0" />
-            <span>+91 92701 14738</span>
-          </a>
-
-          <div className="flex items-start gap-3">
-            <MapPin size={16} className="mt-1 shrink-0" />
-            <span>Monday - Saturday, 10:00 AM to 6:30 PM IST</span>
-          </div>
-        </div>
-      ),
-    },
   ];
 
   return (
-    <footer
-      className={footerBg}
-      style={isBlackTheme ? undefined : { backgroundColor: "rgba(162, 29, 29, 0.17)" }}
-    >
-      <div className={isBlackTheme ? "bg-[#9569d0] py-1" : "MiniDivider-bg-color py-1"} />
+    <footer className="bg-black text-white">
+      <div className="bg-white/10 py-px" />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <div className="space-y-5 xl:hidden">
-          <div className="px-1 pt-1 text-center">
-            <OptimizedImage
-              src={logo}
-              alt="Ilika"
-              width="auto"
-              height={48}
-              className="mx-auto h-12"
-            />
-            <p className={`mx-auto mt-4 max-w-xs text-sm leading-7 ${mutedText}`}>
-              Discover premium yet affordable skin care, hair care, and grooming
-              essentials designed to make everyday beauty feel elegant, bright, and easy.
-            </p>
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:pt-10">
+        <div className="text-center">
+          <p
+            className="text-[44px] font-semibold leading-[1.08] tracking-tight text-white sm:text-[54px] lg:text-[62px]"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+          >
+            Elegent. Bright. You.
+          </p>
+          <OptimizedImage
+            src={logo}
+            alt="Ilika"
+            width="auto"
+            height={54}
+            className="mx-auto mt-5 h-16 sm:h-20"
+          />
+          <p className="mx-auto mt-4 max-w-[760px] text-sm leading-7 text-white/70 sm:text-[15px] lg:text-base">
+            Discover premium yet affordable skin care, hair care, and grooming essentials designed to make everyday beauty feel elegant, bright, and easy.
+          </p>
+        </div>
 
-            <p className={`mt-5 text-[15px] font-semibold uppercase tracking-[0.08em] ${accentText}`}>
+        <div className="mt-8 space-y-5 xl:hidden">
+          <div className="border-t border-white/15">
+            {mobileSections.map((section) => {
+              const isOpen = openSection === section.key;
+
+              return (
+                <div key={section.key} className="border-b border-white/15">
+                  <button
+                    type="button"
+                    onClick={() => setOpenSection(isOpen ? "" : section.key)}
+                    className="flex w-full items-center justify-between gap-4 py-4 text-left"
+                  >
+                    <span
+                      className="text-[14px] font-semibold uppercase tracking-[0.16em] text-white"
+                      style={{ fontFamily: "'Lato', sans-serif" }}
+                    >
+                      {section.title}
+                    </span>
+                    <ChevronDown
+                      size={18}
+                      className={`shrink-0 text-white transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {isOpen ? <div className="pb-3">{section.content}</div> : null}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="text-center">
+            <p
+              className="text-[14px] font-semibold uppercase tracking-[0.16em] text-white"
+              style={{ fontFamily: "'Lato', sans-serif" }}
+            >
               Also Available On
             </p>
-            <div className="mt-5 flex items-center justify-center gap-3">
+            <div className="mt-4 flex items-center justify-center gap-3">
               {marketplaces.map(({ href, src, alt }) => (
                 <a key={alt} href={href} target="_blank" rel="noopener noreferrer" aria-label={alt}>
                   <OptimizedImage
@@ -217,31 +262,6 @@ const Footer = ({ theme = "default" }) => {
                 </a>
               ))}
             </div>
-          </div>
-
-          <div className="border-t border-white/35">
-            {mobileSections.map((section) => {
-              const isOpen = openSection === section.key;
-
-              return (
-                <div key={section.key} className="border-b border-white/35">
-                  <button
-                    type="button"
-                    onClick={() => setOpenSection(isOpen ? "" : section.key)}
-                    className="flex w-full items-center justify-between gap-4 py-4 text-left"
-                  >
-                    <span className={`text-[15px] font-semibold uppercase tracking-[0.08em] ${accentText}`}>
-                      {section.title}
-                    </span>
-                    <ChevronDown
-                      size={18}
-                      className={`shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {isOpen ? <div className="pb-3">{section.content}</div> : null}
-                </div>
-              );
-            })}
           </div>
 
           <div className="flex items-center justify-center gap-3 pt-1">
@@ -259,97 +279,33 @@ const Footer = ({ theme = "default" }) => {
           </div>
         </div>
 
-        <div className="hidden xl:grid xl:grid-cols-5 xl:gap-6">
+        <div className="mt-10 hidden xl:grid xl:grid-cols-4 xl:gap-12 2xl:gap-16">
           <div className="space-y-3">
-            <OptimizedImage src={logo} alt="Ilika" width="auto" height={44} className="h-11" />
-
-            <p className={`max-w-sm text-xs leading-6 ${mutedText}`}>
-              Discover premium yet affordable skin care, hair care, and grooming
-              essentials designed to make everyday beauty feel elegant, bright, and easy.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className={`text-sm font-semibold uppercase tracking-[0.18em] ${accentText}`}>
-              Quick Links
-            </h4>
-            <div className="grid grid-cols-1 gap-y-2">
-              {quickLinks.map((link) => (
-                <FooterLink key={link.to} to={link.to} icon={link.icon}>
-                  {link.label}
-                </FooterLink>
-              ))}
-            </div>
-
-            <div className="space-y-1.5 pt-3">
-              <p className={`text-sm font-semibold uppercase tracking-[0.18em] ${accentText}`}>
-                Also Available On
-              </p>
-              <div className="flex gap-3">
-                {marketplaces.map(({ href, src, alt }) => (
-                  <a key={alt} href={href} target="_blank" rel="noopener noreferrer" aria-label={alt}>
-                    <OptimizedImage
-                      src={src}
-                      alt={alt}
-                      width={32}
-                      height={32}
-                      className="h-8 w-8 rounded-md bg-white p-1 transition hover:scale-110"
-                    />
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className={`text-sm font-semibold uppercase tracking-[0.18em] ${accentText}`}>
-              Company
-            </h4>
-            <div className="grid grid-cols-1 gap-y-2">
-              {companyLinks.map((link) => (
-                <FooterLink key={link.to} to={link.to} icon={link.icon}>
-                  {link.label}
-                </FooterLink>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className={`text-sm font-semibold uppercase tracking-[0.18em] ${accentText}`}>
-              Support
-            </h4>
-            <div className="grid grid-cols-1 gap-y-2">
-              {supportLinks.map((link) => (
-                <FooterLink key={link.to} to={link.to}>
-                  {link.label}
-                </FooterLink>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className={`text-sm font-semibold uppercase tracking-[0.18em] ${accentText}`}>
+            <h4
+              className="text-sm font-semibold uppercase tracking-[0.16em] text-white"
+              style={{ fontFamily: "'Lato', sans-serif" }}
+            >
               Get In Touch
             </h4>
 
-            <div className="mt-3 space-y-2.5 text-xs leading-5">
+            <div className="mt-3 space-y-2.5 text-xs leading-6 text-white/80">
               <div>
-                <p className={isBlackTheme ? "font-semibold text-white" : "font-semibold text-[#6f1e1e]"}>
+                <p className="font-semibold text-white" style={{ fontFamily: "'Lato', sans-serif" }}>
                   Corporate Office Address
                 </p>
-                <p className={mutedText}>
+                <p className="text-white/65">
                   Office no. 201-202, Hirubai Residency
                   <br />
                   Virar (West) - 401303, Maharashtra, India.
                 </p>
               </div>
 
-              <a href="mailto:customersupport.ilika@gmail.com" className="flex items-center gap-2 transition hover:opacity-80">
+              <a href="mailto:customersupport.ilika@gmail.com" className="flex items-center gap-2 transition hover:text-white">
                 <Mail size={13} className="shrink-0" />
                 <span>customersupport.ilika@gmail.com</span>
               </a>
 
-              <a href="tel:+919120879879" className="flex items-center gap-2 transition hover:opacity-80">
+              <a href="tel:+919120879879" className="flex items-center gap-2 transition hover:text-white">
                 <Phone size={13} className="shrink-0" />
                 <span>+91 92701 14738</span>
               </a>
@@ -374,10 +330,116 @@ const Footer = ({ theme = "default" }) => {
               </div>
             </div>
           </div>
+
+          <div className="space-y-3">
+            <h4
+              className="text-sm font-semibold uppercase tracking-[0.16em] text-white"
+              style={{ fontFamily: "'Lato', sans-serif" }}
+            >
+              Quick Links
+            </h4>
+            <div className="grid grid-cols-1 gap-y-2">
+              {quickLinks.map((link) => (
+                <FooterLink key={link.to} to={link.to} icon={link.icon}>
+                  {link.label}
+                </FooterLink>
+              ))}
+            </div>
+
+            <div className="space-y-1.5 pt-3">
+              <p
+                className="text-sm font-semibold uppercase tracking-[0.16em] text-white"
+                style={{ fontFamily: "'Lato', sans-serif" }}
+              >
+                Also Available On
+              </p>
+              <div className="flex gap-3">
+                {marketplaces.map(({ href, src, alt }) => (
+                  <a key={alt} href={href} target="_blank" rel="noopener noreferrer" aria-label={alt}>
+                    <OptimizedImage
+                      src={src}
+                      alt={alt}
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-md bg-white p-1 transition hover:scale-110"
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          
+
+          <div className="space-y-3">
+            <h4
+              className="text-sm font-semibold uppercase tracking-[0.16em] text-white"
+              style={{ fontFamily: "'Lato', sans-serif" }}
+            >
+              Company
+            </h4>
+            <div className="grid grid-cols-1 gap-y-2">
+              {companyLinks.map((link) => (
+                <FooterLink key={link.to} to={link.to} icon={link.icon}>
+                  {link.label}
+                </FooterLink>
+              ))}
+            </div>
+
+            <div className="space-y-2 pt-4">
+              <p
+                className="text-sm font-semibold uppercase tracking-[0.16em] text-white"
+                style={{ fontFamily: "'Lato', sans-serif" }}
+              >
+                Associated Brands
+              </p>
+              {associatedBrands.length ? (
+                <div className="flex flex-wrap gap-2.5">
+                  {associatedBrands.map(({ href, src, alt }) => (
+                    <a
+                      key={alt}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={alt}
+                    >
+                      <OptimizedImage
+                        src={src}
+                        alt={alt}
+                        width={36}
+                        height={36}
+                        className="h-9 w-9 rounded-md bg-white p-1 transition hover:scale-110"
+                      />
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs leading-5 text-white/50">
+                  Add brand logos and links in `associatedBrands` inside Footer.jsx.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h4
+              className="text-sm font-semibold uppercase tracking-[0.16em] text-white"
+              style={{ fontFamily: "'Lato', sans-serif" }}
+            >
+              Support
+            </h4>
+            <div className="grid grid-cols-1 gap-y-2">
+              {supportLinks.map((link) => (
+                <FooterLink key={link.to} to={link.to}>
+                  {link.label}
+                </FooterLink>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className={`mt-6 flex flex-col gap-2 border-t ${borderTone} pt-4 text-xs sm:flex-row sm:items-center sm:justify-between`}>
-          <p className={mutedText}>© 2026 Corporate Office Address | Powered by PTCGRAM Private Limited</p>
+        <div className="mt-6 flex flex-col gap-1 border-t border-white/15 pt-3 text-xs sm:flex-row sm:items-center sm:justify-end">
+          <p className="text-white/65">© 2026 Ilika. Powered by PTCGRAM Private Limited</p>
         </div>
       </div>
     </footer>
@@ -385,4 +447,3 @@ const Footer = ({ theme = "default" }) => {
 };
 
 export default Footer;
-

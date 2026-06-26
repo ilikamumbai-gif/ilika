@@ -157,7 +157,7 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
                   <button
                     type="button"
                     onClick={() => navigate("/offers")}
-                    className="inline-flex h-8 items-center rounded-none border-0 bg-[#231815] px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_24px_rgba(35,24,21,0.18)] appearance-none"
+                    className="inline-flex h-8 items-center rounded-none border-0 bg-[#231815] px-3 text-[10px] font-semibold tracking-[0.08em] text-white shadow-[0_10px_24px_rgba(35,24,21,0.18)] appearance-none"
                   >
                     Offer
                   </button>
@@ -220,6 +220,7 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
                 backgroundColor: "#ffffff",
                 borderTop: "2px solid #b3b3b3",
                 borderBottom: "2px solid #b3b3b3",
+                fontFamily: "'Lato', sans-serif",
               }}
             >
               <div className="mx-auto flex h-[42px] max-w-[1280px] items-center justify-center gap-1 overflow-visible px-6 xl:px-8">
@@ -239,7 +240,7 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
                         <Link
                           to={item.to}
                           state={item.state}
-                          className={`relative shrink-0 px-4 py-1 text-[14px] font-semibold transition duration-200 ${
+                          className={`relative shrink-0 px-4 py-1 text-[14px] font-semibold uppercase transition duration-200 ${
                             isActive ? "text-[#231815]" : "text-[#4b4340] hover:text-[#231815]"
                           }`}
                         >
@@ -306,7 +307,7 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
                       key={item.to}
                       to={item.to}
                       state={item.state}
-                      className={`group relative shrink-0 px-4 py-1 text-[14px] font-semibold transition duration-200 ${
+                      className={`group relative shrink-0 px-4 py-1 text-[14px] font-semibold uppercase transition duration-200 ${
                         item.accent
                           ? "text-[#231815] hover:text-[#231815]"
                           : isActive

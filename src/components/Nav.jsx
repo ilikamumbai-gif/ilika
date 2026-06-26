@@ -229,12 +229,12 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
 ];
 
   const desktopNavItemClass = (active) =>
-    `relative inline-flex items-center whitespace-nowrap pb-1 text-[#3c302c] transition duration-300 hover:text-[#b34140] ${
+    `relative inline-flex items-center whitespace-nowrap pb-1 font-semibold capitalize text-[#3c302c] transition duration-300 hover:text-[#b34140] ${
       active ? "text-[#b34140]" : ""
     }`;
 
   const mobileNavItemClass = (active) =>
-    `flex min-h-[48px] items-center justify-between rounded-xl px-4 py-3 text-[15px] font-medium transition ${
+    `flex min-h-[48px] items-center justify-between rounded-xl px-4 py-3 text-[15px] font-medium uppercase transition ${
       active
         ? "bg-[#fff1ed] text-[#b34140] shadow-[0_10px_24px_rgba(179,65,64,0.10)]"
         : "bg-white text-[#3c302c] hover:bg-[#fff5f2]"
@@ -284,8 +284,9 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
       <nav
         className={`${mobile
           ? "flex flex-col gap-5 text-base w-full"
-          : "order-1 flex items-center justify-center justify-self-center gap-3 lg:gap-5 xl:gap-6 text-[14px] lg:text-[15px] xl:text-[16px] whitespace-nowrap min-w-0 w-full"
+          : "order-1 flex items-center justify-center justify-self-center gap-3 lg:gap-5 xl:gap-6 text-[15px] lg:text-[16px] xl:text-[17px] whitespace-nowrap min-w-0 w-full"
         }`}
+        style={{ fontFamily: mobile ? "'Lato', sans-serif" : "'Playfair Display', Georgia, serif" }}
       >
         {mobile ? (
           <>
@@ -465,7 +466,7 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
                 to="/offers"
                 onClick={onClose}
                 className="
-                  whitespace-nowrap font-semibold px-3 py-1 rounded-full
+                  whitespace-nowrap font-semibold uppercase px-3 py-1 rounded-full
                   bg-black
                   text-white hover:shadow-lg
                   transition-all duration-300

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, BadgeDollarSign, ShieldCheck, Truck, LifeBuo
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Heading from "../components/Heading";
+import OptimizedImage from "../components/OptimizedImage";
 import { categoriesData } from "../Dummy/categoriesData";
 import SkinTypeBanner from "../components/SkinTypeBanner";
 
@@ -16,21 +17,20 @@ import Banner from "../components/Banner";
 const CartDrawer = lazy(() => import("../components/CartDrawer"));
 const Footer = lazy(() => import("../components/Footer"));
 const CategoryNav = lazy(() => import("../components/CategoryNav"));
+const HomeDivisionSttrip = lazy(() => import("../components/HomeDivisionSttrip"));
+const HomeTrendingShowcase = lazy(() => import("../components/HomeTrendingShowcase"));
 const GroomingLeadOffer = lazy(() => import("../components/GroomingLeadOffer"));
 
-/* assets (correct import) */
-import bannerSkincare from "../assets/Images/FacecareBanner.webp";
-import bannerHair from "../assets/Images/HairBanner.webp";
 const Carousel = lazy(() => import("../components/Carousel"));
 
 const Menifesto = lazy(() => import("../components/Menifesto"));
 const MyCtmRoutine = lazy(() => import("../components/MyCtmRoutine"));
 const TestimonialList = lazy(() => import("../components/TestimonialList"));
+import blackSeedLandingImage from "../Landing/assets/Blackseed1.png";
+import herbalLandingImage from "../Landing/assets/Herbal1.png";
 
-/* public images (use path only) */
-const skinMobile = "/Images/skinMobile.webp";
-
-const hairMobile = "/Images/hairMobile.webp";
+const hairBannerDesktop = "/Homepage/homepagehairbanner.jpg";
+const hairBannerMobile = "/Homepage/homepagehairbannermobile.jpg";
 const BannerStyle = "/Images/Banner.webp";
 const endBannerDesktop = "/Images/End1.webp";
 const endBannerMobile = "/Images/End1.webp";
@@ -38,10 +38,8 @@ const end2BannerDesktop = "/Images/End2.webp";
 const end2BannerMobile = "/Images/End2.webp";
 const maskBannerDesktop = "/Images/mask.webp";
 const maskBannerMobile = "/Images/mask.webp";
-const maskComboBanner24Desktop = "/Images/24.webp";
-const maskComboBanner24Mobile = "/Images/24.webp";
-const homePageCtmBannerDesktop = "/Images/homepagebannerctm.png";
-const homePageCtmBannerMobile = "/Images/homepagebannerctm.png";
+const homePageCtmBannerDesktop = "/Homepage/homepagebannerctm.jpg";
+const homePageCtmBannerMobile = "/Homepage/homepagebannerctm.jpg";
 
 
 const HAIR_CAROUSEL_ITEMS = [
@@ -88,11 +86,26 @@ const HOME_SUPPORT_ITEMS = [
   },
 ];
 
+const normalizeName = (value = "") =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const getProductImage = (product, fallback) =>
+  product?.variants?.[0]?.images?.[0] ||
+  product?.images?.[0] ||
+  product?.image ||
+  product?.imageUrl ||
+  fallback;
+
 const LazyMountSection = ({
   children,
   minHeight = 320,
   className = "",
   rootMargin = "40px 0px",
+  placeholder = null,
 }) => {
   const sectionRef = useRef(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -124,10 +137,192 @@ const LazyMountSection = ({
         containIntrinsicSize: `1px ${minHeight}px`,
       }}
     >
-      {isMounted ? children : <div style={{ minHeight }} />}
+      {isMounted ? children : (placeholder || <div style={{ minHeight }} />)}
     </section>
   );
 };
+
+const SkeletonBlock = ({ className = "" }) => (
+  <div className={`animate-pulse rounded-[20px] bg-[#eadfda] ${className}`} />
+);
+
+const HomeSectionSkeleton = ({
+  minHeight = 320,
+  className = "",
+  contentClassName = "",
+  children,
+}) => (
+  <div
+    className={`w-full px-4 py-6 sm:px-6 lg:px-8 ${className}`}
+    style={{ minHeight }}
+  >
+    <div className={`mx-auto max-w-7xl ${contentClassName}`}>
+      {children}
+    </div>
+  </div>
+);
+
+const CategoryNavSkeleton = () => (
+  <HomeSectionSkeleton minHeight={220} className="bg-white py-4">
+    <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div key={index} className="space-y-3 text-center">
+          <SkeletonBlock className="mx-auto h-20 w-full max-w-[140px] rounded-[24px]" />
+          <SkeletonBlock className="mx-auto h-4 w-20 rounded-full" />
+        </div>
+      ))}
+    </div>
+  </HomeSectionSkeleton>
+);
+
+const TrendingShowcaseSkeleton = ({ minHeight = 360, dark = false }) => (
+  <HomeSectionSkeleton
+    minHeight={minHeight}
+    className={dark ? "bg-[#120b0a] py-8" : "bg-white py-8"}
+  >
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <SkeletonBlock className={`h-8 w-64 ${dark ? "bg-white/12" : ""}`} />
+        <SkeletonBlock className={`h-4 w-80 max-w-full ${dark ? "bg-white/10" : ""}`} />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="space-y-3">
+            <SkeletonBlock className={`aspect-[0.82] w-full rounded-[28px] ${dark ? "bg-white/10" : ""}`} />
+            <SkeletonBlock className={`h-5 w-[82%] ${dark ? "bg-white/12" : ""}`} />
+            <SkeletonBlock className={`h-4 w-28 ${dark ? "bg-white/10" : ""}`} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </HomeSectionSkeleton>
+);
+
+const DividerStripSkeleton = () => (
+  <HomeSectionSkeleton minHeight={120} className="py-4">
+    <SkeletonBlock className="h-[118px] w-full rounded-none bg-[#d8a2a1]" />
+  </HomeSectionSkeleton>
+);
+
+const ProductShelfSkeleton = ({
+  minHeight = 620,
+  dark = false,
+  showCircleRow = false,
+}) => (
+  <HomeSectionSkeleton
+    minHeight={minHeight}
+    className={dark ? "bg-[#120b0a] py-8" : "bg-white py-8"}
+  >
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <SkeletonBlock className={`h-8 w-72 ${dark ? "bg-white/12" : ""}`} />
+        <SkeletonBlock className={`h-4 w-96 max-w-full ${dark ? "bg-white/10" : ""}`} />
+      </div>
+      {showCircleRow ? (
+        <div className="flex gap-4 overflow-hidden pb-2">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div key={index} className="space-y-3">
+              <SkeletonBlock className="h-[170px] w-[170px] rounded-full" />
+              <SkeletonBlock className="mx-auto h-4 w-28" />
+            </div>
+          ))}
+        </div>
+      ) : null}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="space-y-3">
+            <SkeletonBlock className={`aspect-[0.82] w-full rounded-[28px] ${dark ? "bg-white/10" : ""}`} />
+            <SkeletonBlock className={`h-5 w-[80%] ${dark ? "bg-white/12" : ""}`} />
+            <SkeletonBlock className={`h-4 w-24 ${dark ? "bg-white/10" : ""}`} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </HomeSectionSkeleton>
+);
+
+const RoutineSkeleton = () => (
+  <HomeSectionSkeleton minHeight={340} className="bg-white py-8">
+    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      <div className="space-y-4">
+        <SkeletonBlock className="h-8 w-56" />
+        <SkeletonBlock className="h-4 w-full max-w-[520px]" />
+        <SkeletonBlock className="h-4 w-[88%] max-w-[460px]" />
+        <div className="flex gap-3 pt-2">
+          <SkeletonBlock className="h-11 w-36 rounded-full" />
+          <SkeletonBlock className="h-11 w-36 rounded-full" />
+        </div>
+      </div>
+      <SkeletonBlock className="aspect-[4/3] w-full rounded-[32px]" />
+    </div>
+  </HomeSectionSkeleton>
+);
+
+const LandingPagesSkeleton = () => (
+  <HomeSectionSkeleton minHeight={420} className="bg-black py-8">
+    <div className="space-y-6">
+      <SkeletonBlock className="h-4 w-40 bg-white/12" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <SkeletonBlock key={index} className="aspect-[4/5.25] w-full rounded-[28px] bg-white/10" />
+        ))}
+      </div>
+    </div>
+  </HomeSectionSkeleton>
+);
+
+const TrustStripSkeleton = () => (
+  <div className="bg-[#b34140] px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+    <div className="mx-auto grid max-w-7xl grid-cols-2 gap-0 md:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div
+          key={index}
+          className="flex min-h-[92px] flex-col items-center justify-center gap-3 border-white/20 px-3 py-5 text-center sm:min-h-[108px] sm:px-4 sm:py-6 md:border-r"
+        >
+          <SkeletonBlock className="h-10 w-10 rounded-full bg-white/25" />
+          <SkeletonBlock className="h-4 w-24 bg-white/20" />
+          <SkeletonBlock className="h-3 w-28 bg-white/15" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const TestimonialsSkeleton = () => (
+  <HomeSectionSkeleton minHeight={340} className="bg-white py-8">
+    <div className="space-y-6">
+      <div className="space-y-3 text-center">
+        <SkeletonBlock className="mx-auto h-8 w-56" />
+        <SkeletonBlock className="mx-auto h-4 w-72 max-w-full" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="space-y-3 rounded-[24px] border border-[#efe5e1] p-5">
+            <SkeletonBlock className="h-4 w-24" />
+            <SkeletonBlock className="h-4 w-full" />
+            <SkeletonBlock className="h-4 w-[90%]" />
+            <SkeletonBlock className="h-4 w-[70%]" />
+          </div>
+        ))}
+      </div>
+    </div>
+  </HomeSectionSkeleton>
+);
+
+const FooterSkeleton = () => (
+  <div className="bg-[#f8f1ee] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div key={index} className="space-y-3">
+          <SkeletonBlock className="h-5 w-28" />
+          <SkeletonBlock className="h-4 w-full" />
+          <SkeletonBlock className="h-4 w-[82%]" />
+          <SkeletonBlock className="h-4 w-[64%]" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 const Home = () => {
   const categoryCtx = useContext(CategoryContext);
@@ -139,8 +334,8 @@ const Home = () => {
     [products]
   );
   const [skinStart, setSkinStart] = useState(0);
-  const [applianceStart, setApplianceStart] = useState(0);
   const [hairStart, setHairStart] = useState(0);
+  const [landingStart, setLandingStart] = useState(0);
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 640 : false
   );
@@ -189,14 +384,116 @@ const Home = () => {
         : 0,
     [activeProducts, haircareCategory]
   );
-  const applianceTotal = useMemo(
-    () =>
-      hairstylingCategory
-        ? activeProducts.filter((item) =>
-          item.categoryIds?.includes(hairstylingCategory.id)
-        ).length
-        : 0,
-    [activeProducts, hairstylingCategory]
+  const landingCards = useMemo(() => {
+    const nonVoiceMaskMaker = products.find((product) => {
+      const name = normalizeName(product?.name);
+      return name.includes("non voice") && name.includes("mask maker");
+    });
+    const voiceMaskMaker = products.find((product) => {
+      const name = normalizeName(product?.name);
+      return name.includes("voice face mask maker") && !name.includes("non voice");
+    });
+    const hfWand = products.find((product) => {
+      const name = normalizeName(product?.name);
+      const productUrl = normalizeName(product?.productUrl);
+      return (
+        name ===
+          "ilika high frequency therapy wand for acne treatment skin rejuvenation hair growth scalp care" ||
+        productUrl ===
+          "ilika high frequency therapy wand for acne treatment skin rejuvenation hair growth scalp care" ||
+        String(product?.productUrl || "").trim().toLowerCase() === "ilika-high-frequency-therapy-wand"
+      );
+    });
+    const hairDryer = products.find((product) => {
+      const name = normalizeName(product?.name);
+      return name.includes("leafless hair dryer") || name.includes("high speed bldc hair dryer");
+    });
+    const blackheadRemover = products.find((product) => {
+      const name = normalizeName(product?.name);
+      return (
+        (name.includes("blackhead remover") || name.includes("facial pore cleanser")) &&
+        name.includes("hot") &&
+        name.includes("cold")
+      );
+    });
+    const blackSeedHairOil = products.find((product) => {
+      const name = normalizeName(product?.name);
+      return name.includes("black seed hair growth oil");
+    });
+    const herbalHairOil = products.find((product) => {
+      const name = normalizeName(product?.name);
+      return (
+        name.includes("10 herbs herbal hair growth oil") ||
+        name.includes("hair fall control") ||
+        name.includes("strong healthy hair")
+      );
+    });
+
+    return [
+      {
+        id: "landing-hot-cold-blackhead-remover",
+        title: "Explore Ilika Blackhead Remover - Hot & Cold",
+        author: "Team Ilika",
+        eyebrow: "Clear pores with hot-cold care.",
+        image: getProductImage(blackheadRemover, "/Images/MaskMakercard.webp"),
+        linkPath: "/hot-cold-blackhead-remover",
+      },
+      {
+        id: "landing-high-frequency-therapy-wand",
+        title: "Explore Ilika High Frequency Therapy Wand",
+        author: "Team Ilika",
+        eyebrow: "Target acne, glow, and scalp care.",
+        image: getProductImage(hfWand, "/Images/MaskMakercard.webp"),
+        linkPath: "/high-frequency-therapy-wand",
+      },
+      {
+        id: "landing-leafless-hairdryer",
+        title: "Explore Ilika High-Speed Leafless Hair Dryer",
+        author: "Team Ilika",
+        eyebrow: "High-speed styling, simplified.",
+        image: getProductImage(hairDryer, "/Images/HairdrayerCard.webp"),
+        linkPath: "/leafless-hair-dryer",
+      },
+      {
+        id: "landing-nonvoice-mask-maker",
+        title: "Explore Ilika Non-Voice Face Mask Maker Machine",
+        author: "Team Ilika",
+        eyebrow: "DIY skincare in one easy ritual.",
+        image: getProductImage(nonVoiceMaskMaker, "/Images/MaskMakercard.webp"),
+        linkPath: "/nonvoice-mask-maker",
+      },
+      {
+        id: "landing-voice-mask-maker",
+        title: "Explore Ilika Voice Face Mask Maker Machine",
+        author: "Team Ilika",
+        eyebrow: "Fresh masks made at home.",
+        image: getProductImage(voiceMaskMaker, "/Images/MaskMakercard.webp"),
+        linkPath: "/voice-mask-maker",
+      },
+      {
+        id: "landing-blackseed-hair-oil",
+        title: "Explore Ilika Black Seed Hair Growth Oil",
+        author: "Team Ilika",
+        eyebrow: "Hair ritual for stronger roots.",
+        image: getProductImage(blackSeedHairOil, blackSeedLandingImage),
+        linkPath: "/blackseed-hair-oil",
+      },
+      {
+        id: "landing-herbal-hair-oil",
+        title: "Explore Ilika Herbal Hair Growth Oil",
+        author: "Team Ilika",
+        eyebrow: "Botanical care for healthier hair.",
+        image: getProductImage(herbalHairOil, herbalLandingImage),
+        linkPath: "/herbal-hair-oil",
+      },
+    ];
+  }, [products]);
+  const visibleLandingDesktopCount = Math.min(3, landingCards.length || 0);
+  const canSlideLandingDesktop = landingCards.length > visibleLandingDesktopCount;
+  const maxLandingDesktopStart = Math.max(landingCards.length - visibleLandingDesktopCount, 0);
+  const visibleLandingCards = landingCards.slice(
+    landingStart,
+    landingStart + visibleLandingDesktopCount
   );
 
   const getVisibleCount = (total) => {
@@ -278,7 +575,7 @@ const Home = () => {
           {isMobile ? (
             <>
               <LazyMountSection minHeight={220}>
-                <Suspense fallback={<div className="h-40" />}>
+                <Suspense fallback={<CategoryNavSkeleton />}>
                   {/* CATEGORY NAV */}
                   <CategoryNav categories={categoriesData} />
                 </Suspense>
@@ -286,43 +583,60 @@ const Home = () => {
 
               <LazyMountSection
                 minHeight={360}
-                className="bg-[#c0392b12] py-6"
+                className="py-6"
               >
-                <Suspense fallback={<div className="h-40" />}>
-                  <Heading
-                    heading="Trending Picks"
-                    sub={"Trending beauty tools curated for you"}
-                  />
-
-                  <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
-                    <Link
-                      to="/newarrival"
-                      className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
-                    >
-                      View All
-                    </Link>
-                  </div>
-
-                  <ProductList
-                    mobileScroll
+                <Suspense fallback={<TrendingShowcaseSkeleton minHeight={360} />}>
+                  <HomeTrendingShowcase
+                    heading="Your Best Sellers, Trending Now"
+                    subheading="Trending beauty tools curated for you"
                     priorityNames={[
                       "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
                       "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
-                      "Ilika Lip Plumper Vacuum Device | For Fuller Looking Lips | Lip Enhancement, Lip Massage & Beauty Tool",
-                      "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening",
+                      "Ilika Lip Plumper Vacuum Device | For Fuller Looking Lips | Lip Enhancement, Lip Massage & Beauty Tool"
                     ]}
-                    priorityCount={2}
                     limit={4}
                   />
                 </Suspense>
               </LazyMountSection>
+
+              <LazyMountSection minHeight={120}>
+                <Suspense fallback={<DividerStripSkeleton />}>
+                  <HomeDivisionSttrip
+                    offers={[
+                      {
+                        title: "Extra 15% Off",
+                        subtitle: "on Voice Mask Maker Machine",
+                        codeLabel: "Use Code",
+                        code: "ILIKADIY",
+                        to: "/product/voice-face-mask-maker",
+                      },
+                      {
+                        title: "Extra 15% Off",
+                        subtitle: "on Hair Dryer",
+                        codeLabel: "Use Code",
+                        code: "ILIKA15",
+                        to: "/product/leafless-hair-dryer",
+                      },
+                      {
+                        title: "Extra 15% Off",
+                        subtitle: "on Airwrap",
+                        codeLabel: "Use Code",
+                        code: "ILIKA15",
+                        to: "/product/airwrap-multi-styler-kit",
+                      },
+                    ]}
+                  />
+                </Suspense>
+              </LazyMountSection>
+
+
 
 
             </>
           ) : (
             <>
               <LazyMountSection minHeight={220}>
-                <Suspense fallback={<div className="min-h-[220px]" />}>
+                <Suspense fallback={<CategoryNavSkeleton />}>
                   {/* CATEGORY NAV */}
                   <CategoryNav categories={categoriesData} />
                 </Suspense>
@@ -330,59 +644,121 @@ const Home = () => {
 
               <LazyMountSection
                 minHeight={360}
-                className="bg-[#c0392b12] py-6"
+                className="py-6"
               >
-                <Suspense fallback={<div className="h-40" />}>
-                  <Heading
-                    heading="Trending Picks"
-                    sub={"Trending beauty tools curated for you"}
-                  />
-
-                  <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
-                    <Link
-                      to="/newarrival"
-                      className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
-                    >
-                      View All
-                    </Link>
-                  </div>
-
-                  <ProductList
-                    mobileScroll
+                <Suspense fallback={<TrendingShowcaseSkeleton minHeight={360} />}>
+                  <HomeTrendingShowcase
+                    heading="Your Best Sellers, Trending Now"
+                    subheading="Trending beauty tools curated for you"
                     priorityNames={[
                       "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
                       "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
-                      "Ilika Lip Plumper Vacuum Device | For Fuller Looking Lips | Lip Enhancement, Lip Massage & Beauty Tool",
-                      "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal",
+                      "Ilika Lip Plumper Vacuum Device | For Fuller Looking Lips | Lip Enhancement, Lip Massage & Beauty Tool"
                     ]}
-                    priorityCount={2}
                     limit={4}
                   />
                 </Suspense>
               </LazyMountSection>
 
+              <LazyMountSection minHeight={120}>
+                <Suspense fallback={<DividerStripSkeleton />}>
+                  <HomeDivisionSttrip
+                    offers={[
+                      {
+                        title: "Extra 15% Off",
+                        subtitle: "on Voice Mask Maker Machine",
+                        codeLabel: "Use Code",
+                        code: "ILIKADIY",
+                        to: "/product/voice-face-mask-maker",
+                      },
+                      {
+                        title: "Extra 15% Off",
+                        subtitle: "on Hair Dryer",
+                        codeLabel: "Use Code",
+                        code: "ILIKA15",
+                        to: "/product/leafless-hair-dryer",
+                      },
+                      {
+                        title: "Extra 15% Off",
+                        subtitle: "on Airwrap",
+                        codeLabel: "Use Code",
+                        code: "ILIKA15",
+                        to: "/product/airwrap-multi-styler-kit",
+                      },
+                    ]}
+                  />
+                </Suspense>
+              </LazyMountSection>
+
+
             </>
           )}
 
-
           {/* HAIRCARE RANGE */}
-          <LazyMountSection minHeight={620}>
-            <Suspense fallback={<div className="h-40" />}>
+          <LazyMountSection
+            minHeight={620}
+            placeholder={<ProductShelfSkeleton minHeight={620} dark showCircleRow />}
+          >
+            <Suspense fallback={<ProductShelfSkeleton minHeight={620} dark showCircleRow />}>
 
 
               {/* HAIR CARE */}
-              <Banner
-                className="mt-0 md:h-[60vh]"
-                src={bannerHair}
-                mobileSrc={hairMobile}
-                linkUrl={hairBannerProductLink}
-                bannerKey="home-haircare"
-                imageFit={isMobile ? "contain" : "cover"}
-              />
+              <div className="relative">
+                <Banner
+                  className="mt-0"
+                  src={hairBannerDesktop}
+                  mobileSrc={hairBannerMobile}
+                  linkUrl={hairBannerProductLink}
+                  bannerKey="home-haircare"
+                  imageFit="contain"
+                  preserveFullImage
+                />
+                <div className="absolute inset-0 px-4 pt-4 sm:flex sm:items-center sm:justify-center sm:px-10 sm:pt-0 lg:px-20">
+                  <div className="w-full max-w-[42%] text-left text-[#211816] sm:max-w-[40%] sm:translate-x-[-34%] lg:translate-x-[-40%]">
+                    <p
+                      className="hidden sm:block text-3xl font-bold sm:text-[3.6rem] lg:text-[4.7rem] sm:font-semibold leading-[0.95] tracking-[-0.03em]"
+                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                    >
+                      Color That&apos;s
+                      <br />
+                      All Yours
+                    </p>
+                    <div className="hidden sm:block mt-5 mb-5 h-px w-24 bg-[#a88474] sm:mt-6 sm:mb-6 sm:w-32 lg:w-48" />
+                    <p className="hidden sm:block max-w-[28rem] text-[11px] sm:text-base lg:text-[1.2rem] font-light leading-[1.65] text-[#6b4639]">
+                      Ilika&apos;s Black Seed Hair Oil, made to fight premature greying naturally
+                    </p>
+                    <h2
+                      className="hidden sm:block mt-4 max-w-[28rem] text-sm sm:text-lg lg:text-[1.5rem] leading-[1.55] font-normal text-[#3f2b25]"
+                      style={{ fontFamily: "'Lato', sans-serif" }}
+                    >
+                      Your shine. Ilika&apos;s formula.
+                    </h2>
+                  </div>
+                  <div className="absolute right-4 top-5 max-w-[42%] text-right text-[#3f2b25] sm:hidden">
+                    <p
+                      className="text-[1.55rem] font-bold leading-[1.02] tracking-[-0.03em]"
+                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                    >
+                      Color That&apos;s
+                      <br />
+                      All Yours
+                    </p>
+                    <p className="mt-3 text-[11px] font-bold leading-[1.55] text-[#6b4639]">
+                      Ilika&apos;s Black Seed Hair Oil, made to fight premature greying naturally
+                    </p>
+                    <p
+                      className="mt-2 text-[0.9rem] font-bold leading-[1.35]"
+                      style={{ fontFamily: "'Lato', sans-serif" }}
+                    >
+                      Your shine. Ilika&apos;s formula.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
 
-               <Carousel
-               heading={"What’s Your Hair Craving Today?"}
+              <Carousel
+                heading={"What’s Your Hair Craving Today?"}
                 subheading={"Healthy, shiny hair begins with the Right Care."}
                 items={HAIR_CAROUSEL_ITEMS}
                 sectionClassName="bg-black pt-6 pb-6 sm:pt-6 sm:pb-6"
@@ -394,85 +770,75 @@ const Home = () => {
                 itemWidthClassName="w-[170px] sm:w-[190px]"
                 circleClassName="w-[146px] h-[146px] sm:w-[170px] sm:h-[170px]"
               />
-              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
-                <Link
-                  to="/hair/care"
-                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
-                >
-                  View All
-                </Link>
-              </div>
-
-              {haircareCategory ? (
-                <div className="relative max-w-7xl mx-auto">
-                  {canSlide(hairTotal) && (
-                    <>
-                      <button
-                        onClick={() => setHairStart((prev) => prevPageStart(prev, hairTotal))}
-                        className="hidden md:flex absolute left-0 lg:-left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
-                        aria-label="Show previous hair care products"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => setHairStart((prev) => nextPageStart(prev, hairTotal))}
-                        className="hidden md:flex absolute right-0 lg:-right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
-                        aria-label="Show next hair care products"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </>
-                  )}
-                  <ProductList
-                    mobileScroll
-                    categoryId={haircareCategory.id}
-                    priorityNames={["Ilika Black Seed Hair Oil | For Premature Grey Hair & Hair Fall Control | Nourishing Scalp Care", "Ilika 10 Herbs Herbal Hair Growth Oil | For Hair Fall Control, Hair Growth & Strong Healthy Hair", "Ilika Frizz Control Hair Serum", "Ilika Keratin Repair Conditioner"]}
-                    offset={isMobile ? 0 : hairStart}
-                    limit={isMobile ? undefined : getVisibleCount(hairTotal)}
-                  />
+              <div className="bg-black py-1 pb-8">
+                <div className="max-w-7xl mx-auto px-4 flex mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
+                  <Link
+                    to="/hair/care"
+                    className="text-xs sm:text-[15px] font-semibold text-[#b65b57] underline underline-offset-4 hover:text-white transition"
+                  >
+                    View All
+                  </Link>
                 </div>
-              ) : (
-                <p className="text-center text-white">
-                  Loading products...
-                </p>
-              )}
+
+                {haircareCategory ? (
+                  <div className="relative max-w-7xl mx-auto">
+                    {canSlide(hairTotal) && (
+                      <>
+                        <button
+                          onClick={() => setHairStart((prev) => prevPageStart(prev, hairTotal))}
+                          className="hidden md:flex absolute left-0 lg:-left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
+                          aria-label="Show previous hair care products"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => setHairStart((prev) => nextPageStart(prev, hairTotal))}
+                          className="hidden md:flex absolute right-0 lg:-right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
+                          aria-label="Show next hair care products"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
+                    <ProductList
+                      cardVariant="home"
+                      cardTheme="dark"
+                      mobileScroll
+                      categoryId={haircareCategory.id}
+                      priorityNames={["Ilika Black Seed Hair Oil | For Premature Grey Hair & Hair Fall Control | Nourishing Scalp Care", "Ilika 10 Herbs Herbal Hair Growth Oil | For Hair Fall Control, Hair Growth & Strong Healthy Hair", "Ilika Frizz Control Hair Serum", "Ilika Keratin Repair Conditioner"]}
+                      offset={isMobile ? 0 : hairStart}
+                      limit={isMobile ? undefined : getVisibleCount(hairTotal)}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-center text-white">
+                    Loading products...
+                  </p>
+                )}
+              </div>
             </Suspense>
           </LazyMountSection>
-
-
-          {/* CTM ROUTINE */}
-          <LazyMountSection minHeight={340}>
-            <Suspense fallback={<div className="h-32" />}>
+          <LazyMountSection minHeight={340} placeholder={<RoutineSkeleton />}>
+            <Suspense fallback={<RoutineSkeleton />}>
               <MyCtmRoutine />
             </Suspense>
           </LazyMountSection>
 
 
-
           {/* ANTI AGING RITUAL */}
           <LazyMountSection
             minHeight={360}
-            className="bg-[#c0392b12] py-6"
+            className="py-6"
+            placeholder={<TrendingShowcaseSkeleton minHeight={360} />}
           >
-            <Suspense fallback={<div className="h-40" />}>
-              <Heading
+            <Suspense fallback={<TrendingShowcaseSkeleton minHeight={360} />}>
+              <HomeTrendingShowcase
                 heading="The Anti-Aging Ritual"
-                sub={"Curated skincare for visibly younger-looking skin"}
-              />
-
-              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
-                <Link
-                  to="/skin"
-                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
-                >
-                  View All
-                </Link>
-              </div>
-
-              <ProductList
-                mobileScroll
-
-                priorityNames={["Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow",
+                subheading="Curated skincare for visibly younger-looking skin"
+                modelImage="/Homepage/homepageantiaging.png"
+                viewAllTo="/skin"
+                priorityNames={[
+                  "Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow",
                   "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask",
                   "Ilika Collagen Serum",
                   "Ilika Retinol Anti-Aging Facial Oil",
@@ -482,11 +848,66 @@ const Home = () => {
             </Suspense>
           </LazyMountSection>
 
+          <LazyMountSection minHeight={120} placeholder={<DividerStripSkeleton />}>
+            <Suspense fallback={<DividerStripSkeleton />}>
+              <HomeDivisionSttrip
+                offers={[
+                  {
+                    title: "Extra 15% Off",
+                    subtitle: "on Voice Mask Maker Machine",
+                    codeLabel: "Use Code",
+                    code: "ILIKADIY",
+                    to: "/product/voice-face-mask-maker",
+                  },
+                  {
+                    title: "Extra 15% Off",
+                    subtitle: "on Hair Dryer",
+                    codeLabel: "Use Code",
+                    code: "ILIKA15",
+                    to: "/product/leafless-hair-dryer",
+                  },
+                  {
+                    title: "Extra 15% Off",
+                    subtitle: "on Airwrap",
+                    codeLabel: "Use Code",
+                    code: "ILIKA15",
+                    to: "/product/airwrap-multi-styler-kit",
+                  },
+                ]}
+              />
+            </Suspense>
+          </LazyMountSection>
 
+          {/* APPLIANCES RANGE*/}
+          <LazyMountSection
+            minHeight={620}
+            placeholder={<TrendingShowcaseSkeleton minHeight={620} dark />}
+          >
+            <Suspense fallback={<TrendingShowcaseSkeleton minHeight={620} dark />}>
+              <HomeTrendingShowcase
+                heading="Style Your Hair, Your Way"
+                subheading="Smart hair appliances for salon-like results at home"
+                modelImage="/Homepage/homepagehaircarerange.png"
+                viewAllTo="/hair/styling"
+                categoryId={hairstylingCategory?.id}
+                theme="dark"
+                priorityNames={[
+                  "Ilika Airwrap Multi-Styler Kit | 5-in-1 Hair Styling Tool with Dryer, Curler & Volumizer Attachments",
+                  "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
+                  "Ilika 5-in-1 Professional Hair Tong Curler & Waver",
+                  "Ilika Hot Air Brush | Hair Straightener Brush for Smoothing, Styling & Salon-Like Blowout at Home",
+                ]}
+                limit={4}
+              />
+            </Suspense>
+          </LazyMountSection>
 
           {/* SKIN CARE RANGE */}
-          <LazyMountSection minHeight={620}>
-            <Suspense fallback={<div className="h-40" />}>
+          <LazyMountSection
+            minHeight={620}
+            placeholder={<ProductShelfSkeleton minHeight={620} showCircleRow />}
+          >
+            <Suspense fallback={<ProductShelfSkeleton minHeight={620} showCircleRow />}>
               {/* <Banner
                 className="mt-0 md:h-[60vh]"
                 src={bannerSkincare}
@@ -500,149 +921,234 @@ const Home = () => {
                 heading={"What Does Your Skin Need Today?"}
                 subheading={"Target every skin concern with personalized skincare"}
                 items={SKIN_CAROUSEL_ITEMS}
-                sectionClassName="bg-black pt-6 pb-6 sm:pt-6 sm:pb-6"
+                sectionClassName="bg-white pt-6 pb-6 sm:pt-6 sm:pb-6"
                 containerClassName="px-4 sm:px-6"
-                headingClassName="text-white"
+                headingClassName="text-[#1f1a17]"
                 subheadingClassName="text-[#b65b57]"
-                titleClassName="text-white/90 text-[20px] sm:text-[18px] font-semibold"
-                arrowClassName="border-white/10 bg-white text-[#111] hover:bg-[#f5ede6]"
+                titleClassName="text-[#1f1a17] text-[20px] sm:text-[18px] font-semibold"
+                arrowClassName="border-[#e5d7cf] bg-white text-[#111] hover:bg-[#f5ede6]"
                 itemWidthClassName="w-[170px] sm:w-[190px]"
                 circleClassName="w-[146px] h-[146px] sm:w-[170px] sm:h-[170px]"
               />
-              <div className="max-w-7xl mx-auto px-4 flex mt-1 mb-1 justify-end sm:-mt-4 sm:mb-2">
-                <Link
-                  to="/skin"
-                  className="text-xs sm:text-[15px] font-semibold text-[#b65b57] underline underline-offset-4 hover:text-white transition"
-                >
-                  View All
-                </Link>
-              </div>
-
-              {skincareCategory ? (
-                <div className="relative max-w-7xl mx-auto">
-                  {canSlide(skinTotal) && (
-                    <>
-                      <button
-                        onClick={() => setSkinStart((prev) => prevPageStart(prev, skinTotal))}
-                        className="hidden md:flex absolute left-0 lg:-left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
-                        aria-label="Show previous skin care products"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => setSkinStart((prev) => nextPageStart(prev, skinTotal))}
-                        className="hidden md:flex absolute right-0 lg:-right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
-                        aria-label="Show next skin care products"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </>
-                  )}
-                  <ProductList
-                    mobileScroll
-                    priorityNames={["Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow", "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask", "Ilika Hydra Gel Moisturizer | | Lightweight Face Gel for Hydration, Glow & Skin Barrier Support", "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin"]}
-                    categoryId={skincareCategory.id}
-                    offset={isMobile ? 0 : skinStart}
-                    limit={isMobile ? undefined : getVisibleCount(skinTotal)}
-                  />
-                  
+              <div className="bg-white py-1 pb-8">
+                <div className="max-w-7xl mx-auto px-4 flex mt-1 mb-1 justify-end sm:-mt-4 sm:mb-2">
+                  <Link
+                    to="/skin"
+                    className="text-xs sm:text-[15px] font-semibold text-[#b65b57] underline underline-offset-4 hover:text-black transition"
+                  >
+                    View All
+                  </Link>
                 </div>
-              ) : (
-                <p className="text-center text-white">
-                  Loading products...
-                </p>
-              )}
+
+                {skincareCategory ? (
+                  <div className="relative max-w-7xl mx-auto">
+                    {canSlide(skinTotal) && (
+                      <>
+                        <button
+                          onClick={() => setSkinStart((prev) => prevPageStart(prev, skinTotal))}
+                          className="hidden md:flex absolute left-0 lg:-left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
+                          aria-label="Show previous skin care products"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => setSkinStart((prev) => nextPageStart(prev, skinTotal))}
+                          className="hidden md:flex absolute right-0 lg:-right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
+                          aria-label="Show next skin care products"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
+                    <ProductList
+                      cardVariant="home"
+                      mobileScroll
+                      priorityNames={["Ilika 24K Gold Collagen Face Mask | For Deep Hydration, Skin Firming, Anti-Aging & Instant Glow", "Ilika 4-in-1 Collagen Face Mask | Hydration, Firming, Brightening & Anti-Aging Care | Hydrogel Sheet Mask", "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin", "Ilika Electronic Acne Light Therapy Device | For Acne Treatment, Pimple Reduction & Clearer Looking Skin"]}
+                      categoryId={skincareCategory.id}
+                      offset={isMobile ? 0 : skinStart}
+                      limit={isMobile ? undefined : getVisibleCount(skinTotal)}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500">
+                    Loading products...
+                  </p>
+                )}
+              </div>
             </Suspense>
           </LazyMountSection>
 
-
-          {/* APPLIANCES RANGE*/}
-          <LazyMountSection minHeight={620}>
-            <Suspense fallback={<div className="h-40" />}>
-
-
-              <Banner
-                className="mt-0 md:h-[38vh] lg:h-[42vh]"
-                src={BannerStyle}
-                mobileSrc={BannerStyle}
-                linkUrl="/hair/styling"
-                bannerKey="home-appliances"
-                imageFit={isMobile ? "contain" : "cover"}
+          <LazyMountSection minHeight={120} placeholder={<DividerStripSkeleton />}>
+            <Suspense fallback={<DividerStripSkeleton />}>
+              <HomeDivisionSttrip
+                offers={[
+                  {
+                    title: "Extra 15% Off",
+                    subtitle: "on Voice Mask Maker Machine",
+                    codeLabel: "Use Code",
+                    code: "ILIKADIY",
+                    to: "/product/voice-face-mask-maker",
+                  },
+                  {
+                    title: "Extra 15% Off",
+                    subtitle: "on Hair Dryer",
+                    codeLabel: "Use Code",
+                    code: "ILIKA15",
+                    to: "/product/leafless-hair-dryer",
+                  },
+                  {
+                    title: "Extra 15% Off",
+                    subtitle: "on Airwrap",
+                    codeLabel: "Use Code",
+                    code: "ILIKA15",
+                    to: "/product/airwrap-multi-styler-kit",
+                  },
+                ]}
               />
+            </Suspense>
+          </LazyMountSection>
 
-              <Heading heading="Style Your Hair, Your Way" sub="Smart hair appliances for salon-like results at home" />
-              <div className="max-w-7xl mx-auto px-4 flex  mt-1 mb-4 justify-end sm:-mt-4 sm:mb-3">
-                <Link
-                  to="/hair/styling"
-                  className="text-xs sm:text-[15px] font-semibold text-[#7a1f1f] underline underline-offset-4 hover:text-black transition"
-                >
-                  View All
-                </Link>
-              </div>
+          <LazyMountSection minHeight={420} placeholder={<LandingPagesSkeleton />}>
+            <section className="bg-black px-4 py-8 sm:px-6 sm:py-10">
+              <div className="mx-auto max-w-7xl">
+                <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-white/72">
+                  Product Landing Pages
+                </p>
 
-              {hairstylingCategory ? (
-                <div className="relative max-w-7xl mx-auto">
-                  {canSlide(applianceTotal) && (
+                <div className="flex gap-3 overflow-x-auto pb-2 sm:hidden scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {landingCards.map((card) => (
+                    <Link
+                      key={card.id}
+                      to={card.linkPath}
+                      className="group relative block snap-start shrink-0 w-[68vw] max-w-[230px] overflow-hidden rounded-[18px] bg-[#111111]"
+                    >
+                      <div className="relative aspect-[4/6] overflow-hidden">
+                        <OptimizedImage
+                          src={card.image}
+                          alt={card.title}
+                          width={900}
+                          height={1350}
+                          sizes="68vw"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/60" />
+                        <div className="absolute inset-x-0 top-0 p-3">
+                          <p className="text-[10px] font-medium leading-4 text-white/90">
+                            {card.eyebrow}
+                          </p>
+                          <h3
+                            className="mt-2 max-w-[88%] text-[17px] font-semibold leading-[0.95] tracking-[-0.03em] text-white"
+                            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                          >
+                            {card.title.replace(/^Explore\s+/i, "")}
+                          </h3>
+                        </div>
+                        <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-3 text-white">
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/80">
+                            View Page
+                          </span>
+                          <span className="text-[13px] font-semibold">
+                            Swipe &gt;
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="relative hidden sm:block">
+                  {canSlideLandingDesktop ? (
                     <>
                       <button
+                        type="button"
                         onClick={() =>
-                          setApplianceStart((prev) => prevPageStart(prev, applianceTotal))
+                          setLandingStart((current) =>
+                            current <= 0 ? maxLandingDesktopStart : current - 1
+                          )
                         }
-                        className="hidden md:flex absolute left-0 lg:-left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
-                        aria-label="Show previous appliance products"
+                        className="absolute left-[-16px] top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white text-black shadow-[0_10px_24px_rgba(0,0,0,0.28)] transition hover:bg-[#f3ece8] lg:inline-flex"
+                        aria-label="Show previous landing pages"
                       >
-                        <ChevronLeft className="w-5 h-5" />
+                        <ChevronLeft className="h-5 w-5" />
                       </button>
                       <button
+                        type="button"
                         onClick={() =>
-                          setApplianceStart((prev) => nextPageStart(prev, applianceTotal))
+                          setLandingStart((current) =>
+                            current >= maxLandingDesktopStart ? 0 : current + 1
+                          )
                         }
-                        className="hidden md:flex absolute right-0 lg:-right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-[#e7d5d5] bg-white text-[#7a1f1f] shadow-lg items-center justify-center hover:bg-[#fff5f5] transition"
-                        aria-label="Show next appliance products"
+                        className="absolute right-[-16px] top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white text-black shadow-[0_10px_24px_rgba(0,0,0,0.28)] transition hover:bg-[#f3ece8] lg:inline-flex"
+                        aria-label="Show next landing pages"
                       >
-                        <ChevronRight className="w-5 h-5" />
+                        <ChevronRight className="h-5 w-5" />
                       </button>
                     </>
-                  )}
-                  <ProductList
-                    mobileScroll
-                    categoryId={hairstylingCategory.id}
-                    offset={isMobile ? 0 : applianceStart}
-                    limit={isMobile ? undefined : getVisibleCount(applianceTotal)}
-                  />
+                  ) : null}
+
+                  <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
+                    {visibleLandingCards.map((card) => (
+                      <Link
+                        key={card.id}
+                        to={card.linkPath}
+                        className="group relative block overflow-hidden rounded-[22px] bg-[#111111] sm:rounded-[28px]"
+                      >
+                        <div className="relative aspect-[4/5.25] overflow-hidden">
+                          <OptimizedImage
+                            src={card.image}
+                            alt={card.title}
+                            width={900}
+                            height={1350}
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
+                          <div className="absolute inset-x-0 top-0 p-4 sm:p-5">
+                            <p className="text-sm font-medium leading-6 text-white/90 sm:text-[15px]">
+                              {card.eyebrow}
+                            </p>
+                            <h3
+                              className="mt-3 max-w-[85%] text-[30px] font-semibold leading-[0.95] tracking-[-0.03em] text-white sm:text-[38px]"
+                              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                            >
+                              {card.title.replace(/^Explore\s+/i, "")}
+                            </h3>
+                          </div>
+                          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-4 text-white sm:p-5">
+                            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
+                              View Page
+                            </span>
+                            <span className="text-base font-semibold transition-transform duration-300 group-hover:translate-x-1">
+                              Swipe &gt;
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  Loading products...
-                </p>
-              )}
-            </Suspense>
-          </LazyMountSection>
-
-
-          {/* MANIFESTO */}
-          <LazyMountSection minHeight={150}>
-            <Suspense fallback={<div className="h-24" />}>
-              <Menifesto />
-            </Suspense>
-          </LazyMountSection>
-
-
-          {/* TESTIMONIAL */}
-          <LazyMountSection minHeight={340}>
-            <section className="min-h-[320px] lg:min-h-[340px] flex flex-col justify-center">
-              <Heading heading="Loved By Thousands" sub="Real experiences from the ilikä community" />
-              <Suspense fallback={<div className="h-24" />}>
-                <TestimonialList />
-              </Suspense>
+              </div>
             </section>
           </LazyMountSection>
 
 
+          {/* MANIFESTO */}
+          {/* <LazyMountSection minHeight={150}>
+            <Suspense fallback={<div className="h-24" />}>
+              <Menifesto />
+            </Suspense>
+          </LazyMountSection> */}
+
+
+
           {/* TRUST STRIP  */}
-          <LazyMountSection minHeight={120}>
-            <section className="mx-auto max-w-7xl px-4 pb-3 sm:px-6 lg:px-8">
-              <div className="overflow-hidden bg-white">
+          <LazyMountSection
+            minHeight={120}
+            className="bg-[#b34140]"
+            placeholder={<TrustStripSkeleton />}
+          >
+            <section className="mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+              <div className="overflow-hidden">
                 <div className="grid grid-cols-2 md:grid-cols-4">
                   {HOME_SUPPORT_ITEMS.map((item, index) => {
                     const Icon = item.icon;
@@ -650,17 +1156,17 @@ const Home = () => {
                     return (
                       <div
                         key={item.title}
-                        className={`flex min-h-[92px] flex-col items-center justify-center px-3 py-4 text-center sm:min-h-[108px] sm:px-4 sm:py-5 ${index < HOME_SUPPORT_ITEMS.length - 1 ? "md:border-r md:border-[#f1e4e4]" : ""
-                          } ${index % 2 === 0 ? "border-r border-[#f7eded] md:border-r md:border-[#f1e4e4]" : ""} ${index < 2 ? "border-b border-[#f7eded] md:border-b-0" : ""
+                        className={`flex min-h-[92px] flex-col items-center justify-center px-3 py-5 text-center sm:min-h-[108px] sm:px-4 sm:py-6 ${index < HOME_SUPPORT_ITEMS.length - 1 ? "md:border-r md:border-white/25" : ""
+                          } ${index % 2 === 0 ? "border-r border-white/20 md:border-r md:border-white/25" : ""} ${index < 2 ? "border-b border-white/20 md:border-b-0" : ""
                           }`}
                       >
-                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fff6f7] text-[#d99aa1] sm:h-10 sm:w-10">
+                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#d99aa1] shadow-[0_10px_24px_rgba(0,0,0,0.08)] sm:h-11 sm:w-11">
                           <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                         </span>
-                        <p className="mt-2.5 text-[12px] font-semibold leading-5 text-[#342927] sm:mt-3 sm:text-sm">
+                        <p className="mt-3 text-[12px] font-semibold leading-5 text-white sm:text-sm">
                           {item.title}
                         </p>
-                        <p className="mt-1 text-[10px] leading-4 text-[#8a7a76] sm:text-xs">
+                        <p className="mt-1 text-[10px] leading-4 text-white/80 sm:text-xs">
                           {item.subtitle}
                         </p>
                       </div>
@@ -672,8 +1178,20 @@ const Home = () => {
           </LazyMountSection>
 
 
+
+          {/* TESTIMONIAL */}
+          <LazyMountSection minHeight={340} placeholder={<TestimonialsSkeleton />}>
+            <section className="min-h-[320px] lg:min-h-[340px] flex flex-col justify-center">
+              <Heading heading="Loved By Thousands" sub="Real experiences from the ilikä community" />
+              <Suspense fallback={<TestimonialsSkeleton />}>
+                <TestimonialList />
+              </Suspense>
+            </section>
+          </LazyMountSection>
+
+
           {/* FOOTER */}
-          <Suspense fallback={<div className="h-32" />}>
+          <Suspense fallback={<FooterSkeleton />}>
             <Footer />
           </Suspense>
         </main>

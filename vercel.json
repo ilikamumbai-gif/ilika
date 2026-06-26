@@ -10,6 +10,11 @@
     }
   ],
   "rewrites": [
+    { "source": "/wp-content/(.*)", "destination": "/api/not-found?status=410" },
+    { "source": "/wp-admin/(.*)", "destination": "/api/not-found?status=410" },
+    { "source": "/wp-includes/(.*)", "destination": "/api/not-found?status=410" },
+    { "source": "/xmlrpc.php", "destination": "/api/not-found?status=410" },
+    { "source": "/(1win.*)", "destination": "/api/not-found?status=410" },
     { "source": "/.well-known/:path*", "destination": "/.well-known/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],

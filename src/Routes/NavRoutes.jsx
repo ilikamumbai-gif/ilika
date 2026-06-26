@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect } from "react";
-import { Routes, Route, useLocation, useNavigate, Navigate, useParams } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate, Navigate, useParams, matchRoutes } from "react-router-dom";
 import { markCurrentPageAsLastVisited, trackVisitorEvent } from "../utils/visitorAnalytics";
 import { trackPageView } from "../utils/pixel";
 import AdminProtectedRoute from "../admin/components/AdminProtectedRoute";
@@ -63,10 +63,76 @@ import HairDryerLanding from "../Landing/HairDryerLanding";
 import HighFrequencyTherapyWandLanding from "../Landing/HighFrequencyTherapyWandLanding";
 import HotColdBlackheadRemoverLanding from "../Landing/HotColdBlackheadRemoverLanding";
 import MaskCombo from "../pages/MaskCombo";
+import NotFound from "../pages/NotFound";
 const SITE_URL = "https://ilika.in";
 
 const AdminRoutes = lazy(() => import("../admin/routes/AdminRoutes"));
 const AdminLogin = lazy(() => import("../admin/pages/AdminLogin"));
+
+const SEO_MATCHER_ROUTES = [
+  { path: "/" },
+  { path: "/offer" },
+  { path: "/checkout" },
+  { path: "/skin" },
+  { path: "/hair" },
+  { path: "/grooming" },
+  { path: "/newarrival" },
+  { path: "/gift-store" },
+  { path: "/products" },
+  { path: "/best-seller" },
+  { path: "/product" },
+  { path: "/skin/face" },
+  { path: "/skin/body" },
+  { path: "/hair/care" },
+  { path: "/hair/styling" },
+  { path: "/grooming/roller" },
+  { path: "/grooming/face" },
+  { path: "/grooming/remover" },
+  { path: "/ctm" },
+  { path: "/ctmkit" },
+  { path: "/blog" },
+  { path: "/shopall" },
+  { path: "/user" },
+  { path: "/blog/:slug" },
+  { path: "/product/:productUrl" },
+  { path: "/category/:categorySlug" },
+  { path: "/privacy" },
+  { path: "/termsandcondition" },
+  { path: "/return" },
+  { path: "/about" },
+  { path: "/about/why-ilika" },
+  { path: "/about/quality-promise" },
+  { path: "/about/ingredient-philosophy" },
+  { path: "/contact" },
+  { path: "/feedback" },
+  { path: "/warranty-registration" },
+  { path: "/support-ticket" },
+  { path: "/raise-complaint" },
+  { path: "/warranty-claim" },
+  { path: "/shippingpolicy" },
+  { path: "/faq" },
+  { path: "/track-order" },
+  { path: "/social-feed" },
+  { path: "/knowskintype" },
+  { path: "/blackseed-hair-oil" },
+  { path: "/herbal-hair-oil" },
+  { path: "/voice-mask-maker" },
+  { path: "/nonvoice-mask-maker" },
+  { path: "/leafless-hair-dryer" },
+  { path: "/high-frequency-therapy-wand" },
+  { path: "/hot-cold-blackhead-remover" },
+  { path: "/order-success/:id" },
+  { path: "/offers" },
+  { path: "/combo" },
+  { path: "/glow-therapy-combo" },
+  { path: "/hydration-glow-combo" },
+  { path: "/mask-combo" },
+  { path: "/combo/:id" },
+  { path: "/login" },
+  { path: "/signup" },
+  { path: "/admin/login" },
+  { path: "/admin/*" },
+];
 
 const PixelPageTracker = () => {
   const { pathname } = useLocation();
@@ -228,6 +294,7 @@ const RouteSeo = () => {
   const { pathname } = useLocation();
   const seo = getRouteSeo(pathname);
   const isAdminPath = pathname.startsWith("/admin");
+  const isKnownRoute = Boolean(matchRoutes(SEO_MATCHER_ROUTES, pathname));
   const isHomePage = pathname === "/";
   const isProductDetailPage = pathname.startsWith("/product/");
   const pageTitle = pathname === "/" ? seo.title : `${seo.title} | Ilika`;
@@ -254,7 +321,7 @@ const RouteSeo = () => {
     title: pageTitle,
     description: seo.description,
     path: pathname,
-    robots: isAdminPath ? "noindex, nofollow" : "index, follow",
+    robots: isAdminPath || !isKnownRoute ? "noindex, nofollow" : "index, follow",
     keywords: seo.keywords,
   });
 
@@ -384,6 +451,7 @@ const NavRoutes = () => {
             </AdminProtectedRoute>
           }
         />
+        <Route path="*" element={renderLazy(NotFound)} />
       </Routes>
     </AdminAuthProvider>
   );

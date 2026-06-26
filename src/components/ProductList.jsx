@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useProducts } from "../admin/context/ProductContext";
 import ProductCard from "./ProductCard";
+import HomeProductCard from "./HomeProductCard";
 import StructuredData from "./StructuredData";
 import { buildProductListStructuredData } from "../utils/productListStructuredData";
 
@@ -15,8 +16,11 @@ const ProductList = ({
   priorityCount = 0,
   mobileScroll = false,
   structuredData = null,
+  cardVariant = "default",
+  cardTheme = "light",
 }) => {
   const { products } = useProducts();
+  const CardComponent = cardVariant === "home" ? HomeProductCard : ProductCard;
 
   let filteredProducts = products.filter((item) => item.isActive !== false);
 
@@ -69,11 +73,12 @@ const ProductList = ({
                   className="snap-start shrink-0 w-[62vw] max-w-[240px]"
                 >
                   <div className="[&_h3]:line-clamp-3 [&_h3]:overflow-hidden [&_h3]:text-ellipsis">
-                    <ProductCard
+                    <CardComponent
                       product={item}
                       buttonBg={buttonBg}
                       buttonText={buttonText}
                       prioritizeImage={index < priorityCount}
+                      theme={cardTheme}
                     />
                   </div>
                 </div>
@@ -88,12 +93,13 @@ const ProductList = ({
           <div className="grid grid-cols-2 gap-4 sm:hidden">
             {filteredProducts.length ? (
               filteredProducts.map((item, index) => (
-                <ProductCard
+                <CardComponent
                   key={item._id || item.id}
                   product={item}
                   buttonBg={buttonBg}
                   buttonText={buttonText}
                   prioritizeImage={index < priorityCount}
+                  theme={cardTheme}
                 />
               ))
             ) : (
@@ -105,12 +111,13 @@ const ProductList = ({
         <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.length ? (
             filteredProducts.map((item, index) => (
-              <ProductCard
+              <CardComponent
                 key={item._id || item.id}
                 product={item}
                 buttonBg={buttonBg}
                 buttonText={buttonText}
                 prioritizeImage={index < priorityCount}
+                theme={cardTheme}
               />
             ))
           ) : (

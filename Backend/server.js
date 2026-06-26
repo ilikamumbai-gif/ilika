@@ -1650,6 +1650,7 @@ const formatProductForApi = async (product = {}, id = "") => {
     ...product,
     ...seoFields,
     view360Images,
+    honestReviews: normalizeHonestReviews(product?.honestReviews),
     id: id || product?.id || "",
   };
 };
@@ -2258,6 +2259,20 @@ const normalizeProductVideos = (videos = []) => {
     .filter((video) => Boolean(video.url));
 };
 
+const normalizeHonestReviews = (items = []) => {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((item = {}, index) => ({
+      id: String(item?.id || `honest-review-${index + 1}`).trim(),
+      url: String(item?.url || "").trim(),
+      title: String(item?.title || "").trim(),
+      subtitle: String(item?.subtitle || "").trim(),
+      description: String(item?.description || "").trim(),
+    }))
+    .filter((item) => Boolean(item.url));
+};
+
 const normalizeProductImageUrlArray = (values = []) => {
   if (!Array.isArray(values)) return { urls: [] };
 
@@ -2792,6 +2807,7 @@ app.post("/api/products", async (req, res) => {
       seoKeywords: normalizeProductSeoText(req.body?.seoKeywords, 1000),
       seoCategory: await normalizeSeoCategoryValue(req.body?.seoCategory, req.body),
       videos: normalizeProductVideos(req.body?.videos),
+      honestReviews: normalizeHonestReviews(req.body?.honestReviews),
       view360Images,
       whyYouLoveIt: hasWhyYouLoveIt
         ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
@@ -2991,6 +3007,9 @@ app.put("/api/products/:id", async (req, res) => {
         categoryIds: Array.isArray(req.body?.categoryIds) ? req.body.categoryIds : existingData?.categoryIds,
       }),
       videos: normalizeProductVideos(req.body?.videos),
+      honestReviews: Array.isArray(req.body?.honestReviews)
+        ? normalizeHonestReviews(req.body?.honestReviews)
+        : normalizeHonestReviews(existingData?.honestReviews),
       view360Images,
       whyYouLoveIt: hasWhyYouLoveIt
         ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
@@ -3079,6 +3098,9 @@ app.put("/admin/products/edit/:id", async (req, res) => {
         categoryIds: Array.isArray(req.body?.categoryIds) ? req.body.categoryIds : existingData?.categoryIds,
       }),
       videos: normalizeProductVideos(req.body?.videos),
+      honestReviews: Array.isArray(req.body?.honestReviews)
+        ? normalizeHonestReviews(req.body?.honestReviews)
+        : normalizeHonestReviews(existingData?.honestReviews),
       view360Images,
       whyYouLoveIt: hasWhyYouLoveIt
         ? normalizeWhyYouLoveItItems(req.body?.whyYouLoveIt)
