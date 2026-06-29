@@ -886,6 +886,7 @@ const Home = () => {
         <main>
           <Banner
             className="mt-0 bg-[#fdecef]"
+            bannerKey="home-top"
             slides={[
               {
                 desktopSrc: maskBannerDesktop,
@@ -924,6 +925,7 @@ const Home = () => {
             showControls
             priority
             preserveFullImage
+            mergeWithMatchedBanners
           />
 
           <Suspense fallback={null}>
@@ -1382,9 +1384,6 @@ const Home = () => {
                       <Heading
                         heading="Loved By Thousands"
                         sub="Real customer videos, unboxings, and first impressions from the Ilika community."
-                        align="center"
-                        subVariant="paragraph"
-                        subClassName="!max-w-3xl !text-[#587082]"
                       />
                     </div>
                   </div>
@@ -1424,6 +1423,15 @@ const Home = () => {
             </LazyMountSection>
           ) : null}
 
+          {/* TESTIMONIAL */}
+          <LazyMountSection minHeight={340} placeholder={<TestimonialsSkeleton />}>
+            <section className="min-h-[320px] lg:min-h-[340px] flex flex-col justify-center">
+              <Heading heading="Honest Reviews" sub="Real experiences from the ilika community" />
+              <Suspense fallback={<TestimonialsSkeleton />}>
+                <TestimonialList />
+              </Suspense>
+            </section>
+          </LazyMountSection>
           <LazyMountSection minHeight={420} placeholder={<LandingPagesSkeleton />}>
             <section className="bg-black px-4 py-8 sm:px-6 sm:py-10">
               <div className="mx-auto max-w-7xl">
@@ -1555,6 +1563,7 @@ const Home = () => {
           ) : null}
 
 
+
           {/* MANIFESTO */}
           {/* <LazyMountSection minHeight={150}>
             <Suspense fallback={<div className="h-24" />}>
@@ -1601,16 +1610,6 @@ const Home = () => {
           </LazyMountSection>
 
 
-
-          {/* TESTIMONIAL */}
-          <LazyMountSection minHeight={340} placeholder={<TestimonialsSkeleton />}>
-            <section className="min-h-[320px] lg:min-h-[340px] flex flex-col justify-center">
-              <Heading heading="Honest Reviews" sub="Real experiences from the ilikä community" />
-              <Suspense fallback={<TestimonialsSkeleton />}>
-                <TestimonialList />
-              </Suspense>
-            </section>
-          </LazyMountSection>
 
 
           {/* FOOTER */}

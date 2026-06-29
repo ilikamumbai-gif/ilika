@@ -31,6 +31,7 @@ const Banner = ({
   showControls = false,
   slides = [],
   preserveFullImage = false,
+  mergeWithMatchedBanners = false,
 }) => {
   const bannerCtx = useOptionalBanners();
   const matchedBanners = useMemo(() => (bannerKey && bannerCtx?.activeBanners?.length
@@ -49,7 +50,12 @@ const Banner = ({
         : [],
     [slides]
   );
-  const activeSlides = normalizedSlides.length > 0 ? normalizedSlides : matchedBanners;
+  const activeSlides = useMemo(() => {
+    if (mergeWithMatchedBanners && matchedBanners.length && normalizedSlides.length) {
+      return [...matchedBanners, ...normalizedSlides];
+    }
+    return normalizedSlides.length > 0 ? normalizedSlides : matchedBanners;
+  }, [matchedBanners, mergeWithMatchedBanners, normalizedSlides]);
   const hasMultiple = activeSlides.length > 1;
   const aspectRatio = `${width} / ${height}`;
   const shouldUseNaturalHeight = preserveFullImage || imageFit === "contain";
