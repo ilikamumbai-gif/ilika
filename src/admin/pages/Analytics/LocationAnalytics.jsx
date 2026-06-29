@@ -319,58 +319,50 @@ const buildDerivedSummary = (events = []) => {
 };
 
 const buildLocationAnalyticsCsv = (events = []) => {
-  const groupedCounts = events.reduce((accumulator, event) => {
-    const location = getEventLocationParts(event);
-    const eventType = String(event?.eventType || "").trim() || "unknown";
-    const productName = String(event?.productName || "").trim() || "Unknown Product";
-    const pageUrl = String(event?.pageUrl || "").trim();
-    const city = location.city || "Unknown";
-    const postalCode = location.postalCode || "";
-    const groupingKey = [productName, eventType, pageUrl, city, postalCode].join("||");
-
-    if (!accumulator[groupingKey]) {
-      accumulator[groupingKey] = {
-        productName,
-        eventType,
-        pageUrl,
-        city,
-        postalCode,
-        count: 0,
-        latestCreatedAt: "",
-      };
-    }
-
-    accumulator[groupingKey].count += 1;
-    if (
-      !accumulator[groupingKey].latestCreatedAt ||
-      new Date(event?.createdAt || 0) > new Date(accumulator[groupingKey].latestCreatedAt || 0)
-    ) {
-      accumulator[groupingKey].latestCreatedAt = event?.createdAt || "";
-    }
-    return accumulator;
-  }, {});
-
   const headers = [
     "Date",
     "Time",
     "Event Type",
+    "Visitor ID",
+    "Session ID",
     "Product Name",
+    "Product ID",
     "Page URL",
+    "Country",
+    "State",
     "City",
     "Pincode",
-    "Count",
+    "Quantity",
+    "Price",
+    "Device",
+    "Browser",
+    "Client IP",
+    "Request IP",
+    "Location Source",
   ];
 
-  const rows = Object.values(groupedCounts).map((group) => {
+  const rows = events.map((event) => {
+    const location = getEventLocationParts(event);
     return [
-      formatDateOnly(group.latestCreatedAt),
-      formatTimeOnly(group.latestCreatedAt),
-      group.eventType,
-      group.productName,
-      group.pageUrl,
-      group.city,
-      group.postalCode,
-      group.count,
+      formatDateOnly(event.createdAt),
+      formatTimeOnly(event.createdAt),
+      event?.eventType || "",
+      event?.visitorId || "",
+      event?.sessionId || "",
+      event?.productName || "",
+      event?.productId || "",
+      event?.pageUrl || "",
+      location.country || "",
+      location.state || "",
+      location.city || "",
+      location.postalCode || "",
+      event?.quantity ?? "",
+      event?.price ?? "",
+      event?.device || "",
+      event?.browser || "",
+      event?.locationDebug?.clientIp || event?.clientIp || "",
+      event?.locationDebug?.requestIp || "",
+      event?.locationDebug?.locationSource || "",
     ];
   });
 
@@ -555,21 +547,59 @@ const LocationAnalytics = () => {
     };
   }, [payload.filterOptions, visibleEvents]);
 
-  const downloadFilteredCsv = () => {
-    if (!visibleEvents.length) return;
+  const downloadFilteredCsv = async () => {
+    if (loading) return;
 
-    const csvContent = buildLocationAnalyticsCsv(visibleEvents);
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const downloadUrl = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    const stamp = new Date().toISOString().slice(0, 10);
+    try {
+      setLoading(true);
+      setError("");
 
-    link.href = downloadUrl;
-    link.setAttribute("download", `location-analytics-${stamp}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(downloadUrl);
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (key === "dateFrom" || key === "dateTo") {
+          return;
+        }
+        if (String(value || "").trim()) {
+          params.set(key, value);
+        }
+      });
+      params.set("exportAll", "1");
+
+      const res = await fetch(getApiUrl(`/api/visitor-analytics?${params.toString()}`), {
+        headers: {
+          "Content-Type": "application/json",
+          ...getAdminAuthHeaders(),
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to download location analytics CSV");
+      }
+
+      const exportEvents = Array.isArray(data?.events) ? data.events.filter((event) => !shouldExcludeEvent(event)) : [];
+      if (!exportEvents.length) {
+        throw new Error("No analytics records found for the selected filters");
+      }
+
+      const csvContent = buildLocationAnalyticsCsv(exportEvents);
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 10);
+
+      link.href = downloadUrl;
+      link.setAttribute("download", `location-analytics-${stamp}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+    } catch (downloadError) {
+      console.error("Location analytics CSV download error:", downloadError);
+      setError(downloadError.message || "Failed to download location analytics CSV");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

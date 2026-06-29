@@ -4692,6 +4692,7 @@ app.get("/api/visitor-analytics", async (req, res) => {
       state = "",
       city = "",
       product = "",
+      exportAll = "",
     } = req.query || {};
 
     const normalizedEventType = trimToLength(eventType, 50);
@@ -4699,6 +4700,9 @@ app.get("/api/visitor-analytics", async (req, res) => {
     const normalizedState = trimToLength(state, 120);
     const normalizedCity = trimToLength(city, 120);
     const normalizedProduct = trimToLength(product, 300).toLowerCase();
+    const shouldExportAll =
+      String(exportAll || "").trim() === "1" ||
+      String(exportAll || "").trim().toLowerCase() === "true";
 
     const isIndiaCountryFilter = isIndiaLocationValue(normalizedCountry);
 
@@ -4743,12 +4747,41 @@ app.get("/api/visitor-analytics", async (req, res) => {
       query = query.where("createdAt", "<=", endDate);
     }
 
-    query = query.orderBy("createdAt", "desc").limit(5000);
+    query = query.orderBy("createdAt", "desc");
 
     let analyticsDocs = [];
+    const batchSize = 1000;
+    const maxDocs = shouldExportAll ? 100000 : startDate || endDate ? 20000 : 5000;
+
+    const fetchAnalyticsInPages = async (baseQuery) => {
+      const docs = [];
+      let lastDoc = null;
+      let hasMore = true;
+
+      while (hasMore && docs.length < maxDocs) {
+        let pagedQuery = baseQuery.limit(Math.min(batchSize, maxDocs - docs.length));
+
+        if (lastDoc) {
+          pagedQuery = pagedQuery.startAfter(lastDoc);
+        }
+
+        const snapshot = await pagedQuery.get();
+        const pageDocs = snapshot.docs || [];
+
+        docs.push(...pageDocs);
+
+        if (!pageDocs.length || pageDocs.length < batchSize) {
+          hasMore = false;
+        } else {
+          lastDoc = pageDocs[pageDocs.length - 1];
+        }
+      }
+
+      return docs;
+    };
+
     try {
-      const snapshot = await query.get();
-      analyticsDocs = snapshot.docs;
+      analyticsDocs = shouldExportAll ? await fetchAnalyticsInPages(query) : (await query.limit(5000).get()).docs;
     } catch (queryError) {
       const message = String(queryError?.message || "");
       const needsFallback =
@@ -4761,8 +4794,6 @@ app.get("/api/visitor-analytics", async (req, res) => {
       }
 
       console.warn("VISITOR ANALYTICS QUERY FALLBACK:", message);
-      const batchSize = 1000;
-      const maxDocs = startDate || endDate ? 20000 : 5000;
       let lastDoc = null;
       let hasMore = true;
 
