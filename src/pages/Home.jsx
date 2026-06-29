@@ -1380,7 +1380,7 @@ const Home = () => {
                   <div className="mb-5 flex items-start gap-4">
                     <div className="min-w-0 flex-1 text-center">
                       <Heading
-                        heading="Honest Reviews"
+                        heading="Loved By Thousands"
                         sub="Real customer videos, unboxings, and first impressions from the Ilika community."
                         align="center"
                         subVariant="paragraph"
@@ -1605,7 +1605,7 @@ const Home = () => {
           {/* TESTIMONIAL */}
           <LazyMountSection minHeight={340} placeholder={<TestimonialsSkeleton />}>
             <section className="min-h-[320px] lg:min-h-[340px] flex flex-col justify-center">
-              <Heading heading="Loved By Thousands" sub="Real experiences from the ilikä community" />
+              <Heading heading="Honest Reviews" sub="Real experiences from the ilikä community" />
               <Suspense fallback={<TestimonialsSkeleton />}>
                 <TestimonialList />
               </Suspense>
