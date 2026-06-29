@@ -6,6 +6,7 @@ import { useOrders } from "../../context/OrderContext";
 import { logActivity } from "../../Utils/logActivity";
 import { normalizeSource } from "../../Utils/trafficSource";
 import { formatOrderRef } from "../../../utils/orderId";
+import { getOrderSellingTotal } from "../../../utils/orderPricing";
 
 const STATUS_STYLES = {
   Placed:    "bg-blue-50 text-blue-700 border border-blue-200",
@@ -173,6 +174,7 @@ const OrderList = () => {
                 <tbody>
                   {filteredOrders.map((order) => {
                     const srcDisplay = normalizeSource(order.source);
+                    const sellingTotal = getOrderSellingTotal(order);
                     return (
                       <tr
                         key={order.id}
@@ -204,7 +206,7 @@ const OrderList = () => {
 
                         {/* Total */}
                         <td className="px-5 py-4">
-                          <span className="font-bold text-gray-900">₹{order.total?.toLocaleString("en-IN")}</span>
+                          <span className="font-bold text-gray-900">₹{sellingTotal.toLocaleString("en-IN")}</span>
                         </td>
 
                         {/* Payment */}
@@ -274,6 +276,7 @@ const OrderList = () => {
             <div className="md:hidden divide-y divide-gray-100">
               {filteredOrders.map((order) => {
                 const srcDisplay = normalizeSource(order.source);
+                const sellingTotal = getOrderSellingTotal(order);
                 return (
                   <div key={order.id} className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
@@ -281,7 +284,7 @@ const OrderList = () => {
                         <p className="font-semibold text-gray-900">{order.shippingAddress?.name || "—"}</p>
                         <p className="text-xs text-gray-400 font-mono">#{formatOrderRef(order.id)}</p>
                       </div>
-                      <span className="font-bold text-gray-900">₹{order.total?.toLocaleString("en-IN")}</span>
+                      <span className="font-bold text-gray-900">₹{sellingTotal.toLocaleString("en-IN")}</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       <Pill label={order.status} styleClass={STATUS_STYLES[order.status] || ""} />
@@ -310,7 +313,7 @@ const OrderList = () => {
       {filteredOrders.length > 0 && (
         <div className="flex flex-wrap gap-4 mt-4 text-xs text-gray-400">
           <span>Showing <strong className="text-gray-600">{filteredOrders.length}</strong> of <strong className="text-gray-600">{orders.length}</strong> orders</span>
-          <span>Total: <strong className="text-gray-800">₹{filteredOrders.reduce((a, o) => a + (o.total || 0), 0).toLocaleString("en-IN")}</strong></span>
+          <span>Total: <strong className="text-gray-800">₹{filteredOrders.reduce((sum, order) => sum + getOrderSellingTotal(order), 0).toLocaleString("en-IN")}</strong></span>
         </div>
       )}
     </AdminLayout>

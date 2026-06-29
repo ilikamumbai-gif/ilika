@@ -14,6 +14,7 @@ import { logActivity } from "../../Utils/logActivity";
 import { normalizeSource } from "../../Utils/trafficSource";
 import { formatOrderId, formatOrderRef } from "../../../utils/orderId";
 import { getCartItemDisplayPricing, getCartItemVariantName } from "../../../utils/productPricing";
+import { getOrderGiftWrapFee, getOrderItemsSellingSubtotal, getOrderSellingTotal } from "../../../utils/orderPricing";
 
 /* ─────────────────── HELPERS ─────────────────── */
 
@@ -144,9 +145,9 @@ const OrderDetail = () => {
     );
   }
 
-  const total      = Number(order.totalAmount || order.total || 0);
-  const originalSubtotal = Number(order.originalSubtotal ?? total);
-  const discountAmount = Number(order.discountAmount || Math.max(0, originalSubtotal - total));
+  const itemsSubtotal = getOrderItemsSellingSubtotal(order);
+  const giftWrapFee = getOrderGiftWrapFee(order);
+  const total = getOrderSellingTotal(order);
   const statusCfg  = STATUS_CONFIG[order.status] || STATUS_CONFIG.Placed;
   const srcDisplay = normalizeSource(order.source);
   const srcColor   = SOURCE_STYLES[srcDisplay] || SOURCE_STYLES.Website;
@@ -156,9 +157,8 @@ const OrderDetail = () => {
   const giftOrder  = order.giftOrder || {};
   const giftRecipientAddress = giftOrder.recipientAddress || {};
   const giftBuyerAddress = giftOrder.buyerAddress || {};
-  const giftWrapFee = Number(giftOrder.giftWrapFee || 0);
   const isGiftOrder = Boolean(giftOrder?.isGiftOrder);
-  const hasGiftWrap = Boolean(isGiftOrder && giftOrder?.wantsGiftWrap && giftWrapFee > 0);
+  const hasGiftWrap = giftWrapFee > 0 && Boolean(isGiftOrder && giftOrder?.wantsGiftWrap);
 
   const handleStatusChange = async (newStatus) => {
     setStatusUpdating(true);
@@ -455,9 +455,9 @@ const OrderDetail = () => {
 
       const finalY  = doc.lastAutoTable.finalY + 8;
       const totalsX = pageWidth - margin - 80;
-      const totalsBoxHeight = hasGiftWrap ? 50 : 42;
-      const totalsDividerY = hasGiftWrap ? finalY + 38 : finalY + 30;
-      const grandTotalY = hasGiftWrap ? finalY + 46 : finalY + 38;
+      const totalsBoxHeight = hasGiftWrap ? 42 : 34;
+      const totalsDividerY = hasGiftWrap ? finalY + 30 : finalY + 22;
+      const grandTotalY = hasGiftWrap ? finalY + 38 : finalY + 30;
 
       doc.setDrawColor(220, 220, 230);
       doc.setFillColor(250, 250, 253);
@@ -466,22 +466,19 @@ const OrderDetail = () => {
       doc.setFontSize(8.5);
       doc.setFont(undefined, "normal");
       doc.setTextColor(110, 110, 110);
-      doc.text("Subtotal", totalsX + 5, finalY + 10);
-      doc.text("Discount", totalsX + 5, finalY + 18);
-      doc.text("Shipping", totalsX + 5, finalY + 26);
+      doc.text("Items Total", totalsX + 5, finalY + 10);
+      doc.text("Shipping", totalsX + 5, finalY + 18);
       if (hasGiftWrap) {
-        doc.text("Gift Wrap", totalsX + 5, finalY + 34);
+        doc.text("Gift Wrap", totalsX + 5, finalY + 26);
       }
 
       doc.setFont(undefined, "bold");
       doc.setTextColor(30, 30, 30);
-      doc.text(formatPrice(originalSubtotal), totalsX + 75, finalY + 10, { align: "right" });
-      doc.setTextColor(22, 163, 74);
-      doc.text(`-Rs. ${discountAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`, totalsX + 75, finalY + 18, { align: "right" });
-      doc.text("FREE", totalsX + 75, finalY + 26, { align: "right" });
+      doc.text(formatPrice(itemsSubtotal), totalsX + 75, finalY + 10, { align: "right" });
+      doc.text("FREE", totalsX + 75, finalY + 18, { align: "right" });
       if (hasGiftWrap) {
         doc.setTextColor(30, 30, 30);
-        doc.text(formatPrice(giftWrapFee), totalsX + 75, finalY + 34, { align: "right" });
+        doc.text(formatPrice(giftWrapFee), totalsX + 75, finalY + 26, { align: "right" });
       }
 
       doc.setDrawColor(210, 210, 225);
@@ -791,9 +788,6 @@ const OrderDetail = () => {
                     </td>
                     <td className="py-4 text-right">
                       <p className="font-medium text-gray-800">₹{getCartItemDisplayPricing(item).price?.toLocaleString("en-IN")}</p>
-                      {getCartItemDisplayPricing(item).compareAtPrice && getCartItemDisplayPricing(item).compareAtPrice !== getCartItemDisplayPricing(item).price && (
-                        <p className="text-xs text-gray-400 line-through">₹{getCartItemDisplayPricing(item).compareAtPrice.toLocaleString("en-IN")}</p>
-                      )}
                     </td>
                     <td className="py-4 text-right">
                       {discountMeta ? (
@@ -827,12 +821,8 @@ const OrderDetail = () => {
         <div className="mt-5 pt-4 border-t border-gray-200 flex justify-end">
           <div className="w-72 space-y-2 text-sm">
             <div className="flex justify-between text-gray-500">
-              <span>Subtotal</span>
-              <span>₹{originalSubtotal.toLocaleString("en-IN")}</span>
-            </div>
-            <div className="flex justify-between text-gray-500">
-              <span>Discount</span>
-              <span className="text-green-600">-{"\u20B9"}{discountAmount.toLocaleString("en-IN")}</span>
+              <span>Items Total</span>
+              <span>₹{itemsSubtotal.toLocaleString("en-IN")}</span>
             </div>
             <div className="flex justify-between text-gray-500">
               <span>Shipping</span>
