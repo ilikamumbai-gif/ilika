@@ -4743,6 +4743,7 @@ app.post("/api/visitor-analytics", async (req, res) => {
         locationSource,
       },
       createdAt: new Date(),
+      createdAtServer: admin.firestore.FieldValue.serverTimestamp(),
     };
 
     await eventRef.set(eventData);
@@ -5107,48 +5108,9 @@ app.get("/api/visitor-analytics/export.csv", async (req, res) => {
     if (!requester) {
       return res.status(403).json({ error: "Admin access required" });
     }
-
-    const {
-      eventType = "",
-      country = "",
-      state = "",
-      city = "",
-      product = "",
-    } = req.query || {};
-
-    const normalizedEventType = trimToLength(eventType, 50);
-    const normalizedCountry = trimToLength(country, 120);
-    const normalizedState = trimToLength(state, 120);
-    const normalizedCity = trimToLength(city, 120);
-    const normalizedProduct = trimToLength(product, 300).toLowerCase();
-    const isIndiaCountryFilter = isIndiaLocationValue(normalizedCountry);
-
-    if (normalizedEventType && !VISITOR_ANALYTICS_EVENT_TYPES.has(normalizedEventType)) {
-      return res.status(400).json({ error: "Invalid eventType filter" });
-    }
-
-    let query = db.collection("visitorAnalytics");
-
-    if (normalizedEventType) {
-      query = query.where("eventType", "==", normalizedEventType);
-    }
-
-    if (normalizedCountry && !isIndiaCountryFilter) {
-      query = query.where("locationCountry", "==", normalizedCountry);
-    }
-
-    if (normalizedState) {
-      query = query.where("locationState", "==", normalizedState);
-    }
-
-    if (normalizedCity) {
-      query = query.where("locationCity", "==", normalizedCity);
-    }
-
-    query = query.orderBy("createdAt", "desc");
+    const query = db.collection("visitorAnalytics").orderBy("createdAt", "desc");
 
     const batchSize = 1000;
-    const maxDocs = 100000;
     let analyticsDocs = [];
 
     const fetchAnalyticsInPages = async (baseQuery) => {
@@ -5156,8 +5118,8 @@ app.get("/api/visitor-analytics/export.csv", async (req, res) => {
       let lastDoc = null;
       let hasMore = true;
 
-      while (hasMore && docs.length < maxDocs) {
-        let pagedQuery = baseQuery.limit(Math.min(batchSize, maxDocs - docs.length));
+      while (hasMore) {
+        let pagedQuery = baseQuery.limit(batchSize);
 
         if (lastDoc) {
           pagedQuery = pagedQuery.startAfter(lastDoc);
@@ -5194,10 +5156,8 @@ app.get("/api/visitor-analytics/export.csv", async (req, res) => {
       let lastDoc = null;
       let hasMore = true;
 
-      while (hasMore && analyticsDocs.length < maxDocs) {
-        let fallbackQuery = db.collection("visitorAnalytics").orderBy("createdAt", "desc").limit(
-          Math.min(batchSize, maxDocs - analyticsDocs.length)
-        );
+      while (hasMore) {
+        let fallbackQuery = db.collection("visitorAnalytics").orderBy("createdAt", "desc").limit(batchSize);
 
         if (lastDoc) {
           fallbackQuery = fallbackQuery.startAfter(lastDoc);
@@ -5216,24 +5176,7 @@ app.get("/api/visitor-analytics/export.csv", async (req, res) => {
     }
 
     const queriedEvents = analyticsDocs.map(mapVisitorAnalyticsDoc);
-    const filteredEvents = queriedEvents.filter((event) => {
-      const eventProductValue = String(event.productName || event.productId || "").toLowerCase();
-      const eventCountryValue = trimToLength(event.ipLocation?.country, 120);
-      const matchesCountry = !normalizedCountry
-        ? true
-        : isIndiaCountryFilter
-          ? isIndiaLocationValue(eventCountryValue)
-          : eventCountryValue === normalizedCountry;
-
-      if (!matchesCountry) return false;
-      if (normalizedState && trimToLength(event.ipLocation?.state, 120) !== normalizedState) return false;
-      if (normalizedCity && trimToLength(event.ipLocation?.city, 120) !== normalizedCity) return false;
-      if (normalizedProduct && eventProductValue !== normalizedProduct) return false;
-      if (shouldExcludeVisitorAnalyticsExportEvent(event)) return false;
-      return true;
-    });
-
-    const csvContent = buildVisitorAnalyticsCsv(filteredEvents);
+    const csvContent = buildVisitorAnalyticsCsv(queriedEvents);
     const stamp = new Date().toISOString().slice(0, 10);
 
     res.setHeader("Content-Type", "text/csv; charset=utf-8");

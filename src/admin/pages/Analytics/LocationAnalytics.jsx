@@ -22,10 +22,27 @@ const toDateInputValue = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+const subtractOneMonth = (date) => {
+  const source = new Date(date);
+  const target = new Date(source);
+  const targetMonth = target.getMonth() - 1;
+
+  target.setDate(1);
+  target.setMonth(targetMonth);
+
+  const lastDayOfTargetMonth = new Date(
+    target.getFullYear(),
+    target.getMonth() + 1,
+    0
+  ).getDate();
+
+  target.setDate(Math.min(source.getDate(), lastDayOfTargetMonth));
+  return target;
+};
+
 const createDefaultDateRange = () => {
   const today = new Date();
-  const from = new Date();
-  from.setDate(today.getDate() - 29);
+  const from = subtractOneMonth(today);
   return {
     dateFrom: toDateInputValue(from),
     dateTo: toDateInputValue(today),
@@ -93,6 +110,68 @@ const normalizeText = (value) => String(value || "").trim();
 
 const normalizeLabel = (value) => normalizeText(value).toLowerCase();
 
+const COUNTRY_LABEL_ALIASES = {
+  in: "India",
+  india: "India",
+};
+
+const INDIA_STATE_LABEL_ALIASES = {
+  an: "Andaman and Nicobar Islands",
+  ap: "Andhra Pradesh",
+  ar: "Arunachal Pradesh",
+  as: "Assam",
+  br: "Bihar",
+  cg: "Chhattisgarh",
+  ch: "Chandigarh",
+  dd: "Daman and Diu",
+  dl: "Delhi",
+  dn: "Dadra and Nagar Haveli",
+  ga: "Goa",
+  gj: "Gujarat",
+  hp: "Himachal Pradesh",
+  hr: "Haryana",
+  jh: "Jharkhand",
+  jk: "Jammu and Kashmir",
+  ka: "Karnataka",
+  kl: "Kerala",
+  la: "Ladakh",
+  ld: "Lakshadweep",
+  mh: "Maharashtra",
+  ml: "Meghalaya",
+  mn: "Manipur",
+  mp: "Madhya Pradesh",
+  mz: "Mizoram",
+  nl: "Nagaland",
+  or: "Odisha",
+  pb: "Punjab",
+  py: "Puducherry",
+  rj: "Rajasthan",
+  sk: "Sikkim",
+  tg: "Telangana",
+  ts: "Telangana",
+  tn: "Tamil Nadu",
+  tr: "Tripura",
+  uk: "Uttarakhand",
+  up: "Uttar Pradesh",
+  wb: "West Bengal",
+};
+
+const normalizeCountryLabel = (value = "") => {
+  const normalized = normalizeLabel(value);
+  return COUNTRY_LABEL_ALIASES[normalized] || normalizeText(value);
+};
+
+const normalizeStateLabel = (value = "", country = "") => {
+  const trimmed = normalizeText(value);
+  if (!trimmed) return "";
+
+  if (normalizeCountryLabel(country) !== "India") {
+    return trimmed;
+  }
+
+  return INDIA_STATE_LABEL_ALIASES[normalizeLabel(trimmed)] || trimmed;
+};
+
 const escapeCsvValue = (value) => {
   const normalized = value == null ? "" : String(value);
   return `"${normalized.replace(/"/g, '""')}"`;
@@ -128,11 +207,12 @@ const shouldExcludeEvent = (event = {}) =>
 
 const getEventLocationParts = (event = {}) => {
   const source = event?.ipLocation || {};
+  const country = normalizeCountryLabel(source?.country);
 
   return {
     city: String(source?.city || "").trim(),
-    state: String(source?.state || "").trim(),
-    country: String(source?.country || "").trim(),
+    state: normalizeStateLabel(source?.state, country),
+    country,
     postalCode: String(source?.postalCode || source?.pincode || "").trim(),
   };
 };
@@ -320,27 +400,7 @@ const buildDerivedSummary = (events = []) => {
   };
 };
 
-const buildRecentVisitorRows = (events = [], limit = 25) => {
-  const seenVisitors = new Set();
-  const rows = [];
-
-  for (const event of events) {
-    const visitorKey =
-      normalizeText(event?.visitorId) ||
-      normalizeText(event?.sessionId) ||
-      normalizeText(event?.id) ||
-      `event-${rows.length}`;
-
-    if (seenVisitors.has(visitorKey)) continue;
-
-    seenVisitors.add(visitorKey);
-    rows.push(event);
-
-    if (rows.length >= limit) break;
-  }
-
-  return rows;
-};
+const buildRecentVisitorRows = (events = []) => events;
 
 const buildLocationAnalyticsCsv = (events = []) => {
   const headers = [
@@ -546,9 +606,55 @@ const LocationAnalytics = () => {
   const [exportingCsv, setExportingCsv] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    let timeoutId;
+
+    const scheduleDateRangeRefresh = () => {
+      const currentDefaultRange = createDefaultDateRange();
+      const nextMidnight = new Date();
+      nextMidnight.setHours(24, 0, 0, 0);
+
+      timeoutId = window.setTimeout(() => {
+        const nextDefaultRange = createDefaultDateRange();
+
+        setFilters((prev) => {
+          const isUsingCurrentDefaultRange =
+            prev.dateFrom === currentDefaultRange.dateFrom &&
+            prev.dateTo === currentDefaultRange.dateTo;
+
+          if (!isUsingCurrentDefaultRange) {
+            return prev;
+          }
+
+          return {
+            ...prev,
+            ...nextDefaultRange,
+          };
+        });
+
+        scheduleDateRangeRefresh();
+      }, nextMidnight.getTime() - Date.now());
+    };
+
+    scheduleDateRangeRefresh();
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
   const visibleEvents = useMemo(
     () => payload.events.filter((event) => !shouldExcludeEvent(event)),
     [payload.events]
+  );
+  const uniqueVisitorCount = useMemo(
+    () =>
+      new Set(
+        visibleEvents
+          .map((event) => normalizeText(event?.visitorId) || normalizeText(event?.sessionId))
+          .filter(Boolean)
+      ).size,
+    [visibleEvents]
   );
   const visibleSummary = useMemo(() => buildDerivedSummary(visibleEvents), [visibleEvents]);
   const visibleFilterOptions = useMemo(() => {
@@ -570,30 +676,6 @@ const LocationAnalytics = () => {
       setError("");
 
       const fallbackFileName = `location-analytics-${new Date().toISOString().slice(0, 10)}.csv`;
-      const downloadAllEventsCsv = async () => {
-        const fallbackRes = await fetch(getApiUrl("/api/visitor-analytics?exportAll=1"), {
-          headers: {
-            "Content-Type": "application/json",
-            ...getAdminAuthHeaders(),
-          },
-        });
-
-        const fallbackData = await fallbackRes.json().catch(() => ({}));
-        if (!fallbackRes.ok) {
-          throw new Error(fallbackData?.error || "Failed to download location analytics CSV");
-        }
-
-        const exportEvents = Array.isArray(fallbackData?.events)
-          ? fallbackData.events.filter((event) => !shouldExcludeEvent(event))
-          : [];
-        if (!exportEvents.length) {
-          throw new Error("No analytics records found");
-        }
-
-        const csvContent = buildLocationAnalyticsCsv(exportEvents);
-        const csvBlob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        triggerCsvDownload(csvBlob, fallbackFileName);
-      };
 
       const res = await fetch(getApiUrl("/api/visitor-analytics/export.csv"), {
         headers: {
@@ -601,19 +683,13 @@ const LocationAnalytics = () => {
         },
       });
       if (!res.ok) {
-        if (res.status === 404 || res.status === 405) {
-          await downloadAllEventsCsv();
-          return;
-        }
-
         const errorPayload = await res.json().catch(() => ({}));
         throw new Error(errorPayload?.error || "Failed to download location analytics CSV");
       }
 
       const blob = await res.blob();
       if (!blob.size) {
-        await downloadAllEventsCsv();
-        return;
+        throw new Error("No analytics records found");
       }
 
       const disposition = res.headers.get("content-disposition") || "";
@@ -622,36 +698,6 @@ const LocationAnalytics = () => {
 
       triggerCsvDownload(blob, fileName);
     } catch (downloadError) {
-      try {
-        await (async () => {
-          const fallbackRes = await fetch(getApiUrl("/api/visitor-analytics?exportAll=1"), {
-            headers: {
-              "Content-Type": "application/json",
-              ...getAdminAuthHeaders(),
-            },
-          });
-          const fallbackData = await fallbackRes.json().catch(() => ({}));
-          if (!fallbackRes.ok) {
-            throw new Error(fallbackData?.error || "Failed to download location analytics CSV");
-          }
-
-          const exportEvents = Array.isArray(fallbackData?.events)
-            ? fallbackData.events.filter((event) => !shouldExcludeEvent(event))
-            : [];
-          if (!exportEvents.length) {
-            throw new Error("No analytics records found");
-          }
-
-          const csvContent = buildLocationAnalyticsCsv(exportEvents);
-          const csvBlob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-          triggerCsvDownload(csvBlob, `location-analytics-${new Date().toISOString().slice(0, 10)}.csv`);
-          setError("");
-        })();
-        return;
-      } catch (fallbackError) {
-        console.error("Location analytics CSV fallback error:", fallbackError);
-      }
-
       console.error("Location analytics CSV download error:", downloadError);
       setError(downloadError.message || "Failed to download location analytics CSV");
     } finally {
@@ -735,11 +781,15 @@ const LocationAnalytics = () => {
     load();
   }, [filters, getAdminAuthHeaders, refreshSignal]);
 
-  const recentVisitors = useMemo(() => buildRecentVisitorRows(visibleEvents, 25), [visibleEvents]);
+  const recentVisitors = useMemo(() => buildRecentVisitorRows(visibleEvents), [visibleEvents]);
   const countrySummaryRows = useMemo(
     () => {
       if (!filters.country) return visibleSummary.byCountry;
-      return visibleSummary.byCountry.filter((row) => normalizeLabel(row.label) === normalizeLabel(filters.country));
+      return visibleSummary.byCountry.filter(
+        (row) =>
+          normalizeLabel(normalizeCountryLabel(row.label)) ===
+          normalizeLabel(normalizeCountryLabel(filters.country))
+      );
     },
     [filters.country, visibleSummary.byCountry]
   );
@@ -998,7 +1048,7 @@ const LocationAnalytics = () => {
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-gray-600">
               <span className="rounded-full bg-gray-100 px-3 py-1">
-                {recentVisitors.length.toLocaleString("en-IN")} visitors
+                {uniqueVisitorCount.toLocaleString("en-IN")} visitors
               </span>
               <span className="rounded-full bg-gray-100 px-3 py-1">
                 {visibleEvents.length.toLocaleString("en-IN")} events
