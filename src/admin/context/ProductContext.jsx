@@ -27,6 +27,23 @@ export const ProductProvider = ({ children }) => {
   );
   const [loading, setLoading] = useState(false);
 
+  const findProductInList = (list, id) => {
+    const target = String(id || "").trim().toLowerCase();
+    if (!target) return null;
+
+    return (
+      list.find((product) =>
+        [
+          product?.docId,
+          product?.id,
+          product?._id,
+          product?.legacyId,
+          product?.legacyUnderscoreId,
+        ].some((value) => String(value || "").trim().toLowerCase() === target)
+      ) || null
+    );
+  };
+
   const fetchProducts = async () => {
     if (!API_URL) {
       handleApiError("Products", new Error("VITE_API_URL is missing"));
@@ -63,32 +80,33 @@ export const ProductProvider = ({ children }) => {
   );
 
   const tryProductMutation = async ({ candidateIds, method, data }) => {
+    if (!API_URL) {
+      throw new Error("VITE_API_URL is missing");
+    }
+
     const normalizedIds = Array.from(
       new Set(candidateIds.map((value) => String(value || "").trim()).filter(Boolean))
     );
 
+    if (!normalizedIds.length) {
+      throw new Error("Missing product ID");
+    }
+
     let lastError = "Product not found";
 
     for (const candidateId of normalizedIds) {
-      const endpoints = [
-        getApiUrl(`/api/products/${candidateId}`),
-        getApiUrl(`/admin/products/edit/${candidateId}`),
-      ];
+      const res = await fetch(getApiUrl(`/api/products/${candidateId}`), {
+        method,
+        headers: method === "DELETE" ? undefined : { "Content-Type": "application/json" },
+        body: method === "DELETE" ? undefined : JSON.stringify(data),
+      });
 
-      for (const endpoint of endpoints) {
-        const res = await fetch(endpoint, {
-          method,
-          headers: method === "DELETE" ? undefined : { "Content-Type": "application/json" },
-          body: method === "DELETE" ? undefined : JSON.stringify(data),
-        });
+      const payload = await res.json().catch(() => ({}));
+      if (res.ok) return payload;
 
-        const payload = await res.json().catch(() => ({}));
-        if (res.ok) return payload;
-
-        lastError = payload?.error || lastError;
-        if (res.status !== 404) {
-          throw new Error(lastError);
-        }
+      lastError = payload?.error || lastError;
+      if (res.status !== 404) {
+        throw new Error(lastError);
       }
     }
 
@@ -163,19 +181,48 @@ export const ProductProvider = ({ children }) => {
     return payload;
   };
 
-  const getProductById = (id) =>
-    {
-      const target = String(id || "").trim().toLowerCase();
-      return products.find((product) =>
-        [
-          product?.docId,
-          product?.id,
-          product?._id,
-          product?.legacyId,
-          product?.legacyUnderscoreId,
-        ].some((value) => String(value || "").trim().toLowerCase() === target)
-      );
-    };
+  const getProductById = (id) => findProductInList(products, id);
+
+  const fetchProductById = async (candidateIds = []) => {
+    const normalizedIds = Array.from(
+      new Set(
+        (Array.isArray(candidateIds) ? candidateIds : [candidateIds])
+          .map((value) => String(value || "").trim())
+          .filter(Boolean)
+      )
+    );
+
+    for (const candidateId of normalizedIds) {
+      const existing = findProductInList(products, candidateId);
+      if (existing) return toCanonicalProduct(existing);
+    }
+
+    if (!API_URL) {
+      handleApiError("Products", new Error("VITE_API_URL is missing"));
+      return null;
+    }
+
+    for (const candidateId of normalizedIds) {
+      try {
+        const res = await fetch(getApiUrl(`/api/products/${candidateId}`));
+        if (res.status === 404) continue;
+        if (!res.ok) throw new Error("Failed to fetch product");
+
+        const data = await res.json().catch(() => null);
+        if (data) return toCanonicalProduct(data);
+      } catch (error) {
+        handleApiError("Products", error);
+      }
+    }
+
+    const latestProducts = products.length ? products : await fetchProducts();
+    for (const candidateId of normalizedIds) {
+      const matched = findProductInList(latestProducts, candidateId);
+      if (matched) return toCanonicalProduct(matched);
+    }
+
+    return null;
+  };
 
   return (
     <ProductContext.Provider
@@ -189,6 +236,7 @@ export const ProductProvider = ({ children }) => {
         syncAllMerchantProducts,
         syncMerchantProduct,
         getProductById,
+        fetchProductById,
         fetchProducts,
       }}
     >

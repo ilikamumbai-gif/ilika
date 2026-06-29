@@ -2738,6 +2738,7 @@ const ProductDetail = () => {
       .map((item, index) => ({
         id: String(item?.id || `pack-${index + 1}`),
         label: String(item?.label || item?.name || "").trim(),
+        count: Number(item?.count || 0),
         price: Number(item?.price || 0),
         mrp: Number(item?.mrp || 0),
       }))
@@ -3093,6 +3094,7 @@ const ProductDetail = () => {
             ? {
               id: selectedPack.id,
               label: selectedPack.label,
+              count: selectedPack.count || null,
               price: selectedPack.price,
               mrp: selectedPack.mrp || null,
             }

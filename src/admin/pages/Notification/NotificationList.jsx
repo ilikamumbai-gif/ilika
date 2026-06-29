@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Eye, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
+import { getApiUrl } from "../../../utils/api";
 
 const NotificationList = () => {
   const navigate = useNavigate();
@@ -10,7 +11,8 @@ const NotificationList = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notify`);
+      const res = await fetch(getApiUrl("/api/notify"));
+      if (!res.ok) throw new Error("Failed to fetch notifications");
       const data = await res.json();
 
       // fallback safety
@@ -56,7 +58,7 @@ const NotificationList = () => {
             <tbody>
               {notifications.map((n) => (
                 <tr
-                  key={n.productId}
+                  key={n.productId || n.id}
                   className="border-b hover:bg-gray-50"
                 >
                   <td className="px-5 py-4 font-semibold">
@@ -71,10 +73,13 @@ const NotificationList = () => {
 
                   <td className="px-5 py-4">
                     <button
-                      onClick={() =>
-                        navigate(`/admin/notifications/${n.productId}`)
-                      }
+                      onClick={() => {
+                        if (n.productId) {
+                          navigate(`/admin/notifications/${n.productId}`);
+                        }
+                      }}
                       className="p-2 bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                      disabled={!n.productId}
                     >
                       <Eye size={14} />
                     </button>

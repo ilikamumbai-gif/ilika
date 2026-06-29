@@ -20,6 +20,7 @@ const meesho = "/Images/Meesho.webp";
 const facebook = "/Images/facebook.png";
 const youtube = "/Images/Youtube.png";
 const instagram = "/Images/instagram.png";
+const linkedin = "/Footer/linkedinfootersocialmedia.png";
 
 const quickLinks = [
   { label: "New Arrivals", to: "/newarrival", icon: ShoppingBag },
@@ -80,6 +81,11 @@ const socials = [
     href: "https://www.instagram.com/ilikamumbai/",
     src: instagram,
     alt: "Instagram",
+  },
+  {
+    href: "https://www.linkedin.com/in/ilika-skincare",
+    src: linkedin,
+    alt: "LinkedIn",
   },
 ];
 

@@ -5618,6 +5618,21 @@ app.post("/api/notify", async (req, res) => {
 
 /* ================== NOTIFICATIONS ================== */
 
+app.get("/api/notify-requests", async (req, res) => {
+  try {
+    const snapshot = await db.collection("notifications").orderBy("createdAt", "desc").get();
+    const requests = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.json(requests);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch notification requests" });
+  }
+});
+
 // GET ALL (GROUPED BY PRODUCT)
 app.get("/api/notify", async (req, res) => {
   try {

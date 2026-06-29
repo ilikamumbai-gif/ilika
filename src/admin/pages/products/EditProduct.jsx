@@ -5,15 +5,13 @@ import ProductForm from "../../components/ProductFrom";
 import { useProducts } from "../../context/ProductContext";
 
 const EditProduct = () => {
-  const API = import.meta.env.VITE_API_URL;
   const { id } = useParams();
   const navigate = useNavigate();
-  const { updateProduct } = useProducts();
+  const { updateProduct, fetchProductById } = useProducts();
 
   const [product, setProduct] = useState(null);
   const [candidateIds, setCandidateIds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { getProductById } = useProducts();
 
   const collectCandidateIds = (entry = {}) =>
     Array.from(
@@ -35,49 +33,7 @@ const EditProduct = () => {
       setIsLoading(true);
 
       try {
-        const existing = getProductById(id);
-        if (existing) {
-          const directId = String(existing?.docId || existing?.id || existing?._id || id);
-          const normalized = { ...existing, docId: directId, id: directId };
-          setProduct(normalized);
-          setCandidateIds(collectCandidateIds(normalized));
-          if (directId !== String(id)) {
-            navigate(`/admin/products/edit/${directId}`, { replace: true });
-          }
-          return;
-        }
-
-        const exactRes = await fetch(`${API}/api/products/${id}`);
-        if (exactRes.ok) {
-          const exact = await exactRes.json();
-          const normalized = {
-            ...exact,
-            docId: String(exact?.id || exact?.docId || exact?._id || id),
-            id: String(exact?.id || exact?.docId || exact?._id || id),
-          };
-          setProduct(normalized);
-          setCandidateIds(collectCandidateIds(normalized));
-          return;
-        }
-
-        const listRes = await fetch(`${API}/api/products`);
-        if (!listRes.ok) {
-          setProduct(null);
-          setCandidateIds([]);
-          return;
-        }
-
-        const list = await listRes.json().catch(() => []);
-        const targetId = String(id || "").trim().toLowerCase();
-        const found = (Array.isArray(list) ? list : []).find((entry) =>
-          [
-            entry?.docId,
-            entry?.id,
-            entry?._id,
-            entry?.legacyId,
-          ].some((value) => String(value || "").trim().toLowerCase() === targetId)
-        );
-
+        const found = await fetchProductById([id]);
         if (!found) {
           setProduct(null);
           setCandidateIds([]);
@@ -104,7 +60,7 @@ const EditProduct = () => {
     };
 
     loadProduct();
-  }, [API, id, getProductById, navigate]);
+  }, [fetchProductById, id, navigate]);
 
   const handleUpdate = async (data) => {
     const result = await updateProduct(candidateIds.length ? candidateIds : [id], data);

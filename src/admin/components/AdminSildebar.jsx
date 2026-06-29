@@ -96,7 +96,7 @@ const AdminSidebar = ({ open, onClose }) => {
               <span className="text-white font-black text-xs">IL</span>
             </div>
             <div>
-              <p className="text-black font-bold text-sm tracking-wide leading-none">ilikä</p>
+              <p className="text-black font-bold text-sm tracking-wide leading-none">ilika</p>
               <p className="text-xs leading-none mt-0.5" style={{ color: "#666" }}>Admin Panel</p>
             </div>
           </div>
@@ -142,7 +142,7 @@ const AdminSidebar = ({ open, onClose }) => {
 
         {/* FOOTER */}
         <div className="px-5 py-4 shrink-0" style={{ borderTop: "1px solid #222" }}>
-          <p className="text-xs" style={{ color: "#444" }}>© 2025 ilikä Beauty</p>
+          <p className="text-xs" style={{ color: "#444" }}>© 2025 ilika Beauty</p>
         </div>
       </aside>
     </>

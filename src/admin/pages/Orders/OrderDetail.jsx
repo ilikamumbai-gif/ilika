@@ -8,13 +8,15 @@ import {
 import AdminLayout from "../../components/AdminLayout";
 import { useOrders } from "../../context/OrderContext";
 import { useProducts } from "../../context/ProductContext";
+import { useUsers } from "../../context/UserContext";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { logActivity } from "../../Utils/logActivity";
 import { normalizeSource } from "../../Utils/trafficSource";
 import { formatOrderId, formatOrderRef } from "../../../utils/orderId";
 import { getCartItemDisplayPricing, getCartItemVariantName } from "../../../utils/productPricing";
-import { getOrderGiftWrapFee, getOrderItemsSellingSubtotal, getOrderSellingTotal } from "../../../utils/orderPricing";
+import { getOrderGiftWrapFee, getOrderItemDisplayQuantity, getOrderItemsSellingSubtotal, getOrderSellingTotal } from "../../../utils/orderPricing";
+import { findMatchedUser } from "../../Utils/customerConnections";
 
 /* ─────────────────── HELPERS ─────────────────── */
 
@@ -116,6 +118,7 @@ const OrderDetail = () => {
   const navigate = useNavigate();
   const { orders, getOrderById, updateOrderStatus, saveOrderTracking } = useOrders();
   const { products, fetchProducts } = useProducts();
+  const { users } = useUsers();
   const order = getOrderById(id);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [trackingSaving, setTrackingSaving] = useState(false);
@@ -153,6 +156,7 @@ const OrderDetail = () => {
   const srcColor   = SOURCE_STYLES[srcDisplay] || SOURCE_STYLES.Website;
   const isPaid     = order.paymentStatus === "Paid";
   const itemCount  = order.items?.length || 0;
+  const matchedUser = findMatchedUser(users, order);
   const addr       = order.shippingAddress || {};
   const giftOrder  = order.giftOrder || {};
   const giftRecipientAddress = giftOrder.recipientAddress || {};
@@ -394,7 +398,7 @@ const OrderDetail = () => {
         head: [["#", "Product Name", "HSN Code", "Qty", "Unit Price", "Discount", "Invoice Value", "GST", "Total Price"]],
         body: order.items.map((item, i) => {
           const itemMeta = getMetaForInvoiceItem(item);
-          const qty       = item.quantity || 1;
+          const qty       = getOrderItemDisplayQuantity(item);
           const price     = item.price    || 0;
           const itemTotal = qty * price;
           const discountMeta = getItemDiscountMeta(item);
@@ -608,7 +612,14 @@ const OrderDetail = () => {
           <InfoRow label="Full Name" value={addr.name || order.shippingAddress?.name} />
           <InfoRow label="Email"     value={order.userEmail} />
           <InfoRow label="Phone"     value={addr.phone} />
-          <InfoRow label="User ID"   value={order.userId ? `…${order.userId.slice(-12)}` : "—"} />
+          <InfoRow
+            label="User"
+            value={matchedUser ? (
+              <button type="button" onClick={() => navigate(`/admin/users/${matchedUser.id}`)} className="text-pink-600 hover:underline">
+                {matchedUser.name || matchedUser.email}
+              </button>
+            ) : (order.userId ? `…${order.userId.slice(-12)}` : "—")}
+          />
         </SectionCard>
 
         <SectionCard icon={<MapPin size={15} />} title="Shipping Address">
@@ -741,6 +752,7 @@ const OrderDetail = () => {
               {order.items?.map((item, i) => {
                 const comboList = item.comboItems || item.items || [];
                 const discountMeta = getItemDiscountMeta(item);
+                const displayQuantity = getOrderItemDisplayQuantity(item);
                 return (
                   <tr key={i} className="hover:bg-gray-50 transition-colors">
                     <td className="py-4 text-xs text-gray-400">{i + 1}</td>
@@ -783,7 +795,7 @@ const OrderDetail = () => {
                     </td>
                     <td className="py-4 text-center">
                       <span className="inline-block min-w-[28px] bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded-full">
-                        ×{item.quantity}
+                        ×{displayQuantity}
                       </span>
                     </td>
                     <td className="py-4 text-right">
@@ -807,7 +819,7 @@ const OrderDetail = () => {
                     </td>
                     <td className="py-4 text-right">
                       <span className="font-bold text-gray-900">
-                        ₹{(getCartItemDisplayPricing(item).price * item.quantity).toLocaleString("en-IN")}
+                        ₹{(getCartItemDisplayPricing(item).price * displayQuantity).toLocaleString("en-IN")}
                       </span>
                     </td>
                   </tr>

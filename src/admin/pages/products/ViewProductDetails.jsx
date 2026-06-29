@@ -146,10 +146,9 @@ const ImageCard = ({ item, index, downloading, onDownload }) => (
 );
 
 const ViewProductDetails = () => {
-  const API = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
   const { id } = useParams();
-  const { loading, getProductById } = useProducts();
+  const { loading, fetchProductById } = useProducts();
   const { categories = [] } = useCategories();
   const [downloadingKey, setDownloadingKey] = useState("");
   const [product, setProduct] = useState(null);
@@ -173,59 +172,24 @@ const ViewProductDetails = () => {
       setIsLoading(true);
 
       try {
-        const existing = getProductById(id);
-        if (existing) {
-          const directId = getCanonicalProductId(existing);
-          const normalized = { ...existing, id: directId, docId: directId };
-          setResolvedProductId(directId);
-          setProduct(normalized);
-          if (directId !== String(id)) {
-            navigate(`/admin/products/view/${directId}`, { replace: true });
-          }
-          return;
-        }
+        const found = await fetchProductById([id]);
+        const normalized = found
+          ? { ...found, id: getCanonicalProductId(found), docId: getCanonicalProductId(found) }
+          : null;
 
-        const res = await fetch(`${API}/api/products/${id}`);
-        if (res.ok) {
-          const exact = await res.json();
-          const normalized = exact ? { ...exact, id: getCanonicalProductId(exact), docId: getCanonicalProductId(exact) } : null;
-          setResolvedProductId(String(normalized?.id || id));
-          setProduct(normalized || null);
-          return;
-        }
+        setResolvedProductId(String(normalized?.id || ""));
+        setProduct(normalized);
 
-        const allRes = await fetch(`${API}/api/products`);
-        if (allRes.ok) {
-          const all = await allRes.json();
-          const targetId = String(id || "").trim().toLowerCase();
-          const fallback = (Array.isArray(all) ? all : []).find(
-            (entry) =>
-              [
-                entry?.docId,
-                entry?.id,
-                entry?._id,
-                entry?.legacyId,
-              ].some((value) => String(value || "").trim().toLowerCase() === targetId)
-          );
-          const normalized = fallback
-            ? { ...fallback, id: getCanonicalProductId(fallback), docId: getCanonicalProductId(fallback) }
-            : null;
-          setResolvedProductId(String(normalized?.id || ""));
-          setProduct(normalized);
-          if (normalized?.docId && normalized.docId !== String(id)) {
-            navigate(`/admin/products/view/${normalized.docId}`, { replace: true });
-          }
-          return;
+        if (normalized?.docId && normalized.docId !== String(id)) {
+          navigate(`/admin/products/view/${normalized.docId}`, { replace: true });
         }
-
-        setProduct(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     load();
-  }, [id, API, getProductById, navigate]);
+  }, [fetchProductById, id, navigate]);
 
   const categoryNames = useMemo(() => {
     const ids = Array.isArray(product?.categoryIds) ? product.categoryIds : [];

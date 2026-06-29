@@ -3,10 +3,12 @@ import { Eye, Trash2, Search, SlidersHorizontal, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useOrders } from "../../context/OrderContext";
+import { useUsers } from "../../context/UserContext";
 import { logActivity } from "../../Utils/logActivity";
 import { normalizeSource } from "../../Utils/trafficSource";
 import { formatOrderRef } from "../../../utils/orderId";
-import { getOrderSellingTotal } from "../../../utils/orderPricing";
+import { getOrderDisplayItemCount, getOrderSellingTotal } from "../../../utils/orderPricing";
+import { findMatchedUser } from "../../Utils/customerConnections";
 
 const STATUS_STYLES = {
   Placed:    "bg-blue-50 text-blue-700 border border-blue-200",
@@ -55,6 +57,7 @@ const FilterSelect = ({ value, onChange, children, icon }) => (
 const OrderList = () => {
   const navigate = useNavigate();
   const { orders, loading, updateOrderStatus, deleteAllOrders, deleteOrder } = useOrders();
+  const { users } = useUsers();
 
   const [statusFilter, setStatusFilter] = useState("");
   const [sourceFilter, setSourceFilter] = useState("");
@@ -174,7 +177,9 @@ const OrderList = () => {
                 <tbody>
                   {filteredOrders.map((order) => {
                     const srcDisplay = normalizeSource(order.source);
+                    const displayItemCount = getOrderDisplayItemCount(order);
                     const sellingTotal = getOrderSellingTotal(order);
+                    const matchedUser = findMatchedUser(users, order);
                     return (
                       <tr
                         key={order.id}
@@ -190,9 +195,19 @@ const OrderList = () => {
 
                         {/* Customer */}
                         <td className="px-5 py-4">
-                          <p className="font-semibold text-gray-800 text-sm leading-tight">
-                            {order.shippingAddress?.name || "—"}
-                          </p>
+                          {matchedUser ? (
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/admin/users/${matchedUser.id}`)}
+                              className="text-left font-semibold text-pink-600 text-sm leading-tight hover:underline"
+                            >
+                              {order.shippingAddress?.name || matchedUser.name || "—"}
+                            </button>
+                          ) : (
+                            <p className="font-semibold text-gray-800 text-sm leading-tight">
+                              {order.shippingAddress?.name || "—"}
+                            </p>
+                          )}
                           <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[160px]">{order.userEmail}</p>
                           {order.shippingAddress?.phone && (
                             <p className="text-xs text-gray-400">{order.shippingAddress.phone}</p>
@@ -201,7 +216,7 @@ const OrderList = () => {
 
                         {/* Items count */}
                         <td className="px-5 py-4">
-                          <span className="text-xs text-gray-500">{order.items?.length || 0} items</span>
+                          <span className="text-xs text-gray-500">{displayItemCount} items</span>
                         </td>
 
                         {/* Total */}
@@ -277,11 +292,22 @@ const OrderList = () => {
               {filteredOrders.map((order) => {
                 const srcDisplay = normalizeSource(order.source);
                 const sellingTotal = getOrderSellingTotal(order);
+                const matchedUser = findMatchedUser(users, order);
                 return (
                   <div key={order.id} className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="font-semibold text-gray-900">{order.shippingAddress?.name || "—"}</p>
+                        {matchedUser ? (
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/admin/users/${matchedUser.id}`)}
+                            className="font-semibold text-pink-600 hover:underline"
+                          >
+                            {order.shippingAddress?.name || matchedUser.name || "—"}
+                          </button>
+                        ) : (
+                          <p className="font-semibold text-gray-900">{order.shippingAddress?.name || "—"}</p>
+                        )}
                         <p className="text-xs text-gray-400 font-mono">#{formatOrderRef(order.id)}</p>
                       </div>
                       <span className="font-bold text-gray-900">₹{sellingTotal.toLocaleString("en-IN")}</span>

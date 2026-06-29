@@ -1,7 +1,6 @@
 import React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
-import { db } from "../../firebase/firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { getApiUrl } from "../../utils/api";
 
 const CartEventContext = createContext();
 
@@ -12,15 +11,14 @@ export const CartEventProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
 
   const fetchEvents = async () => {
-
-    const snap = await getDocs(collection(db, "cartEvents"));
-
-    const data = snap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    setEvents(data);
+    try {
+      const res = await fetch(getApiUrl("/api/cart-events"));
+      const data = await res.json();
+      setEvents(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch cart events", error);
+      setEvents([]);
+    }
   };
 
   useEffect(() => {

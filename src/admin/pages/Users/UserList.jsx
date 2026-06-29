@@ -1,20 +1,45 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUsers } from "../../context/UserContext";
 import { useOrders } from "../../context/OrderContext";
+import { useCartEvents } from "../../context/CartEventContext";
 import AdminLayout from "../../components/AdminLayout";
 import { Eye, Trash2, Search, Users } from "lucide-react";
 import { logActivity } from "../../Utils/logActivity";
+import { buildUserConnectionSummary } from "../../Utils/customerConnections";
+import { getApiUrl } from "../../../utils/api";
 
 const UserList = () => {
   const navigate = useNavigate();
   const { users, deleteUser } = useUsers();
   const { orders } = useOrders();
+  const { events } = useCartEvents();
   const [search, setSearch] = useState("");
+  const [leads, setLeads] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
-  const getOrderCount = (userId) => orders.filter(o => String(o.userId) === String(userId)).length;
-  const getTotalSpent = (userId) => orders.filter(o => String(o.userId) === String(userId)).reduce((a, o) => a + (o.total || 0), 0);
-  const isActive = (userId) => orders.some(o => String(o.userId) === String(userId));
+  useEffect(() => {
+    const loadConnections = async () => {
+      try {
+        const [leadsRes, notificationsRes] = await Promise.all([
+          fetch(getApiUrl("/api/leads")).catch(() => null),
+          fetch(getApiUrl("/api/notify-requests")).catch(() => null),
+        ]);
+
+        const nextLeads = leadsRes?.ok ? await leadsRes.json() : [];
+        const nextNotifications = notificationsRes?.ok ? await notificationsRes.json() : [];
+
+        setLeads(Array.isArray(nextLeads) ? nextLeads : []);
+        setNotifications(Array.isArray(nextNotifications) ? nextNotifications : []);
+      } catch (error) {
+        console.error("Failed to fetch admin user connections", error);
+        setLeads([]);
+        setNotifications([]);
+      }
+    };
+
+    loadConnections();
+  }, []);
 
   const handleDelete = async (user) => {
     if (!confirm(`Delete user ${user.name}?`)) return;
@@ -22,7 +47,26 @@ const UserList = () => {
     await logActivity(`Deleted user ${user.name} (${user.email})`);
   };
 
-  const filtered = users.filter(u =>
+  const enrichedUsers = useMemo(
+    () =>
+      users.map((user) => {
+        const summary = buildUserConnectionSummary({
+          user,
+          orders,
+          cartEvents: events,
+          leads,
+          notifications,
+        });
+
+        return {
+          ...user,
+          connectionSummary: summary,
+        };
+      }),
+    [events, leads, notifications, orders, users]
+  );
+
+  const filtered = enrichedUsers.filter((u) =>
     !search ||
     u.name?.toLowerCase().includes(search.toLowerCase()) ||
     u.email?.toLowerCase().includes(search.toLowerCase()) ||
@@ -74,9 +118,9 @@ const UserList = () => {
                   </td>
                 </tr>
               ) : filtered.map(user => {
-                const orderCount = getOrderCount(user.uid || user.id);
-                const spent = getTotalSpent(user.uid || user.id);
-                const active = isActive(user.uid || user.id);
+                const orderCount = user.connectionSummary.orders.length;
+                const spent = user.connectionSummary.totalSpent;
+                const active = orderCount > 0 || user.connectionSummary.cartEvents.length > 0;
                 return (
                   <tr key={user.id} className="hover:bg-gray-50/70 transition-colors" style={{ borderBottom: "1px solid #F5F5F5" }}>
                     <td className="px-5 py-4">
@@ -92,6 +136,11 @@ const UserList = () => {
                     <td className="px-5 py-4 text-gray-500 text-sm">{user.phone || "-"}</td>
                     <td className="px-5 py-4">
                       <span className="font-bold text-gray-800">{orderCount}</span>
+                      {(user.connectionSummary.cartEvents.length > 0 || user.connectionSummary.leads.length > 0) && (
+                        <p className="mt-1 text-[11px] text-gray-400">
+                          {user.connectionSummary.cartEvents.length} cart • {user.connectionSummary.leads.length} leads
+                        </p>
+                      )}
                     </td>
                     <td className="px-5 py-4">
                       <span className="font-semibold text-gray-800">₹{spent.toLocaleString("en-IN")}</span>
@@ -123,9 +172,9 @@ const UserList = () => {
         {/* Mobile cards */}
         <div className="md:hidden divide-y divide-gray-100">
           {filtered.map(user => {
-            const orderCount = getOrderCount(user.uid || user.id);
-            const spent = getTotalSpent(user.uid || user.id);
-            const active = isActive(user.uid || user.id);
+            const orderCount = user.connectionSummary.orders.length;
+            const spent = user.connectionSummary.totalSpent;
+            const active = orderCount > 0 || user.connectionSummary.cartEvents.length > 0;
             return (
               <div key={user.id} className="p-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">

@@ -3,6 +3,9 @@ import { Download, Search, Smartphone } from "lucide-react";
 import AdminLayout from "../../components/AdminLayout";
 import AdminTable from "../../components/AdminTable";
 import { useAdminAuth } from "../../context/AdminAuthContext";
+import { useUsers } from "../../context/UserContext";
+import { useOrders } from "../../context/OrderContext";
+import { findMatchedUser } from "../../Utils/customerConnections";
 import { getApiUrl } from "../../../utils/api";
 
 const LEAD_STATUSES = [
@@ -42,6 +45,8 @@ const statusClasses = {
 
 const LeadList = () => {
   const { getAdminAuthHeaders } = useAdminAuth();
+  const { users } = useUsers();
+  const { orders } = useOrders();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -210,6 +215,32 @@ const LeadList = () => {
         ) : (
           "-"
         ),
+    },
+    {
+      label: "Customer",
+      key: "customer",
+      render: (lead) => {
+        const matchedUser = findMatchedUser(users, lead);
+        return matchedUser ? (
+          <span className="text-sm font-semibold text-[#b24074]">{matchedUser.name || matchedUser.email}</span>
+        ) : (
+          <span className="text-sm text-gray-400">Unlinked</span>
+        );
+      },
+    },
+    {
+      label: "Orders",
+      key: "orders",
+      render: (lead) => {
+        const matchedUser = findMatchedUser(users, lead);
+        const orderCount = orders.filter((order) => {
+          if (matchedUser) {
+            return String(order.userId || "") === String(matchedUser.id || matchedUser.uid || "") || String(order.userEmail || "").toLowerCase() === String(matchedUser.email || "").toLowerCase();
+          }
+          return String(order.shippingAddress?.phone || "").replace(/\D/g, "").slice(-10) === String(lead.mobileNumber || "").replace(/\D/g, "").slice(-10);
+        }).length;
+        return <span className="text-sm font-medium text-gray-700">{orderCount}</span>;
+      },
     },
     {
       label: "Status",
