@@ -769,6 +769,90 @@ const getVisitorAnalyticsFilterOptions = async () => {
   return options;
 };
 
+const isLocalVisitorAnalyticsPageUrl = (pageUrl = "") => {
+  const normalized = trimToLength(pageUrl, 2000);
+  if (!normalized) return false;
+
+  try {
+    const parsed = new URL(normalized);
+    const hostname = String(parsed.hostname || "").trim().toLowerCase();
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1" || hostname === "[::1]";
+  } catch {
+    return /localhost|127\.0\.0\.1|::1/i.test(normalized);
+  }
+};
+
+const shouldExcludeVisitorAnalyticsExportEvent = (event = {}) => {
+  const clientIp = event?.locationDebug?.clientIp || event?.clientIp || "";
+  const requestIp = event?.locationDebug?.requestIp || "";
+  return (
+    isExcludedVisitorAnalyticsIp(clientIp) ||
+    isExcludedVisitorAnalyticsIp(requestIp) ||
+    isLocalVisitorAnalyticsPageUrl(event?.pageUrl)
+  );
+};
+
+const escapeVisitorAnalyticsCsvValue = (value) => {
+  const normalized = value == null ? "" : String(value);
+  return `"${normalized.replace(/"/g, '""')}"`;
+};
+
+const buildVisitorAnalyticsCsv = (events = []) => {
+  const headers = [
+    "Date",
+    "Time",
+    "Event Type",
+    "Visitor ID",
+    "Session ID",
+    "Product Name",
+    "Product ID",
+    "Page URL",
+    "Country",
+    "State",
+    "City",
+    "Pincode",
+    "Quantity",
+    "Price",
+    "Device",
+    "Browser",
+    "Client IP",
+    "Request IP",
+    "Location Source",
+  ];
+
+  const formatDatePart = (value, options) => {
+    const date = new Date(value || "");
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleString("en-IN", options);
+  };
+
+  const rows = events.map((event) => [
+    formatDatePart(event.createdAt, { day: "2-digit", month: "short", year: "numeric" }),
+    formatDatePart(event.createdAt, { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }),
+    event?.eventType || "",
+    event?.visitorId || "",
+    event?.sessionId || "",
+    event?.productName || "",
+    event?.productId || "",
+    event?.pageUrl || "",
+    event?.ipLocation?.country || "",
+    event?.ipLocation?.state || "",
+    event?.ipLocation?.city || "",
+    event?.ipLocation?.postalCode || "",
+    event?.quantity ?? "",
+    event?.price ?? "",
+    event?.device || "",
+    event?.browser || "",
+    event?.locationDebug?.clientIp || event?.clientIp || "",
+    event?.locationDebug?.requestIp || "",
+    event?.locationDebug?.locationSource || "",
+  ]);
+
+  return [headers, ...rows]
+    .map((row) => row.map(escapeVisitorAnalyticsCsvValue).join(","))
+    .join("\n");
+};
+
 const fetchGoogleAdsInsights = async (days = 30) => {
   if (
     !GOOGLE_ADS_DEVELOPER_TOKEN ||
@@ -5014,6 +5098,150 @@ app.get("/api/visitor-analytics", async (req, res) => {
   } catch (error) {
     console.error("VISITOR ANALYTICS FETCH ERROR:", error);
     res.status(500).json({ error: "Failed to fetch visitor analytics" });
+  }
+});
+
+app.get("/api/visitor-analytics/export.csv", async (req, res) => {
+  try {
+    const requester = await getRequesterAdmin(req);
+    if (!requester) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const {
+      eventType = "",
+      country = "",
+      state = "",
+      city = "",
+      product = "",
+    } = req.query || {};
+
+    const normalizedEventType = trimToLength(eventType, 50);
+    const normalizedCountry = trimToLength(country, 120);
+    const normalizedState = trimToLength(state, 120);
+    const normalizedCity = trimToLength(city, 120);
+    const normalizedProduct = trimToLength(product, 300).toLowerCase();
+    const isIndiaCountryFilter = isIndiaLocationValue(normalizedCountry);
+
+    if (normalizedEventType && !VISITOR_ANALYTICS_EVENT_TYPES.has(normalizedEventType)) {
+      return res.status(400).json({ error: "Invalid eventType filter" });
+    }
+
+    let query = db.collection("visitorAnalytics");
+
+    if (normalizedEventType) {
+      query = query.where("eventType", "==", normalizedEventType);
+    }
+
+    if (normalizedCountry && !isIndiaCountryFilter) {
+      query = query.where("locationCountry", "==", normalizedCountry);
+    }
+
+    if (normalizedState) {
+      query = query.where("locationState", "==", normalizedState);
+    }
+
+    if (normalizedCity) {
+      query = query.where("locationCity", "==", normalizedCity);
+    }
+
+    query = query.orderBy("createdAt", "desc");
+
+    const batchSize = 1000;
+    const maxDocs = 100000;
+    let analyticsDocs = [];
+
+    const fetchAnalyticsInPages = async (baseQuery) => {
+      const docs = [];
+      let lastDoc = null;
+      let hasMore = true;
+
+      while (hasMore && docs.length < maxDocs) {
+        let pagedQuery = baseQuery.limit(Math.min(batchSize, maxDocs - docs.length));
+
+        if (lastDoc) {
+          pagedQuery = pagedQuery.startAfter(lastDoc);
+        }
+
+        const snapshot = await pagedQuery.get();
+        const pageDocs = snapshot.docs || [];
+        docs.push(...pageDocs);
+
+        if (!pageDocs.length || pageDocs.length < batchSize) {
+          hasMore = false;
+        } else {
+          lastDoc = pageDocs[pageDocs.length - 1];
+        }
+      }
+
+      return docs;
+    };
+
+    try {
+      analyticsDocs = await fetchAnalyticsInPages(query);
+    } catch (queryError) {
+      const message = String(queryError?.message || "");
+      const needsFallback =
+        queryError?.code === 9 ||
+        message.toLowerCase().includes("index") ||
+        message.toLowerCase().includes("failed-precondition");
+
+      if (!needsFallback) {
+        throw queryError;
+      }
+
+      console.warn("VISITOR ANALYTICS EXPORT QUERY FALLBACK:", message);
+      let lastDoc = null;
+      let hasMore = true;
+
+      while (hasMore && analyticsDocs.length < maxDocs) {
+        let fallbackQuery = db.collection("visitorAnalytics").orderBy("createdAt", "desc").limit(
+          Math.min(batchSize, maxDocs - analyticsDocs.length)
+        );
+
+        if (lastDoc) {
+          fallbackQuery = fallbackQuery.startAfter(lastDoc);
+        }
+
+        const fallbackSnapshot = await fallbackQuery.get();
+        const pageDocs = fallbackSnapshot.docs || [];
+        analyticsDocs.push(...pageDocs);
+
+        if (!pageDocs.length || pageDocs.length < batchSize) {
+          hasMore = false;
+        } else {
+          lastDoc = pageDocs[pageDocs.length - 1];
+        }
+      }
+    }
+
+    const queriedEvents = analyticsDocs.map(mapVisitorAnalyticsDoc);
+    const filteredEvents = queriedEvents.filter((event) => {
+      const eventProductValue = String(event.productName || event.productId || "").toLowerCase();
+      const eventCountryValue = trimToLength(event.ipLocation?.country, 120);
+      const matchesCountry = !normalizedCountry
+        ? true
+        : isIndiaCountryFilter
+          ? isIndiaLocationValue(eventCountryValue)
+          : eventCountryValue === normalizedCountry;
+
+      if (!matchesCountry) return false;
+      if (normalizedState && trimToLength(event.ipLocation?.state, 120) !== normalizedState) return false;
+      if (normalizedCity && trimToLength(event.ipLocation?.city, 120) !== normalizedCity) return false;
+      if (normalizedProduct && eventProductValue !== normalizedProduct) return false;
+      if (shouldExcludeVisitorAnalyticsExportEvent(event)) return false;
+      return true;
+    });
+
+    const csvContent = buildVisitorAnalyticsCsv(filteredEvents);
+    const stamp = new Date().toISOString().slice(0, 10);
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename=\"location-analytics-${stamp}.csv\"`);
+    res.status(200).send(csvContent);
+  } catch (error) {
+    console.error("VISITOR ANALYTICS CSV EXPORT ERROR:", error);
+    res.status(500).json({ error: "Failed to export visitor analytics CSV" });
   }
 });
 

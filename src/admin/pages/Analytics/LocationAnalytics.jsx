@@ -63,6 +63,8 @@ const formatTimeOnly = (value) => {
   return date.toLocaleTimeString("en-IN", {
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
   });
 };
 
@@ -318,6 +320,28 @@ const buildDerivedSummary = (events = []) => {
   };
 };
 
+const buildRecentVisitorRows = (events = [], limit = 25) => {
+  const seenVisitors = new Set();
+  const rows = [];
+
+  for (const event of events) {
+    const visitorKey =
+      normalizeText(event?.visitorId) ||
+      normalizeText(event?.sessionId) ||
+      normalizeText(event?.id) ||
+      `event-${rows.length}`;
+
+    if (seenVisitors.has(visitorKey)) continue;
+
+    seenVisitors.add(visitorKey);
+    rows.push(event);
+
+    if (rows.length >= limit) break;
+  }
+
+  return rows;
+};
+
 const buildLocationAnalyticsCsv = (events = []) => {
   const headers = [
     "Date",
@@ -369,26 +393,16 @@ const buildLocationAnalyticsCsv = (events = []) => {
   return [headers, ...rows].map((row) => row.map(escapeCsvValue).join(",")).join("\n");
 };
 
-const buildRecentVisitorRows = (events = [], limit = 25) => {
-  const seenVisitors = new Set();
-  const rows = [];
+const triggerCsvDownload = (blob, fileName) => {
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
 
-  for (const event of events) {
-    const visitorKey =
-      normalizeText(event?.visitorId) ||
-      normalizeText(event?.sessionId) ||
-      normalizeText(event?.id) ||
-      `event-${rows.length}`;
-
-    if (seenVisitors.has(visitorKey)) continue;
-
-    seenVisitors.add(visitorKey);
-    rows.push(event);
-
-    if (rows.length >= limit) break;
-  }
-
-  return rows;
+  link.href = downloadUrl;
+  link.setAttribute("download", fileName);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(downloadUrl);
 };
 
 const StatCard = ({ title, value, hint, icon, tone = "pink" }) => {
@@ -529,6 +543,7 @@ const LocationAnalytics = () => {
     },
   });
   const [loading, setLoading] = useState(true);
+  const [exportingCsv, setExportingCsv] = useState(false);
   const [error, setError] = useState("");
 
   const visibleEvents = useMemo(
@@ -548,57 +563,99 @@ const LocationAnalytics = () => {
   }, [payload.filterOptions, visibleEvents]);
 
   const downloadFilteredCsv = async () => {
-    if (loading) return;
+    if (loading || exportingCsv) return;
 
     try {
-      setLoading(true);
+      setExportingCsv(true);
       setError("");
 
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (key === "dateFrom" || key === "dateTo") {
-          return;
-        }
-        if (String(value || "").trim()) {
-          params.set(key, value);
-        }
-      });
-      params.set("exportAll", "1");
+      const fallbackFileName = `location-analytics-${new Date().toISOString().slice(0, 10)}.csv`;
+      const downloadAllEventsCsv = async () => {
+        const fallbackRes = await fetch(getApiUrl("/api/visitor-analytics?exportAll=1"), {
+          headers: {
+            "Content-Type": "application/json",
+            ...getAdminAuthHeaders(),
+          },
+        });
 
-      const res = await fetch(getApiUrl(`/api/visitor-analytics?${params.toString()}`), {
+        const fallbackData = await fallbackRes.json().catch(() => ({}));
+        if (!fallbackRes.ok) {
+          throw new Error(fallbackData?.error || "Failed to download location analytics CSV");
+        }
+
+        const exportEvents = Array.isArray(fallbackData?.events)
+          ? fallbackData.events.filter((event) => !shouldExcludeEvent(event))
+          : [];
+        if (!exportEvents.length) {
+          throw new Error("No analytics records found");
+        }
+
+        const csvContent = buildLocationAnalyticsCsv(exportEvents);
+        const csvBlob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        triggerCsvDownload(csvBlob, fallbackFileName);
+      };
+
+      const res = await fetch(getApiUrl("/api/visitor-analytics/export.csv"), {
         headers: {
-          "Content-Type": "application/json",
           ...getAdminAuthHeaders(),
         },
       });
-
-      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data?.error || "Failed to download location analytics CSV");
+        if (res.status === 404 || res.status === 405) {
+          await downloadAllEventsCsv();
+          return;
+        }
+
+        const errorPayload = await res.json().catch(() => ({}));
+        throw new Error(errorPayload?.error || "Failed to download location analytics CSV");
       }
 
-      const exportEvents = Array.isArray(data?.events) ? data.events.filter((event) => !shouldExcludeEvent(event)) : [];
-      if (!exportEvents.length) {
-        throw new Error("No analytics records found for the selected filters");
+      const blob = await res.blob();
+      if (!blob.size) {
+        await downloadAllEventsCsv();
+        return;
       }
 
-      const csvContent = buildLocationAnalyticsCsv(exportEvents);
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const downloadUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const stamp = new Date().toISOString().slice(0, 10);
+      const disposition = res.headers.get("content-disposition") || "";
+      const fileNameMatch = disposition.match(/filename="?([^"]+)"?/i);
+      const fileName = fileNameMatch?.[1] || fallbackFileName;
 
-      link.href = downloadUrl;
-      link.setAttribute("download", `location-analytics-${stamp}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(downloadUrl);
+      triggerCsvDownload(blob, fileName);
     } catch (downloadError) {
+      try {
+        await (async () => {
+          const fallbackRes = await fetch(getApiUrl("/api/visitor-analytics?exportAll=1"), {
+            headers: {
+              "Content-Type": "application/json",
+              ...getAdminAuthHeaders(),
+            },
+          });
+          const fallbackData = await fallbackRes.json().catch(() => ({}));
+          if (!fallbackRes.ok) {
+            throw new Error(fallbackData?.error || "Failed to download location analytics CSV");
+          }
+
+          const exportEvents = Array.isArray(fallbackData?.events)
+            ? fallbackData.events.filter((event) => !shouldExcludeEvent(event))
+            : [];
+          if (!exportEvents.length) {
+            throw new Error("No analytics records found");
+          }
+
+          const csvContent = buildLocationAnalyticsCsv(exportEvents);
+          const csvBlob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+          triggerCsvDownload(csvBlob, `location-analytics-${new Date().toISOString().slice(0, 10)}.csv`);
+          setError("");
+        })();
+        return;
+      } catch (fallbackError) {
+        console.error("Location analytics CSV fallback error:", fallbackError);
+      }
+
       console.error("Location analytics CSV download error:", downloadError);
       setError(downloadError.message || "Failed to download location analytics CSV");
     } finally {
-      setLoading(false);
+      setExportingCsv(false);
     }
   };
 
@@ -706,10 +763,10 @@ const LocationAnalytics = () => {
             <button
               type="button"
               onClick={downloadFilteredCsv}
-              disabled={loading || visibleEvents.length === 0}
+              disabled={loading || exportingCsv}
               className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
             >
-              Download CSV
+              {exportingCsv ? "Downloading CSV..." : "Download CSV"}
             </button>
             <button
               type="button"

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
 import { markCurrentPageAsLastVisited, trackVisitorEvent } from "../../utils/visitorAnalytics";
 
 const AdminLogin = () => {
-  const { login } = useAdminAuth();
+  const { admin, authReady, login } = useAdminAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
@@ -37,6 +37,10 @@ const AdminLogin = () => {
     }
     setLoading(false);
   };
+
+  if (authReady && admin) {
+    return <Navigate to="/admin" replace />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#0D0D0D" }}>

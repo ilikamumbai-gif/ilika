@@ -1,11 +1,109 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { getApiUrl, handleApiError, API_URL } from "../../utils/api";
 
 const AdminAuthContext = createContext(null);
+const ADMIN_SESSION_KEY = "ilika.admin.session";
+
+const readStoredAdmin = () => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(ADMIN_SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeStoredAdmin = (admin) => {
+  if (typeof window === "undefined") return;
+
+  try {
+    if (admin) {
+      window.sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(admin));
+    } else {
+      window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    }
+  } catch {
+    // Ignore storage failures and keep in-memory auth working.
+  }
+};
 
 export const AdminAuthProvider = ({ children }) => {
-  const [admin, setAdmin] = useState(null);
+  const [admin, setAdmin] = useState(() => readStoredAdmin());
+  const [authReady, setAuthReady] = useState(() => !readStoredAdmin());
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const validateStoredAdmin = async () => {
+      const storedAdmin = readStoredAdmin();
+      if (!storedAdmin?.id) {
+        writeStoredAdmin(null);
+        if (isMounted) {
+          setAdmin(null);
+          setAuthReady(true);
+        }
+        return;
+      }
+
+      if (!API_URL) {
+        writeStoredAdmin(null);
+        if (isMounted) {
+          setAdmin(null);
+          setAuthReady(true);
+        }
+        return;
+      }
+
+      try {
+        const res = await fetch(getApiUrl("/api/admins"), {
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-id": storedAdmin.id,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Stored admin session is no longer valid");
+        }
+
+        const admins = await res.json().catch(() => []);
+        const latest = Array.isArray(admins)
+          ? admins.find((item) => item.id === storedAdmin.id)
+          : null;
+
+        if (!latest) {
+          throw new Error("Stored admin session is no longer valid");
+        }
+
+        const nextAdmin = {
+          ...storedAdmin,
+          role: latest.role || storedAdmin.role,
+          permissions: Array.isArray(latest.permissions) ? latest.permissions : [],
+        };
+
+        writeStoredAdmin(nextAdmin);
+        if (isMounted) {
+          setAdmin(nextAdmin);
+          setAuthReady(true);
+        }
+      } catch {
+        writeStoredAdmin(null);
+        if (isMounted) {
+          setAdmin(null);
+          setAuthReady(true);
+        }
+      }
+    };
+
+    validateStoredAdmin();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const login = async (username, password) => {
     try {
@@ -26,6 +124,8 @@ export const AdminAuthProvider = ({ children }) => {
       if (!res.ok) return false;
 
       setAdmin(data);
+      writeStoredAdmin(data);
+      setAuthReady(true);
 
       try {
         await fetch(getApiUrl("/api/admin-log"), {
@@ -72,6 +172,8 @@ export const AdminAuthProvider = ({ children }) => {
     }
 
     setAdmin(null);
+    writeStoredAdmin(null);
+    setAuthReady(true);
   };
 
   const refreshAdmin = async () => {
@@ -93,11 +195,13 @@ export const AdminAuthProvider = ({ children }) => {
       setAdmin((currentAdmin) => {
         if (!currentAdmin) return currentAdmin;
 
-        return {
+        const nextAdmin = {
           ...currentAdmin,
           role: latest.role || currentAdmin.role,
           permissions: Array.isArray(latest.permissions) ? latest.permissions : [],
         };
+        writeStoredAdmin(nextAdmin);
+        return nextAdmin;
       });
     } catch (err) {
       handleApiError("AdminAuth", err);
@@ -113,7 +217,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   return (
     <AdminAuthContext.Provider
-      value={{ admin, login, logout, refreshAdmin, getAdminAuthHeaders }}
+      value={{ admin, authReady, login, logout, refreshAdmin, getAdminAuthHeaders }}
     >
       {children}
     </AdminAuthContext.Provider>
