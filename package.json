@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run sitemap && vite build && npm run prerender:products",
+    "build": "npm run sitemap && vite build && npm run prerender:products && npm run prerender:routes",
     "prerender:products": "node scripts/prerender-product-pages.mjs",
+    "prerender:routes": "node scripts/prerender-static-routes.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
