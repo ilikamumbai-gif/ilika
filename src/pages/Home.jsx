@@ -33,15 +33,15 @@ const hairBannerDesktop = "/Homepage/homepagehairbanner.jpg";
 const hairBannerMobile = "/Homepage/homepagehairbannermobile.jpg";
 const BannerStyle = "/Images/Banner.webp";
 const endBannerDesktop = "/Homepage/homepagemaskcome1banner.jpg";
-const endBannerMobile = "/Homepage/homepagemaskcome1banner.jpg";
+const endBannerMobile = "/Homepage/homepagemaskcome1bannermobile.png";
 const end2BannerDesktop = "/Homepage/homepagemaskcombo2banner.png";
-const end2BannerMobile = "/Homepage/homepagemaskcombo2banner.png";
+const end2BannerMobile = "/Homepage/homepagemaskcombo2bannermobile.png";
 const end3BannerDesktop = "/Homepage/homepagemaskcombo3banner.png";
-const end3BannerMobile = "/Homepage/homepagemaskcombo3banner.png";
+const end3BannerMobile = "/Homepage/homepagemaskcombo3bannermobile.png";
 const maskBannerDesktop = "/Images/mask.webp";
 const maskBannerMobile = "/Images/mask.webp";
 const homePageCtmBannerDesktop = "/Homepage/homepagebannerctm.jpg";
-const homePageCtmBannerMobile = "/Homepage/homepagebannerctm.jpg";
+const homePageCtmBannerMobile = "/Homepage/homepagebannerctmmobile.png";
 
 
 const HAIR_CAROUSEL_ITEMS = [

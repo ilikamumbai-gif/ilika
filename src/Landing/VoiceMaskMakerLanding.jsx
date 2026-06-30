@@ -53,7 +53,7 @@ import {
 } from "lucide-react";
 
 const normalizeCouponCode = (value = "") =>
-  String(value || "").trim().toUpperCase();
+  String(value || "").trim();
 
 const sanitizeCouponData = (coupon) => {
   if (!coupon) return null;
@@ -356,7 +356,7 @@ const VoiceMaskMakerLanding = () => {
     [liveCoupon, targetProduct?.couponSnapshot, targetProduct?.coupon]
   );
 
-  const couponCode = assignedCoupon?.code || "ILIKADIY";
+  const couponCode = assignedCoupon?.code || "ilikaDIY";
   const couponForcedPrice = Number(assignedCoupon?.forcedPrice || 0) > 0 ? Number(assignedCoupon.forcedPrice) : null;
   const couponPercent = Number(assignedCoupon?.discountPercent || 0);
   const discountedPrice = hasLivePrice
@@ -420,6 +420,66 @@ const VoiceMaskMakerLanding = () => {
         }
         .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 900px; }
       `}</style>
+
+      <section className="relative bg-[#202020] pt-4 sm:pt-5 lg:pt-6">
+        <div className="w-full overflow-hidden bg-[#221B19]">
+          <picture>
+            <source media="(max-width: 639px)" srcSet="/Homepage/homepagemaksmakerofferbannermobile.jpeg" />
+            <OptimizedImage
+              src="/Homepage/homepagemaksmakerofferbanner.jpeg"
+              alt="Mask maker offer banner"
+              width={1920}
+              height={720}
+              sizes="100vw"
+              className="h-auto w-full object-contain"
+            />
+          </picture>
+        </div>
+        <div className="absolute inset-0 px-4 pt-4 sm:flex sm:items-center sm:justify-center sm:px-10 sm:pt-0 lg:px-20">
+          <div className="w-full max-w-[34%] text-left text-[#211816] sm:max-w-[38%] sm:translate-x-[-34%] lg:translate-x-[-40%]">
+            <p
+              className="hidden sm:block text-3xl font-bold sm:text-[4rem] lg:text-[4.8rem] sm:font-semibold leading-[0.95] tracking-[-0.03em]"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              Your Extra 15%
+              <br />
+              Is Here
+            </p>
+            <div className="hidden sm:block mt-5 mb-5 h-px w-24 bg-[#a88474] sm:mt-6 sm:mb-6 sm:w-32 lg:w-48" />
+            <p className="hidden sm:block max-w-[28rem] text-[11px] sm:text-base lg:text-[1.25rem] font-light uppercase tracking-[0.22em] leading-[1.7] text-[#6b4639]">
+              On Ilika&apos;s Voice Face Mask Maker — use code ilikaDIY
+            </p>
+            <h2
+              className="hidden sm:block mt-4 max-w-[28rem] text-sm sm:text-lg lg:text-[1.6rem] leading-[1.55] font-normal text-[#3f2b25]"
+              style={{ fontFamily: "'Lato', sans-serif" }}
+            >
+              Your glow, now even more yours
+            </h2>
+          </div>
+          <div className="absolute left-4 top-10 max-w-[48%] text-left text-[#211816] sm:hidden">
+            <p
+              className="text-[1.28rem] font-semibold leading-[0.94] tracking-[-0.03em] text-[#211816]"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              Your Extra 15%
+              <br />
+              Is Here
+            </p>
+            <div className="mt-3 h-px w-20 bg-[#a88474]" />
+            <p className="mt-3 text-[9px] font-semibold uppercase leading-[1.45] tracking-[0.18em] text-[#6b4639]">
+              <span className="block">On Ilika&apos;s Voice</span>
+              <span className="block">Face Mask Maker</span>
+              <span className="mt-1 block">Use code ilikaDIY</span>
+            </p>
+            <p
+              className="mt-3 text-[0.88rem] leading-[1.18] font-semibold text-[#211816]"
+              style={{ fontFamily: "'Lato', sans-serif" }}
+            >
+              Your glow, now even more yours
+            </p>
+          </div>
+        </div>
+      </section>
 
       <section className="bg-[linear-gradient(180deg,_#202020_0%,_#2A2A2A_100%)] px-4 py-4 sm:px-[6%] sm:py-5 lg:px-[6%] lg:py-6">
         <div className="mx-auto grid min-h-0 w-full max-w-[1240px] grid-cols-1 gap-6 lg:min-h-[calc(100dvh-150px)] lg:grid-cols-[1.45fr_0.95fr] lg:items-center lg:gap-10">

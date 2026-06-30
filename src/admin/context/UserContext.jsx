@@ -8,6 +8,18 @@ export const UserProvider = ({ children }) => {
 
   const [users, setUsers] = useState([]);
 
+  const getUserCreatedAtMs = (user) => {
+    const createdAt = user?.createdAt;
+
+    if (!createdAt) return 0;
+    if (typeof createdAt === "number") return createdAt;
+    if (typeof createdAt?.toDate === "function") return createdAt.toDate().getTime();
+    if (typeof createdAt?._seconds === "number") return createdAt._seconds * 1000;
+
+    const parsed = new Date(createdAt).getTime();
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
   /* ================= FETCH USERS ================= */
 
   const fetchUsers = async () => {
@@ -30,7 +42,7 @@ export const UserProvider = ({ children }) => {
         name: user.name || "No Name",
         email: user.email || "",
         phone: user.phone || user.phoneNumber || "",
-      }));
+      })).sort((a, b) => getUserCreatedAtMs(b) - getUserCreatedAtMs(a));
 
       setUsers(formattedUsers);
 

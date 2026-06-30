@@ -9,15 +9,28 @@ const CartProductList = () => {
   const navigate   = useNavigate();
   const [search, setSearch] = useState("");
 
+  const getEventCreatedAtMs = (event) => {
+    const createdAt = event?.createdAt;
+
+    if (!createdAt) return 0;
+    if (typeof createdAt === "number") return createdAt;
+    if (typeof createdAt?.toDate === "function") return createdAt.toDate().getTime();
+    if (typeof createdAt?._seconds === "number") return createdAt._seconds * 1000;
+
+    const parsed = new Date(createdAt).getTime();
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
   // Group events by productId, count how many times each was added
   const productMap = {};
   events.forEach(e => {
     if (!productMap[e.productId]) {
-      productMap[e.productId] = { ...e, count: 0 };
+      productMap[e.productId] = { ...e, count: 0, latestAt: getEventCreatedAtMs(e) };
     }
     productMap[e.productId].count++;
+    productMap[e.productId].latestAt = Math.max(productMap[e.productId].latestAt, getEventCreatedAtMs(e));
   });
-  const products = Object.values(productMap).sort((a, b) => b.count - a.count);
+  const products = Object.values(productMap).sort((a, b) => b.latestAt - a.latestAt || b.count - a.count);
 
   const filtered = products.filter(p =>
     !search || p.name?.toLowerCase().includes(search.toLowerCase())
@@ -101,7 +114,7 @@ const CartProductList = () => {
 
             {/* Mobile cards */}
             <div className="md:hidden divide-y divide-gray-100">
-              {filtered.map((p, i) => (
+              {filtered.map((p) => (
                 <div key={p.productId} className="p-4 flex items-center gap-3">
                   {p.image ? (
                     <img loading="lazy" src={p.image} alt={p.name} className="w-12 h-12 rounded-xl object-cover border shrink-0" />

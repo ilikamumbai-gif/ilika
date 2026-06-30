@@ -174,7 +174,6 @@ const UserList = () => {
           {filtered.map(user => {
             const orderCount = user.connectionSummary.orders.length;
             const spent = user.connectionSummary.totalSpent;
-            const active = orderCount > 0 || user.connectionSummary.cartEvents.length > 0;
             return (
               <div key={user.id} className="p-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
