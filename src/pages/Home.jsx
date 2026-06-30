@@ -1039,10 +1039,6 @@ const Home = () => {
                   />
                 </Suspense>
               </LazyMountSection>
-
-
-
-
             </>
           ) : (
             <>
@@ -1106,8 +1102,7 @@ const Home = () => {
           )}
 
 
-
-
+          {/* INTRO VIDEO SECTION */}
           {/* <section className="bg-black px-4 py-12 sm:px-6 sm:py-16">
             <div className="mx-auto max-w-7xl">
               <Heading
@@ -1139,7 +1134,6 @@ const Home = () => {
               </div>
             </div>
           </section> */}
-
 
 
           {/* HAIRCARE RANGE */}
@@ -1516,6 +1510,7 @@ const Home = () => {
               </Suspense>
             </section>
           </LazyMountSection>
+
           <LazyMountSection minHeight={420} placeholder={<LandingPagesSkeleton />}>
             <section className="bg-black px-4 py-8 sm:px-6 sm:py-10">
               <div className="mx-auto max-w-7xl">
@@ -1693,13 +1688,12 @@ const Home = () => {
             </section>
           </LazyMountSection>
 
-
-
-
           {/* FOOTER */}
           <Suspense fallback={<FooterSkeleton />}>
             <Footer />
           </Suspense>
+
+
         </main>
 
       </div>

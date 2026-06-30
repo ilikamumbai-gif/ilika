@@ -1,5 +1,4 @@
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCategories } from "../admin/context/CategoryContext";
 
@@ -21,13 +20,18 @@ const ShopAll = () => {
 
   /* ================= GROUP PRODUCTS ================= */
 
-  const groupedProducts = {};
+  const groupedProducts = useMemo(() => {
+    const activeProducts = products.filter((product) => product?.isActive !== false);
+    const grouped = {};
 
-  categories.forEach((cat) => {
-    groupedProducts[cat.id] = products.filter((p) =>
-      p.categoryIds?.includes(cat.id)
-    );
-  });
+    categories.forEach((cat) => {
+      grouped[cat.id] = activeProducts.filter((product) =>
+        product.categoryIds?.includes(cat.id)
+      );
+    });
+
+    return grouped;
+  }, [categories, products]);
 
   return (
 
