@@ -328,30 +328,30 @@ const MaskCombo = () => {
                           className="text-[1.9rem] font-bold leading-[0.95] tracking-[-0.03em] sm:text-[3rem] sm:font-semibold lg:text-[4rem]"
                           style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                         >
-                        Your Best
+                        Your Best Mask
                         <br />
-                        Mask Deal Yet!
+                        Deal in Just 449
                       </p>
                           <div className="hidden mt-4 h-px w-24 bg-black/60 sm:mt-5 sm:block sm:w-32 lg:w-40" />
-                          <p className="mt-4 hidden text-[10px] font-bold uppercase tracking-[0.18em] text-black sm:block sm:text-sm sm:font-light lg:text-[1rem]">
-                          Ilika 2 4-in-1 Collegen Mask Just in 449 
+                          <p className="mt-4 hidden text-[10px] font-bold uppercase tracking-[0.1 8em] text-black sm:block sm:text-sm sm:font-light lg:text-[1rem]">
+                          Ilika 4-in-1 Collagen Face Mask
                           </p>
                           <h2
                             className="mt-3 hidden text-sm font-bold leading-[1.5] text-black sm:block sm:text-base sm:font-normal lg:text-[1.45rem]"
                             style={{ fontFamily: "'Lato', sans-serif" }}
                           >
-                          Glow on, on us
+                          For Hydration, Firming, Brightening & Anti-Aging Care
                         </h2>
                       </div>
                       <div className="absolute bottom-5 left-4 sm:hidden">
                         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black">
-                          Ilika 2 4-in-1 Collegen Mask Just in 449
+                          Ilika 4-in-1 Collagen Face Mask
                         </p>
                         <h2
                           className="mt-3 text-sm font-bold leading-[1.5] text-black"
                           style={{ fontFamily: "'Lato', sans-serif" }}
                         >
-                          Glow on, on us
+                          Hydration, Firming, Brightening & Anti-Aging Care
                         </h2>
                       </div>
                     </div>
@@ -381,24 +381,24 @@ const MaskCombo = () => {
                       </p>
                         <div className="hidden mt-4 h-px w-24 bg-black/60 sm:mt-5 sm:block sm:w-32 lg:w-40" />
                         <p className="mt-4 hidden text-[10px] font-bold uppercase tracking-[0.18em] text-black sm:block sm:text-sm sm:font-light lg:text-[1rem]">
-                          Ilika&apos;s 24K Gold Collagen Masks, made for your skin&apos;s best
+                          Ilika 24K Gold Collagen Face Mask
                         </p>
                         <h2
                           className="mt-3 hidden max-w-[34rem] text-sm font-bold leading-[1.5] text-black sm:block sm:text-base sm:font-normal lg:text-[1.45rem]"
                           style={{ fontFamily: "'Lato', sans-serif" }}
                         >
-                          Your glow, our gold
+                          For Deep Hydration, Skin Firming, Anti-Aging &amp; Instant Glow
                         </h2>
                       </div>
                       <div className="absolute bottom-5 left-4 sm:hidden">
                         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black">
-                          Ilika&apos;s 24K Gold Collagen Masks, made for your skin&apos;s best
+                          Ilika 24K Gold Collagen Face Mask
                         </p>
                         <h2
                           className="mt-3 text-sm font-bold leading-[1.5] text-black"
                           style={{ fontFamily: "'Lato', sans-serif" }}
                         >
-                          Your glow, our gold
+                          For Deep Hydration, Skin Firming, Anti-Aging &amp; Instant Glow
                         </h2>
                       </div>
                     </div>
