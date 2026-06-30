@@ -403,6 +403,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         id: String(item?.id || `honest-review-${index + 1}`),
         url: String(item?.url || "").trim(),
         title: String(item?.title || "").trim(),
+        image: String(item?.image || "").trim(),
+        linkPath: String(item?.linkPath || "").trim(),
       }))
       : [],
     videos: (d.videos || []).map(v => ({ ...v })),
@@ -795,11 +797,13 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         }
         if (!url) continue;
 
-        honestReviewsData.push({
-          id: String(item?.id || `honest-review-${index + 1}`),
-          url,
-          title: String(item?.title || "").trim(),
-        });
+      honestReviewsData.push({
+        id: String(item?.id || `honest-review-${index + 1}`),
+        url,
+        title: String(item?.title || "").trim(),
+        image: String(item?.image || "").trim(),
+        linkPath: String(item?.linkPath || "").trim(),
+      });
       }
 
       /* change log */
@@ -1951,7 +1955,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         <div>
           <p className="font-semibold text-sm">Honest Reviews (Direct Video)</p>
           <p className="text-xs text-gray-500 mt-1">
-            Upload MP4/video files or paste direct hosted video links. Keep only the review title here.
+            Upload MP4/video files, paste direct hosted video links, and add a public-folder image path for the home carousel.
           </p>
         </div>
 
@@ -1981,6 +1985,15 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                   playsInline
                   controls
                   preload="metadata"
+                />
+              </div>
+            ) : null}
+            {item.image ? (
+              <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+                <img
+                  src={item.image}
+                  alt={item.title || "Honest review"}
+                  className="h-44 w-full object-cover"
                 />
               </div>
             ) : null}
@@ -2017,6 +2030,20 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               onChange={(e) => updateHonestReview(idx, { title: e.target.value })}
               className="w-full border p-2 rounded text-sm"
             />
+            <input
+              type="text"
+              placeholder="Image path from public folder (e.g. /Homepage/review-1.png)"
+              value={item.image || ""}
+              onChange={(e) => updateHonestReview(idx, { image: e.target.value })}
+              className="w-full border p-2 rounded text-sm"
+            />
+            <input
+              type="text"
+              placeholder="Link path for the review page (e.g. /review-page)"
+              value={item.linkPath || ""}
+              onChange={(e) => updateHonestReview(idx, { linkPath: e.target.value })}
+              className="w-full border p-2 rounded text-sm"
+            />
           </div>
         ))}
 
@@ -2027,7 +2054,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               ...prev,
               honestReviews: [
                 ...(prev.honestReviews || []),
-                { id: crypto.randomUUID(), url: "", title: "", _videoFile: null },
+                { id: crypto.randomUUID(), url: "", title: "", image: "", linkPath: "", _videoFile: null },
               ],
             }))
           }

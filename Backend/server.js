@@ -2364,6 +2364,8 @@ const normalizeHonestReviews = (items = []) => {
       title: String(item?.title || "").trim(),
       subtitle: String(item?.subtitle || "").trim(),
       description: String(item?.description || "").trim(),
+      image: String(item?.image || "").trim(),
+      linkPath: String(item?.linkPath || "").trim(),
     }))
     .filter((item) => Boolean(item.url));
 };

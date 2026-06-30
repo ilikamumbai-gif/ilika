@@ -2,49 +2,51 @@
   {
     "id": 1,
     "name": "Aarohi Mehta",
-    "image": "/Images/CTM.jpg.webp",
-    "text": "My skin looked dull after long office hours, but the hydra gel moisturizer and collagen serum changed that in two weeks. My face feels fresh, soft, and hydrated all day."
+    "image": "/HonestReview/review1.jpg",
+    "productLink": "/product/hydra-gel-moisturizer",
+    "text": "My skin looked dull after long office hours, but the Hydra Gel Moisturizer changed that in just two weeks. My face feels fresh, soft, and deeply hydrated all day."
   },
-  {
-    "id": 2,
-    "name": "Riya Sharma",
-    "image": "/src/assets/Images/customer2.webp",
-    "text": "The anti-aging facial oil and under-eye serum are now part of my night routine. Fine lines look softer and my skin tone feels more even every morning."
-  },
+
   {
     "id": 3,
     "name": "Sneha Patel",
-    "image": "/src/assets/Images/customer3.webp",
+    "image": "/HonestReview/review2.jpg",
+    "productLink": "/blackseed-hair-oil",
     "text": "I struggled with frizz and hair fall for months. After using the black seed hair oil and keratin conditioner, my hair feels stronger, smoother, and easier to manage."
   },
   {
     "id": 4,
     "name": "Kavya Iyer",
-    "image": "/src/assets/Images/customer4.webp",
+    "image": "/HonestReview/review3.jfif",
+    "productLink": "/herbal-hair-oil",
     "text": "The herbal hair oil helped calm my itchy scalp and reduced visible flakes. My hair looks healthier and has a natural shine again."
   },
   {
     "id": 5,
     "name": "Ananya Desai",
-    "image": "/src/assets/Images/customer5.webp",
+    "image": "/HonestReview/review5.jfif",
+    "productLink": "/leafless-hair-dryer",
     "text": "The leafless hair dryer is lightweight but really powerful. It dries my hair faster with less frizz, and styling before work is now so much easier."
   },
   {
     "id": 6,
     "name": "Pooja Verma",
-    "image": "/src/assets/Images/customer6.webp",
+    "image": "/HonestReview/review4.jfif",
+    "productLink": "/hot-cold-blackhead-remover",
     "text": "I use the hot and cold facial pore device once or twice a week. My skin texture looks cleaner, and blackheads around my nose are visibly reduced."
   },
   {
     "id": 7,
     "name": "Neha Kapoor",
-    "image": "/src/assets/Images/customer7.webp",
+    "image": "/HonestReview/review6.jfif",
+    "productLink": "/voice-mask-maker",
     "text": "The face mask maker machine feels like a mini salon at home. I can prepare fresh masks quickly, and my skin feels plump and glowing after each use."
   },
   {
     "id": 8,
     "name": "Ishita Jain",
-    "image": "/src/assets/Images/customer8.webp",
-    "text": "I bought both skincare and grooming tools in one order, and every product delivered great results. Quality, packaging, and performance were all worth it."
+    "image": "/HonestReview/review7.jpeg",
+    "productLink": "/ctm",
+    "text": "I bought the CTM set with Cleanser, Toner, and Moisturizer, and every product worked beautifully together. My skin feels fresh, balanced, and deeply hydrated, results were truly worth it."
   }
 ]

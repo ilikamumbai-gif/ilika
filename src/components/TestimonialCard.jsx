@@ -1,10 +1,9 @@
 import React from "react";
 import { Quote, User } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const TestimonialCard = ({ testimonial }) => {
-  return (
-    <div
-      className="
+  const cardClassName = `
         w-[92%] sm:w-[48%] md:w-[38%] lg:w-[31%] xl:w-[30%] flex-shrink-0
         rounded-[22px]
         border border-[#f0e1e1]
@@ -14,8 +13,24 @@ const TestimonialCard = ({ testimonial }) => {
         transition-all duration-300
         hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(69,39,34,0.08)]
         shadow-[0_10px_24px_rgba(69,39,34,0.04)]
-      "
-    >
+      `;
+
+  const CardShell = testimonial.productLink ? Link : "div";
+  const shellProps = testimonial.productLink ? { to: testimonial.productLink } : {};
+
+  return (
+    <CardShell className={cardClassName} {...shellProps}>
+      {testimonial.image ? (
+        <div className="overflow-hidden rounded-[18px] border border-[#f4e5e6] bg-[#fff8f8] aspect-square">
+          <img
+            src={testimonial.image}
+            alt={testimonial.name || "Customer review"}
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      ) : null}
+
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fff5f6] sm:h-12 sm:w-12">
@@ -37,7 +52,7 @@ const TestimonialCard = ({ testimonial }) => {
       <p className="text-[13px] leading-6 text-[#5f5552] sm:text-[15px] sm:leading-7">
         {testimonial.text}
       </p>
-    </div>
+    </CardShell>
   );
 };
 

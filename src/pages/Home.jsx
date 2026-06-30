@@ -38,8 +38,8 @@ const end2BannerDesktop = "/Homepage/homepagemaskcombo2banner.png";
 const end2BannerMobile = "/Homepage/homepagemaskcombo2bannermobile.png";
 const end3BannerDesktop = "/Homepage/homepagemaskcombo3banner.png";
 const end3BannerMobile = "/Homepage/homepagemaskcombo3bannermobile.png";
-const maskBannerDesktop = "/Images/mask.webp";
-const maskBannerMobile = "/Images/mask.webp";
+const maskBannerDesktop = "/Homepage/homepagemaksmakerofferbanner.jpg";
+const maskBannerMobile = "/Homepage/homepagemaksmakerofferbannermobile.png";
 const homePageCtmBannerDesktop = "/Homepage/homepagebannerctm.jpg";
 const homePageCtmBannerMobile = "/Homepage/homepagebannerctmmobile.png";
 
@@ -139,6 +139,20 @@ const getDriveThumbnailCandidates = (fileId = "") => {
     `https://drive.google.com/thumbnail?id=${id}&sz=w1000`,
     `https://drive.google.com/uc?export=view&id=${id}`,
   ];
+};
+
+const normalizePublicAssetPath = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("data:")) return raw;
+  return raw.startsWith("/") ? raw : `/${raw}`;
+};
+
+const getHonestReviewLinkHref = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("mailto:") || raw.startsWith("tel:")) return raw;
+  return raw.startsWith("/") ? raw : `/${raw}`;
 };
 
 const getHonestReviewMedia = (url = "", { preview = true } = {}) => {
@@ -262,6 +276,8 @@ const HomeHonestReviewLightbox = ({ item, onClose }) => {
 
 const HomeHonestReviewCard = ({ item, onOpen }) => {
   const media = getHonestReviewMedia(item.url, { preview: true });
+  const reviewImageSrc = normalizePublicAssetPath(item?.image);
+  const reviewLinkHref = getHonestReviewLinkHref(item?.linkPath);
   const driveFileId = item?.url?.includes("drive.google.com") ? getDriveFileId(item.url) : "";
   const thumbnailCandidates = useMemo(() => {
     if (media.kind !== "thumbnail") return media.src ? [media.src] : [];
@@ -278,16 +294,36 @@ const HomeHonestReviewCard = ({ item, onOpen }) => {
       data-home-honest-review-card="true"
       role="button"
       tabIndex={0}
-      onClick={() => onOpen?.(item)}
+      onClick={() => {
+        if (reviewLinkHref) {
+          window.location.href = reviewLinkHref;
+          return;
+        }
+        onOpen?.(item);
+      }}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
+          if (reviewLinkHref) {
+            window.location.href = reviewLinkHref;
+            return;
+          }
           onOpen?.(item);
         }
       }}
-      className="group relative min-w-[220px] max-w-[220px] shrink-0 snap-start overflow-hidden rounded-[28px] bg-white text-left shadow-[0_12px_30px_rgba(69,39,34,0.12)] sm:min-w-[260px] sm:max-w-[260px]"
+      className={`group relative min-w-[220px] max-w-[220px] shrink-0 snap-start overflow-hidden rounded-[28px] bg-white text-left shadow-[0_12px_30px_rgba(69,39,34,0.12)] sm:min-w-[260px] sm:max-w-[260px] ${reviewLinkHref ? "cursor-pointer" : ""}`}
     >
-      {media.kind === "thumbnail" ? (
+      {reviewImageSrc ? (
+        <div className="relative h-[420px] w-full overflow-hidden bg-[#e8d8d1] sm:h-[470px]">
+          <img
+            src={reviewImageSrc}
+            alt={item.title || "Honest review"}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/12 to-transparent" />
+        </div>
+      ) : media.kind === "thumbnail" ? (
         thumbnailSrc ? (
           <div className="relative h-[420px] w-full overflow-hidden bg-[#e8d8d1] sm:h-[470px]">
             <img
@@ -354,6 +390,11 @@ const HomeHonestReviewCard = ({ item, onOpen }) => {
         <p className="mt-2 line-clamp-2 text-sm font-medium leading-5 text-white">
           {item.title || "Honest Review"}
         </p>
+        {reviewLinkHref ? (
+          <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
+            Open review page
+          </p>
+        ) : null}
       </div>
 
       <span className="pointer-events-none absolute right-4 top-4 z-10 text-white/90">↗</span>
@@ -776,6 +817,7 @@ const Home = () => {
             id: `${product?.id || product?.name || "product"}-honest-review-${index + 1}`,
             url,
             title: String(item?.title || "").trim() || "Honest Review",
+            image: String(item?.image || "").trim(),
             productName: String(product?.name || "").trim() || "Ilika Product",
             productLink: `/product/${getProductSlug(product)}`,
           });
