@@ -1106,7 +1106,7 @@ const Home = () => {
           )}
 
 
-          
+
 
           {/* <section className="bg-black px-4 py-12 sm:px-6 sm:py-16">
             <div className="mx-auto max-w-7xl">
@@ -1266,6 +1266,9 @@ const Home = () => {
               </div>
             </Suspense>
           </LazyMountSection>
+
+
+          {/* CTM */}
           <LazyMountSection minHeight={340} placeholder={<RoutineSkeleton />}>
             <Suspense fallback={<RoutineSkeleton />}>
               <MyCtmRoutine />
