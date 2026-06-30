@@ -81,7 +81,7 @@ const trustItems = [
 ];
 
 const GlowTherapyCombo = () => {
-  const { products } = useProducts();
+  const { products, loading } = useProducts();
   const { addToCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
@@ -108,7 +108,7 @@ const GlowTherapyCombo = () => {
     setIsAdding(true);
 
     const comboItem = {
-      id: `glow-combo-${Date.now()}`,
+      id: `glow-combo-${crypto.randomUUID()}`,
       baseProductId: "glow-therapy-combo",
       name: "Glow Therapy Combo",
       price: COMBO_PRICE,
@@ -143,7 +143,29 @@ const GlowTherapyCombo = () => {
     ],
   });
 
-  if (!comboProducts.length) return null;
+  if (loading) {
+    return (
+      <>
+        <MiniDivider />
+        <Header />
+        <div className="mx-auto max-w-7xl px-4 py-16 text-center text-gray-500">
+          Loading combo...
+        </div>
+      </>
+    );
+  }
+
+  if (!comboProducts.length) {
+    return (
+      <>
+        <MiniDivider />
+        <Header />
+        <div className="mx-auto max-w-7xl px-4 py-16 text-center text-gray-500">
+          Combo products are unavailable right now.
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
