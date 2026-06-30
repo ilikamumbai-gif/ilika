@@ -124,7 +124,7 @@ const SEO_MATCHER_ROUTES = [
   { path: "/order-success/:id" },
   { path: "/offers" },
   { path: "/combo" },
-  { path: "/glow-therapy-combo" },
+  { path: "/glow-therapy-comb" },
   { path: "/hydration-glow-combo" },
   { path: "/mask-combo" },
   { path: "/combo/:id" },
@@ -234,7 +234,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/hot-cold-blackhead-remover") return { title: "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening", description: "Explore Ilika Blackhead Remover - Hot & Cold." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
   if (pathname === "/offers") return { title: "Combo Deals", description: "Explore combo packs and bundle offers from Ilika." };
-  if (pathname === "/glow-therapy-combo") return { title: "Glow Therapy Combo", description: "Shop the Ilika Glow Therapy Combo on its dedicated offer page." };
+  if (pathname === "/glow-therapy-comb") return { title: "Glow Therapy Combo", description: "Shop the Ilika Glow Therapy Combo on its dedicated offer page." };
   if (pathname === "/hydration-glow-combo") return { title: "Hydration + Glow Combo", description: "Shop the Ilika Hydration + Glow Combo on its dedicated offer page." };
   if (pathname === "/mask-combo") return { title: "Mask Combo Offers", description: "Choose from 3 Ilika face mask combo offers at Rs 499." };
   if (pathname.startsWith("/combo/")) return { title: "Combo Details", description: "View combo pack details and savings at Ilika." };
@@ -430,7 +430,8 @@ const NavRoutes = () => {
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />
         <Route path="/offers" element={renderLazy(Combos)} />
         <Route path="/combo" element={<Navigate to="/offers" replace />} />
-        <Route path="/glow-therapy-combo" element={renderLazy(GlowTherapyCombo)} />
+        <Route path="/glow-therapy-comb" element={<Navigate to="/glow-therapy-comb" replace />} />
+        <Route path="/glow-therapy-comb" element={renderLazy(GlowTherapyCombo)} />
         <Route path="/hydration-glow-combo" element={renderLazy(HydrationGlowCombo)} />
         <Route path="/mask-combo" element={renderLazy(MaskCombo)} />
         <Route path="/combo/:id" element={renderLazy(ComboDetail)} />

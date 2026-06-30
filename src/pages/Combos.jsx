@@ -138,7 +138,7 @@ const Combos = () => {
       title: "Glow Therapy Combo",
       highlight: "Free Serum",
       description: "Get the Nonvoice Mask Maker with Hyaluronic Serum at combo pricing.",
-      link: "/glow-therapy-combo",
+      link: "/glow-therapy-comb",
       image: "/Images/5.png",
       background: "linear-gradient(135deg, #ffd7df 0%, #ffe9ef 55%, #fff8fa 100%)",
       overlay:

@@ -19,7 +19,7 @@ const STATIC_ROUTES = [
   "/ctm",
   "/ctmkit",
   "/offers",
-  "/glow-therapy-combo",
+  "/glow-therapy-comb",
   "/hydration-glow-combo",
   "/mask-combo",
   "/blog",

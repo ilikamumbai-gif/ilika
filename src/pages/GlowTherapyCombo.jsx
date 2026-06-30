@@ -133,7 +133,7 @@ const GlowTherapyCombo = () => {
     title: "Glow Therapy Combo | Ilika",
     description:
       "Shop the Ilika Glow Therapy Combo with Nonvoice Mask Maker and free Hyaluronic Serum.",
-    path: "/glow-therapy-combo",
+    path: "/glow-therapy-comb",
     image: pageImage,
     keywords: [
       "glow therapy combo",
