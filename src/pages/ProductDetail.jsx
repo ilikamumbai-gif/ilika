@@ -2764,6 +2764,26 @@ const ProductDetail = () => {
     () => String(product?.couponId || product?.couponSnapshot?.id || product?.coupon?.id || "").trim(),
     [product?.couponId, product?.couponSnapshot?.id, product?.coupon?.id]
   );
+  const freeGiftProductId = useMemo(
+    () => String(product?.freeGiftProductId || product?.freeGift?.id || product?.freeGiftProduct?.id || "").trim(),
+    [product?.freeGiftProductId, product?.freeGift?.id, product?.freeGiftProduct?.id]
+  );
+  const freeGiftProduct = useMemo(() => {
+    if (!freeGiftProductId) return null;
+    const currentProductId = String(product?.id || product?._id || "").trim();
+    if (String(freeGiftProductId) === currentProductId) return null;
+    return (
+      products.find((item) =>
+        [
+          item?.id,
+          item?.docId,
+          item?._id,
+          item?.legacyId,
+          item?.legacyUnderscoreId,
+        ].some((value) => String(value || "").trim() === freeGiftProductId)
+      ) || null
+    );
+  }, [products, freeGiftProductId, product?.id, product?._id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2818,6 +2838,44 @@ const ProductDetail = () => {
     };
   }, [liveAssignedCoupon, product?.couponSnapshot, product?.coupon, product?.name]);
   const visibleAssignedCoupon = assignedCoupon?.isVisible === false ? null : assignedCoupon;
+  const freeGiftSlug = freeGiftProduct ? getProductSlug(freeGiftProduct) : "";
+  const freeGiftImage = freeGiftProduct?.images?.[0] || freeGiftProduct?.imageUrl || freeGiftProduct?.image || "";
+  const freeGiftCard = freeGiftProduct ? (
+    <div className="rounded-[18px] border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-[0_10px_24px_rgba(16,185,129,0.06)]">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Free Gift</p>
+        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
+          Included
+        </span>
+      </div>
+      <Link
+        to={freeGiftSlug ? `/product/${freeGiftSlug}` : "#"}
+        className="flex items-center gap-3"
+        onClick={(event) => {
+          if (!freeGiftSlug) event.preventDefault();
+        }}
+      >
+        {freeGiftImage ? (
+          <img
+            src={freeGiftImage}
+            alt={freeGiftProduct.name}
+            className="h-16 w-16 rounded-xl border border-emerald-100 object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-emerald-100 bg-white text-xs font-semibold text-emerald-600">
+            Gift
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-[#231815]">{freeGiftProduct.name}</p>
+          <p className="text-sm text-emerald-700">
+            Free with this product
+          </p>
+        </div>
+      </Link>
+    </div>
+  ) : null;
 
   const couponForcedPrice = appliedCoupon && Number(appliedCoupon?.forcedPrice || 0) > 0
     ? Number(appliedCoupon.forcedPrice)
@@ -2986,6 +3044,9 @@ const ProductDetail = () => {
   );
   const topPriceBadgeLabel = topPriceBadgePercent > 0 ? `FLAT ${topPriceBadgePercent}% OFF` : "";
   const savingAmount = Math.max(0, Number((effectiveMrp - price).toFixed(2)));
+  const savingPercent = effectiveMrp > price
+    ? Math.max(0, Math.round(((effectiveMrp - price) / effectiveMrp) * 100))
+    : 0;
   const addonCartSuffix = eligibleForCollagenAddon ? `__addon_${selectedCollagenAddon.count}` : "";
   const packCartSuffix = selectedPack ? `__pack_${selectedPack.id}` : "";
   const cartId = activeVariant
@@ -4267,7 +4328,7 @@ const ProductDetail = () => {
                                 ₹{effectiveMrp.toLocaleString("en-IN")}
                               </span>
                               <span className="text-[15px] font-bold leading-none sm:text-[17px]" style={{ color: "#0a8f45" }}>
-                                ↓ ₹{savingAmount.toLocaleString("en-IN")}
+                                ↓ {savingPercent}%
                               </span>
                             </div>
                           ) : (
@@ -4372,6 +4433,8 @@ const ProductDetail = () => {
                       )}
                     </div>
                   )}
+
+                  {freeGiftCard}
 
                   <div ref={atcButtonsRef} className="grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2">
                       <button
@@ -4572,6 +4635,8 @@ const ProductDetail = () => {
                 </div>
               )}
 
+              {freeGiftCard}
+
               {marketplaceLinks.length > 0 && (
                 <div className="pt-2">
                   <MarketplaceButtons links={marketplaceLinks} />
@@ -4617,7 +4682,7 @@ const ProductDetail = () => {
                             ₹{effectiveMrp.toLocaleString("en-IN")}
                           </span>
                           <span className="text-[15px] font-bold leading-none sm:text-[17px]" style={{ color: "#0a8f45" }}>
-                            ↓ ₹{savingAmount.toLocaleString("en-IN")}
+                            ↓ {savingPercent}%
                           </span>
                         </div>
                       ) : (

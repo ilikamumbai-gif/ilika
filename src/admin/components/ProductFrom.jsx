@@ -3,6 +3,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { app } from "../../firebase/firebaseConfig";
 import { useCategories } from "../context/CategoryContext";
 import { useCoupons } from "../context/CouponContext";
+import { useProducts } from "../context/ProductContext";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -320,6 +321,7 @@ const ImageUploadCell = ({ label, value, previewUrl, onFileChange, onUrlChange }
 const ProductForm = ({ onSubmit, initialData = {} }) => {
   const { categories } = useCategories();
   const { coupons = [] } = useCoupons();
+  const { products = [] } = useProducts();
   const fileInputRef = useRef(null);
   const view360InputRef = useRef(null);
   const ingredientInputRef = useRef(null);
@@ -351,12 +353,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     detailPageDefaultBg: DEFAULT_DETAIL_BG,
     couponId: "",
     couponSnapshot: null,
+    freeGiftProductId: "",
   };
 
   const fromInitial = (d) => {
     const detailBg = buildDetailBgConfig(d.detailPageBgPalette, d.detailPageDefaultBg);
     const initialCouponId = d.couponId || d.couponSnapshot?.id || "";
     const initialCouponSnapshot = sanitizeCouponSnapshot(d.couponSnapshot) || sanitizeCouponSnapshot(d.coupon);
+    const initialFreeGiftProductId = d.freeGiftProductId || d.freeGift?.id || d.freeGiftProduct?.id || "";
     const marketplaceLinks = sanitizeMarketplaceLinks(d.marketplaceLinks || d);
     return {
     hsnCode: d.hsnCode || d.hsn || "",
@@ -418,6 +422,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     detailPageDefaultBg: detailBg.defaultColor,
     couponId: initialCouponId,
     couponSnapshot: initialCouponSnapshot,
+    freeGiftProductId: initialFreeGiftProductId,
   };
 };
 
@@ -853,6 +858,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         detailPageDefaultBg: normalizeHexColor(form.detailPageDefaultBg) || DEFAULT_DETAIL_BG,
         couponId: form.couponId || null,
         couponSnapshot: form.couponId ? sanitizeCouponSnapshot(form.couponSnapshot) : null,
+        freeGiftProductId: form.freeGiftProductId || null,
       });
 
       await logActivity(initialData?.id
@@ -1380,10 +1386,66 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           ))}
         </select>
 
-        {form.couponSnapshot && (
+      {form.couponSnapshot && (
           <p className="text-xs text-gray-600">
             Selected: <span className="font-semibold">{form.couponSnapshot.code}</span> ({Number(form.couponSnapshot?.forcedPrice || 0) > 0 ? `Forced ₹${Number(form.couponSnapshot.forcedPrice).toLocaleString("en-IN")}` : `${form.couponSnapshot.discountPercent}% off`}, {form.couponSnapshot.isVisible === false ? "hidden on product page" : "visible on product page"})
           </p>
+        )}
+      </div>
+
+      {/* FREE GIFT MAPPING */}
+      <div className="border rounded-xl p-5 bg-gray-50 space-y-3">
+        <div>
+          <p className="font-semibold text-sm">Free Gift Product</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Select an existing active product to show as the free gift on the product detail page.
+          </p>
+        </div>
+
+        <select
+          value={form.freeGiftProductId || ""}
+          onChange={(e) => setForm({ ...form, freeGiftProductId: e.target.value })}
+          className="w-full border border-gray-200 rounded-lg p-2.5 text-sm bg-white"
+        >
+          <option value="">No free gift</option>
+          {(products || [])
+            .filter((product) => product.isActive !== false && String(product.id) !== String(initialData?.id || initialData?.docId || initialData?._id || ""))
+            .map((product) => (
+              <option key={product.id} value={product.id}>
+                {product.name}
+              </option>
+            ))}
+        </select>
+
+        {form.freeGiftProductId && (
+          <div className="rounded-lg border border-green-200 bg-white p-3">
+            {(() => {
+              const selectedGift = (products || []).find(
+                (product) => String(product.id) === String(form.freeGiftProductId)
+              );
+
+              if (!selectedGift) {
+                return <p className="text-xs text-gray-500">Selected gift product is unavailable.</p>;
+              }
+
+              return (
+                <div className="flex items-center gap-3">
+                  {selectedGift.images?.[0] && (
+                    <img
+                      src={selectedGift.images[0]}
+                      alt={selectedGift.name}
+                      className="h-16 w-16 rounded-md border object-cover"
+                    />
+                  )}
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-green-700">Free Gift Preview</p>
+                    <p className="font-medium">{selectedGift.name}</p>
+                    <p className="text-sm text-gray-500">₹{Number(selectedGift.price || 0).toLocaleString("en-IN")}</p>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
         )}
       </div>
 
