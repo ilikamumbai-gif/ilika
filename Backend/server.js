@@ -423,7 +423,7 @@ const normalizeAnalyticsUrl = (value) => {
 };
 
 const stripIpv6Prefix = (ip = "") => String(ip || "").replace(/^::ffff:/i, "").trim();
-const VISITOR_ANALYTICS_EXCLUDED_IPS = new Set(["160.25.128.119", "160.25.128.43"]);
+const VISITOR_ANALYTICS_EXCLUDED_IPS = new Set(["160.25.128.119", "160.25.128.43", "160.25.128.68"]);
 
 const getForwardedHeaderCandidates = (value) =>
   String(value || "")
@@ -480,6 +480,29 @@ const isExcludedVisitorAnalyticsIp = (value = "") =>
 const isIndiaLocationValue = (value) => {
   const normalized = String(value || "").trim().toLowerCase();
   return normalized === "india" || normalized === "in";
+};
+
+const isAdminVisitorAnalyticsPageUrl = (pageUrl = "") => {
+  const normalized = normalizeAnalyticsUrl(pageUrl);
+  if (!normalized) return false;
+
+  try {
+    const parsed = new URL(normalized, "https://ilika.in");
+    return parsed.pathname === "/admin" || parsed.pathname.startsWith("/admin/");
+  } catch {
+    return /^\/admin(\/|$)/i.test(normalized);
+  }
+};
+
+const shouldExcludeVisitorAnalyticsEvent = (event = {}) => {
+  const clientIp = event?.locationDebug?.clientIp || event?.clientIp || "";
+  const requestIp = event?.locationDebug?.requestIp || "";
+  return (
+    isExcludedVisitorAnalyticsIp(clientIp) ||
+    isExcludedVisitorAnalyticsIp(requestIp) ||
+    isLocalVisitorAnalyticsPageUrl(event?.pageUrl) ||
+    isAdminVisitorAnalyticsPageUrl(event?.pageUrl)
+  );
 };
 
 const getGeoHeaderLocation = (req) => {
@@ -747,11 +770,7 @@ const getVisitorAnalyticsFilterOptions = async () => {
   const snapshot = await db.collection("visitorAnalytics").orderBy("createdAt", "desc").limit(5000).get();
   const events = snapshot.docs
     .map(mapVisitorAnalyticsDoc)
-    .filter((event) => {
-      const clientIp = event?.locationDebug?.clientIp || event?.clientIp || "";
-      const requestIp = event?.locationDebug?.requestIp || "";
-      return !isExcludedVisitorAnalyticsIp(clientIp) && !isExcludedVisitorAnalyticsIp(requestIp);
-    });
+    .filter((event) => !shouldExcludeVisitorAnalyticsEvent(event));
   const options = {
     countries: Array.from(new Set(events.map((event) => event.ipLocation?.country).filter(Boolean))).sort(),
     states: Array.from(new Set(events.map((event) => event.ipLocation?.state).filter(Boolean))).sort(),
@@ -782,15 +801,7 @@ const isLocalVisitorAnalyticsPageUrl = (pageUrl = "") => {
   }
 };
 
-const shouldExcludeVisitorAnalyticsExportEvent = (event = {}) => {
-  const clientIp = event?.locationDebug?.clientIp || event?.clientIp || "";
-  const requestIp = event?.locationDebug?.requestIp || "";
-  return (
-    isExcludedVisitorAnalyticsIp(clientIp) ||
-    isExcludedVisitorAnalyticsIp(requestIp) ||
-    isLocalVisitorAnalyticsPageUrl(event?.pageUrl)
-  );
-};
+const shouldExcludeVisitorAnalyticsExportEvent = (event = {}) => shouldExcludeVisitorAnalyticsEvent(event);
 
 const escapeVisitorAnalyticsCsvValue = (value) => {
   const normalized = value == null ? "" : String(value);
@@ -4649,6 +4660,19 @@ app.post("/api/visitor-analytics", async (req, res) => {
     };
     if (isDuplicateVisitorAnalyticsEvent(dedupeCandidate)) {
       return res.status(202).json({ success: false, ignored: true, reason: "duplicate" });
+    }
+
+    if (
+      shouldExcludeVisitorAnalyticsEvent({
+        pageUrl: normalizedPageUrl,
+        clientIp: normalizedClientIp,
+        locationDebug: {
+          clientIp: normalizedClientIp,
+          requestIp: clientIpAddress,
+        },
+      })
+    ) {
+      return res.status(202).json({ success: false, ignored: true, reason: "excluded" });
     }
 
     const headerLocation = getGeoHeaderLocation(req);

@@ -62,29 +62,6 @@ const formatDateTime = (value) => {
 const formatCurrency = (value) =>
   `₹${Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 
-const formatDateOnly = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
-
-const formatTimeOnly = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleTimeString("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-};
-
 const formatLocationLabel = (location = {}) => {
   const city = String(location?.city || "").trim();
   const postalCode = String(location?.postalCode || location?.pincode || "").trim();
@@ -104,7 +81,7 @@ const formatDebugLocation = (location = {}) => {
 };
 
 const DEFAULT_LOCATION_LIST_LIMIT = 5;
-const BLOCKED_IPS = new Set(["160.25.128.77", "160.25.128.43"]);
+const BLOCKED_IPS = new Set(["160.25.128.77", "160.25.128.43", "160.25.128.68"]);
 
 const normalizeText = (value) => String(value || "").trim();
 
@@ -172,11 +149,6 @@ const normalizeStateLabel = (value = "", country = "") => {
   return INDIA_STATE_LABEL_ALIASES[normalizeLabel(trimmed)] || trimmed;
 };
 
-const escapeCsvValue = (value) => {
-  const normalized = value == null ? "" : String(value);
-  return `"${normalized.replace(/"/g, '""')}"`;
-};
-
 const getEventIpCandidates = (event = {}) =>
   [
     event?.clientIp,
@@ -188,6 +160,18 @@ const getEventIpCandidates = (event = {}) =>
 
 const isBlockedIpEvent = (event = {}) =>
   getEventIpCandidates(event).some((ip) => BLOCKED_IPS.has(ip));
+
+const isAdminPageUrl = (pageUrl = "") => {
+  const normalized = normalizeText(pageUrl);
+  if (!normalized) return false;
+
+  try {
+    const parsed = new URL(normalized, "https://ilika.in");
+    return parsed.pathname === "/admin" || parsed.pathname.startsWith("/admin/");
+  } catch {
+    return /^\/admin(\/|$)/i.test(normalized);
+  }
+};
 
 const isLocalhostUrl = (pageUrl = "") => {
   const normalized = normalizeText(pageUrl);
@@ -203,7 +187,7 @@ const isLocalhostUrl = (pageUrl = "") => {
 };
 
 const shouldExcludeEvent = (event = {}) =>
-  isBlockedIpEvent(event) || isLocalhostUrl(event?.pageUrl);
+  isBlockedIpEvent(event) || isLocalhostUrl(event?.pageUrl) || isAdminPageUrl(event?.pageUrl);
 
 const getEventLocationParts = (event = {}) => {
   const source = event?.ipLocation || {};
@@ -401,57 +385,6 @@ const buildDerivedSummary = (events = []) => {
 };
 
 const buildRecentVisitorRows = (events = []) => events;
-
-const buildLocationAnalyticsCsv = (events = []) => {
-  const headers = [
-    "Date",
-    "Time",
-    "Event Type",
-    "Visitor ID",
-    "Session ID",
-    "Product Name",
-    "Product ID",
-    "Page URL",
-    "Country",
-    "State",
-    "City",
-    "Pincode",
-    "Quantity",
-    "Price",
-    "Device",
-    "Browser",
-    "Client IP",
-    "Request IP",
-    "Location Source",
-  ];
-
-  const rows = events.map((event) => {
-    const location = getEventLocationParts(event);
-    return [
-      formatDateOnly(event.createdAt),
-      formatTimeOnly(event.createdAt),
-      event?.eventType || "",
-      event?.visitorId || "",
-      event?.sessionId || "",
-      event?.productName || "",
-      event?.productId || "",
-      event?.pageUrl || "",
-      location.country || "",
-      location.state || "",
-      location.city || "",
-      location.postalCode || "",
-      event?.quantity ?? "",
-      event?.price ?? "",
-      event?.device || "",
-      event?.browser || "",
-      event?.locationDebug?.clientIp || event?.clientIp || "",
-      event?.locationDebug?.requestIp || "",
-      event?.locationDebug?.locationSource || "",
-    ];
-  });
-
-  return [headers, ...rows].map((row) => row.map(escapeCsvValue).join(",")).join("\n");
-};
 
 const triggerCsvDownload = (blob, fileName) => {
   const downloadUrl = URL.createObjectURL(blob);
