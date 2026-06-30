@@ -109,7 +109,7 @@ const GlowTherapyCombo = () => {
 
     const comboItem = {
       id: `glow-combo-${crypto.randomUUID()}`,
-      baseProductId: "glow-therapy-combo",
+      baseProductId: "glow-therapy-comb",
       name: "Glow Therapy Combo",
       price: COMBO_PRICE,
       quantity: 1,

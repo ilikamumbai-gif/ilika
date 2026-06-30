@@ -430,7 +430,7 @@ const NavRoutes = () => {
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />
         <Route path="/offers" element={renderLazy(Combos)} />
         <Route path="/combo" element={<Navigate to="/offers" replace />} />
-        <Route path="/glow-therapy-comb" element={<Navigate to="/glow-therapy-comb" replace />} />
+        <Route path="/glow-therapy-combo" element={<Navigate to="/glow-therapy-comb" replace />} />
         <Route path="/glow-therapy-comb" element={renderLazy(GlowTherapyCombo)} />
         <Route path="/hydration-glow-combo" element={renderLazy(HydrationGlowCombo)} />
         <Route path="/mask-combo" element={renderLazy(MaskCombo)} />
