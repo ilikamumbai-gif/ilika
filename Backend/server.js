@@ -65,6 +65,9 @@ const getIstDateStamp = (date = new Date()) => {
 };
 
 const normalizeAdminEmail = (value = "") => String(value || "").trim().toLowerCase();
+const normalizeAdminIdentifier = (value = "") => String(value || "").trim().toLowerCase();
+const isPrimarySuperAdminEmail = (value = "") =>
+  normalizeAdminEmail(value) === PRIMARY_SUPERADMIN_EMAIL;
 
 const createOrderWithGeneratedId = async (orderData = {}) => {
   const dateStamp = getIstDateStamp(new Date());
@@ -5458,7 +5461,11 @@ const getRequesterAdmin = async (req) => {
 
 const requireSuperAdmin = async (req, res) => {
   const requester = await getRequesterAdmin(req);
-  if (!requester || requester.role !== "superadmin") {
+  if (
+    !requester ||
+    requester.role !== "superadmin" ||
+    !isPrimarySuperAdminEmail(requester.email)
+  ) {
     res.status(403).json({ error: "Only superadmin can perform this action" });
     return null;
   }
@@ -5728,11 +5735,15 @@ app.post("/api/admin-google-login", async (req, res) => {
     }
 
     const adminData = adminDoc.data() || {};
-    const adminRole = adminData.role || "admin";
+    const adminRole =
+      adminData.role === "superadmin" && isPrimarySuperAdminEmail(email)
+        ? "superadmin"
+        : "admin";
 
     await adminDoc.ref.set(
       {
         email,
+        role: adminRole,
         googleAuthEnabled: true,
         updatedAt: new Date(),
       },
@@ -5814,26 +5825,13 @@ app.post("/api/admins", async (req, res) => {
     const { username, password, role, permissions = [] } = req.body;
     if (!username || !password) return res.status(400).json({ error: "Missing fields" });
 
-    const normalizedRole = role === "superadmin" ? "superadmin" : "admin";
-
-    if (normalizedRole === "superadmin") {
-      const superAdminSnapshot = await db
-        .collection("admins")
-        .where("role", "==", "superadmin")
-        .limit(1)
-        .get();
-      if (!superAdminSnapshot.empty) {
-        return res.status(400).json({ error: "Only one superadmin is allowed" });
-      }
-    }
+    const normalizedRole = "admin";
 
     const docRef = await db.collection("admins").add({
       username: String(username).trim(),
       password: String(password),
       role: normalizedRole,
-      permissions: normalizedRole === "superadmin"
-        ? []
-        : Array.from(new Set(Array.isArray(permissions) ? permissions : [])),
+      permissions: Array.from(new Set(Array.isArray(permissions) ? permissions : [])),
       createdAt: new Date(),
     });
 
@@ -5841,9 +5839,7 @@ app.post("/api/admins", async (req, res) => {
       id: docRef.id,
       username: String(username).trim(),
       role: normalizedRole,
-      permissions: normalizedRole === "superadmin"
-        ? []
-        : Array.from(new Set(Array.isArray(permissions) ? permissions : [])),
+      permissions: Array.from(new Set(Array.isArray(permissions) ? permissions : [])),
     });
   } catch {
     res.status(500).json({ error: "Failed to create admin" });
@@ -6814,6 +6810,50 @@ const linkPrimarySuperAdminEmail = async () => {
 };
 
 linkPrimarySuperAdminEmail();
+
+const enforcePrimarySuperAdminOwnership = async () => {
+  try {
+    const snapshot = await db
+      .collection("admins")
+      .where("role", "==", "superadmin")
+      .get();
+
+    if (snapshot.empty) return;
+
+    const updates = [];
+
+    snapshot.forEach((doc) => {
+      const data = doc.data() || {};
+      const email = normalizeAdminIdentifier(data.email);
+      const shouldDemote = !isPrimarySuperAdminEmail(email);
+
+      if (!shouldDemote) return;
+
+      const existingPermissions = Array.isArray(data.permissions)
+        ? data.permissions.filter(Boolean)
+        : [];
+
+      updates.push(
+        doc.ref.set(
+          {
+            role: "admin",
+            permissions: existingPermissions.length
+              ? existingPermissions
+              : ["dashboard", "analytics", "products", "orders"],
+            updatedAt: new Date(),
+          },
+          { merge: true }
+        )
+      );
+    });
+
+    await Promise.all(updates);
+  } catch (error) {
+    console.error("Primary superadmin ownership enforcement failed:", error);
+  }
+};
+
+enforcePrimarySuperAdminOwnership();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
