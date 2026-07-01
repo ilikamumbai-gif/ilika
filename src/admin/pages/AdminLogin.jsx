@@ -41,8 +41,8 @@ const AdminLogin = () => {
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError("");
-    const success = await loginWithGoogle();
-    if (success) {
+    const result = await loginWithGoogle();
+    if (result === true) {
       trackVisitorEvent({
         eventType: "login",
         pageUrl: typeof window !== "undefined" ? window.location.href : "/admin/login",
@@ -50,7 +50,7 @@ const AdminLogin = () => {
       markCurrentPageAsLastVisited();
       navigate("/admin");
     } else {
-      setError("This Google account does not have super admin access");
+      setError(result || "Google login failed");
     }
     setLoading(false);
   };

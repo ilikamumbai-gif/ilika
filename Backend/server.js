@@ -5696,9 +5696,14 @@ app.post("/api/admin-google-login", async (req, res) => {
       return res.status(401).json({ error: "Google account email is unavailable" });
     }
 
-    let snapshot = await db.collection("admins").where("email", "==", email).limit(1).get();
+    let adminDoc = null;
+    const snapshot = await db.collection("admins").where("email", "==", email).limit(1).get();
 
-    if (snapshot.empty && email === PRIMARY_SUPERADMIN_EMAIL) {
+    if (!snapshot.empty) {
+      adminDoc = snapshot.docs[0];
+    }
+
+    if (!adminDoc && email === PRIMARY_SUPERADMIN_EMAIL) {
       const superAdminSnapshot = await db
         .collection("admins")
         .where("role", "==", "superadmin")
@@ -5706,8 +5711,8 @@ app.post("/api/admin-google-login", async (req, res) => {
         .get();
 
       if (!superAdminSnapshot.empty) {
-        const superAdminRef = superAdminSnapshot.docs[0].ref;
-        await superAdminRef.set(
+        adminDoc = superAdminSnapshot.docs[0];
+        await adminDoc.ref.set(
           {
             email,
             googleAuthEnabled: true,
@@ -5715,15 +5720,13 @@ app.post("/api/admin-google-login", async (req, res) => {
           },
           { merge: true }
         );
-        snapshot = await db.collection("admins").where("email", "==", email).limit(1).get();
       }
     }
 
-    if (snapshot.empty) {
+    if (!adminDoc) {
       return res.status(403).json({ error: "This Google account does not have admin access" });
     }
 
-    const adminDoc = snapshot.docs[0];
     const adminData = adminDoc.data() || {};
     const adminRole = adminData.role || "admin";
 

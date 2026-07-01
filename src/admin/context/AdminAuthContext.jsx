@@ -184,7 +184,9 @@ export const AdminAuthProvider = ({ children }) => {
       });
 
       const data = await res.json().catch(() => null);
-      if (!res.ok || !data) return false;
+      if (!res.ok || !data) {
+        return data?.error || "Google login failed";
+      }
 
       setAdmin(data);
       writeStoredAdmin(data);
@@ -210,7 +212,7 @@ export const AdminAuthProvider = ({ children }) => {
       return true;
     } catch (err) {
       handleApiError("AdminAuth", err);
-      return false;
+      return err?.message || "Google login failed";
     }
   };
 
