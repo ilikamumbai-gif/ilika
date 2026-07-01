@@ -20,11 +20,6 @@ const CUSTOMER_SUPPORT_EMAIL =
   process.env.EMAIL_FROM ||
   process.env.EMAIL_USER ||
   "customersupport.ilika@gmail.com";
-const PRIMARY_SUPERADMIN_EMAIL = String(
-  process.env.PRIMARY_SUPERADMIN_EMAIL || "ilika.mumbai@gmail.com"
-)
-  .trim()
-  .toLowerCase();
 const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN || "";
 const META_AD_ACCOUNT_ID = String(process.env.META_AD_ACCOUNT_ID || "").replace(/^act_/, "");
 const GOOGLE_ADS_DEVELOPER_TOKEN = process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "";
@@ -65,9 +60,6 @@ const getIstDateStamp = (date = new Date()) => {
 };
 
 const normalizeAdminEmail = (value = "") => String(value || "").trim().toLowerCase();
-const normalizeAdminIdentifier = (value = "") => String(value || "").trim().toLowerCase();
-const isPrimarySuperAdminEmail = (value = "") =>
-  normalizeAdminEmail(value) === PRIMARY_SUPERADMIN_EMAIL;
 
 const createOrderWithGeneratedId = async (orderData = {}) => {
   const dateStamp = getIstDateStamp(new Date());
@@ -5461,11 +5453,7 @@ const getRequesterAdmin = async (req) => {
 
 const requireSuperAdmin = async (req, res) => {
   const requester = await getRequesterAdmin(req);
-  if (
-    !requester ||
-    requester.role !== "superadmin" ||
-    !isPrimarySuperAdminEmail(requester.email)
-  ) {
+  if (!requester || requester.role !== "superadmin") {
     res.status(403).json({ error: "Only superadmin can perform this action" });
     return null;
   }
@@ -5710,40 +5698,16 @@ app.post("/api/admin-google-login", async (req, res) => {
       adminDoc = snapshot.docs[0];
     }
 
-    if (!adminDoc && email === PRIMARY_SUPERADMIN_EMAIL) {
-      const superAdminSnapshot = await db
-        .collection("admins")
-        .where("role", "==", "superadmin")
-        .limit(1)
-        .get();
-
-      if (!superAdminSnapshot.empty) {
-        adminDoc = superAdminSnapshot.docs[0];
-        await adminDoc.ref.set(
-          {
-            email,
-            googleAuthEnabled: true,
-            updatedAt: new Date(),
-          },
-          { merge: true }
-        );
-      }
-    }
-
     if (!adminDoc) {
       return res.status(403).json({ error: "This Google account does not have admin access" });
     }
 
     const adminData = adminDoc.data() || {};
-    const adminRole =
-      adminData.role === "superadmin" && isPrimarySuperAdminEmail(email)
-        ? "superadmin"
-        : "admin";
+    const adminRole = adminData.role || "admin";
 
     await adminDoc.ref.set(
       {
         email,
-        role: adminRole,
         googleAuthEnabled: true,
         updatedAt: new Date(),
       },
@@ -5825,13 +5789,15 @@ app.post("/api/admins", async (req, res) => {
     const { username, password, role, permissions = [] } = req.body;
     if (!username || !password) return res.status(400).json({ error: "Missing fields" });
 
-    const normalizedRole = "admin";
+    const normalizedRole = role === "superadmin" ? "superadmin" : "admin";
 
     const docRef = await db.collection("admins").add({
       username: String(username).trim(),
       password: String(password),
       role: normalizedRole,
-      permissions: Array.from(new Set(Array.isArray(permissions) ? permissions : [])),
+      permissions: normalizedRole === "superadmin"
+        ? []
+        : Array.from(new Set(Array.isArray(permissions) ? permissions : [])),
       createdAt: new Date(),
     });
 
@@ -5839,7 +5805,9 @@ app.post("/api/admins", async (req, res) => {
       id: docRef.id,
       username: String(username).trim(),
       role: normalizedRole,
-      permissions: Array.from(new Set(Array.isArray(permissions) ? permissions : [])),
+      permissions: normalizedRole === "superadmin"
+        ? []
+        : Array.from(new Set(Array.isArray(permissions) ? permissions : [])),
     });
   } catch {
     res.status(500).json({ error: "Failed to create admin" });
@@ -6771,9 +6739,7 @@ const createDefaultAdmin = async () => {
       await db.collection("admins").add({
         username: "admin",
         password: "ilika@admin123",
-        email: PRIMARY_SUPERADMIN_EMAIL,
         role: "superadmin",
-        googleAuthEnabled: true,
         permissions: [],
         createdAt: new Date(),
       });
@@ -6786,74 +6752,6 @@ const createDefaultAdmin = async () => {
 
 createDefaultAdmin();
 
-const linkPrimarySuperAdminEmail = async () => {
-  try {
-    const snapshot = await db
-      .collection("admins")
-      .where("role", "==", "superadmin")
-      .limit(1)
-      .get();
-
-    if (snapshot.empty) return;
-
-    await snapshot.docs[0].ref.set(
-      {
-        email: PRIMARY_SUPERADMIN_EMAIL,
-        googleAuthEnabled: true,
-        updatedAt: new Date(),
-      },
-      { merge: true }
-    );
-  } catch (error) {
-    console.error("Primary superadmin email sync failed:", error);
-  }
-};
-
-linkPrimarySuperAdminEmail();
-
-const enforcePrimarySuperAdminOwnership = async () => {
-  try {
-    const snapshot = await db
-      .collection("admins")
-      .where("role", "==", "superadmin")
-      .get();
-
-    if (snapshot.empty) return;
-
-    const updates = [];
-
-    snapshot.forEach((doc) => {
-      const data = doc.data() || {};
-      const email = normalizeAdminIdentifier(data.email);
-      const shouldDemote = !isPrimarySuperAdminEmail(email);
-
-      if (!shouldDemote) return;
-
-      const existingPermissions = Array.isArray(data.permissions)
-        ? data.permissions.filter(Boolean)
-        : [];
-
-      updates.push(
-        doc.ref.set(
-          {
-            role: "admin",
-            permissions: existingPermissions.length
-              ? existingPermissions
-              : ["dashboard", "analytics", "products", "orders"],
-            updatedAt: new Date(),
-          },
-          { merge: true }
-        )
-      );
-    });
-
-    await Promise.all(updates);
-  } catch (error) {
-    console.error("Primary superadmin ownership enforcement failed:", error);
-  }
-};
-
-enforcePrimarySuperAdminOwnership();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

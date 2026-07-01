@@ -71,8 +71,11 @@ const AdminList = () => {
     const payload = {
       username: form.username.trim(),
       password: form.password,
-      role: "admin",
-      permissions: Array.from(new Set(["dashboard", ...form.permissions])),
+      role: form.role === "superadmin" ? "superadmin" : "admin",
+      permissions:
+        form.role === "superadmin"
+          ? []
+          : Array.from(new Set(["dashboard", ...form.permissions])),
     };
 
     const res = await fetch(`${API}/admins`, {
@@ -258,8 +261,26 @@ const AdminList = () => {
                 </button>
               </div>
             </div>
+            <div className="w-full min-w-[200px] md:w-[180px]">
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">Role</label>
+              <select
+                value={form.role}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    role: e.target.value === "superadmin" ? "superadmin" : "admin",
+                  }))
+                }
+                className="w-full h-10 px-3 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300 transition"
+                style={{ border: "1px solid #E0E0E0" }}
+              >
+                <option value="admin">Admin</option>
+                <option value="superadmin">Superadmin</option>
+              </select>
+            </div>
           </div>
 
+          {form.role !== "superadmin" && (
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-2">Give Access</label>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -286,6 +307,7 @@ const AdminList = () => {
               ))}
             </div>
           </div>
+          )}
 
           <div>
             <button
