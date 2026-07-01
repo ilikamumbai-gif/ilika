@@ -20,6 +20,11 @@ const CUSTOMER_SUPPORT_EMAIL =
   process.env.EMAIL_FROM ||
   process.env.EMAIL_USER ||
   "customersupport.ilika@gmail.com";
+const PRIMARY_SUPERADMIN_EMAIL = String(
+  process.env.PRIMARY_SUPERADMIN_EMAIL || "ilika.mumbai@gmail.com"
+)
+  .trim()
+  .toLowerCase();
 const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN || "";
 const META_AD_ACCOUNT_ID = String(process.env.META_AD_ACCOUNT_ID || "").replace(/^act_/, "");
 const GOOGLE_ADS_DEVELOPER_TOKEN = process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "";
@@ -58,6 +63,8 @@ const getIstDateStamp = (date = new Date()) => {
   const day = parts.find((part) => part.type === "day")?.value || "00";
   return `${year}${month}${day}`;
 };
+
+const normalizeAdminEmail = (value = "") => String(value || "").trim().toLowerCase();
 
 const createOrderWithGeneratedId = async (orderData = {}) => {
   const dateStamp = getIstDateStamp(new Date());
@@ -5623,12 +5630,18 @@ app.get("/api/admin-log", async (req, res) => {
 
 app.post("/api/admin-login", async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const snapshot = await db.collection("admins").where("username", "==", username).limit(1).get();
+    const normalizedUsername = String(req.body?.username || "").trim();
+    const normalizedPassword = String(req.body?.password || "").trim();
+    if (!normalizedUsername || !normalizedPassword) {
+      return res.status(400).json({ error: "Username and password are required" });
+    }
+    const snapshot = await db.collection("admins").where("username", "==", normalizedUsername).limit(1).get();
     if (snapshot.empty) return res.status(401).json({ error: "Invalid credentials" });
 
     const admin = snapshot.docs[0].data();
-    if (admin.password !== password) return res.status(401).json({ error: "Invalid credentials" });
+    if (String(admin.password || "") !== normalizedPassword) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
     const adminRole = admin.role || "admin";
 
     let alertEmailStatus = { status: "unknown" };
@@ -5667,6 +5680,100 @@ app.post("/api/admin-login", async (req, res) => {
     });
   } catch {
     res.status(500).json({ error: "Login failed" });
+  }
+});
+
+app.post("/api/admin-google-login", async (req, res) => {
+  try {
+    const idToken = String(req.body?.idToken || "").trim();
+    if (!idToken) {
+      return res.status(400).json({ error: "Google sign-in token is required" });
+    }
+
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    const email = normalizeAdminEmail(decoded.email);
+    if (!email) {
+      return res.status(401).json({ error: "Google account email is unavailable" });
+    }
+
+    let snapshot = await db.collection("admins").where("email", "==", email).limit(1).get();
+
+    if (snapshot.empty && email === PRIMARY_SUPERADMIN_EMAIL) {
+      const superAdminSnapshot = await db
+        .collection("admins")
+        .where("role", "==", "superadmin")
+        .limit(1)
+        .get();
+
+      if (!superAdminSnapshot.empty) {
+        const superAdminRef = superAdminSnapshot.docs[0].ref;
+        await superAdminRef.set(
+          {
+            email,
+            googleAuthEnabled: true,
+            updatedAt: new Date(),
+          },
+          { merge: true }
+        );
+        snapshot = await db.collection("admins").where("email", "==", email).limit(1).get();
+      }
+    }
+
+    if (snapshot.empty) {
+      return res.status(403).json({ error: "This Google account does not have admin access" });
+    }
+
+    const adminDoc = snapshot.docs[0];
+    const adminData = adminDoc.data() || {};
+    const adminRole = adminData.role || "admin";
+
+    await adminDoc.ref.set(
+      {
+        email,
+        googleAuthEnabled: true,
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    let alertEmailStatus = { status: "unknown" };
+    try {
+      alertEmailStatus = await sendAdminLoginAlert({
+        username: adminData.username || email,
+        role: adminRole,
+        req,
+      });
+    } catch (mailErr) {
+      alertEmailStatus = {
+        status: "failed",
+        reason: mailErr?.message || "unknown_error",
+      };
+      console.error("Admin Google login alert email failed:", mailErr?.message || mailErr);
+    }
+
+    try {
+      await db.collection("adminLogs").add({
+        action: `ADMIN_GOOGLE_LOGIN_ALERT_${String(alertEmailStatus.status || "unknown").toUpperCase()}`,
+        admin: adminData.username || email,
+        message: `Google login alert email ${alertEmailStatus.status || "unknown"} for ${adminData.username || email}`,
+        emailStatus: alertEmailStatus,
+        createdAt: new Date(),
+      });
+    } catch (logErr) {
+      console.error("Admin Google login alert log failed:", logErr?.message || logErr);
+    }
+
+    res.json({
+      id: adminDoc.id,
+      username: adminData.username || email,
+      email,
+      role: adminRole,
+      permissions: Array.isArray(adminData.permissions) ? adminData.permissions : [],
+      loginAlertEmail: alertEmailStatus,
+    });
+  } catch (error) {
+    console.error("Admin Google login failed:", error);
+    res.status(500).json({ error: "Google login failed" });
   }
 });
 
@@ -6656,12 +6763,18 @@ app.delete("/api/warranty-registrations/:id", async (req, res) => {
 /* ============================== DEFAULT ADMIN ============================== */
 const createDefaultAdmin = async () => {
   try {
-    const snapshot = await db.collection("admins").limit(1).get();
+    const snapshot = await db
+      .collection("admins")
+      .where("role", "==", "superadmin")
+      .limit(1)
+      .get();
     if (snapshot.empty) {
       await db.collection("admins").add({
         username: "admin",
         password: "ilika@admin123",
+        email: PRIMARY_SUPERADMIN_EMAIL,
         role: "superadmin",
+        googleAuthEnabled: true,
         permissions: [],
         createdAt: new Date(),
       });
@@ -6673,6 +6786,31 @@ const createDefaultAdmin = async () => {
 };
 
 createDefaultAdmin();
+
+const linkPrimarySuperAdminEmail = async () => {
+  try {
+    const snapshot = await db
+      .collection("admins")
+      .where("role", "==", "superadmin")
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) return;
+
+    await snapshot.docs[0].ref.set(
+      {
+        email: PRIMARY_SUPERADMIN_EMAIL,
+        googleAuthEnabled: true,
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error("Primary superadmin email sync failed:", error);
+  }
+};
+
+linkPrimarySuperAdminEmail();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -5,7 +5,7 @@ import { Eye, EyeOff, Lock, User } from "lucide-react";
 import { markCurrentPageAsLastVisited, trackVisitorEvent } from "../../utils/visitorAnalytics";
 
 const AdminLogin = () => {
-  const { admin, authReady, login } = useAdminAuth();
+  const { admin, authReady, login, loginWithGoogle } = useAdminAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
@@ -34,6 +34,23 @@ const AdminLogin = () => {
       navigate("/admin");
     } else {
       setError("Invalid username or password");
+    }
+    setLoading(false);
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+    const success = await loginWithGoogle();
+    if (success) {
+      trackVisitorEvent({
+        eventType: "login",
+        pageUrl: typeof window !== "undefined" ? window.location.href : "/admin/login",
+      });
+      markCurrentPageAsLastVisited();
+      navigate("/admin");
+    } else {
+      setError("This Google account does not have super admin access");
     }
     setLoading(false);
   };
@@ -118,6 +135,27 @@ const AdminLogin = () => {
               {loading ? "Signing in…" : "Sign In"}
             </button>
           </form>
+
+          <div className="flex items-center gap-3 my-4">
+            <div className="flex-1 h-px" style={{ background: "#2A2A2A" }} />
+            <span className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "#666" }}>or</span>
+            <div className="flex-1 h-px" style={{ background: "#2A2A2A" }} />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full h-11 px-4 text-sm font-semibold rounded-xl transition disabled:opacity-50 flex items-center justify-center gap-3"
+            style={{ background: "#111", border: "1px solid #333", color: "#fff" }}
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+              className="w-4 h-4"
+            />
+            Continue with Google
+          </button>
         </div>
 
         <p className="text-center mt-4 text-xs" style={{ color: "#444" }}>

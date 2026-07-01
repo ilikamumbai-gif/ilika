@@ -34,6 +34,19 @@ export const AdminAuthProvider = ({ children }) => {
   const [admin, setAdmin] = useState(() => readStoredAdmin());
   const [authReady, setAuthReady] = useState(() => !readStoredAdmin());
 
+  const loadGoogleAuthDeps = async () => {
+    const [{ auth }, authMod] = await Promise.all([
+      import("../../firebase/firebaseConfig"),
+      import("firebase/auth"),
+    ]);
+
+    return {
+      auth,
+      signInWithPopup: authMod.signInWithPopup,
+      GoogleAuthProvider: authMod.GoogleAuthProvider,
+    };
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -151,6 +164,56 @@ export const AdminAuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      if (!API_URL) {
+        handleApiError("AdminAuth", new Error("VITE_API_URL is missing"));
+        return false;
+      }
+
+      const { auth, signInWithPopup, GoogleAuthProvider } = await loadGoogleAuthDeps();
+      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      const idToken = await result.user.getIdToken();
+
+      const res = await fetch(getApiUrl("/api/admin-google-login"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ idToken }),
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) return false;
+
+      setAdmin(data);
+      writeStoredAdmin(data);
+      setAuthReady(true);
+
+      try {
+        await fetch(getApiUrl("/api/admin-log"), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "ADMIN_GOOGLE_LOGIN",
+            admin: data.username || data.email || "admin",
+            message: `${data.username || data.email || "Admin"} logged into admin panel with Google`,
+            createdAt: new Date(),
+          }),
+        });
+      } catch {
+        console.log("Google login log failed");
+      }
+
+      return true;
+    } catch (err) {
+      handleApiError("AdminAuth", err);
+      return false;
+    }
+  };
+
   const logout = async () => {
     const currentAdmin = admin;
 
@@ -217,7 +280,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   return (
     <AdminAuthContext.Provider
-      value={{ admin, authReady, login, logout, refreshAdmin, getAdminAuthHeaders }}
+      value={{ admin, authReady, login, loginWithGoogle, logout, refreshAdmin, getAdminAuthHeaders }}
     >
       {children}
     </AdminAuthContext.Provider>
