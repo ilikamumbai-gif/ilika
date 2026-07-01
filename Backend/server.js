@@ -20,6 +20,7 @@ const CUSTOMER_SUPPORT_EMAIL =
   process.env.EMAIL_FROM ||
   process.env.EMAIL_USER ||
   "customersupport.ilika@gmail.com";
+const REMOVED_SUPERADMIN_EMAILS = ["ilika.mumbai@gmail.com"];
 const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN || "";
 const META_AD_ACCOUNT_ID = String(process.env.META_AD_ACCOUNT_ID || "").replace(/^act_/, "");
 const GOOGLE_ADS_DEVELOPER_TOKEN = process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "";
@@ -6751,6 +6752,48 @@ const createDefaultAdmin = async () => {
 };
 
 createDefaultAdmin();
+
+const removeRevokedSuperAdmins = async () => {
+  try {
+    const snapshot = await db
+      .collection("admins")
+      .where("role", "==", "superadmin")
+      .get();
+
+    if (snapshot.empty) return;
+
+    const updates = [];
+
+    snapshot.forEach((doc) => {
+      const data = doc.data() || {};
+      const email = normalizeAdminEmail(data.email);
+      if (!REMOVED_SUPERADMIN_EMAILS.includes(email)) return;
+
+      const existingPermissions = Array.isArray(data.permissions)
+        ? data.permissions.filter(Boolean)
+        : [];
+
+      updates.push(
+        doc.ref.set(
+          {
+            role: "admin",
+            permissions: existingPermissions.length
+              ? existingPermissions
+              : ["dashboard", "analytics", "products", "orders"],
+            updatedAt: new Date(),
+          },
+          { merge: true }
+        )
+      );
+    });
+
+    await Promise.all(updates);
+  } catch (error) {
+    console.error("Revoked superadmin cleanup failed:", error);
+  }
+};
+
+removeRevokedSuperAdmins();
 
 
 const PORT = process.env.PORT || 5000;
