@@ -61,6 +61,7 @@ const getIstDateStamp = (date = new Date()) => {
 };
 
 const normalizeAdminEmail = (value = "") => String(value || "").trim().toLowerCase();
+const normalizeAdminUsername = (value = "") => String(value || "").trim().toLowerCase();
 
 const createOrderWithGeneratedId = async (orderData = {}) => {
   const dateStamp = getIstDateStamp(new Date());
@@ -5631,10 +5632,32 @@ app.post("/api/admin-login", async (req, res) => {
     if (!normalizedUsername || !normalizedPassword) {
       return res.status(400).json({ error: "Username and password are required" });
     }
-    const snapshot = await db.collection("admins").where("username", "==", normalizedUsername).limit(1).get();
-    if (snapshot.empty) return res.status(401).json({ error: "Invalid credentials" });
+    let adminDoc = null;
 
-    const admin = snapshot.docs[0].data();
+    const usernameSnapshot = await db
+      .collection("admins")
+      .where("username", "==", normalizedUsername)
+      .limit(1)
+      .get();
+
+    if (!usernameSnapshot.empty) {
+      adminDoc = usernameSnapshot.docs[0];
+    } else {
+      const emailInput = normalizeAdminEmail(normalizedUsername);
+      const allAdminsSnapshot = await db.collection("admins").get();
+      adminDoc =
+        allAdminsSnapshot.docs.find((doc) => {
+          const data = doc.data() || {};
+          return (
+            normalizeAdminUsername(data.username) === normalizeAdminUsername(normalizedUsername) ||
+            normalizeAdminEmail(data.email) === emailInput
+          );
+        }) || null;
+    }
+
+    if (!adminDoc) return res.status(401).json({ error: "Invalid credentials" });
+
+    const admin = adminDoc.data();
     if (String(admin.password || "") !== normalizedPassword) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -5668,7 +5691,7 @@ app.post("/api/admin-login", async (req, res) => {
     }
 
     res.json({
-      id: snapshot.docs[0].id,
+      id: adminDoc.id,
       username: admin.username,
       role: adminRole,
       permissions: Array.isArray(admin.permissions) ? admin.permissions : [],

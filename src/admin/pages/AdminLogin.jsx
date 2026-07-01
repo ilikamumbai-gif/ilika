@@ -88,13 +88,13 @@ const AdminLogin = () => {
 
             {/* Username */}
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "#888" }}>Username</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "#888" }}>Username or Email</label>
               <div className="relative">
                 <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#555" }} />
                 <input
                   type="text"
                   name="username"
-                  placeholder="Enter username"
+                  placeholder="Enter username or email"
                   value={form.username}
                   onChange={e => setForm({ ...form, username: e.target.value })}
                   className="w-full h-11 pl-9 pr-3 text-sm rounded-xl transition focus:outline-none"
