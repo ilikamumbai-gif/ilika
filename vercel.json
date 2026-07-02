@@ -7,6 +7,21 @@
       ],
       "destination": "https://ilika.in/:path*",
       "permanent": true
+    },
+    {
+      "source": "/sitemap.xml/",
+      "destination": "/sitemap.xml",
+      "permanent": true
+    },
+    {
+      "source": "/robots.txt/",
+      "destination": "/robots.txt",
+      "permanent": true
+    },
+    {
+      "source": "/googleb361cfb7dba6801e.html/",
+      "destination": "/googleb361cfb7dba6801e.html",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -16,6 +31,12 @@
     { "source": "/xmlrpc.php", "destination": "/api/not-found?status=410" },
     { "source": "/(1win.*)", "destination": "/api/not-found?status=410" },
     { "source": "/.well-known/:path*", "destination": "/.well-known/:path*" },
+    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
+    { "source": "/sitemap.html", "destination": "/sitemap.html" },
+    { "source": "/robots.txt", "destination": "/robots.txt" },
+    { "source": "/llms.txt", "destination": "/llms.txt" },
+    { "source": "/llms-full.txt", "destination": "/llms-full.txt" },
+    { "source": "/googleb361cfb7dba6801e.html", "destination": "/googleb361cfb7dba6801e.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
