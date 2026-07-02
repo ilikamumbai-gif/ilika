@@ -110,7 +110,7 @@ const features = [
   },
 ];
 
-const reviews = [
+const fallbackReviews = [
   {
     rating: 5,
     text: '"I was sceptical at first, but after just one week of using it, my skin feels noticeably smoother and brighter. The voice guidance makes it so easy to use every morning."',
@@ -133,6 +133,12 @@ const reviews = [
     loc: "Pune · Verified Buyer",
   },
 ];
+
+const getReviewImages = (review = {}) => {
+  if (Array.isArray(review?.images) && review.images.length) return review.images;
+  if (typeof review?.image === "string" && review.image.trim()) return [review.image];
+  return [];
+};
 
 const stepImages = [
   voiceMaskMakerStep1Image,
@@ -364,6 +370,31 @@ const VoiceMaskMakerLanding = () => {
       })),
     []
   );
+  const landingReviews = useMemo(() => {
+    const productReviews = Array.isArray(targetProduct?.reviews) ? targetProduct.reviews : [];
+    if (productReviews.length > 0) {
+      return productReviews.slice(0, 6).map((review, index) => ({
+        id: review?.id || review?._id || `product-review-${index + 1}`,
+        rating: Math.max(1, Math.min(5, Number(review?.rating || 5))),
+        text: review?.comment || "Loved it.",
+        initials: String(review?.name || "U")
+          .trim()
+          .split(/\s+/)
+          .slice(0, 2)
+          .map((part) => part[0]?.toUpperCase() || "")
+          .join(""),
+        name: review?.name || "Verified Buyer",
+        loc: "Verified Buyer",
+        images: getReviewImages(review).slice(0, 2),
+      }));
+    }
+
+    return fallbackReviews.map((review, index) => ({
+      id: `fallback-review-${index + 1}`,
+      ...review,
+      images: [],
+    }));
+  }, [targetProduct?.reviews]);
 
   const couponCode = assignedCoupon?.code || "ilikaDIY";
   const couponForcedPrice = Number(assignedCoupon?.forcedPrice || 0) > 0 ? Number(assignedCoupon.forcedPrice) : null;
@@ -851,14 +882,29 @@ const VoiceMaskMakerLanding = () => {
         </h2>
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
-          {reviews.map((r) => (
-            <div key={r.name} className="rounded-2xl border border-[#3F312D] bg-[#202020] px-6 py-7">
+          {landingReviews.map((r) => (
+            <div key={r.id} className="rounded-2xl border border-[#3F312D] bg-[#202020] px-6 py-7">
               <div className="mb-3 flex items-center gap-1 text-[#D3A157]">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <Star key={n} className={`h-4 w-4 ${n <= r.rating ? "fill-current" : "opacity-35"}`} />
                 ))}
               </div>
               <p className="mb-5 text-[14px] italic font-light leading-[1.7] text-[#D8CCC6]">{r.text}</p>
+              {r.images?.length ? (
+                <div className={`mb-5 grid gap-2 ${r.images.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+                  {r.images.map((img, imageIndex) => (
+                    <div key={`${r.id}-image-${imageIndex + 1}`} className="overflow-hidden rounded-xl border border-[#3F312D] bg-[#2A211F]">
+                      <OptimizedImage
+                        src={img}
+                        alt={`${r.name} review ${imageIndex + 1}`}
+                        width={320}
+                        height={240}
+                        className="h-24 w-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               <div className="flex items-center gap-3">
                 <span className="grid h-9 w-9 place-content-center rounded-full bg-[#2A211F] text-[13px] font-semibold text-[#D58A78]">{r.initials}</span>
                 <div>
