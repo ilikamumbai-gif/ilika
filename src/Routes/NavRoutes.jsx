@@ -94,6 +94,7 @@ const SEO_MATCHER_ROUTES = [
   { path: "/shopall" },
   { path: "/user" },
   { path: "/blog/:slug" },
+  { path: "/blog/private/:slug" },
   { path: "/product/:productUrl" },
   { path: "/category/:categorySlug" },
   { path: "/privacy" },
@@ -203,6 +204,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/ctm") return { title: "Explore CTM", description: "Build your CTM skincare routine with Ilika." };
   if (pathname === "/ctmkit") return { title: "Create CTM Kit", description: "Customize your CTM kit with Ilika products." };
   if (pathname === "/blog") return { title: "Blog", description: "Beauty tips, guides, and updates from Ilika.", keywords: [...baseKeywords, "beauty blog", "skincare tips"] };
+  if (pathname.startsWith("/blog/private/")) return { title: "Private Blog", description: "Private Ilika blog article.", keywords: [...baseKeywords, "private blog article"] };
   if (pathname.startsWith("/blog/")) return { title: "Blog Details", description: "Read Ilika blog articles and beauty insights.", keywords: [...baseKeywords, "blog article"] };
   if (pathname.startsWith("/product/")) return { title: "Product Details", description: "Explore product details, benefits, and pricing at Ilika.", keywords: [...baseKeywords, "product details", "buy online"] };
   if (pathname.startsWith("/category/")) return { title: "Category Products", description: "Browse products by category at Ilika.", keywords: [...baseKeywords, "category products"] };
@@ -391,6 +393,7 @@ const NavRoutes = () => {
         <Route path="/ctmkit" element={renderLazy(CreateCtm)} />
 
         <Route path="/blog" element={renderLazy(Blog)} />
+        <Route path="/blog/private/:slug" element={renderLazy(BlogDetail)} />
         <Route path="/shopall" element={renderLazy(ShopAll)} />
 
         <Route

@@ -11,6 +11,7 @@ import { createSlug, getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 import { buildCartProductSnapshot, getDefaultVariant } from "../utils/productPricing";
+import { PRIVATE_BLOG_PATHS, PRIVATE_BLOGS } from "../data/privateBlogs";
 
 const removeInlineImagesFromHtml = (html = "") =>
   String(html || "").replace(/<img[^>]*>/gi, "");
@@ -155,11 +156,21 @@ const renderSectionBlock = (section, index) => {
 const BlogDetail = () => {
   const { addToCart } = useCart();
   const { products = [] } = useProducts();
-  const { state: locationBlog } = useLocation();
+  const location = useLocation();
+  const { state: locationBlog } = location;
   const { slug } = useParams();
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_URL;
   const [blog, setBlog] = useState(locationBlog || null);
+  const privateBlog = useMemo(
+    () =>
+      PRIVATE_BLOGS.find(
+        (entry) => String(entry?.slug || "").trim().toLowerCase() === String(slug || "").trim().toLowerCase()
+      ) || null,
+    [slug]
+  );
+  const isPrivateBlogRoute = location.pathname.startsWith("/blog/private/");
+  const isPrivateBlog = Boolean(privateBlog);
 
   const [comments, setComments] = useState([]);
   const [name, setName] = useState("");
@@ -175,6 +186,12 @@ const BlogDetail = () => {
 
     const loadBlog = async () => {
       if (!slug) {
+        setLoadingBlog(false);
+        return;
+      }
+
+      if (isPrivateBlogRoute) {
+        setBlog(privateBlog);
         setLoadingBlog(false);
         return;
       }
@@ -231,7 +248,7 @@ const BlogDetail = () => {
     return () => {
       ignore = true;
     };
-  }, [API, slug, locationBlog]);
+  }, [API, isPrivateBlogRoute, locationBlog, privateBlog, slug]);
 
   useEffect(() => {
     const node = commentsSectionRef.current;
@@ -373,6 +390,9 @@ const BlogDetail = () => {
     "beauty guide",
     blog?.title || "",
   ].filter(Boolean);
+  const canonicalPath = isPrivateBlog
+    ? PRIVATE_BLOG_PATHS[blogSlug] || `/blog/private/${blogSlug}`
+    : `/blog/${blogSlug}`;
   const blogSchema = blog
     ? {
         "@context": "https://schema.org",
@@ -394,26 +414,31 @@ const BlogDetail = () => {
         },
         datePublished: blog?.createdAt || undefined,
         dateModified: blog?.updatedAt || blog?.createdAt || undefined,
-        mainEntityOfPage: `https://ilika.in/blog/${blogSlug}`,
+        mainEntityOfPage: `https://ilika.in${canonicalPath}`,
       }
     : null;
 
   useSeo({
     title: seoTitle,
     description: seoDescription,
-    path: `/blog/${blogSlug}`,
-    canonical: `/blog/${blogSlug}`,
+    path: canonicalPath,
+    canonical: canonicalPath,
     image: seoImage,
     type: "article",
-    robots: blog ? "index, follow" : "noindex, follow",
+    robots: blog ? (isPrivateBlog ? "noindex, nofollow" : "index, follow") : "noindex, follow",
     keywords: seoKeywords,
   });
 
   useEffect(() => {
     if (!blog || !slug || !blogSlug) return;
-    if (String(slug).trim().toLowerCase() === blogSlug) return;
-    navigate(`/blog/${blogSlug}`, { replace: true });
-  }, [blog, slug, blogSlug, navigate]);
+    const slugMatches = String(slug).trim().toLowerCase() === blogSlug;
+    const targetPath = isPrivateBlog
+      ? PRIVATE_BLOG_PATHS[blogSlug] || `/blog/private/${blogSlug}`
+      : `/blog/${blogSlug}`;
+
+    if (slugMatches && location.pathname === targetPath) return;
+    navigate(targetPath, { replace: true });
+  }, [blog, slug, blogSlug, isPrivateBlog, location.pathname, navigate]);
 
   if (loadingBlog) {
     return (
@@ -616,6 +641,7 @@ const BlogDetail = () => {
             )}
           </article>
 
+          {!isPrivateBlog ? (
           <section ref={commentsSectionRef} className="mt-10 border-t border-[#e2ece2] pt-6 sm:mt-12 sm:pt-8">
             <h2 className="text-xl font-semibold text-[#1C371C] sm:text-2xl">Comments ({comments.length})</h2>
 
@@ -665,6 +691,7 @@ const BlogDetail = () => {
               )}
             </div>
           </section>
+          ) : null}
         </main>
       </div>
       <Footer />

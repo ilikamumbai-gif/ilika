@@ -4321,19 +4321,19 @@ const ProductDetail = () => {
                           )}
                           {effectiveMrp > price && savingAmount > 0 ? (
                             <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
-                              <span className="text-[32px] font-bold leading-none sm:text-[36px]" style={{ color: detailTheme.heading }}>
+                              <span className="text-[24px] font-bold leading-none sm:text-[28px]" style={{ color: detailTheme.heading }}>
                                 ₹{price.toLocaleString("en-IN")}
                               </span>
-                              <span className="text-[15px] font-semibold leading-none text-gray-400 line-through sm:text-[18px]">
+                              <span className="text-[13px] font-semibold leading-none text-gray-400 line-through sm:text-[16px]">
                                 ₹{effectiveMrp.toLocaleString("en-IN")}
                               </span>
-                              <span className="text-[15px] font-bold leading-none sm:text-[17px]" style={{ color: "#0a8f45" }}>
+                              <span className="text-[13px] font-bold leading-none sm:text-[15px]" style={{ color: "#0a8f45" }}>
                                 ↓ {savingPercent}%
                               </span>
                             </div>
                           ) : (
                             <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
-                              <span className="text-[30px] font-bold sm:text-3xl" style={{ color: detailTheme.price }}>
+                              <span className="text-[23px] font-bold sm:text-[26px]" style={{ color: detailTheme.price }}>
                                 ₹{price.toLocaleString("en-IN")}
                               </span>
                               {effectiveMrp > 0 && (
@@ -4353,7 +4353,7 @@ const ProductDetail = () => {
                                   After Coupon Applied
                                 </p>
                                 <p
-                                  className="mt-1 whitespace-nowrap text-[15px] font-bold leading-none min-[360px]:text-[16px] sm:text-[18px]"
+                                  className="mt-1 whitespace-nowrap text-[14px] font-bold leading-none min-[360px]:text-[15px] sm:text-[16px]"
                                   style={{ color: detailTheme.heading }}
                                 >
                                   {previewCouponDisplayPercent > 0
@@ -4363,7 +4363,7 @@ const ProductDetail = () => {
                               </div>
                               <div className="min-w-0 text-right">
                                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">Final Price</p>
-                                <p className="mt-1 whitespace-nowrap text-[17px] font-bold leading-none min-[360px]:text-[18px]" style={{ color: detailTheme.price }}>
+                                <p className="mt-1 whitespace-nowrap text-[14px] font-bold leading-none min-[360px]:text-[15px] sm:text-[16px]" style={{ color: detailTheme.price }}>
                                   ₹{previewCouponFinalPrice.toLocaleString("en-IN")}
                                 </p>
                               </div>
@@ -4675,19 +4675,19 @@ const ProductDetail = () => {
                       )}
                       {effectiveMrp > price && savingAmount > 0 ? (
                         <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
-                          <span className="text-[32px] font-bold leading-none sm:text-[36px]" style={{ color: detailTheme.heading }}>
+                          <span className="text-[24px] font-bold leading-none sm:text-[28px]" style={{ color: detailTheme.heading }}>
                             ₹{price.toLocaleString("en-IN")}
                           </span>
-                          <span className="text-[15px] font-semibold leading-none text-gray-400 line-through sm:text-[18px]">
+                          <span className="text-[13px] font-semibold leading-none text-gray-400 line-through sm:text-[16px]">
                             ₹{effectiveMrp.toLocaleString("en-IN")}
                           </span>
-                          <span className="text-[15px] font-bold leading-none sm:text-[17px]" style={{ color: "#0a8f45" }}>
+                          <span className="text-[13px] font-bold leading-none sm:text-[15px]" style={{ color: "#0a8f45" }}>
                             ↓ {savingPercent}%
                           </span>
                         </div>
                       ) : (
                         <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
-                          <span className="text-[30px] font-bold sm:text-3xl" style={{ color: detailTheme.price }}>
+                          <span className="text-[23px] font-bold sm:text-[26px]" style={{ color: detailTheme.price }}>
                             ₹{price.toLocaleString("en-IN")}
                           </span>
                           {effectiveMrp > 0 && (
@@ -4706,7 +4706,7 @@ const ProductDetail = () => {
                             <p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: detailTheme.accent }}>
                               After Coupon applied
                             </p>
-                            <p className="mt-1 text-[15px] font-semibold leading-4" style={{ color: detailTheme.heading }}>
+                            <p className="mt-1 text-[14px] font-semibold leading-4" style={{ color: detailTheme.heading }}>
                               {previewCouponDisplayPercent > 0
                                 ? `${Math.round(previewCouponDisplayPercent)}% OFF`
                                 : visibleAssignedCoupon.code}
@@ -4714,7 +4714,7 @@ const ProductDetail = () => {
                           </div>
                           <div className="text-right">
                             <p className="text-[10px] uppercase tracking-[0.12em] text-gray-400">Final price</p>
-                            <p className="mt-1 text-[18px] font-bold leading-none" style={{ color: detailTheme.price }}>
+                            <p className="mt-1 text-[14px] font-bold leading-none sm:text-[15px]" style={{ color: detailTheme.price }}>
                               ₹{previewCouponFinalPrice.toLocaleString("en-IN")}
                             </p>
                           </div>

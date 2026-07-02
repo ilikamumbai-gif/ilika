@@ -36,7 +36,12 @@ const Blog = () => {
       try {
         const res = await fetch(`${API}/api/blogs`);
         const data = await res.json();
-        if (!ignore) setBlogs(Array.isArray(data) ? data : []);
+        if (!ignore) {
+          const visibleBlogs = (Array.isArray(data) ? data : []).filter(
+            (entry) => !entry?.isPrivate && !entry?.hideFromBlogListing
+          );
+          setBlogs(visibleBlogs);
+        }
       } catch {
         if (!ignore) setBlogs([]);
       }
