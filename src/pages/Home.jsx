@@ -42,7 +42,7 @@ const maskBannerDesktop = "/Homepage/homepagemaksmakerofferbanner.jpg";
 const maskBannerMobile = "/Homepage/homepagemaksmakerofferbannermobile.png";
 const homePageCtmBannerDesktop = "/Homepage/homepagebannerctm.jpg";
 const homePageCtmBannerMobile = "/Homepage/homepagebannerctmmobile.png";
-const homeFeatureVideoUrl = "https://youtu.be/M-vfkxo6T10?si=qrUjwCAel24cF69C";
+const homeFeatureVideoUrl = "https://youtu.be/lEGWrDPXNpE";
 
 
 const HAIR_CAROUSEL_ITEMS = [
@@ -981,6 +981,44 @@ const Home = () => {
 
           {/* <SkinTypeBanner /> */}
 
+          <section className="bg-black py-0">
+            <div className="w-full">
+              <div className="px-4 pt-12 sm:px-6">
+                <h1
+                  className="max-w-6xl font-semibold leading-[1.08] tracking-tight text-white text-[0.95rem] sm:text-xl md:text-2xl lg:text-[2.7rem]"
+                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                >
+                  Meet Ilika: Skincare, Beauty, Grooming, Haircare & Hairstyling Tools
+                </h1>
+                <h1
+                  className="mt-2 max-w-6xl font-semibold leading-[1.08] tracking-tight text-white text-[0.95rem] sm:text-xl md:text-2xl lg:text-[2.7rem]"
+                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                >
+                  All in one place
+                </h1>
+              </div>
+
+              <div className="mt-4 overflow-hidden bg-black">
+                <div className="relative aspect-video w-full bg-black">
+                  {homeFeatureVideoId ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${homeFeatureVideoId}?autoplay=1&mute=0&rel=0&modestbranding=1&playsinline=1&controls=1&loop=1&playlist=${homeFeatureVideoId}`}
+                      title="Ilika intro video"
+                      className="absolute inset-0 h-full w-full"
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; autoplay"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-white/60">
+                      Video unavailable
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
 
           {/* CATERGORY NAV AND TRENDING PICKS  */}
           {isMobile ? (
@@ -1100,40 +1138,6 @@ const Home = () => {
 
             </>
           )}
-
-
-          {/* INTRO VIDEO SECTION */}
-          {/* <section className="bg-black px-4 py-12 sm:px-6 sm:py-16">
-            <div className="mx-auto max-w-7xl">
-              <Heading
-                align="left"
-                heading="Redefining personal care for a new generation."
-                sub="Where smart innovation meets effortless self-care."
-                subVariant="paragraph"
-                headingClassName="text-white text-[1.35rem] leading-none tracking-[-0.03em] sm:text-3xl md:text-4xl lg:text-[3.9rem]"
-                subClassName="text-white/75 max-w-3xl text-[0.78rem] sm:text-sm"
-              />
-
-              <div className="mt-8 overflow-hidden bg-white shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
-                <div className="relative aspect-[16/8.5] w-full bg-black sm:aspect-video">
-                  {homeFeatureVideoId ? (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${homeFeatureVideoId}?rel=0&modestbranding=1&playsinline=1`}
-                      title="Ilika feature video"
-                      className="absolute inset-0 h-full w-full"
-                      loading="lazy"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-white/60">
-                      Video unavailable
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </section> */}
 
 
           {/* HAIRCARE RANGE */}

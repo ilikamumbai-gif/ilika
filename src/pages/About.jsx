@@ -142,7 +142,7 @@ const About = () => {
 
                 <div className="grid gap-6">
                   <CardSection title="Our Vision" className="h-full">
-                    <p>To become one of India's most trusted beauty and wellness brands by delivering innovative products that empower individuals to look and feel their best every day.</p>
+                    <p>To become one of India's most trusted beauty and well-being brands by delivering innovative products that empower individuals to look and feel their best every day.</p>
                   </CardSection>
                   <CardSection title="Our Mission" className="h-full">
                     <p>Our mission is simple:</p>
