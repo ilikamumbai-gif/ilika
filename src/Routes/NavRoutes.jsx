@@ -95,6 +95,7 @@ const SEO_MATCHER_ROUTES = [
   { path: "/user" },
   { path: "/blog/:slug" },
   { path: "/blog/private/:slug" },
+  { path: "/product/:categorySlug/:productUrl" },
   { path: "/product/:productUrl" },
   { path: "/category/:categorySlug" },
   { path: "/privacy" },
@@ -402,6 +403,7 @@ const NavRoutes = () => {
         />
 
         <Route path="/blog/:slug" element={renderLazy(BlogDetail)} />
+        <Route path="/product/:categorySlug/:productUrl" element={<ProductDetailRoute />} />
         <Route path="/product/:productUrl" element={<ProductDetailRoute />} />
         <Route path="/category/:categorySlug" element={renderLazy(CategoryProducts)} />
 

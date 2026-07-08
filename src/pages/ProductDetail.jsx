@@ -25,6 +25,8 @@ import Lazy360ViewButton from "../components/product/Lazy360ViewButton";
 import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 import { useSeo } from "../hooks/useSeo";
+import StructuredData from "../components/StructuredData";
+import { getProductSeoContent } from "../data/productSeoContent";
 import { getApiUrl } from "../utils/api";
 import {
   buildCartProductSnapshot,
@@ -1871,6 +1873,65 @@ const ProductFaqSection = ({ faqs = [], theme, className = "" }) => {
   );
 };
 
+const SeoComparisonTable = ({ table, theme }) => {
+  if (!table?.rows?.length) return null;
+  const [factorLabel, firstLabel, secondLabel] = table.columns || ["Factor", "Option 1", "Option 2"];
+
+  return (
+    <div className="overflow-hidden rounded-[22px] border bg-white shadow-sm" style={{ borderColor: theme.borderSoft }}>
+      <div className="border-b px-4 py-4 sm:px-5" style={{ borderColor: theme.borderSoft, backgroundColor: theme.reviewSurface }}>
+        <h3 className="text-base font-semibold leading-snug sm:text-lg" style={{ color: theme.heading }}>
+          {table.title}
+        </h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="min-w-[680px] w-full border-collapse text-left text-sm">
+          <thead>
+            <tr style={{ color: theme.heading }}>
+              <th className="w-[24%] border-b px-4 py-3 font-semibold" style={{ borderColor: theme.borderSoft }}>{factorLabel}</th>
+              <th className="w-[38%] border-b px-4 py-3 font-semibold" style={{ borderColor: theme.borderSoft }}>{firstLabel}</th>
+              <th className="w-[38%] border-b px-4 py-3 font-semibold" style={{ borderColor: theme.borderSoft }}>{secondLabel}</th>
+            </tr>
+          </thead>
+          <tbody className="text-gray-600">
+            {table.rows.map((row, index) => (
+              <tr key={`${table.title}-${row.factor}-${index}`} className="align-top">
+                <td className="border-b px-4 py-3 font-semibold" style={{ borderColor: theme.borderSoft, color: theme.heading }}>{row.factor}</td>
+                <td className="border-b px-4 py-3 leading-relaxed" style={{ borderColor: theme.borderSoft }}>{row.optionA}</td>
+                <td className="border-b px-4 py-3 leading-relaxed" style={{ borderColor: theme.borderSoft }}>{row.optionB}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const ProductSeoContentSection = ({ content, theme }) => {
+  if (!content) return null;
+
+  return (
+    <section className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10 sm:mb-12">
+      <div className="mb-5 flex flex-col gap-2 sm:mb-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: theme.accent }}>
+          Product comparison
+        </p>
+        <h2 className="text-2xl font-semibold leading-tight sm:text-3xl" style={{ color: theme.heading }}>
+          Compare before you buy
+        </h2>
+        <p className="max-w-3xl text-sm leading-6 text-gray-600">
+          Top search focus: <span className="font-semibold" style={{ color: theme.heading }}>{content.topKeyword}</span>
+        </p>
+      </div>
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <SeoComparisonTable table={content.comparison} theme={theme} />
+        <SeoComparisonTable table={content.brandComparison} theme={theme} />
+      </div>
+    </section>
+  );
+};
+
 const ReviewForm = ({ product, onReviewAdded, theme, onSubmitted, submitLabel = "Submit Review" }) => {
   const [name, setName] = useState("");
   const [rating, setRating] = useState(0);
@@ -3616,6 +3677,10 @@ const ProductDetail = () => {
     () => normalizeRouteSlug(productUrl),
     [productUrl]
   );
+  const productSeoContent = useMemo(
+    () => getProductSeoContent(product, currentRouteSlug),
+    [product, currentRouteSlug]
+  );
   const canonicalProductSlug = useMemo(
     () => normalizeRouteSlug(getProductSlug(product)),
     [product]
@@ -3629,9 +3694,10 @@ const ProductDetail = () => {
     [product, activeVariant]
   );
   const seoProductTitle = product?.name
-    ? `${product.name}${activeVariantName ? ` - ${activeVariantName}` : ""} | Ilika`
+    ? productSeoContent?.title || `${product.name}${activeVariantName ? ` - ${activeVariantName}` : ""} | Ilika`
     : "Product Details | Ilika";
   const seoProductDescription =
+    productSeoContent?.description ||
     (activeVariantName
       ? `${String(product?.seoDescription || "").trim() || stripHtml(product?.shortInfo) || stripHtml(product?.description) || "Explore product details, benefits, pricing, and offers on Ilika."} Variant: ${activeVariantName}.`
       : "") ||
@@ -3654,6 +3720,10 @@ const ProductDetail = () => {
     ? `${canonicalBasePath}?variant=${encodeURIComponent(activeVariantQueryValue)}`
     : canonicalBasePath;
   const seoProductKeywords = useMemo(() => {
+    if (productSeoContent?.keywords?.length) {
+      return productSeoContent.keywords.map((item) => item.keyword);
+    }
+
     const explicitKeywords = String(product?.seoKeywords || "").trim();
     if (explicitKeywords) return explicitKeywords;
 
@@ -3671,11 +3741,101 @@ const ProductDetail = () => {
       product?.name || "",
       ...fromCategories,
     ].filter(Boolean);
-  }, [product?.name, product?.categoryName]);
+  }, [product?.name, product?.categoryName, productSeoContent]);
   const productTagLabel = useMemo(
     () => String(product?.productTag || "").trim(),
     [product?.productTag]
   );
+  const productStructuredData = useMemo(() => {
+    if (!product || !canonicalPath) return null;
+
+    const productUrlAbsolute = toAbsoluteUrl(canonicalPath);
+    const validReviews = productReviews
+      .filter((review) => String(review?.comment || review?.review || "").trim())
+      .slice(0, 20);
+    const reviewRatingValues = productReviews
+      .map((review) => Number(review?.rating || 0))
+      .filter((value) => value > 0);
+    const averageRating =
+      reviewRatingValues.length > 0
+        ? reviewRatingValues.reduce((sum, value) => sum + value, 0) / reviewRatingValues.length
+        : Number(product?.rating || 0);
+
+    const productSchema = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "@id": `${productUrlAbsolute}#product`,
+      name: product?.name || "Ilika Product",
+      description: seoProductDescription,
+      image: images?.length ? images.map((item) => toAbsoluteUrl(item)).filter(Boolean) : [toAbsoluteUrl(seoProductImage)],
+      brand: {
+        "@type": "Brand",
+        name: "ilika",
+      },
+      sku: String(product?.sku || product?.id || product?._id || canonicalProductSlug || "").trim() || undefined,
+      offers: {
+        "@type": "Offer",
+        url: productUrlAbsolute,
+        priceCurrency: "INR",
+        price: Number(displayPricing?.price || product?.price || 0) || undefined,
+        availability: getProductVariantAvailability(product, activeVariant)
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+        itemCondition: "https://schema.org/NewCondition",
+        shippingDetails: PRODUCT_SHIPPING_DETAILS,
+        hasMerchantReturnPolicy: PRODUCT_RETURN_POLICY,
+      },
+      aggregateRating: averageRating > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: Number(averageRating.toFixed(1)),
+            reviewCount: Math.max(reviewRatingValues.length, productReviews.length || 1),
+          }
+        : undefined,
+      review: validReviews.map((review) => ({
+        "@type": "Review",
+        author: {
+          "@type": "Person",
+          name: String(review?.name || review?.userName || "Ilika customer").trim(),
+        },
+        reviewRating: {
+          "@type": "Rating",
+          ratingValue: Number(review?.rating || 5),
+          bestRating: 5,
+        },
+        reviewBody: String(review?.comment || review?.review || "").trim(),
+      })),
+    };
+
+    const faqSchema = productFaqs.length
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "@id": `${productUrlAbsolute}#faq`,
+          mainEntity: productFaqs.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer || "Answer will be updated soon.",
+            },
+          })),
+        }
+      : null;
+
+    return [productSchema, faqSchema].filter(Boolean);
+  }, [
+    product,
+    canonicalPath,
+    productReviews,
+    productFaqs,
+    seoProductDescription,
+    images,
+    seoProductImage,
+    canonicalProductSlug,
+    displayPricing?.price,
+    activeVariant,
+  ]);
 
   useSeo({
     title: seoProductTitle,
@@ -3690,8 +3850,7 @@ const ProductDetail = () => {
 
   useEffect(() => {
     if (!product || !currentRouteSlug || !canonicalProductSlug) return;
-    if (!productMatchesCurrentRoute) return;
-    if (currentRouteSlug === canonicalProductSlug) return;
+    if (productMatchesCurrentRoute) return;
     navigate(
       activeVariantQueryValue
         ? `/product/${canonicalProductSlug}?variant=${encodeURIComponent(activeVariantQueryValue)}`
@@ -3852,6 +4011,7 @@ const ProductDetail = () => {
 
   return (
     <>
+      <StructuredData schema={productStructuredData} />
       <MiniDivider />
         {showReviewModal && (
           <ReviewModal
@@ -4883,6 +5043,11 @@ const ProductDetail = () => {
             onClose={() => setActiveHonestReview(null)}
           />
         ) : null}
+
+        <ProductSeoContentSection
+          content={productSeoContent}
+          theme={detailTheme}
+        />
 
         {/* INGREDIENTS SECTION */}
         {hasIngredients && (

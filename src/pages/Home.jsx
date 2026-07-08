@@ -985,20 +985,15 @@ const Home = () => {
             <div className="w-full">
               <div className="px-4 pt-12 sm:px-6">
                 <h1
-                  className="max-w-6xl font-semibold leading-[1.08] tracking-tight text-white text-[0.95rem] sm:text-xl md:text-2xl lg:text-[2.7rem]"
+                  className="max-w-6xl font-semibold leading-[1.08] tracking-tight text-white text-[1rem] sm:text-2xl md:text-3xl lg:text-[2.7rem]"
                   style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 >
                   Meet Ilika: Skincare, Beauty, Grooming, Haircare & Hairstyling Tools
-                </h1>
-                <h1
-                  className="mt-2 max-w-6xl font-semibold leading-[1.08] tracking-tight text-white text-[0.95rem] sm:text-xl md:text-2xl lg:text-[2.7rem]"
-                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                >
-                  All in one place
+                  <span className="mt-1 block">All in one place</span>
                 </h1>
               </div>
 
-              <div className="mt-4 overflow-hidden bg-black">
+              <div className="mt-2 overflow-hidden bg-black">
                 <div className="relative aspect-video w-full bg-black">
                   {homeFeatureVideoId ? (
                     <iframe
