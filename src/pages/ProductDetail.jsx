@@ -27,7 +27,7 @@ import { FiBell } from "react-icons/fi";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 import { getCanonicalProductSlugAlias, getProductSeoContent } from "../data/productSeoContent";
-import { getApiUrl } from "../utils/api";
+import { getApiUrl, handleApiError } from "../utils/api";
 import {
   buildCartProductSnapshot,
   findVariantByQueryValue,
@@ -2629,31 +2629,32 @@ const ProductDetail = () => {
         const slugCandidates = Array.from(
           new Set([currentProductUrl, canonicalAliasSlug].map((value) => normalizeRouteSlug(value)).filter(Boolean))
         );
-        let found = products.find((p) =>
+        const cachedProduct = products.find((p) =>
           slugCandidates.includes(normalizeRouteSlug(p?.productUrl))
         );
-        if (!found) {
-          let resolved = null;
+        let resolved = null;
 
-          for (const slugCandidate of slugCandidates) {
+        for (const slugCandidate of slugCandidates) {
+          try {
             const res = await fetch(getApiUrl(`/api/products/slug/${slugCandidate}`));
             if (!res.ok) continue;
             resolved = await res.json();
             break;
+          } catch (error) {
+            handleApiError("Product detail", error);
           }
-
-          if (!resolved) throw new Error("Product slug not found");
-
-          const redirectTo = normalizeRouteSlug(resolved?.redirectTo);
-
-          if (redirectTo && redirectTo !== currentProductUrl) {
-            if (!isCurrentRoute) return;
-            navigate(`/product/${redirectTo}`, { replace: true });
-            return;
-          }
-
-          found = resolved?.product || resolved;
         }
+
+        const redirectTo = normalizeRouteSlug(resolved?.redirectTo);
+
+        if (redirectTo && redirectTo !== currentProductUrl) {
+          if (!isCurrentRoute) return;
+          navigate(`/product/${redirectTo}`, { replace: true });
+          return;
+        }
+
+        const found = resolved?.product || resolved || cachedProduct;
+        if (!found) throw new Error("Product slug not found");
 
         if (!isCurrentRoute) return;
         setProduct(found);
