@@ -251,10 +251,10 @@ export const PRODUCT_SEO_CONTENT = [
       ]),
     },
     brandComparison: {
-      title: "ilika vs AGARO",
-      columns: ["Factor", "ilika", "AGARO"],
+      title: "ilika vs Other BLDC Hair Dryer Brands",
+      columns: ["Factor", "ilika", "Other BLDC Hair Dryer Brands"],
       rows: tableRows([
-        ["Motor spec", "110,000 RPM leafless motor", "Royal BLDC line also uses a 110,000 RPM motor"],
+        ["Motor spec", "110,000 RPM leafless motor", "Many BLDC models use high-speed brushless motors"],
         ["Design", "Leafless, compact, travel-focused", "Traditional corded designs plus some BLDC models"],
         ["Price positioning", "Budget-to-mid range", "Wide range from budget to premium BLDC"],
         ["Where ilika wins", "Compact leafless design stands out visually", "Wider retail presence and brand recall"],
