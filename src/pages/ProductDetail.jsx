@@ -3779,7 +3779,7 @@ const ProductDetail = () => {
         "@type": "Offer",
         url: productUrlAbsolute,
         priceCurrency: "INR",
-        price: Number(displayPricing?.price || product?.price || 0) || undefined,
+        price: Number(activeDisplayPricing?.price || product?.price || 0) || undefined,
         availability: getProductVariantAvailability(product, activeVariant)
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
@@ -3835,7 +3835,7 @@ const ProductDetail = () => {
     images,
     seoProductImage,
     canonicalProductSlug,
-    displayPricing?.price,
+    activeDisplayPricing?.price,
     activeVariant,
   ]);
 
