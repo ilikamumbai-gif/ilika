@@ -14,6 +14,7 @@ const tableRows = (items) =>
 
 export const PRODUCT_SEO_CONTENT = [
   {
+    canonicalSlug: "voice-face-mask-maker",
     slugs: ["facial-mask-maker-machine"],
     names: ["facial mask maker machine", "automatic voice version face mask maker machine"],
     topKeyword: "mask maker machine price India",
@@ -51,6 +52,7 @@ export const PRODUCT_SEO_CONTENT = [
     },
   },
   {
+    canonicalSlug: "hyaluronic-acid-2-serum",
     slugs: ["hyaluronic-acid-serum"],
     names: ["hyaluronic acid serum"],
     topKeyword: "best hyaluronic acid serum India",
@@ -86,6 +88,7 @@ export const PRODUCT_SEO_CONTENT = [
     },
   },
   {
+    canonicalSlug: "hydra-gel-moisturizer",
     slugs: ["hydra-gel-face-moisturizer-50g"],
     names: ["hydra gel face moisturizer", "hydra gel face moisturizer 50g"],
     topKeyword: "gel moisturizer for oily skin",
@@ -119,6 +122,7 @@ export const PRODUCT_SEO_CONTENT = [
     },
   },
   {
+    canonicalSlug: "ceramide-gel-moisturizer",
     slugs: ["ilika-ceramide-gel-moisturizer", "ceramide-gel-moisturizer"],
     names: ["ceramide gel moisturizer", "ilika ceramide gel moisturizer"],
     topKeyword: "best ceramide moisturizer India",
@@ -152,6 +156,7 @@ export const PRODUCT_SEO_CONTENT = [
     },
   },
   {
+    canonicalSlug: "dazzling-glow-face-serum",
     slugs: ["dazzling-face-serum"],
     names: ["dazzling face serum", "saffron niacinamide serum"],
     topKeyword: "best face serum India",
@@ -186,6 +191,7 @@ export const PRODUCT_SEO_CONTENT = [
     },
   },
   {
+    canonicalSlug: "retinol-anti-aging-facial-oil",
     slugs: ["retinol-anti-aging"],
     names: ["retinol anti-aging", "retinol anti aging facial oil"],
     topKeyword: "retinol facial oil for fine lines",
@@ -220,6 +226,7 @@ export const PRODUCT_SEO_CONTENT = [
     },
   },
   {
+    canonicalSlug: "leafless-hair-dryer",
     slugs: ["high-speed-leafless-hair-dryer-for-men-women", "leafless-hair-dryer"],
     names: ["high-speed leafless hair dryer", "leafless hair dryer"],
     topKeyword: "high speed ionic hair dryer India",
@@ -255,6 +262,7 @@ export const PRODUCT_SEO_CONTENT = [
     },
   },
   {
+    canonicalSlug: "lip-plumper-vacuum-device",
     slugs: ["lip-plumper-vacuum-device"],
     names: ["lip plumper vacuum device", "lip plumper device"],
     topKeyword: "best lip plumper device India",
@@ -290,6 +298,7 @@ export const PRODUCT_SEO_CONTENT = [
     },
   },
   {
+    canonicalSlug: "egg-sonic-facial-brush",
     slugs: ["facial-cleansing-brush"],
     names: ["facial cleansing brush", "sonic facial cleansing brush"],
     topKeyword: "sonic facial cleansing brush India",
@@ -324,6 +333,7 @@ export const PRODUCT_SEO_CONTENT = [
     },
   },
   {
+    canonicalSlug: "non-voice-face-mask-maker",
     slugs: ["facial-mask-maker-machine-none-voice", "facial-mask-maker-machine-non-voice"],
     names: ["facial mask maker machine none voice", "facial mask maker machine non voice", "non voice face mask maker"],
     topKeyword: "manual mask maker machine India",
@@ -359,6 +369,7 @@ export const PRODUCT_SEO_CONTENT = [
     },
   },
   {
+    canonicalSlug: "ilika-ice-globes-massager",
     slugs: ["ilika-ice-globes-massager", "ice-globes-massager"],
     names: ["ice globes massager", "ilika ice globes massager"],
     topKeyword: "ice globes massager price India",
@@ -410,4 +421,15 @@ export const getProductSeoContent = (product = {}, routeSlug = "") => {
 
     return item.names.some((name) => normalizedName.includes(String(name).toLowerCase()));
   }) || null;
+};
+
+export const getCanonicalProductSlugAlias = (routeSlug = "") => {
+  const normalizedRouteSlug = normalizeKey(routeSlug);
+  if (!normalizedRouteSlug) return "";
+
+  const match = PRODUCT_SEO_CONTENT.find((item) =>
+    item.slugs.some((slug) => normalizeKey(slug) === normalizedRouteSlug)
+  );
+
+  return match?.canonicalSlug || normalizedRouteSlug;
 };

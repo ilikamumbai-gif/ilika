@@ -6,7 +6,6 @@ import { SearchBar } from "../components/Nav";
 import Header from "../components/Header";
 import MiniDivider from "../components/MiniDivider";
 import CartDrawer from "../components/CartDrawer";
-8
 import ProductCard from "../components/ProductCard";
 import Footer from "../components/Footer";
 import Heading from "../components/Heading";
@@ -15,7 +14,7 @@ const normalizeSearchText = (value = "") =>
   String(value || "").toLowerCase().replace(/\s+/g, "");
 
 const Products = () => {
-  const { products = [] } = useProducts();
+  const { products = [], loading } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
 
@@ -73,11 +72,21 @@ const Products = () => {
         </div>
 
         {/* Products Grid */}
-        {filtered.length > 0 ? (
+        {loading && !products.length ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="rounded-2xl border border-[#f1e2df] bg-white p-3">
+                <div className="aspect-[0.9] w-full animate-pulse rounded-xl bg-gray-100" />
+                <div className="mt-4 h-4 w-3/4 animate-pulse rounded bg-gray-100" />
+                <div className="mt-2 h-4 w-1/2 animate-pulse rounded bg-gray-100" />
+              </div>
+            ))}
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             {filtered.map((product) => (
             
-                <ProductCard product={product} />
+                <ProductCard key={product.id || product._id || product.productUrl || product.name} product={product} />
         
             ))}
           </div>

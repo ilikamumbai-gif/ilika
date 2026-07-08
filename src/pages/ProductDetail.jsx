@@ -26,7 +26,7 @@ import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
-import { getProductSeoContent } from "../data/productSeoContent";
+import { getCanonicalProductSlugAlias, getProductSeoContent } from "../data/productSeoContent";
 import { getApiUrl } from "../utils/api";
 import {
   buildCartProductSnapshot,
@@ -2615,13 +2615,6 @@ const ProductDetail = () => {
       };
     }
 
-    if (!products.length) {
-      setLoading(true);
-      return () => {
-        isCurrentRoute = false;
-      };
-    }
-
     const load = async () => {
       setLoading(true);
       setProduct((currentProduct) => {
@@ -2632,16 +2625,25 @@ const ProductDetail = () => {
       });
 
       try {
+        const canonicalAliasSlug = normalizeRouteSlug(getCanonicalProductSlugAlias(currentProductUrl));
+        const slugCandidates = Array.from(
+          new Set([currentProductUrl, canonicalAliasSlug].map((value) => normalizeRouteSlug(value)).filter(Boolean))
+        );
         let found = products.find((p) =>
-          normalizeRouteSlug(p?.productUrl) === currentProductUrl
+          slugCandidates.includes(normalizeRouteSlug(p?.productUrl))
         );
         if (!found) {
-          const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/api/products/slug/${currentProductUrl}`
-          );
-          if (!res.ok) throw new Error();
+          let resolved = null;
 
-          const resolved = await res.json();
+          for (const slugCandidate of slugCandidates) {
+            const res = await fetch(getApiUrl(`/api/products/slug/${slugCandidate}`));
+            if (!res.ok) continue;
+            resolved = await res.json();
+            break;
+          }
+
+          if (!resolved) throw new Error("Product slug not found");
+
           const redirectTo = normalizeRouteSlug(resolved?.redirectTo);
 
           if (redirectTo && redirectTo !== currentProductUrl) {

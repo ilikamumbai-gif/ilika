@@ -19,7 +19,7 @@ const ProductList = ({
   cardVariant = "default",
   cardTheme = "light",
 }) => {
-  const { products } = useProducts();
+  const { products, loading } = useProducts();
   const CardComponent = cardVariant === "home" ? HomeProductCard : ProductCard;
 
   let filteredProducts = products.filter((item) => item.isActive !== false);
@@ -64,6 +64,21 @@ const ProductList = ({
     <section className="w-full py-2 sm:py-3">
       <StructuredData schema={listSchema} />
       <div className="max-w-7xl mx-auto px-4">
+        {loading && !products.length ? (
+          <div className={mobileScroll ? "flex gap-4 overflow-hidden pb-2" : "grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6"}>
+            {Array.from({ length: mobileScroll ? 4 : 8 }).map((_, index) => (
+              <div
+                key={index}
+                className={mobileScroll ? "shrink-0 w-[62vw] max-w-[240px] rounded-2xl bg-white p-3" : "rounded-2xl bg-white p-3"}
+              >
+                <div className="aspect-[0.9] w-full animate-pulse rounded-xl bg-gray-100" />
+                <div className="mt-4 h-4 w-3/4 animate-pulse rounded bg-gray-100" />
+                <div className="mt-2 h-4 w-1/2 animate-pulse rounded bg-gray-100" />
+              </div>
+            ))}
+          </div>
+        ) : (
+        <>
         {mobileScroll && (
           <div className="flex gap-4 overflow-x-auto pb-2 sm:hidden scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {filteredProducts.length ? (
@@ -124,6 +139,8 @@ const ProductList = ({
             <p className="col-span-full text-sm text-gray-500">No products found</p>
           )}
         </div>
+        </>
+        )}
       </div>
     </section>
   );
