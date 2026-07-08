@@ -1884,7 +1884,34 @@ const SeoComparisonTable = ({ table, theme }) => {
           {table.title}
         </h3>
       </div>
-      <div className="overflow-x-auto">
+      <div className="space-y-3 p-3 sm:hidden">
+        {table.rows.map((row, index) => (
+          <article
+            key={`${table.title}-mobile-${row.factor}-${index}`}
+            className="rounded-[18px] border bg-white p-3"
+            style={{ borderColor: theme.borderSoft }}
+          >
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: theme.accent }}>
+              {row.factor}
+            </p>
+            <div className="space-y-3 text-[13px] leading-5 text-gray-600">
+              <div>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: theme.heading }}>
+                  {firstLabel}
+                </p>
+                <p>{row.optionA}</p>
+              </div>
+              <div>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: theme.heading }}>
+                  {secondLabel}
+                </p>
+                <p>{row.optionB}</p>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto sm:block">
         <table className="min-w-[680px] w-full border-collapse text-left text-sm">
           <thead>
             <tr style={{ color: theme.heading }}>

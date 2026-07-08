@@ -15,7 +15,7 @@ const tableRows = (items) =>
 export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "voice-face-mask-maker",
-    slugs: ["facial-mask-maker-machine"],
+    slugs: ["facial-mask-maker-machine", "voice-face-mask-maker"],
     names: ["facial mask maker machine", "automatic voice version face mask maker machine"],
     topKeyword: "mask maker machine price India",
     title: "Facial Mask Maker Machine - DIY Natural Face Masks at Home | ilika",
@@ -53,7 +53,7 @@ export const PRODUCT_SEO_CONTENT = [
   },
   {
     canonicalSlug: "hyaluronic-acid-2-serum",
-    slugs: ["hyaluronic-acid-serum"],
+    slugs: ["hyaluronic-acid-serum", "hyaluronic-acid-2-serum"],
     names: ["hyaluronic acid serum"],
     topKeyword: "best hyaluronic acid serum India",
     title: "Hyaluronic Acid Serum for Face - Deep Hydration | ilika",
@@ -77,8 +77,8 @@ export const PRODUCT_SEO_CONTENT = [
       ]),
     },
     brandComparison: {
-      title: "ilika vs Pilgrim",
-      columns: ["Factor", "ilika", "Pilgrim"],
+      title: "ilika vs Other Hydration Serum Brands",
+      columns: ["Factor", "ilika", "Other Hydration Serum Brands"],
       rows: tableRows([
         ["Brand scale", "Focused D2C skincare + beauty devices brand", "Large, funded brand with a broad catalog"],
         ["Price positioning", "Competitively priced, budget-to-mid range", "Mid-range, wide price spread"],
@@ -89,8 +89,8 @@ export const PRODUCT_SEO_CONTENT = [
   },
   {
     canonicalSlug: "hydra-gel-moisturizer",
-    slugs: ["hydra-gel-face-moisturizer-50g"],
-    names: ["hydra gel face moisturizer", "hydra gel face moisturizer 50g"],
+    slugs: ["hydra-gel-face-moisturizer-50g", "hydra-gel-moisturizer"],
+    names: ["hydra gel moisturizer", "hydra gel face moisturizer", "hydra gel face moisturizer 50g"],
     topKeyword: "gel moisturizer for oily skin",
     title: "Hydra Gel Face Moisturizer 50g - Oil-Free Hydration | ilika",
     description: "Lightweight, oil-free gel moisturizer with hyaluronic acid & niacinamide. Ideal for oily and combination skin. Shop ilika Hydra Gel Moisturizer online.",
@@ -111,8 +111,8 @@ export const PRODUCT_SEO_CONTENT = [
       ]),
     },
     brandComparison: {
-      title: "ilika vs Pilgrim / mCaffeine",
-      columns: ["Factor", "ilika", "Pilgrim / mCaffeine"],
+      title: "ilika vs Other Gel Moisturizer Brands",
+      columns: ["Factor", "ilika", "Other Gel Moisturizer Brands"],
       rows: tableRows([
         ["Price positioning", "Budget-to-mid range", "Similar mid-range pricing"],
         ["Formula focus", "Hyaluronic acid + niacinamide combination", "Varies by brand"],
@@ -145,8 +145,8 @@ export const PRODUCT_SEO_CONTENT = [
       ]),
     },
     brandComparison: {
-      title: "ilika vs Pilgrim",
-      columns: ["Factor", "ilika", "Pilgrim"],
+      title: "ilika vs Other Ceramide Moisturizer Brands",
+      columns: ["Factor", "ilika", "Other Ceramide Moisturizer Brands"],
       rows: tableRows([
         ["Price positioning", "Budget-to-mid range", "Mid-range, slightly higher on some SKUs"],
         ["Formula angle", "Ceramide + sun-damage repair focus", "Broader anti-aging/repair range"],
@@ -157,8 +157,8 @@ export const PRODUCT_SEO_CONTENT = [
   },
   {
     canonicalSlug: "dazzling-glow-face-serum",
-    slugs: ["dazzling-face-serum"],
-    names: ["dazzling face serum", "saffron niacinamide serum"],
+    slugs: ["dazzling-face-serum", "dazzling-glow-face-serum"],
+    names: ["dazzling face serum", "dazzling glow face serum", "saffron niacinamide serum"],
     topKeyword: "best face serum India",
     title: "Dazzling Face Serum with Saffron & Niacinamide | ilika",
     description: "Get flawless, radiant skin with ilika's Saffron & Niacinamide Face Serum. Firms, smooths and hydrates. Loved by thousands - shop now.",
@@ -180,8 +180,8 @@ export const PRODUCT_SEO_CONTENT = [
       ]),
     },
     brandComparison: {
-      title: "ilika vs Pilgrim Serums",
-      columns: ["Factor", "ilika", "Pilgrim"],
+      title: "ilika vs Other Glow Serum Brands",
+      columns: ["Factor", "ilika", "Other Glow Serum Brands"],
       rows: tableRows([
         ["Hero ingredient", "Saffron + niacinamide combination", "Vitamin C or French Red Vine/Retinol lines"],
         ["Price positioning", "Budget-to-mid range", "Similar mid-range pricing"],
@@ -192,7 +192,7 @@ export const PRODUCT_SEO_CONTENT = [
   },
   {
     canonicalSlug: "retinol-anti-aging-facial-oil",
-    slugs: ["retinol-anti-aging"],
+    slugs: ["retinol-anti-aging", "retinol-anti-aging-facial-oil"],
     names: ["retinol anti-aging", "retinol anti aging facial oil"],
     topKeyword: "retinol facial oil for fine lines",
     title: "Retinol Anti-Aging Facial Oil for Fine Lines & Wrinkles | ilika",
@@ -215,8 +215,8 @@ export const PRODUCT_SEO_CONTENT = [
       ]),
     },
     brandComparison: {
-      title: "ilika vs Pilgrim Retinol Night Cream",
-      columns: ["Factor", "ilika", "Pilgrim Retinol Anti-Aging Night Cream"],
+      title: "ilika vs Other Retinol Night Creams",
+      columns: ["Factor", "ilika", "Other Retinol Night Creams"],
       rows: tableRows([
         ["Format", "Facial oil, lightweight oil-based delivery", "Night cream, thicker format"],
         ["Added actives", "Retinol + green tea + rosehip oil", "Retinol-led formula, cream base"],
@@ -299,8 +299,8 @@ export const PRODUCT_SEO_CONTENT = [
   },
   {
     canonicalSlug: "egg-sonic-facial-brush",
-    slugs: ["facial-cleansing-brush"],
-    names: ["facial cleansing brush", "sonic facial cleansing brush"],
+    slugs: ["facial-cleansing-brush", "egg-sonic-facial-brush"],
+    names: ["facial cleansing brush", "sonic facial cleansing brush", "egg-shaped sonic facial cleansing brush"],
     topKeyword: "sonic facial cleansing brush India",
     title: "Sonic Facial Cleansing Brush - USB Rechargeable | ilika",
     description: "Deep clean your skin with ilika's USB rechargeable sonic facial cleansing brush. Gentle on all skin types. Shop the vibrating cleansing device online.",
@@ -322,8 +322,8 @@ export const PRODUCT_SEO_CONTENT = [
       ]),
     },
     brandComparison: {
-      title: "ilika vs Foreo",
-      columns: ["Factor", "ilika", "Foreo"],
+      title: "ilika vs Other Sonic Cleansing Brush Brands",
+      columns: ["Factor", "ilika", "Other Sonic Cleansing Brush Brands"],
       rows: tableRows([
         ["Price positioning", "Budget-friendly, accessible pricing", "Premium/luxury pricing"],
         ["Core technology", "USB rechargeable sonic vibration", "Sonic pulsation technology"],
@@ -334,7 +334,7 @@ export const PRODUCT_SEO_CONTENT = [
   },
   {
     canonicalSlug: "non-voice-face-mask-maker",
-    slugs: ["facial-mask-maker-machine-none-voice", "facial-mask-maker-machine-non-voice"],
+    slugs: ["facial-mask-maker-machine-none-voice", "facial-mask-maker-machine-non-voice", "non-voice-face-mask-maker"],
     names: ["facial mask maker machine none voice", "facial mask maker machine non voice", "non voice face mask maker"],
     topKeyword: "manual mask maker machine India",
     title: "Facial Mask Maker Machine (Non-Voice Version) | ilika",
