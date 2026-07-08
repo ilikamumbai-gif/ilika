@@ -90,7 +90,7 @@ const ComboTab = ({ combo, products }) => {
 
                     {product.images?.[0] && (
  
-                      <img loading="lazy"
+                      <img
                         src={product.images[0]}
                         alt={product.name}
                         className="w-full sm:w-40 h-40 object-contain border rounded-lg p-2 bg-white"
@@ -171,7 +171,7 @@ const ComboTab = ({ combo, products }) => {
 
                   {product.images?.[0] && (
 
-                    <img loading="lazy"
+                    <img
                       src={product.images[0]}
                       alt={product.name}
                       className="w-full h-40 object-contain"
@@ -220,7 +220,7 @@ const ComboTab = ({ combo, products }) => {
                 className="flex gap-4 border p-4 rounded-xl"
               >
 
-                <img loading="lazy"
+                <img
                   src={free.images?.[0]}
                   alt={free.name}
                   className="w-24 h-24 object-contain"
