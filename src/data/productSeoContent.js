@@ -16,9 +16,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "voice-face-mask-maker",
     slugs: ["facial-mask-maker-machine", "voice-face-mask-maker"],
-    names: ["facial mask maker machine", "automatic voice version face mask maker machine"],
+    names: ["ilika facial mask maker machine", "ilika voice face mask maker", "facial mask maker machine", "automatic voice version face mask maker machine"],
     topKeyword: "mask maker machine price India",
-    title: "Facial Mask Maker Machine - DIY Natural Face Masks at Home | ilika",
+    title: "ilika Facial Mask Maker Machine - DIY Natural Face Masks at Home",
     description: "Make fresh, natural face masks at home with the ilika Facial Mask Maker Machine. Mix fruit, collagen & herbal masks in minutes. Buy online in India.",
     keywords: keywordRows([
       ["facial mask maker machine", "Buyer", "High"],
@@ -30,8 +30,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["best face mask machine for home use", "Buyer", "High"],
     ]),
     comparison: {
-      title: "Mask Maker Machine vs Store-Bought Sheet Mask",
-      columns: ["Factor", "Mask Maker Machine", "Store-Bought Sheet Mask"],
+      title: "ilika Facial Mask Maker Machine vs Store-Bought Sheet Mask",
+      columns: ["Factor", "ilika Mask Maker Machine", "Store-Bought Sheet Mask"],
       rows: tableRows([
         ["Customization", "Fresh, made with your own ingredients each time", "Fixed formula, same for everyone"],
         ["Cost over time", "One-time device cost, cheap ingredients per use", "Recurring cost per sheet, adds up monthly"],
@@ -54,9 +54,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "hyaluronic-acid-2-serum",
     slugs: ["hyaluronic-acid-serum", "hyaluronic-acid-2-serum"],
-    names: ["hyaluronic acid serum"],
+    names: ["ilika hyaluronic acid serum", "hyaluronic acid serum"],
     topKeyword: "best hyaluronic acid serum India",
-    title: "Hyaluronic Acid Serum for Face - Deep Hydration | ilika",
+    title: "ilika Hyaluronic Acid Serum for Face - Deep Hydration",
     description: "ilika Hyaluronic Acid Serum delivers deep, lasting hydration for dry and dehydrated skin. Lightweight, non-sticky formula. Shop online in India.",
     keywords: keywordRows([
       ["hyaluronic acid serum for face", "Buyer", "High"],
@@ -66,8 +66,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["hyaluronic acid vs vitamin C serum", "Comparison", "High"],
     ]),
     comparison: {
-      title: "Hyaluronic Acid Serum vs Vitamin C Serum",
-      columns: ["Factor", "Hyaluronic Acid Serum", "Vitamin C Serum"],
+      title: "ilika Hyaluronic Acid Serum vs Vitamin C Serum",
+      columns: ["Factor", "ilika Hyaluronic Acid Serum", "Vitamin C Serum"],
       rows: tableRows([
         ["Main function", "Deep hydration, plumps skin", "Brightening, fades dark spots"],
         ["Best for", "Dry, dehydrated, or tight-feeling skin", "Dull skin, pigmentation, uneven tone"],
@@ -90,9 +90,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "hydra-gel-moisturizer",
     slugs: ["hydra-gel-face-moisturizer-50g", "hydra-gel-moisturizer"],
-    names: ["hydra gel moisturizer", "hydra gel face moisturizer", "hydra gel face moisturizer 50g"],
+    names: ["ilika hydra gel moisturizer", "ilika hydra gel face moisturizer", "hydra gel moisturizer", "hydra gel face moisturizer", "hydra gel face moisturizer 50g"],
     topKeyword: "gel moisturizer for oily skin",
-    title: "Hydra Gel Face Moisturizer 50g - Oil-Free Hydration | ilika",
+    title: "ilika Hydra Gel Face Moisturizer 50g - Oil-Free Hydration",
     description: "Lightweight, oil-free gel moisturizer with hyaluronic acid & niacinamide. Ideal for oily and combination skin. Shop ilika Hydra Gel Moisturizer online.",
     keywords: keywordRows([
       ["oil-free face moisturizer", "Buyer", "High"],
@@ -101,8 +101,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["best gel moisturizer for combination skin", "Buyer", "Medium"],
     ]),
     comparison: {
-      title: "Gel Moisturizer vs Cream Moisturizer",
-      columns: ["Factor", "Gel Moisturizer", "Cream Moisturizer"],
+      title: "ilika Hydra Gel Moisturizer vs Cream Moisturizer",
+      columns: ["Factor", "ilika Hydra Gel Moisturizer", "Cream Moisturizer"],
       rows: tableRows([
         ["Texture", "Lightweight, water-based, absorbs fast", "Thicker, richer, sits longer on skin"],
         ["Best for", "Oily, combination, humid climates", "Dry, mature, or very dehydrated skin"],
@@ -124,9 +124,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "ceramide-gel-moisturizer",
     slugs: ["ilika-ceramide-gel-moisturizer", "ceramide-gel-moisturizer"],
-    names: ["ceramide gel moisturizer", "ilika ceramide gel moisturizer"],
+    names: ["ilika ceramide gel moisturizer", "ceramide gel moisturizer"],
     topKeyword: "best ceramide moisturizer India",
-    title: "Ceramide Gel Moisturizer for Combination Skin | ilika",
+    title: "ilika Ceramide Gel Moisturizer for Combination Skin",
     description: "Restore your skin barrier with ilika Ceramide Gel Moisturizer - lightweight hydration for combination and sensitive skin. Buy online.",
     keywords: keywordRows([
       ["ceramide moisturizer for combination skin", "Buyer", "High"],
@@ -135,8 +135,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["ceramide vs hyaluronic acid moisturizer", "Comparison", "Medium"],
     ]),
     comparison: {
-      title: "Ceramide Moisturizer vs Hyaluronic Acid Moisturizer",
-      columns: ["Factor", "Ceramide Moisturizer", "Hyaluronic Acid Moisturizer"],
+      title: "ilika Ceramide Gel Moisturizer vs Hyaluronic Acid Moisturizer",
+      columns: ["Factor", "ilika Ceramide Gel Moisturizer", "Hyaluronic Acid Moisturizer"],
       rows: tableRows([
         ["Main job", "Repairs and strengthens skin barrier", "Draws water into the skin for plumpness"],
         ["Best for", "Sensitive, barrier-damaged, or irritated skin", "Dehydrated skin lacking surface moisture"],
@@ -158,9 +158,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "dazzling-glow-face-serum",
     slugs: ["dazzling-face-serum", "dazzling-glow-face-serum"],
-    names: ["dazzling face serum", "dazzling glow face serum", "saffron niacinamide serum"],
+    names: ["ilika dazzling glow face serum", "ilika dazzling face serum", "dazzling face serum", "dazzling glow face serum", "saffron niacinamide serum"],
     topKeyword: "best face serum India",
-    title: "Dazzling Face Serum with Saffron & Niacinamide | ilika",
+    title: "ilika Dazzling Glow Face Serum with Saffron & Niacinamide",
     description: "Get flawless, radiant skin with ilika's Saffron & Niacinamide Face Serum. Firms, smooths and hydrates. Loved by thousands - shop now.",
     keywords: keywordRows([
       ["saffron face serum", "Buyer", "High"],
@@ -170,8 +170,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["saffron serum vs vitamin C serum", "Comparison", "Medium"],
     ]),
     comparison: {
-      title: "Saffron Niacinamide Serum vs Plain Niacinamide Serum",
-      columns: ["Factor", "Saffron Niacinamide Serum", "Plain Niacinamide Serum"],
+      title: "ilika Dazzling Glow Face Serum vs Plain Niacinamide Serum",
+      columns: ["Factor", "ilika Dazzling Glow Face Serum", "Plain Niacinamide Serum"],
       rows: tableRows([
         ["Added benefit", "Saffron adds brightening + soothing properties", "Niacinamide alone controls oil & pores"],
         ["Best for", "Dull, uneven-tone skin wanting a glow", "Acne-prone, oily skin"],
@@ -193,9 +193,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "retinol-anti-aging-facial-oil",
     slugs: ["retinol-anti-aging", "retinol-anti-aging-facial-oil"],
-    names: ["retinol anti-aging", "retinol anti aging facial oil"],
+    names: ["ilika retinol anti-aging facial oil", "ilika retinol facial oil", "retinol anti-aging", "retinol anti aging facial oil"],
     topKeyword: "retinol facial oil for fine lines",
-    title: "Retinol Anti-Aging Facial Oil for Fine Lines & Wrinkles | ilika",
+    title: "ilika Retinol Anti-Aging Facial Oil for Fine Lines & Wrinkles",
     description: "ilika Retinol Facial Oil with green tea & rosehip oil reduces fine lines and boosts collagen. Nourishing anti-aging care. Shop now.",
     keywords: keywordRows([
       ["retinol facial oil", "Buyer", "High"],
@@ -205,8 +205,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["retinol oil vs retinol cream", "Comparison", "Medium"],
     ]),
     comparison: {
-      title: "Retinol Facial Oil vs Retinol Cream",
-      columns: ["Factor", "Retinol Facial Oil", "Retinol Cream"],
+      title: "ilika Retinol Facial Oil vs Retinol Cream",
+      columns: ["Factor", "ilika Retinol Facial Oil", "Retinol Cream"],
       rows: tableRows([
         ["Texture", "Lightweight, oil-based, absorbs into skin", "Thicker, emulsified, sits on skin surface"],
         ["Best for", "Dry/normal skin needing added nourishment", "Oily/combination skin wanting less oil"],
@@ -228,9 +228,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "leafless-hair-dryer",
     slugs: ["high-speed-leafless-hair-dryer-for-men-women", "leafless-hair-dryer"],
-    names: ["high-speed leafless hair dryer", "leafless hair dryer"],
+    names: ["ilika high-speed leafless hair dryer", "ilika leafless hair dryer", "high-speed leafless hair dryer", "leafless hair dryer"],
     topKeyword: "high speed ionic hair dryer India",
-    title: "High-Speed Leafless Hair Dryer - Ionic, Zero Heat Damage | ilika",
+    title: "ilika High-Speed Leafless Hair Dryer - Ionic, Zero Heat Damage",
     description: "ilika's 110,000 RPM Leafless Hair Dryer dries hair fast with ionic technology for smooth, frizz-free results and zero heat damage. Shop now.",
     keywords: keywordRows([
       ["high speed hair dryer", "Buyer", "High"],
@@ -240,8 +240,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["ionic hair dryer vs normal hair dryer", "Comparison", "High"],
     ]),
     comparison: {
-      title: "Ionic Hair Dryer vs Normal Hair Dryer",
-      columns: ["Factor", "Ionic Hair Dryer", "Normal Hair Dryer"],
+      title: "ilika Ionic Hair Dryer vs Normal Hair Dryer",
+      columns: ["Factor", "ilika Ionic Hair Dryer", "Normal Hair Dryer"],
       rows: tableRows([
         ["Frizz control", "Negative ions neutralize static, reduce frizz", "Little to no frizz control"],
         ["Heat damage", "Smart thermo-control limits excess heat", "Higher risk of heat damage with prolonged use"],
@@ -264,9 +264,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "lip-plumper-vacuum-device",
     slugs: ["lip-plumper-vacuum-device"],
-    names: ["lip plumper vacuum device", "lip plumper device"],
+    names: ["ilika lip plumper vacuum device", "ilika lip plumper", "lip plumper vacuum device", "lip plumper device"],
     topKeyword: "best lip plumper device India",
-    title: "Lip Plumper Vacuum Device - Fuller Lips Instantly | ilika",
+    title: "ilika Lip Plumper Vacuum Device - Fuller Lips Instantly",
     description: "Get fuller, defined lips in minutes with ilika's USB rechargeable Lip Plumper Vacuum Device. 3 suction modes, safe & easy to use at home.",
     keywords: keywordRows([
       ["lip plumper device", "Buyer", "High"],
@@ -276,8 +276,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["lip plumper tool vs lip filler", "Comparison", "High"],
     ]),
     comparison: {
-      title: "Lip Plumper Device vs Lip Filler",
-      columns: ["Factor", "Lip Plumper Device", "Lip Filler"],
+      title: "ilika Lip Plumper Device vs Lip Filler",
+      columns: ["Factor", "ilika Lip Plumper Device", "Lip Filler"],
       rows: tableRows([
         ["Result duration", "Temporary, lasts a few hours", "Long-lasting, 6-12 months"],
         ["Cost", "One-time low-cost device", "Expensive, repeated clinic visits"],
@@ -300,9 +300,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "egg-sonic-facial-brush",
     slugs: ["facial-cleansing-brush", "egg-sonic-facial-brush"],
-    names: ["facial cleansing brush", "sonic facial cleansing brush", "egg-shaped sonic facial cleansing brush"],
+    names: ["ilika sonic facial cleansing brush", "ilika egg sonic facial brush", "facial cleansing brush", "sonic facial cleansing brush", "egg-shaped sonic facial cleansing brush"],
     topKeyword: "sonic facial cleansing brush India",
-    title: "Sonic Facial Cleansing Brush - USB Rechargeable | ilika",
+    title: "ilika Sonic Facial Cleansing Brush - USB Rechargeable",
     description: "Deep clean your skin with ilika's USB rechargeable sonic facial cleansing brush. Gentle on all skin types. Shop the vibrating cleansing device online.",
     keywords: keywordRows([
       ["sonic facial cleansing brush", "Buyer", "High"],
@@ -311,8 +311,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["facial cleansing brush vs manual face wash", "Comparison", "High"],
     ]),
     comparison: {
-      title: "Sonic Cleansing Brush vs Washing With Hands",
-      columns: ["Factor", "Sonic Cleansing Brush", "Washing With Hands"],
+      title: "ilika Sonic Cleansing Brush vs Washing With Hands",
+      columns: ["Factor", "ilika Sonic Cleansing Brush", "Washing With Hands"],
       rows: tableRows([
         ["Cleaning depth", "Removes deep-set dirt, oil, makeup residue", "Surface-level cleansing only"],
         ["Exfoliation", "Gentle micro-exfoliation with every use", "None"],
@@ -335,9 +335,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "non-voice-face-mask-maker",
     slugs: ["facial-mask-maker-machine-none-voice", "facial-mask-maker-machine-non-voice", "non-voice-face-mask-maker"],
-    names: ["facial mask maker machine none voice", "facial mask maker machine non voice", "non voice face mask maker"],
+    names: ["ilika non voice face mask maker", "ilika facial mask maker machine non voice", "facial mask maker machine none voice", "facial mask maker machine non voice", "non voice face mask maker"],
     topKeyword: "manual mask maker machine India",
-    title: "Facial Mask Maker Machine (Non-Voice Version) | ilika",
+    title: "ilika Facial Mask Maker Machine (Non-Voice Version)",
     description: "Make fresh DIY face masks at home with ilika's Non-Voice Facial Mask Maker Machine - simple manual controls, no learning curve. Buy online.",
     keywords: keywordRows([
       ["facial mask maker machine non voice", "Buyer", "High"],
@@ -347,8 +347,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["non voice vs voice mask maker machine", "Comparison", "High"],
     ]),
     comparison: {
-      title: "Non-Voice Mask Maker Machine vs Voice-Guided Mask Maker Machine",
-      columns: ["Factor", "Non-Voice Mask Maker Machine", "Voice-Guided Mask Maker Machine"],
+      title: "ilika Non-Voice Mask Maker Machine vs Voice-Guided Mask Maker Machine",
+      columns: ["Factor", "ilika Non-Voice Mask Maker Machine", "Voice-Guided Mask Maker Machine"],
       rows: tableRows([
         ["Operation", "Simple manual buttons, no spoken prompts", "Voice prompts guide each step"],
         ["Best for", "Users who want quick, no-fuss operation", "First-time users who want guidance"],
@@ -371,9 +371,9 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "ilika-ice-globes-massager",
     slugs: ["ilika-ice-globes-massager", "ice-globes-massager"],
-    names: ["ice globes massager", "ilika ice globes massager"],
+    names: ["ilika ice globes massager", "ice globes massager"],
     topKeyword: "ice globes massager price India",
-    title: "Ice Globes Massager - Cooling Face Tool for Puffiness | ilika",
+    title: "ilika Ice Globes Massager - Cooling Face Tool for Puffiness",
     description: "Reduce puffiness and soothe skin with ilika's Ice Globes Massager. Affordable cryo-cooling facial tool for de-puffing and glow. Shop online in India.",
     keywords: keywordRows([
       ["ice globes massager price India", "Buyer", "High"],
@@ -383,8 +383,8 @@ export const PRODUCT_SEO_CONTENT = [
       ["ice globes vs jade roller", "Comparison", "Medium"],
     ]),
     comparison: {
-      title: "Ice Globes Massager vs Jade/Rose Quartz Roller",
-      columns: ["Factor", "Ice Globes Massager", "Jade/Rose Quartz Roller"],
+      title: "ilika Ice Globes Massager vs Jade/Rose Quartz Roller",
+      columns: ["Factor", "ilika Ice Globes Massager", "Jade/Rose Quartz Roller"],
       rows: tableRows([
         ["Cooling effect", "Strong chilled gel cold therapy effect", "Mild, stone stays only slightly cool"],
         ["Best for", "Puffiness, migraines/sinus relief, de-stressing skin", "Everyday gentle massage and product absorption"],

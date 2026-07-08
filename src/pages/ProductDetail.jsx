@@ -1884,48 +1884,33 @@ const SeoComparisonTable = ({ table, theme }) => {
           {table.title}
         </h3>
       </div>
-      <div className="space-y-3 p-3 sm:hidden">
-        {table.rows.map((row, index) => (
-          <article
-            key={`${table.title}-mobile-${row.factor}-${index}`}
-            className="rounded-[18px] border bg-white p-3"
-            style={{ borderColor: theme.borderSoft }}
-          >
-            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: theme.accent }}>
-              {row.factor}
-            </p>
-            <div className="space-y-3 text-[13px] leading-5 text-gray-600">
-              <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: theme.heading }}>
-                  {firstLabel}
-                </p>
-                <p>{row.optionA}</p>
-              </div>
-              <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: theme.heading }}>
-                  {secondLabel}
-                </p>
-                <p>{row.optionB}</p>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-      <div className="hidden overflow-x-auto sm:block">
-        <table className="min-w-[680px] w-full border-collapse text-left text-sm">
+      <div className="w-full">
+        <table className="w-full table-fixed border-collapse text-left text-[10.5px] sm:text-sm">
           <thead>
             <tr style={{ color: theme.heading }}>
-              <th className="w-[24%] border-b px-4 py-3 font-semibold" style={{ borderColor: theme.borderSoft }}>{factorLabel}</th>
-              <th className="w-[38%] border-b px-4 py-3 font-semibold" style={{ borderColor: theme.borderSoft }}>{firstLabel}</th>
-              <th className="w-[38%] border-b px-4 py-3 font-semibold" style={{ borderColor: theme.borderSoft }}>{secondLabel}</th>
+              <th className="w-[26%] break-words border-b px-1.5 py-3 font-semibold leading-4 [overflow-wrap:anywhere] sm:w-[24%] sm:px-4 sm:leading-5" style={{ borderColor: theme.borderSoft }}>
+                {factorLabel}
+              </th>
+              <th className="w-[37%] break-words border-b px-1.5 py-3 font-semibold leading-4 [overflow-wrap:anywhere] sm:w-[38%] sm:px-4 sm:leading-5" style={{ borderColor: theme.borderSoft }}>
+                {firstLabel}
+              </th>
+              <th className="w-[37%] break-words border-b px-1.5 py-3 font-semibold leading-4 [overflow-wrap:anywhere] sm:w-[38%] sm:px-4 sm:leading-5" style={{ borderColor: theme.borderSoft }}>
+                {secondLabel}
+              </th>
             </tr>
           </thead>
           <tbody className="text-gray-600">
             {table.rows.map((row, index) => (
               <tr key={`${table.title}-${row.factor}-${index}`} className="align-top">
-                <td className="border-b px-4 py-3 font-semibold" style={{ borderColor: theme.borderSoft, color: theme.heading }}>{row.factor}</td>
-                <td className="border-b px-4 py-3 leading-relaxed" style={{ borderColor: theme.borderSoft }}>{row.optionA}</td>
-                <td className="border-b px-4 py-3 leading-relaxed" style={{ borderColor: theme.borderSoft }}>{row.optionB}</td>
+                <td className="break-words border-b px-1.5 py-3 font-semibold leading-4 [overflow-wrap:anywhere] sm:px-4 sm:leading-6" style={{ borderColor: theme.borderSoft, color: theme.heading }}>
+                  {row.factor}
+                </td>
+                <td className="break-words border-b px-1.5 py-3 leading-4 [overflow-wrap:anywhere] sm:px-4 sm:leading-6" style={{ borderColor: theme.borderSoft }}>
+                  {row.optionA}
+                </td>
+                <td className="break-words border-b px-1.5 py-3 leading-4 [overflow-wrap:anywhere] sm:px-4 sm:leading-6" style={{ borderColor: theme.borderSoft }}>
+                  {row.optionB}
+                </td>
               </tr>
             ))}
           </tbody>
