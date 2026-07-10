@@ -55,7 +55,8 @@ const Return = () => {
                 2. Return Eligibility
               </h3>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Returns are accepted only if the product is damaged, defective, or incorrect.</li>
+                <li>An unboxing/open-package video is required for all return claims and must be shared with our support team at the time of raising the claim. Our team will inspect the video and provide assistance or claim approval based on the review.</li>
+                <li>Returns are accepted only if the product is damaged, defective, incorrect, or if any product/accessory is missing from the package.</li>
                 <li>The product must be unused and in original condition.</li>
                 <li>Original packaging, tags, accessories, and invoice must be available.</li>
                 <li>Returns without prior approval will not be accepted.</li>

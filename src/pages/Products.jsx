@@ -9,9 +9,7 @@ import CartDrawer from "../components/CartDrawer";
 import ProductCard from "../components/ProductCard";
 import Footer from "../components/Footer";
 import Heading from "../components/Heading";
-
-const normalizeSearchText = (value = "") =>
-  String(value || "").toLowerCase().replace(/\s+/g, "");
+import { productMatchesSearch } from "../utils/productDiscovery";
 
 const Products = () => {
   const { products = [], loading } = useProducts();
@@ -22,18 +20,7 @@ const Products = () => {
   const filtered = useMemo(() => {
     const activeProducts = products.filter((p) => p?.isActive !== false);
     if (!query.trim()) return activeProducts;
-    const q = normalizeSearchText(query);
-    return activeProducts.filter((p) => {
-      const haystack = [
-        p.name,
-        p.shortInfo,
-        p.categoryName,
-        Array.isArray(p.benefits) ? p.benefits.join(" ") : p.benefits || "",
-      ]
-        .join(" ");
-      const normalizedHaystack = normalizeSearchText(haystack);
-      return normalizedHaystack.includes(q);
-    });
+    return activeProducts.filter((p) => productMatchesSearch(p, query));
   }, [query, products]);
 
   // Highlight matched text

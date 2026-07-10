@@ -4,6 +4,7 @@ import ProductCard from "./ProductCard";
 import HomeProductCard from "./HomeProductCard";
 import StructuredData from "./StructuredData";
 import { buildProductListStructuredData } from "../utils/productListStructuredData";
+import { productMatchesCategoryKeys } from "../utils/productDiscovery";
 
 const ProductList = ({
   categoryId,
@@ -18,6 +19,9 @@ const ProductList = ({
   structuredData = null,
   cardVariant = "default",
   cardTheme = "light",
+  fallbackMatcher = null,
+  emptyContent = null,
+  categoryKeys = [],
 }) => {
   const { products, loading } = useProducts();
   const CardComponent = cardVariant === "home" ? HomeProductCard : ProductCard;
@@ -28,10 +32,26 @@ const ProductList = ({
     filteredProducts = productNames
       .map((name) => filteredProducts.find((item) => item.name === name))
       .filter(Boolean);
-  } else if (categoryId) {
-    filteredProducts = filteredProducts.filter((item) =>
-      item.categoryIds?.includes(categoryId)
+  } else if (categoryId || categoryKeys.length) {
+    const targetCategoryId = categoryId ? String(categoryId) : "";
+    const categoryProducts = filteredProducts.filter((item) =>
+      (targetCategoryId && item.categoryIds?.some((id) => String(id) === targetCategoryId)) ||
+      productMatchesCategoryKeys(item, categoryKeys)
     );
+    const fallbackProducts =
+      typeof fallbackMatcher === "function"
+        ? filteredProducts.filter((item) => fallbackMatcher(item))
+        : [];
+    filteredProducts = Array.from(
+      new Map(
+        [...categoryProducts, ...fallbackProducts].map((item) => [
+          item._id || item.id || item.productUrl || item.name,
+          item,
+        ])
+      ).values()
+    );
+  } else if (typeof fallbackMatcher === "function") {
+    filteredProducts = filteredProducts.filter((item) => fallbackMatcher(item));
   }
 
   if (priorityNames.length > 0) {
@@ -99,7 +119,7 @@ const ProductList = ({
                 </div>
               ))
             ) : (
-              <p className="text-sm text-gray-500">No products found</p>
+              emptyContent || <p className="text-sm text-gray-500">No products found</p>
             )}
           </div>
         )}
@@ -118,7 +138,11 @@ const ProductList = ({
                 />
               ))
             ) : (
-              <p className="col-span-full text-sm text-gray-500">No products found</p>
+              emptyContent ? (
+                <div className="col-span-full">{emptyContent}</div>
+              ) : (
+                <p className="col-span-full text-sm text-gray-500">No products found</p>
+              )
             )}
           </div>
         )}
@@ -136,7 +160,11 @@ const ProductList = ({
               />
             ))
           ) : (
-            <p className="col-span-full text-sm text-gray-500">No products found</p>
+            emptyContent ? (
+              <div className="col-span-full">{emptyContent}</div>
+            ) : (
+              <p className="col-span-full text-sm text-gray-500">No products found</p>
+            )
           )}
         </div>
         </>

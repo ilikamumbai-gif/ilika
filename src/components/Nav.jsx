@@ -4,14 +4,12 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
+import { normalizeSearchText, productMatchesSearch } from "../utils/productDiscovery";
 
 const isActivePath = (pathname = "", target = "") => {
   if (target === "/") return pathname === "/";
   return pathname === target || pathname.startsWith(`${target}/`);
 };
-
-const normalizeSearchText = (value = "") =>
-  String(value || "").toLowerCase().replace(/\s+/g, "");
 
 const getDefaultVariant = (product = {}) => {
   if (!product?.hasVariants || !Array.isArray(product?.variants) || !product.variants.length) {
@@ -55,15 +53,9 @@ export const SearchBar = ({ products = [], onClose, className = "", autoFocus = 
       ? products
         .filter((p) => {
           if (p?.isActive === false) return false;
-          const haystack = [
-            p.name,
-            p.shortInfo,
-            p.categoryName,
-            Array.isArray(p.benefits) ? p.benefits.join(" ") : p.benefits || "",
-          ].join(" ");
-          return normalizeSearchText(haystack).includes(normalizeSearchText(query));
+          return productMatchesSearch(p, query);
         })
-        .slice(0, 6)
+        .slice(0, 10)
       : [];
 
   const highlightText = (text = "") => {

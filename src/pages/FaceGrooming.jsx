@@ -9,16 +9,68 @@ import Heading from '../components/Heading'
 import CartDrawer from '../components/CartDrawer'
 import Banner from '../components/Banner'
 
+const normalizeCategoryName = (value = "") =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]/g, "");
+
+const FACE_GROOMING_CATEGORY_KEYS = [
+  "facegrooming",
+  "facegroomingtools",
+  "groomingface",
+  "facialgrooming",
+  "facialgroomingtools",
+  "beautytools",
+  "beautytech",
+];
+
+const FACE_GROOMING_PRODUCT_KEYWORDS = [
+  "high frequency",
+  "high-frequency",
+  "therapy wand",
+  "facial wand",
+  "face grooming",
+  "facial grooming",
+  "face massager",
+  "facial massager",
+  "cleansing brush",
+  "sonic facial",
+  "ice globes",
+  "mask maker",
+  "lip plumper",
+];
+
+const isFaceGroomingProduct = (product = {}) => {
+  const searchable = [
+    product.name,
+    product.productUrl,
+    product.slug,
+    product.categoryName,
+    product.category,
+    product.seoCategory,
+    product.description,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return FACE_GROOMING_PRODUCT_KEYWORDS.some((keyword) => searchable.includes(keyword));
+};
 
 const FaceGrooming = () => {
   const { categories } = useCategories();
 
- const hairCategory = categories.find(
-  (c) =>
-    c.name
-      .toLowerCase()
-      .replace(/\s+/g, "") === "facegrooming"
-);
+ const faceGroomingCategory = categories.find((category) => {
+  const categoryKey = normalizeCategoryName(category?.name);
+  const slugKey = normalizeCategoryName(category?.slug);
+  const groupKey = normalizeCategoryName(category?.group);
+  return (
+    FACE_GROOMING_CATEGORY_KEYS.includes(categoryKey) ||
+    FACE_GROOMING_CATEGORY_KEYS.includes(slugKey) ||
+    FACE_GROOMING_CATEGORY_KEYS.includes(groupKey)
+  );
+});
 
 
   return (
@@ -83,11 +135,11 @@ const FaceGrooming = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
           <Heading level="h1" heading="Face Grooming Products" />
 
-          {hairCategory ? (
-            <ProductList categoryId={hairCategory.id} />
-          ) : (
-            <p className="text-sm text-gray-500">Loading products...</p>
-          )}
+          <ProductList
+            categoryId={faceGroomingCategory?.id || faceGroomingCategory?._id}
+            categoryKeys={FACE_GROOMING_CATEGORY_KEYS}
+            fallbackMatcher={isFaceGroomingProduct}
+          />
 
         </section>
 

@@ -1704,19 +1704,27 @@ const resolveCategoryNameById = async (categoryId = "") => {
   const normalizedId = String(categoryId || "").trim();
   if (!normalizedId) return "";
 
-  const directDoc = await db.collection("categories").doc(normalizedId).get();
-  if (directDoc.exists) {
-    return String(directDoc.data()?.name || "").trim();
-  }
+  try {
+    const directDoc = await db.collection("categories").doc(normalizedId).get();
+    if (directDoc.exists) {
+      return String(directDoc.data()?.name || "").trim();
+    }
 
-  const legacySnap = await db
-    .collection("categories")
-    .where("id", "==", normalizedId)
-    .limit(1)
-    .get();
+    const legacySnap = await db
+      .collection("categories")
+      .where("id", "==", normalizedId)
+      .limit(1)
+      .get();
 
-  if (!legacySnap.empty) {
-    return String(legacySnap.docs[0].data()?.name || "").trim();
+    if (!legacySnap.empty) {
+      return String(legacySnap.docs[0].data()?.name || "").trim();
+    }
+  } catch (error) {
+    console.error("CATEGORY LOOKUP FAILED:", {
+      categoryId: normalizedId,
+      message: error?.message || String(error),
+      code: error?.code || null,
+    });
   }
 
   return "";
@@ -3028,8 +3036,13 @@ app.get("/api/products/slug/:slug", async (req, res) => {
       });
     }
     return res.status(404).json({ error: "Product not found" });
-  } catch {
-    res.status(500).json({ error: "Failed to fetch product" });
+  } catch (error) {
+    console.error("PRODUCT SLUG API ERROR:", {
+      slug: req.params.slug,
+      message: error?.message || String(error),
+      code: error?.code || null,
+    });
+    res.status(500).json({ error: "Failed to fetch product", detail: error?.message || "Unknown error" });
   }
 });
 
@@ -3040,8 +3053,13 @@ app.get("/api/products/:id", async (req, res) => {
     const doc = await productRef.get();
     if (!doc.exists) return res.status(404).json({ error: "Product not found" });
     res.json(await formatProductForApi(doc.data(), doc.id));
-  } catch {
-    res.status(500).json({ error: "Failed to fetch product" });
+  } catch (error) {
+    console.error("PRODUCT ID API ERROR:", {
+      id: req.params.id,
+      message: error?.message || String(error),
+      code: error?.code || null,
+    });
+    res.status(500).json({ error: "Failed to fetch product", detail: error?.message || "Unknown error" });
   }
 });
 
@@ -3053,17 +3071,26 @@ app.get("/admin/products/edit/:id", async (req, res) => {
     const doc = await productRef.get();
     if (!doc.exists) return res.status(404).json({ error: "Product not found" });
     res.json(await formatProductForApi(doc.data(), doc.id));
-  } catch {
-    res.status(500).json({ error: "Failed to fetch product" });
+  } catch (error) {
+    console.error("ADMIN PRODUCT EDIT API ERROR:", {
+      id: req.params.id,
+      message: error?.message || String(error),
+      code: error?.code || null,
+    });
+    res.status(500).json({ error: "Failed to fetch product", detail: error?.message || "Unknown error" });
   }
 });
 
 app.get("/api/products", async (req, res) => {
   try {
-    const snapshot = await db.collection("products").orderBy("createdAt", "desc").get();
+    const snapshot = await db.collection("products").get();
     res.json(await Promise.all(snapshot.docs.map((doc) => formatProductForApi(doc.data(), doc.id))));
-  } catch {
-    res.status(500).json({ error: "Failed to fetch products" });
+  } catch (error) {
+    console.error("PRODUCTS API ERROR:", {
+      message: error?.message || String(error),
+      code: error?.code || null,
+    });
+    res.status(500).json({ error: "Failed to fetch products", detail: error?.message || "Unknown error" });
   }
 });
 
@@ -5258,8 +5285,16 @@ app.post("/api/categories", async (req, res) => {
 });
 
 app.get("/api/categories", async (req, res) => {
-  const snapshot = await db.collection("categories").get();
-  res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  try {
+    const snapshot = await db.collection("categories").get();
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    console.error("CATEGORIES API ERROR:", {
+      message: error?.message || String(error),
+      code: error?.code || null,
+    });
+    res.status(500).json({ error: "Failed to fetch categories", detail: error?.message || "Unknown error" });
+  }
 });
 
 app.put("/api/categories/:id", async (req, res) => {

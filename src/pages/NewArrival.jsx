@@ -8,16 +8,14 @@ import Footer from '../components/Footer'
 import Heading from '../components/Heading'
 import CartDrawer from '../components/CartDrawer'
 import Banner from '../components/Banner';
+import { findCategoryByKeys, getCategoryId } from "../utils/productDiscovery";
+
+const CATEGORY_KEYS = ["new", "newarrival", "new arrival", "new arrivals"];
 
 const NewArrival = () => {
   const { categories } = useCategories();
 
-  const hairCategory = categories.find(
-    (c) =>
-      c.name
-        .toLowerCase()
-        .replace(/\s+/g, "") === "new"
-  );
+  const hairCategory = findCategoryByKeys(categories, CATEGORY_KEYS);
 
   const holimainbanner = "/Images/offerBanner.gif";
   const holiMobile = "/Images/offerBannerMobile.gif";
@@ -40,20 +38,17 @@ const NewArrival = () => {
             <Heading heading="Our New Arrival" />
     
 
-          {hairCategory ? (
-            <ProductList
-              categoryId={hairCategory.id}
-              priorityNames={[
-                "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
-                "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
-                "Ilika Lip Plumper Vacuum Device | For Fuller Looking Lips | Lip Enhancement, Lip Massage & Beauty Tool",
-                "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening",
-                "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
-              ]}
-            />
-          ) : (
-            <p className="text-sm text-gray-500">Loading products...</p>
-          )}
+          <ProductList
+            categoryId={getCategoryId(hairCategory)}
+            categoryKeys={CATEGORY_KEYS}
+            priorityNames={[
+              "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
+              "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
+              "Ilika Lip Plumper Vacuum Device | For Fuller Looking Lips | Lip Enhancement, Lip Massage & Beauty Tool",
+              "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening",
+              "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
+            ]}
+          />
 
       
 

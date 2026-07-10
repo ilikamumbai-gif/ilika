@@ -7,16 +7,14 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Heading from '../components/Heading'
 import CartDrawer from '../components/CartDrawer'
+import { findCategoryByKeys, getCategoryId } from "../utils/productDiscovery";
+
+const CATEGORY_KEYS = ["rollerandgausha", "roller and guasha", "roller and gua sha", "gua sha", "roller"];
 
 const RollerAndGuasha = () => {
   const { categories } = useCategories();
 
- const hairCategory = categories.find(
-  (c) =>
-    c.name
-      .toLowerCase()
-      .replace(/\s+/g, "") === "rollerandgausha"
-);
+ const hairCategory = findCategoryByKeys(categories, CATEGORY_KEYS);
 
 
   return (
@@ -30,11 +28,7 @@ const RollerAndGuasha = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
           <Heading level="h1" heading="Roller And Gausha" />
 
-          {hairCategory ? (
-            <ProductList categoryId={hairCategory.id} />
-          ) : (
-            <p className="text-sm text-gray-500">Loading products...</p>
-          )}
+          <ProductList categoryId={getCategoryId(hairCategory)} categoryKeys={CATEGORY_KEYS} />
 
         </section>
 

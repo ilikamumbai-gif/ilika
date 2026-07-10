@@ -8,16 +8,14 @@ import Footer from '../components/Footer'
 import Heading from '../components/Heading'
 import CartDrawer from '../components/CartDrawer'
 import Banner from '../components/Banner'
+import { findCategoryByKeys, getCategoryId } from "../utils/productDiscovery";
+
+const CATEGORY_KEYS = ["hairstyling", "hair styling", "hair appliances", "styling"];
 
 const HairStyle = () => {
   const { categories } = useCategories();
 
- const hairCategory = categories.find(
-  (c) =>
-    c.name
-      .toLowerCase()
-      .replace(/\s+/g, "") === "hairstyling"
-);
+ const hairCategory = findCategoryByKeys(categories, CATEGORY_KEYS);
 
 
   return (
@@ -82,19 +80,16 @@ const HairStyle = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
           <Heading level="h1" heading="Hair Styling Products" />
 
-            {hairCategory ? (
-            <ProductList
-              categoryId={hairCategory.id}
-              priorityNames={[ "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control"]}
-              structuredData={{
-                title: "Hair Styling Products | Ilika",
-                description: "Browse Ilika hair styling products with current pricing and offers.",
-                path: "/hair/styling",
-              }}
-            />
-          ) : (
-            <p className="text-sm text-gray-500">Loading products...</p>
-          )}
+          <ProductList
+            categoryId={getCategoryId(hairCategory)}
+            categoryKeys={CATEGORY_KEYS}
+            priorityNames={[ "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control"]}
+            structuredData={{
+              title: "Hair Styling Products | Ilika",
+              description: "Browse Ilika hair styling products with current pricing and offers.",
+              path: "/hair/styling",
+            }}
+          />
 
         </section>
 

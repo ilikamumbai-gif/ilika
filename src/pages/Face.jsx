@@ -8,16 +8,14 @@ import Footer from '../components/Footer'
 import Heading from '../components/Heading'
 import CartDrawer from '../components/CartDrawer'
 import Banner from '../components/Banner'
+import { findCategoryByKeys, getCategoryId } from "../utils/productDiscovery";
+
+const CATEGORY_KEYS = ["facecare", "face care"];
 
 const Face = () => {
   const { categories } = useCategories();
 
- const hairCategory = categories.find(
-  (c) =>
-    c.name
-      .toLowerCase()
-      .replace(/\s+/g, "") === "facecare"
-);
+ const hairCategory = findCategoryByKeys(categories, CATEGORY_KEYS);
 
 
   return (
@@ -73,18 +71,15 @@ const Face = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
           <Heading level="h1" heading="Face Care Products" />
 
-          {hairCategory ? (
-            <ProductList
-              categoryId={hairCategory.id}
-              structuredData={{
-                title: "Face Care Products | Ilika",
-                description: "Browse Ilika face care products with current pricing and offers.",
-                path: "/skin/face",
-              }}
-            />
-          ) : (
-            <p className="text-sm text-gray-500">Loading products...</p>
-          )}
+          <ProductList
+            categoryId={getCategoryId(hairCategory)}
+            categoryKeys={CATEGORY_KEYS}
+            structuredData={{
+              title: "Face Care Products | Ilika",
+              description: "Browse Ilika face care products with current pricing and offers.",
+              path: "/skin/face",
+            }}
+          />
 
         </section>
 

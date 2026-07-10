@@ -12,6 +12,7 @@ import { createSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 import { buildProductListStructuredData } from "../utils/productListStructuredData";
+import { getCategoryId, productMatchesCategoryKeys } from "../utils/productDiscovery";
 
 const splitCategoryNames = (value = "") =>
   String(value || "")
@@ -144,7 +145,7 @@ const CategoryProducts = () => {
   );
 
   const matchedCategoryIds = useMemo(
-    () => new Set(matchedCategories.map((category) => String(category.id))),
+    () => new Set(matchedCategories.map((category) => String(getCategoryId(category))).filter(Boolean)),
     [matchedCategories]
   );
   const matchedGroups = useMemo(
@@ -168,7 +169,8 @@ const CategoryProducts = () => {
         .filter((category) =>
           matchedGroups.has(String(category?.group || "").trim().toLowerCase())
         )
-        .map((category) => String(category.id))
+        .map((category) => String(getCategoryId(category)))
+        .filter(Boolean)
     );
   }, [categories, includeGroupWide, matchedGroups]);
 
@@ -208,6 +210,10 @@ const CategoryProducts = () => {
       const ids = Array.isArray(product?.categoryIds) ? product.categoryIds.map(String) : [];
       if (ids.some((id) => matchedCategoryIds.has(id))) return true;
       if (ids.some((id) => groupCategoryIds.has(id))) return true;
+
+      if (productMatchesCategoryKeys(product, [targetSlug, categoryLabel, ...matchedCategories.map((category) => category?.name)])) {
+        return true;
+      }
 
       const names = splitCategoryNames(product.categoryName || "");
       return names.some((name) => {

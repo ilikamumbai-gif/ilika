@@ -7,16 +7,14 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Heading from '../components/Heading'
 import CartDrawer from '../components/CartDrawer'
+import { findCategoryByKeys, getCategoryId } from "../utils/productDiscovery";
+
+const CATEGORY_KEYS = ["grooming"];
 
 const Grooming = () => {
   const { categories } = useCategories();
 
- const hairCategory = categories.find(
-  (c) =>
-    c.name
-      .toLowerCase()
-      .replace(/\s+/g, "") === "grooming"
-);
+ const hairCategory = findCategoryByKeys(categories, CATEGORY_KEYS);
 
 
   return (
@@ -30,14 +28,11 @@ const Grooming = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
           <Heading level="h1" heading="Grooming Products" />
 
-           {hairCategory ? (
-            <ProductList
-              categoryId={hairCategory.id}
-              priorityNames={["Ilika Automatic Voice Version Face Mask Maker Machine"]}
-            />
-          ) : (
-            <p className="text-sm text-gray-500">Loading products...</p>
-          )}
+          <ProductList
+            categoryId={getCategoryId(hairCategory)}
+            categoryKeys={CATEGORY_KEYS}
+            priorityNames={["Ilika Automatic Voice Version Face Mask Maker Machine"]}
+          />
 
         </section>
 
