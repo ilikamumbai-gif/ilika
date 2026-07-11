@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaWind, FaTemperatureHigh, FaBolt, FaFeatherAlt, FaUsers, FaVolumeMute, FaStar, FaCheckCircle } from "react-icons/fa";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
@@ -8,6 +8,7 @@ import CartDrawer from "../components/CartDrawer";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
+import { HAIR_TOOL_COMPARISON_BLOGS, PRIVATE_BLOG_PATHS } from "../data/privateBlogs";
 import reviewerPriya from "./assets/hairdryerreview1.png";
 import reviewerArjun from "./assets/hairdryerreview2.jpeg";
 import reviewerNeha from "./assets/hairdryerreview3.jpeg";
@@ -373,6 +374,55 @@ const HairDryerLanding = () => {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="cv-auto border-b border-[#9569d0]/45 px-4 py-12 sm:px-10 sm:py-16 lg:px-14">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-5 inline-flex items-center gap-3 [font-family:'Bebas_Neue',sans-serif] text-3xl font-bold leading-none tracking-[0.08em] text-[#f5f3ff]">
+              <span className="h-px w-8 bg-[#9569d0]" />
+              Comparison guides
+            </p>
+            <h2 className="[font-family:'Bebas_Neue',sans-serif] text-4xl leading-none sm:text-5xl">
+              READ BEFORE YOU BUY.
+            </h2>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-[#e5e7eb]">
+              Compare Ilika BLDC hair dryer and multi-styler features with costly premium hair tools using safe,
+              honest buyer guides focused on price, BLDC motor performance, ionic frizz control, voltage control, and warranty support.
+            </p>
+          </div>
+          <a href={productPath} className="text-[11px] uppercase tracking-[0.14em] text-[#c4b5fd] transition hover:text-[#f9f7ff] sm:text-xs">
+            Shop Hair Dryer {"->"}
+          </a>
+        </div>
+        <div className="grid grid-cols-1 gap-[1px] bg-[#9569d0]/35 md:grid-cols-2 xl:grid-cols-3">
+          {HAIR_TOOL_COMPARISON_BLOGS.map((blog, index) => {
+            const blogPath = PRIVATE_BLOG_PATHS[blog.slug] || `/blog/private/${blog.slug}`;
+            const primaryLink = blog.internalLinks?.[0]?.url || productPath;
+
+            return (
+              <article key={blog.id} className="flex min-h-[260px] flex-col bg-[#1b1630] p-5 transition hover:bg-[#251d40] sm:p-6">
+                <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.22em] text-[#c4b5fd]">
+                  Guide {String(index + 1).padStart(2, "0")}
+                </p>
+                <h3 className="mb-3 text-base font-semibold leading-snug text-[#f9f7ff] sm:text-lg">
+                  {blog.title}
+                </h3>
+                <p className="mb-5 line-clamp-4 text-sm leading-6 text-[#e5e7eb]">
+                  {blog.excerpt}
+                </p>
+                <div className="mt-auto flex flex-col gap-3 border-t border-[#9569d0]/30 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <Link to={blogPath} className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#c4b5fd] transition hover:text-[#f9f7ff]">
+                    Read Blog {"->"}
+                  </Link>
+                  <Link to={primaryLink} className="text-[11px] uppercase tracking-[0.12em] text-[#f5f3ff]/75 transition hover:text-[#f9f7ff]">
+                    Product Link
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
