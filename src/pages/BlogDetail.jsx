@@ -11,7 +11,7 @@ import { createSlug, getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 import { buildCartProductSnapshot, getDefaultVariant } from "../utils/productPricing";
-import { PRIVATE_BLOG_PATHS, PRIVATE_BLOGS } from "../data/privateBlogs";
+import { HAIR_TOOL_COMPARISON_BLOGS, PRIVATE_BLOG_PATHS, PRIVATE_BLOGS } from "../data/privateBlogs";
 
 const removeInlineImagesFromHtml = (html = "") =>
   String(html || "").replace(/<img[^>]*>/gi, "");
@@ -169,8 +169,15 @@ const BlogDetail = () => {
       ) || null,
     [slug]
   );
+  const staticBlog = useMemo(
+    () =>
+      HAIR_TOOL_COMPARISON_BLOGS.find(
+        (entry) => String(entry?.slug || "").trim().toLowerCase() === String(slug || "").trim().toLowerCase()
+      ) || null,
+    [slug]
+  );
   const isPrivateBlogRoute = location.pathname.startsWith("/blog/private/");
-  const isPrivateBlog = Boolean(privateBlog);
+  const isPrivateBlog = isPrivateBlogRoute && Boolean(privateBlog);
 
   const [comments, setComments] = useState([]);
   const [name, setName] = useState("");
@@ -192,6 +199,12 @@ const BlogDetail = () => {
 
       if (isPrivateBlogRoute) {
         setBlog(privateBlog);
+        setLoadingBlog(false);
+        return;
+      }
+
+      if (staticBlog) {
+        setBlog(staticBlog);
         setLoadingBlog(false);
         return;
       }
@@ -248,7 +261,7 @@ const BlogDetail = () => {
     return () => {
       ignore = true;
     };
-  }, [API, isPrivateBlogRoute, locationBlog, privateBlog, slug]);
+  }, [API, isPrivateBlogRoute, locationBlog, privateBlog, slug, staticBlog]);
 
   useEffect(() => {
     const node = commentsSectionRef.current;

@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { HAIR_TOOL_COMPARISON_BLOGS } from "../src/data/privateBlogs.js";
 
 const readEnvFile = async (filePath) => {
   try {
@@ -42,7 +43,9 @@ const STATIC_URLS = [
   { loc: "/shopall", priority: "0.9", changefreq: "daily" },
   { loc: "/products", priority: "0.9", changefreq: "daily" },
   { loc: "/newarrival", priority: "0.9", changefreq: "daily" },
+  { loc: "/best-seller", priority: "0.9", changefreq: "daily" },
   { loc: "/offer", priority: "0.8", changefreq: "daily" },
+  { loc: "/gift-store", priority: "0.8", changefreq: "weekly" },
   { loc: "/skin", priority: "0.8", changefreq: "weekly" },
   { loc: "/hair", priority: "0.8", changefreq: "weekly" },
   { loc: "/grooming", priority: "0.8", changefreq: "weekly" },
@@ -65,14 +68,24 @@ const STATIC_URLS = [
   { loc: "/about/quality-promise", priority: "0.6", changefreq: "monthly" },
   { loc: "/about/ingredient-philosophy", priority: "0.6", changefreq: "monthly" },
   { loc: "/contact", priority: "0.7", changefreq: "monthly" },
+  { loc: "/feedback", priority: "0.5", changefreq: "monthly" },
+  { loc: "/warranty-registration", priority: "0.5", changefreq: "monthly" },
+  { loc: "/support-ticket", priority: "0.5", changefreq: "monthly" },
+  { loc: "/raise-complaint", priority: "0.5", changefreq: "monthly" },
+  { loc: "/warranty-claim", priority: "0.5", changefreq: "monthly" },
   { loc: "/privacy", priority: "0.5", changefreq: "yearly" },
   { loc: "/termsandcondition", priority: "0.5", changefreq: "yearly" },
   { loc: "/return", priority: "0.5", changefreq: "yearly" },
   { loc: "/shippingpolicy", priority: "0.5", changefreq: "yearly" },
   { loc: "/faq", priority: "0.5", changefreq: "monthly" },
+  { loc: "/track-order", priority: "0.6", changefreq: "monthly" },
+  { loc: "/social-feed", priority: "0.6", changefreq: "weekly" },
+  { loc: "/knowskintype", priority: "0.6", changefreq: "monthly" },
   { loc: "/voice-mask-maker", priority: "0.8", changefreq: "weekly" },
   { loc: "/nonvoice-mask-maker", priority: "0.8", changefreq: "weekly" },
   { loc: "/leafless-hair-dryer", priority: "0.8", changefreq: "weekly" },
+  { loc: "/high-frequency-therapy-wand", priority: "0.8", changefreq: "weekly" },
+  { loc: "/hot-cold-blackhead-remover", priority: "0.8", changefreq: "weekly" },
   { loc: "/blackseed-hair-oil", priority: "0.8", changefreq: "weekly" },
   { loc: "/herbal-hair-oil", priority: "0.8", changefreq: "weekly" },
 ];
@@ -81,6 +94,10 @@ const LLM_STATIC_URLS = [
   "/",
   "/products",
   "/shopall",
+  "/best-seller",
+  "/newarrival",
+  "/offer",
+  "/gift-store",
   "/offers",
   "/glow-therapy-comb",
   "/hydration-glow-combo",
@@ -91,9 +108,17 @@ const LLM_STATIC_URLS = [
   "/about/quality-promise",
   "/about/ingredient-philosophy",
   "/contact",
+  "/feedback",
+  "/warranty-registration",
+  "/support-ticket",
+  "/track-order",
+  "/social-feed",
+  "/knowskintype",
   "/voice-mask-maker",
   "/nonvoice-mask-maker",
   "/leafless-hair-dryer",
+  "/high-frequency-therapy-wand",
+  "/hot-cold-blackhead-remover",
   "/blackseed-hair-oil",
   "/herbal-hair-oil",
 ];
@@ -422,17 +447,24 @@ async function main() {
     ...u,
     lastmod: today.toISOString().slice(0, 10),
   }));
+  const staticBlogUrls = HAIR_TOOL_COMPARISON_BLOGS.map((blog) => ({
+    loc: `/blog/${blog.slug}`,
+    priority: "0.7",
+    changefreq: "weekly",
+    lastmod: toIsoDate(blog.updatedAt || blog.createdAt, today),
+  }));
 
-  const urls = dedupeUrls([...staticUrls, ...productUrls, ...categoryUrls, ...blogUrls]);
+  const combinedBlogUrls = dedupeUrls([...staticBlogUrls, ...blogUrls]);
+  const urls = dedupeUrls([...staticUrls, ...productUrls, ...categoryUrls, ...combinedBlogUrls]);
   const productAbsoluteUrls = productUrls.map((entry) => absolute(siteUrl, entry.loc));
   const categoryAbsoluteUrls = categoryUrls.map((entry) => absolute(siteUrl, entry.loc));
-  const blogAbsoluteUrls = blogUrls.map((entry) => absolute(siteUrl, entry.loc));
+  const blogAbsoluteUrls = combinedBlogUrls.map((entry) => absolute(siteUrl, entry.loc));
 
   const publicDir = path.resolve(process.cwd(), "public");
   await fs.writeFile(path.join(publicDir, "sitemap.xml"), toSitemapXml(urls, siteUrl), "utf8");
   await fs.writeFile(
     path.join(publicDir, "sitemap.html"),
-    toSitemapHtml(staticUrls, productUrls, categoryUrls, blogUrls),
+    toSitemapHtml(staticUrls, productUrls, categoryUrls, combinedBlogUrls),
     "utf8"
   );
   await fs.writeFile(
@@ -447,7 +479,7 @@ async function main() {
   );
 
   console.log(
-    `[sitemap] Done. Static: ${staticUrls.length}, Products: ${productUrls.length}, Categories: ${categoryUrls.length}, Blogs: ${blogUrls.length}`
+    `[sitemap] Done. Static: ${staticUrls.length}, Products: ${productUrls.length}, Categories: ${categoryUrls.length}, Blogs: ${combinedBlogUrls.length}`
   );
   if (skippedProducts.length) {
     console.warn(

@@ -13,6 +13,10 @@ Website: https://ilika.in
 https://ilika.in/
 https://ilika.in/products
 https://ilika.in/shopall
+https://ilika.in/best-seller
+https://ilika.in/newarrival
+https://ilika.in/offer
+https://ilika.in/gift-store
 https://ilika.in/offers
 https://ilika.in/glow-therapy-comb
 https://ilika.in/hydration-glow-combo
@@ -23,9 +27,17 @@ https://ilika.in/about/why-ilika
 https://ilika.in/about/quality-promise
 https://ilika.in/about/ingredient-philosophy
 https://ilika.in/contact
+https://ilika.in/feedback
+https://ilika.in/warranty-registration
+https://ilika.in/support-ticket
+https://ilika.in/track-order
+https://ilika.in/social-feed
+https://ilika.in/knowskintype
 https://ilika.in/voice-mask-maker
 https://ilika.in/nonvoice-mask-maker
 https://ilika.in/leafless-hair-dryer
+https://ilika.in/high-frequency-therapy-wand
+https://ilika.in/hot-cold-blackhead-remover
 https://ilika.in/blackseed-hair-oil
 https://ilika.in/herbal-hair-oil
 
@@ -39,4 +51,23 @@ No category URLs generated.
 
 ## Blog URLs
 
-No blog URLs generated.
+https://ilika.in/blog/ilika-bldc-hair-dryer-vs-other-costly-brands-full-comparison
+https://ilika.in/blog/best-professional-hair-dryer-in-india-under-inr-5000
+https://ilika.in/blog/ionic-hair-dryer-vs-normal-hair-dryer-which-actually-reduces-frizz
+https://ilika.in/blog/bldc-motor-hair-dryer-vs-ac-motor-hair-dryer-whats-the-real-difference
+https://ilika.in/blog/fast-drying-hair-dryer-for-thick-hair-ilika-bldc-review
+https://ilika.in/blog/salon-quality-blow-dry-at-home-ilika-hair-dryer-vs-salon-visit
+https://ilika.in/blog/temperature-control-hair-dryer-why-it-matters-for-hair-health
+https://ilika.in/blog/ilika-hair-dryer-vs-other-budget-hair-dryers-on-amazon
+https://ilika.in/blog/leafless-hair-dryer-vs-traditional-hair-dryer-pros-and-cons
+https://ilika.in/blog/best-hair-dryer-for-frizzy-hair-in-india-2026
+https://ilika.in/blog/ilika-hair-dryer-colors-compared-black-vs-white-vs-purple-which-to-choose
+https://ilika.in/blog/hair-dryer-with-electricityvoltage-control-why-it-protects-your-investment
+https://ilika.in/blog/ilika-hair-dryer-vs-other-costly-brands-price-and-performance-comparison
+https://ilika.in/blog/quiet-hair-dryer-for-home-use-ilikas-noise-reduction-technology-explained
+https://ilika.in/blog/travel-friendly-hair-dryer-comparison-ilika-vs-bulky-traditional-dryers
+https://ilika.in/blog/how-to-choose-the-right-hair-dryer-ionic-vs-ceramic-vs-bldc-explained
+https://ilika.in/blog/ilika-hair-dryer-real-customer-reviews-before-after-results
+https://ilika.in/blog/best-hair-dryer-for-men-vs-women-does-it-matter-ilika-review
+https://ilika.in/blog/ilika-hair-dryer-vs-other-costly-brands-1-year-warranty-comparison
+https://ilika.in/blog/monsoon-hair-care-best-hair-dryer-in-india-to-fight-frizz-and-humidity

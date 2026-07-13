@@ -8,6 +8,7 @@ import Heading from "../components/Heading";
 import blackSeedLandingImage from "../Landing/assets/Blackseed1.png";
 import herbalLandingImage from "../Landing/assets/Herbal1.png";
 import { useProducts } from "../admin/context/ProductContext";
+import { HAIR_TOOL_COMPARISON_BLOGS } from "../data/privateBlogs";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -221,42 +222,52 @@ const Blog = () => {
         </section>
 
         <main className="mx-auto max-w-7xl bg-white px-3 py-7 sm:px-6 sm:py-10">
-          {blogs.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-[#d3ddd3] bg-white/80 px-6 py-16 text-center text-[#4a5f4a]">
-              No blogs yet.
-            </div>
-          ) : (
-            <div className="space-y-8 sm:space-y-10">
+          <div className="space-y-8 sm:space-y-10">
+            <section>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Product Landing Pages</p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+                {LANDING_BLOG_CARDS.map((card) => (
+                  <BlogCard
+                    key={card.id}
+                    blog={card}
+                    linkPath={card.linkPath}
+                    hideDate
+                    ctaLabel="View Page"
+                    squareImage
+                    compact
+                  />
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Hair Dryer Guides</p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+                {HAIR_TOOL_COMPARISON_BLOGS.map((blog) => (
+                  <BlogCard
+                    key={blog.id}
+                    blog={blog}
+                    linkPath={`/blog/${blog.slug}`}
+                    ctaLabel="Read Blog"
+                    squareImage
+                    compact
+                  />
+                ))}
+              </div>
+            </section>
+
+            {featuredBlog && (
               <section>
-                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Product Landing Pages</p>
+                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Featured</p>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-                  {LANDING_BLOG_CARDS.map((card) => (
-                    <BlogCard
-                      key={card.id}
-                      blog={card}
-                      linkPath={card.linkPath}
-                      hideDate
-                      ctaLabel="View Page"
-                      squareImage
-                      compact
-                    />
+                  <BlogCard blog={featuredBlog} prioritizeImage />
+                  {restBlogs.map((blog) => (
+                    <BlogCard key={blog.id} blog={blog} />
                   ))}
                 </div>
               </section>
-
-              {featuredBlog && (
-                <section>
-                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Featured</p>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-                    <BlogCard blog={featuredBlog} prioritizeImage />
-                    {restBlogs.map((blog) => (
-                      <BlogCard key={blog.id} blog={blog} />
-                    ))}
-                  </div>
-                </section>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </main>
       </div>
       <Footer />
