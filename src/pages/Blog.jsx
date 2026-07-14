@@ -8,7 +8,7 @@ import Heading from "../components/Heading";
 import blackSeedLandingImage from "../Landing/assets/Blackseed1.png";
 import herbalLandingImage from "../Landing/assets/Herbal1.png";
 import { useProducts } from "../admin/context/ProductContext";
-import { HAIR_TOOL_COMPARISON_BLOGS } from "../data/privateBlogs";
+import { HAIR_DRYER_GUIDE_BLOG } from "../data/privateBlogs";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -243,16 +243,13 @@ const Blog = () => {
             <section>
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Hair Dryer Guides</p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-                {HAIR_TOOL_COMPARISON_BLOGS.map((blog) => (
-                  <BlogCard
-                    key={blog.id}
-                    blog={blog}
-                    linkPath={`/blog/${blog.slug}`}
-                    ctaLabel="Read Blog"
-                    squareImage
-                    compact
-                  />
-                ))}
+                <BlogCard
+                  blog={HAIR_DRYER_GUIDE_BLOG}
+                  linkPath={`/blog/${HAIR_DRYER_GUIDE_BLOG.slug}`}
+                  ctaLabel="Read Guide"
+                  squareImage
+                  compact
+                />
               </div>
             </section>
 

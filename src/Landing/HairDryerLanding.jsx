@@ -8,7 +8,7 @@ import CartDrawer from "../components/CartDrawer";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
-import { HAIR_TOOL_COMPARISON_BLOGS } from "../data/privateBlogs";
+import { HAIR_DRYER_GUIDE_BLOG, HAIR_TOOL_COMPARISON_BLOGS } from "../data/privateBlogs";
 import reviewerPriya from "./assets/hairdryerreview1.png";
 import reviewerArjun from "./assets/hairdryerreview2.jpeg";
 import reviewerNeha from "./assets/hairdryerreview3.jpeg";
@@ -398,7 +398,7 @@ const HairDryerLanding = () => {
         </div>
         <div className="grid grid-cols-1 gap-[1px] bg-[#9569d0]/35 md:grid-cols-2 xl:grid-cols-3">
           {HAIR_TOOL_COMPARISON_BLOGS.map((blog, index) => {
-            const blogPath = `/blog/${blog.slug}`;
+            const blogPath = `/blog/${HAIR_DRYER_GUIDE_BLOG.slug}#${blog.anchor}`;
             const primaryLink = blog.internalLinks?.[0]?.url || productPath;
 
             return (

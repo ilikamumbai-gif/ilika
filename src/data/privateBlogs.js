@@ -758,6 +758,7 @@ const buildHairToolBlog = ({
 }) => ({
   id,
   slug: createSlug(title),
+  anchor: createSlug(keyword),
   title,
   author: "Ilika Team",
   createdAt: "2026-07-11T00:00:00.000Z",
@@ -950,7 +951,59 @@ export const HAIR_TOOL_COMPARISON_BLOGS = [
   }),
 ];
 
-PRIVATE_BLOGS.push(...HAIR_TOOL_COMPARISON_BLOGS);
+const hairDryerGuideIntroLinks = HAIR_TOOL_COMPARISON_BLOGS.map(
+  (blog) =>
+    `<li><a href="#${blog.anchor}">${blog.title}</a><span> - ${blog.keyword}</span></li>`
+).join("");
+
+const hairDryerGuideSections = HAIR_TOOL_COMPARISON_BLOGS.map(
+  (blog, index) =>
+    `<section id="${blog.anchor}"><h2>${index + 1}. ${blog.title}</h2><p><strong>Primary target keyword:</strong> ${blog.keyword}</p><p>${blog.angle}</p><ul>${blog.bullets.map((bullet) => `<li>${bullet}</li>`).join("")}<li>Connect the reader back to Ilika's 110,000 RPM BLDC motor, ionic frizz-control technology, smart temperature control, compact leafless design, and voltage control.</li><li>Link naturally to the Ilika hair dryer product page and the leafless hair dryer landing page.</li></ul></section>`
+).join("");
+
+export const HAIR_DRYER_GUIDE_BLOG = {
+  id: "leafless-hair-dryer-comparison-guide",
+  slug: "leafless-hair-dryer-comparison-guide",
+  title: "Leafless Hair Dryer Comparison Guide: BLDC, Ionic, Frizz Control and Buying Tips",
+  author: "Ilika Team",
+  createdAt: "2026-07-11T00:00:00.000Z",
+  excerpt:
+    "A complete Ilika BLDC leafless hair dryer guide with internal links for motor comparison, frizz control, voltage control, travel use, warranty, and buying tips.",
+  image: "/Images/HairdrayerCard.webp",
+  internalLink: hairDryerProductPath,
+  internalLinks: [
+    {
+      id: "hair-dryer-guide-product",
+      label: "Shop Ilika BLDC Hair Dryer",
+      url: hairDryerProductPath,
+    },
+    {
+      id: "hair-dryer-guide-landing",
+      label: "Explore Leafless Hair Dryer Page",
+      url: hairDryerLandingPath,
+    },
+    ...HAIR_TOOL_COMPARISON_BLOGS.slice(0, 6).map((blog) => ({
+      id: `hair-dryer-guide-${blog.anchor}`,
+      label: blog.title,
+      url: `/blog/leafless-hair-dryer-comparison-guide#${blog.anchor}`,
+    })),
+  ],
+  isPrivate: false,
+  hideFromBlogListing: false,
+  contentSections: [
+    {
+      id: "hair-dryer-guide-intro",
+      type: "content-full",
+      content:
+        `<p>This single guide brings together the most useful Ilika BLDC hair dryer comparisons in one crawlable page. Use the internal links below to jump to the exact topic you need.</p><h2>Guide Sections</h2><ol>${hairDryerGuideIntroLinks}</ol><h2>Core Ilika Hair Dryer Proof Points</h2><ul><li>110,000 RPM BLDC motor for fast airflow</li><li>Ionic technology for smoother, frizz-controlled styling</li><li>Smart temperature and thermo-control for daily hair protection</li><li>Electricity and voltage control for more stable performance</li><li>Compact leafless design for home and travel use</li><li>Warranty support, easy replacement help, and COD availability where applicable</li></ul>`,
+    },
+    {
+      id: "hair-dryer-guide-sections",
+      type: "content-full",
+      content: hairDryerGuideSections,
+    },
+  ],
+};
 
 export const PRIVATE_BLOG_PATHS = PRIVATE_BLOGS.reduce((acc, blog) => {
   acc[blog.slug] = `/blog/private/${blog.slug}`;
