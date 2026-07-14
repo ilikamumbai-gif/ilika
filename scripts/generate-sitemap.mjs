@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { HAIR_TOOL_COMPARISON_BLOGS } from "../src/data/privateBlogs.js";
+import { HAIR_DRYER_GUIDE_BLOG } from "../src/data/privateBlogs.js";
 
 const readEnvFile = async (filePath) => {
   try {
@@ -447,12 +447,12 @@ async function main() {
     ...u,
     lastmod: today.toISOString().slice(0, 10),
   }));
-  const staticBlogUrls = HAIR_TOOL_COMPARISON_BLOGS.map((blog) => ({
-    loc: `/blog/${blog.slug}`,
+  const staticBlogUrls = [{
+    loc: `/blog/${HAIR_DRYER_GUIDE_BLOG.slug}`,
     priority: "0.7",
     changefreq: "weekly",
-    lastmod: toIsoDate(blog.updatedAt || blog.createdAt, today),
-  }));
+    lastmod: toIsoDate(HAIR_DRYER_GUIDE_BLOG.updatedAt || HAIR_DRYER_GUIDE_BLOG.createdAt, today),
+  }];
 
   const combinedBlogUrls = dedupeUrls([...staticBlogUrls, ...blogUrls]);
   const urls = dedupeUrls([...staticUrls, ...productUrls, ...categoryUrls, ...combinedBlogUrls]);
