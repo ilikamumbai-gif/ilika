@@ -11,7 +11,7 @@ import { createSlug, getProductSlug } from "../utils/slugify";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 import { buildCartProductSnapshot, getDefaultVariant } from "../utils/productPricing";
-import { HAIR_DRYER_GUIDE_BLOG, PRIVATE_BLOG_PATHS, PRIVATE_BLOGS } from "../data/privateBlogs";
+import { PRIVATE_BLOG_PATHS, PRIVATE_BLOGS, STATIC_BLOGS } from "../data/privateBlogs";
 
 const removeInlineImagesFromHtml = (html = "") =>
   String(html || "").replace(/<img[^>]*>/gi, "");
@@ -171,9 +171,9 @@ const BlogDetail = () => {
   );
   const staticBlog = useMemo(
     () =>
-      String(HAIR_DRYER_GUIDE_BLOG.slug || "").trim().toLowerCase() === String(slug || "").trim().toLowerCase()
-        ? HAIR_DRYER_GUIDE_BLOG
-        : null,
+      STATIC_BLOGS.find(
+        (entry) => String(entry?.slug || "").trim().toLowerCase() === String(slug || "").trim().toLowerCase()
+      ) || null,
     [slug]
   );
   const isPrivateBlogRoute = location.pathname.startsWith("/blog/private/");

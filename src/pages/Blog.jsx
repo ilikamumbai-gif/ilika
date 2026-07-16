@@ -8,7 +8,11 @@ import Heading from "../components/Heading";
 import blackSeedLandingImage from "../Landing/assets/Blackseed1.png";
 import herbalLandingImage from "../Landing/assets/Herbal1.png";
 import { useProducts } from "../admin/context/ProductContext";
-import { HAIR_DRYER_GUIDE_BLOG } from "../data/privateBlogs";
+import {
+  HAIR_DRYER_TOPIC_BLOGS,
+  MASK_MAKER_TOPIC_BLOGS,
+  STATIC_BLOGS,
+} from "../data/privateBlogs";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -241,15 +245,56 @@ const Blog = () => {
             </section>
 
             <section>
-              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Hair Dryer Guides</p>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">
+                Featured Static Blogs ({STATIC_BLOGS.length})
+              </p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-                <BlogCard
-                  blog={HAIR_DRYER_GUIDE_BLOG}
-                  linkPath={`/blog/${HAIR_DRYER_GUIDE_BLOG.slug}`}
-                  ctaLabel="Read Guide"
-                  squareImage
-                  compact
-                />
+                {STATIC_BLOGS.slice(0, 8).map((blog) => (
+                  <BlogCard
+                    key={blog.id}
+                    blog={blog}
+                    linkPath={`/blog/${blog.slug}`}
+                    ctaLabel="Read Blog"
+                    squareImage
+                    compact
+                  />
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">
+                Hair Dryer Blogs ({HAIR_DRYER_TOPIC_BLOGS.length})
+              </p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+                {HAIR_DRYER_TOPIC_BLOGS.map((blog) => (
+                  <BlogCard
+                    key={blog.id}
+                    blog={blog}
+                    linkPath={`/blog/${blog.slug}`}
+                    ctaLabel="Read Blog"
+                    squareImage
+                    compact
+                  />
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">
+                Mask Maker Blogs ({MASK_MAKER_TOPIC_BLOGS.length})
+              </p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+                {MASK_MAKER_TOPIC_BLOGS.map((blog) => (
+                  <BlogCard
+                    key={blog.id}
+                    blog={blog}
+                    linkPath={`/blog/${blog.slug}`}
+                    ctaLabel="Read Blog"
+                    squareImage
+                    compact
+                  />
+                ))}
               </div>
             </section>
 

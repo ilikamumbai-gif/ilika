@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { HAIR_DRYER_GUIDE_BLOG } from "../src/data/privateBlogs.js";
+import {
+  STATIC_BLOGS,
+} from "../src/data/privateBlogs.js";
 
 const readEnvFile = async (filePath) => {
   try {
@@ -235,6 +237,8 @@ const dedupeUrls = (urls) =>
 
 const dedupeAbsoluteUrls = (urls) => Array.from(new Set(urls.filter(Boolean)));
 
+const staticBlogCollections = STATIC_BLOGS;
+
 async function fetchResource({ label, endpoints, toUrls }) {
   if (!endpoints.length) {
     console.warn(`[sitemap] ${label} endpoint missing. Skipping ${label} URLs.`);
@@ -447,12 +451,12 @@ async function main() {
     ...u,
     lastmod: today.toISOString().slice(0, 10),
   }));
-  const staticBlogUrls = [{
-    loc: `/blog/${HAIR_DRYER_GUIDE_BLOG.slug}`,
+  const staticBlogUrls = staticBlogCollections.map((blog) => ({
+    loc: `/blog/${blog.slug}`,
     priority: "0.7",
     changefreq: "weekly",
-    lastmod: toIsoDate(HAIR_DRYER_GUIDE_BLOG.updatedAt || HAIR_DRYER_GUIDE_BLOG.createdAt, today),
-  }];
+    lastmod: toIsoDate(blog.updatedAt || blog.createdAt, today),
+  }));
 
   const combinedBlogUrls = dedupeUrls([...staticBlogUrls, ...blogUrls]);
   const urls = dedupeUrls([...staticUrls, ...productUrls, ...categoryUrls, ...combinedBlogUrls]);
