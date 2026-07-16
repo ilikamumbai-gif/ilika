@@ -46,7 +46,7 @@ const homeFeatureVideoUrl = "https://youtu.be/lEGWrDPXNpE";
 const HOME_HONEST_REVIEWS = [
   {
     id: "instagram-reel-youtube-short",
-    url: "/HonestReview/instagram-reel-youtube-short.mp4",
+    url: "/HonestReview/instagram-reel-review.mp4",
     title: "Customer Review",
     productName: "Ilika Community",
   },
