@@ -29,6 +29,8 @@ const TestimonialList = lazy(() => import("../components/TestimonialList"));
 import blackSeedLandingImage from "../Landing/assets/Blackseed1.png";
 import herbalLandingImage from "../Landing/assets/Herbal1.png";
 
+const homeTopHairBannerDesktop = "/Homepage/homepagehairbanner-new.webp";
+const homeTopHairBannerMobile = "/Homepage/homepagehairbanner-new.webp";
 const hairBannerDesktop = "/Homepage/homepagehairbanner.jpg";
 const hairBannerMobile = "/Homepage/homepagehairbannermobile.jpg";
 const BannerStyle = "/Images/Banner.webp";
@@ -672,15 +674,7 @@ const Home = () => {
       haircareCategory: byName.get("haircare"),
     };
   }, [categories]);
-  const hairBannerProductLink = useMemo(() => {
-    const targetProduct = activeProducts.find((item) => {
-      const name = String(item?.name || "").toLowerCase();
-      return name.includes("black seed") || name.includes("hair oil");
-    });
-
-    if (!targetProduct) return "/hair/care";
-    return `/product/${getProductSlug(targetProduct)}`;
-  }, [activeProducts]);
+  const hairBannerProductLink = "/product/leafless-hair-dryer";
   const skinTotal = useMemo(
     () =>
       skincareCategory
@@ -944,6 +938,12 @@ const Home = () => {
             className="mt-0 bg-[#fdecef]"
             bannerKey="home-top"
             slides={[
+              {
+                desktopSrc: homeTopHairBannerDesktop,
+                mobileSrc: homeTopHairBannerMobile,
+                linkUrl: hairBannerProductLink,
+                alt: "Hair Dryer Banner",
+              },
               {
                 desktopSrc: maskBannerDesktop,
                 mobileSrc: maskBannerMobile,
