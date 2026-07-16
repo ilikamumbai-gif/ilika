@@ -43,6 +43,14 @@ const maskBannerMobile = "/Homepage/homepagemaksmakerofferbannermobile.png";
 const homePageCtmBannerDesktop = "/Homepage/homepagebannerctm.jpg";
 const homePageCtmBannerMobile = "/Homepage/homepagebannerctmmobile.png";
 const homeFeatureVideoUrl = "https://youtu.be/lEGWrDPXNpE";
+const HOME_HONEST_REVIEWS = [
+  {
+    id: "instagram-reel-youtube-short",
+    url: "/HonestReview/instagram-reel-youtube-short.mp4",
+    title: "Customer Review",
+    productName: "Ilika Community",
+  },
+];
 
 
 const HAIR_CAROUSEL_ITEMS = [
@@ -804,6 +812,10 @@ const Home = () => {
   );
   const homeHonestReviews = useMemo(() => {
     const uniqueReviews = new Map();
+
+    HOME_HONEST_REVIEWS.forEach((item) => {
+      uniqueReviews.set(item.url.toLowerCase(), item);
+    });
 
     activeProducts.forEach((product) => {
       const rawItems = Array.isArray(product?.honestReviews) ? product.honestReviews : [];

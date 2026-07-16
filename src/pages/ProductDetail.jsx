@@ -40,6 +40,10 @@ import {
 } from "../utils/productPricing";
 
 const DEFAULT_DETAIL_BG = "#FFFFFF";
+const BLDC_HAIR_DRYER_GALLERY_VIDEO = {
+  url: "/HonestReview/instagram-reel-youtube-short.mp4",
+  title: "Ilika BLDC Hair Dryer Video",
+};
 const COLLAGEN_ADDON_OPTIONS = [
   { id: "pack0", count: 0, label: "No extra collagen Peptide pack", tablets: 0, price: 0 },
   { id: "pack1", count: 1, label: "1 Collagen Peptide Pack (16 no.s)", tablets: 16, price: 799 },
@@ -613,6 +617,7 @@ const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex =
     const videoItems = (Array.isArray(videos) ? videos : []).map((video, index) => ({
       type: "video",
       src: video?.embedUrl || "",
+      kind: video?.kind || "embed",
       thumb: video?.thumb || "",
       title: video?.title || `Product video ${index + 1}`,
       key: video?.id || `vid-${index}`,
@@ -722,14 +727,25 @@ const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex =
 
           {mediaItems[current]?.type === "video" ? (
             <div className="w-full h-full bg-white flex items-center justify-center">
-              <iframe
-                src={mediaItems[current]?.src}
-                title={mediaItems[current]?.title || "Product video"}
-                className="w-full aspect-video max-h-full"
-                style={{ border: "none" }}
-                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                allowFullScreen
-              />
+              {mediaItems[current]?.kind === "native" ? (
+                <video
+                  src={mediaItems[current]?.src}
+                  title={mediaItems[current]?.title || "Product video"}
+                  className="h-full w-full object-contain"
+                  autoPlay
+                  controls
+                  playsInline
+                />
+              ) : (
+                <iframe
+                  src={mediaItems[current]?.src}
+                  title={mediaItems[current]?.title || "Product video"}
+                  className="w-full aspect-video max-h-full"
+                  style={{ border: "none" }}
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                  allowFullScreen
+                />
+              )}
             </div>
           ) : (
             <img loading="lazy"
@@ -1058,6 +1074,8 @@ const getVideoThumbnailUrl = (url = "") => {
   }
   return "";
 };
+
+const isNativeVideoUrl = (url = "") => /\.(mp4|webm|ogg|mov)(?:[?#]|$)/i.test(String(url || "").trim());
 
 const getDriveThumbnailCandidates = (fileId = "") => {
   const id = String(fileId || "").trim();
@@ -2784,7 +2802,14 @@ const ProductDetail = () => {
     product?.image ||
     "";
   const productVideos = useMemo(() => {
-    const rawVideos = Array.isArray(product?.videos) ? product.videos : [];
+    const isBldcHairDryer = /(?:bldc|leafless)\s+hair\s+dryer/i.test(
+      `${product?.name || ""} ${product?.productUrl || ""} ${product?.slug || ""}`
+    );
+    const savedVideos = Array.isArray(product?.videos) ? product.videos : [];
+    const rawVideos = isBldcHairDryer
+      ? [BLDC_HAIR_DRYER_GALLERY_VIDEO, ...savedVideos]
+      : savedVideos;
+
     return rawVideos
       .map((video, index) => {
         const rawUrl = String(video?.url || "").trim();
@@ -2794,13 +2819,14 @@ const ProductDetail = () => {
           id: `video-${index}-${rawUrl}`,
           url: rawUrl,
           embedUrl,
+          kind: isNativeVideoUrl(rawUrl) ? "native" : "embed",
           thumb: getVideoThumbnailUrl(rawUrl),
           isShort: isShortFormVideoUrl(rawUrl),
           title: String(video?.title || "").trim() || `Product Video ${index + 1}`,
         };
       })
       .filter(Boolean);
-  }, [product?.videos]);
+  }, [product?.name, product?.productUrl, product?.slug, product?.videos]);
   // `displayImages` = what thumbnails actually render - only set after async preload
   const activeDisplayPricing = useMemo(
     () => getProductDisplayPricing(product, activeVariant),
@@ -4242,18 +4268,29 @@ const ProductDetail = () => {
                     {selectedVideoUrl ? (
                       <div className="flex aspect-square w-full items-center justify-center bg-[#fff5f4]">
                         {selectedVideoPlaying ? (
-                          <iframe
-                            src={selectedVideoUrl}
-                            title="Product video preview"
-                            className={
-                              selectedVideo?.isShort
-                                ? "h-full w-auto max-w-full mx-auto"
-                                : "w-full max-h-full aspect-video"
-                            }
-                            style={{ border: "none" }}
-                            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                            allowFullScreen
-                          />
+                          selectedVideo?.kind === "native" ? (
+                            <video
+                              src={selectedVideoUrl}
+                              title={selectedVideo.title || "Product video preview"}
+                              className="h-full w-full object-contain"
+                              autoPlay
+                              controls
+                              playsInline
+                            />
+                          ) : (
+                            <iframe
+                              src={selectedVideoUrl}
+                              title="Product video preview"
+                              className={
+                                selectedVideo?.isShort
+                                  ? "h-full w-auto max-w-full mx-auto"
+                                  : "w-full max-h-full aspect-video"
+                              }
+                              style={{ border: "none" }}
+                              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                              allowFullScreen
+                            />
+                          )
                         ) : (
                           <button
                             type="button"
