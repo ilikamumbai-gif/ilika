@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { X, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
@@ -7,6 +7,11 @@ import {
   getCartItemDisplayPricing,
   getCartItemVariantName,
 } from "../utils/productPricing";
+
+const EMI_PLAN_MONTHS = [3, 6, 9];
+const PREFERRED_PAYMENT_METHOD_KEY = "ilika_preferred_payment_method";
+
+const formatInr = (value = 0) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
 
 const CartDrawer = () => {
   const {
@@ -18,6 +23,7 @@ const CartDrawer = () => {
   } = useCart();
 
   const navigate = useNavigate();
+  const [showEmiDetails, setShowEmiDetails] = useState(false);
 
   if (!isCartOpen) return null;
 
@@ -27,6 +33,26 @@ const CartDrawer = () => {
   );
 
   const grandTotal = subtotal;
+  const emiPlans = useMemo(
+    () =>
+      EMI_PLAN_MONTHS.map((months) => ({
+        months,
+        monthly: Math.ceil(Math.max(0, grandTotal) / months),
+      })),
+    [grandTotal]
+  );
+  const primaryEmiPlan = emiPlans[0];
+
+  const goToCheckout = (preferredPaymentMethod = "") => {
+    if (!cartItems.length) return;
+    if (preferredPaymentMethod) {
+      sessionStorage.setItem(PREFERRED_PAYMENT_METHOD_KEY, preferredPaymentMethod);
+    } else {
+      sessionStorage.removeItem(PREFERRED_PAYMENT_METHOD_KEY);
+    }
+    closeCart();
+    navigate("/checkout");
+  };
 
   return (
     <>
@@ -182,7 +208,7 @@ const CartDrawer = () => {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Subtotal</span>
-              <span>{subtotal}</span>
+              <span>{formatInr(subtotal)}</span>
             </div>
 
             <div className="flex justify-between">
@@ -194,16 +220,66 @@ const CartDrawer = () => {
 
             <div className="flex justify-between text-base font-semibold">
               <span>Grand Total</span>
-              <span>{grandTotal}</span>
+              <span>{formatInr(grandTotal)}</span>
             </div>
           </div>
+
+          {cartItems.length > 0 && primaryEmiPlan ? (
+            <div className="rounded-[18px] border border-[#231815] bg-white px-3 pb-3 pt-4 shadow-[0_10px_24px_rgba(69,39,34,0.06)]">
+              <span className="inline-flex min-h-[24px] items-center rounded-[9px] bg-[#231815] px-3 py-1 text-[10px] font-semibold leading-none text-white shadow-[0_8px_18px_rgba(0,0,0,0.18)]">
+                EMI available
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowEmiDetails((prev) => !prev)}
+                className="mt-3 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-left"
+              >
+                <div className="min-w-0">
+                  <p className="text-[14px] leading-tight text-[#2f3540]">
+                    or <span className="font-bold text-[#231815]">{formatInr(primaryEmiPlan.monthly)}</span>
+                    <span className="font-semibold text-[#111827]">/month</span> ({primaryEmiPlan.months} months)
+                  </p>
+                  <p className="mt-1 text-[11px] font-medium leading-4 text-[#5f666d]">
+                    Based on your current cart total. Tap to view EMI splits.
+                  </p>
+                </div>
+                <span className="inline-flex h-fit shrink-0 items-center justify-center rounded-full bg-[#231815] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white">
+                  {showEmiDetails ? "Hide" : "View"}
+                </span>
+              </button>
+
+              {showEmiDetails ? (
+                <div className="mt-3 rounded-[16px] border border-[#ead7d2] bg-[#fcf8f6] p-3">
+                  <div className="grid grid-cols-3 gap-2">
+                    {emiPlans.map((plan) => (
+                      <div key={plan.months} className="rounded-[12px] border border-[#ead7d2] bg-white px-2 py-2 text-center">
+                        <p className="text-[14px] font-bold leading-none text-[#231815]">{formatInr(plan.monthly)}</p>
+                        <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8b5d52]">
+                          {plan.months} Months
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-[12px]">
+                    <span className="font-semibold text-[#374151]">Cart Total</span>
+                    <span className="font-bold text-[#231815]">{formatInr(grandTotal)}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => goToCheckout("ONLINE")}
+                    className="mt-3 w-full rounded-lg bg-[#231815] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#111111]"
+                  >
+                    Checkout with Razorpay EMI
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           <button
             disabled={cartItems.length === 0}
             onClick={() => {
-              if (!cartItems.length) return;
-              closeCart();
-              navigate("/checkout");
+              goToCheckout("");
             }}
             className={`w-full py-3 rounded-lg text-white transition ${
               cartItems.length

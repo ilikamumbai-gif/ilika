@@ -347,6 +347,187 @@ const MarketplaceButtons = ({ links = [], className = "" }) => {
   );
 };
 
+const EMI_PLAN_MONTHS = [3, 6, 9];
+
+const EmiOfferCard = ({
+  amount = 0,
+  detailTheme,
+  onContinue = null,
+  isProcessing = false,
+  disabled = false,
+  className = "",
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const safeAmount = Math.max(0, Number(amount) || 0);
+  const plans = EMI_PLAN_MONTHS.map((months) => ({
+    months,
+    monthly: Math.ceil(safeAmount / months),
+  }));
+  const primaryPlan = plans[0];
+
+  if (!safeAmount || !primaryPlan) return null;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className={`relative mt-3 w-full rounded-[16px] border bg-white px-3 pb-3 pt-6 text-left shadow-[0_10px_24px_rgba(69,39,34,0.06)] transition hover:-translate-y-[1px] hover:shadow-[0_14px_28px_rgba(69,39,34,0.08)] sm:rounded-[18px] sm:px-4 sm:pt-6 ${className}`}
+        style={{ borderColor: detailTheme.heading || detailTheme.borderSoft }}
+      >
+        <span
+          className="absolute left-4 top-0 z-10 inline-flex min-h-[26px] -translate-y-[40%] items-center rounded-[9px] px-3.5 py-1 text-[10px] font-semibold leading-none text-white shadow-[0_8px_18px_rgba(0,0,0,0.18)]"
+          style={{ backgroundColor: detailTheme.heading || "#111827" }}
+        >
+          EMI available
+        </span>
+
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <p className="text-[14px] leading-tight text-[#2f3540] sm:text-[15px]">
+              or{" "}
+              <span className="font-bold" style={{ color: detailTheme.heading }}>
+                ₹{primaryPlan.monthly.toLocaleString("en-IN")}
+              </span>
+              <span className="font-semibold text-[#111827]">/month</span>{" "}
+              <span className="text-[#2f3540]">({primaryPlan.months} months)</span>
+            </p>
+            <p className="mt-1 text-[11px] font-medium leading-4 text-[#5f666d] sm:text-[12px]">
+              UPI & cards accepted.
+            </p>
+            <p className="mt-1 text-[11px] font-medium leading-4 text-[#5f666d] sm:text-[12px]">
+              EMI plans shown in Razorpay checkout.
+            </p>
+          </div>
+
+          <span
+            className="inline-flex h-fit shrink-0 items-center justify-center self-center rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white"
+            style={{ backgroundColor: detailTheme.heading || "#111827" }}
+          >
+            View
+          </span>
+        </div>
+      </button>
+
+      {isOpen ? (
+        <div
+          className="fixed inset-0 z-[500] flex items-center justify-center overflow-y-auto bg-black/60 p-4 py-8 backdrop-blur-[2px] sm:p-6 sm:py-10"
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            className="relative my-auto w-full max-w-[420px] overflow-visible rounded-[28px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.28)] max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-h-[calc(100vh-4rem)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full text-[#4b5563] transition hover:bg-black/5"
+              aria-label="Close EMI options"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6">
+              <div className="pr-12">
+                <p className="text-sm font-semibold uppercase tracking-[0.16em]" style={{ color: detailTheme.accent }}>
+                  Razorpay EMI
+                </p>
+                <h3 className="mt-2 text-[27px] font-bold leading-none sm:text-[30px]" style={{ color: detailTheme.heading }}>
+                  Pay only ₹{primaryPlan.monthly.toLocaleString("en-IN")} now
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[#5f666d]">
+                  Estimated installment options for your current product price of ₹{safeAmount.toLocaleString("en-IN")}.
+                </p>
+              </div>
+
+              <div className="mt-5 rounded-[22px] border bg-[#f5f5f5] p-4" style={{ borderColor: detailTheme.borderSoft }}>
+                <div className="grid grid-cols-3 gap-3">
+                  {plans.map((plan, index) => {
+                    const slice = index === 0 ? 0.32 : index === 1 ? 0.66 : 1;
+                    const circleBackground = `conic-gradient(${detailTheme.accent} 0turn ${slice}turn, #ffffff ${slice}turn 1turn)`;
+
+                    return (
+                      <div key={plan.months} className="text-center">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-[0_8px_16px_rgba(0,0,0,0.08)]">
+                          <div
+                            className="relative h-14 w-14 rounded-full"
+                            style={{ background: circleBackground }}
+                          >
+                            <div className="absolute inset-[10px] rounded-full bg-white" />
+                            <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_2px_rgba(15,23,42,0.08)]" />
+                            <div
+                              className="absolute left-1/2 top-1/2 h-[18px] w-[2px] origin-bottom rounded-full"
+                              style={{
+                                backgroundColor: "#ffffff",
+                                transform: `translate(-50%, -100%) rotate(${index * 120}deg)`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <p className="mt-3 text-[15px] font-bold leading-none" style={{ color: detailTheme.heading }}>
+                          ₹{plan.monthly.toLocaleString("en-IN")}
+                        </p>
+                        <p className="mt-1 text-[11px] font-semibold text-[#111827]">
+                          {index === 0 ? "Pay Now" : `${plan.months} Months`}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 overflow-hidden rounded-[16px] border bg-white" style={{ borderColor: detailTheme.borderSoft }}>
+                  <div className="flex items-center justify-between px-4 py-3 text-sm">
+                    <span className="font-semibold text-[#374151]">Total Order Value</span>
+                    <span className="font-bold" style={{ color: detailTheme.heading }}>
+                      ₹{safeAmount.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <p className="text-[13px] font-bold" style={{ color: detailTheme.heading }}>0% Interest</p>
+                  <p className="mt-1 text-[11px] leading-4 text-[#6b7280]">Shown when eligible</p>
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold" style={{ color: detailTheme.heading }}>No Extra Cost</p>
+                  <p className="mt-1 text-[11px] leading-4 text-[#6b7280]">Depends on bank offer</p>
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold" style={{ color: detailTheme.heading }}>UPI & Cards</p>
+                  <p className="mt-1 text-[11px] leading-4 text-[#6b7280]">Available in checkout</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (disabled || isProcessing) return;
+                  setIsOpen(false);
+                  if (typeof onContinue === "function") {
+                    onContinue();
+                  }
+                }}
+                disabled={disabled || isProcessing}
+                className={`mt-6 inline-flex w-full items-center justify-center rounded-[16px] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 ${disabled || isProcessing ? "cursor-not-allowed opacity-60" : ""}`}
+                style={{ backgroundColor: detailTheme.accent }}
+              >
+                {isProcessing ? "Processing..." : "Continue to checkout to use Razorpay EMI"}
+              </button>
+
+              <p className="mt-3 text-center text-[11px] leading-5 text-[#6b7280]">
+                This panel shows estimated monthly splits for display. Actual EMI and no-cost EMI availability is confirmed inside Razorpay checkout.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+};
+
 const buildTrustStripItems = (product = {}) => [
   { icon: Wallet, title: "COD Available", subtitle: "" },
   { icon: ShieldCheck, title: "Secure Payment", subtitle: "" },
@@ -1088,6 +1269,13 @@ const getDriveThumbnailCandidates = (fileId = "") => {
   ];
 };
 
+const normalizePublicAssetPath = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("data:")) return raw;
+  return raw.startsWith("/") ? raw : `/${raw}`;
+};
+
 const sanitizeHonestReviewItems = (items = []) => {
   if (!Array.isArray(items)) return [];
 
@@ -1102,6 +1290,7 @@ const sanitizeHonestReviewItems = (items = []) => {
         title: String(item?.title || "").trim(),
         subtitle: String(item?.subtitle || "").trim(),
         description: String(item?.description || "").trim(),
+        image: normalizePublicAssetPath(item?.image || ""),
       };
       })
       .filter(Boolean);
@@ -1172,6 +1361,7 @@ const getHonestReviewMedia = (url = "", { preview = true } = {}) => {
 };
 
 const HonestReviewPreviewMedia = ({ item, media }) => {
+  const reviewImageSrc = normalizePublicAssetPath(item?.image);
   const driveFileId = item?.url?.includes("drive.google.com") ? getDriveFileId(item.url) : "";
   const thumbnailCandidates = useMemo(() => {
     if (media.kind !== "thumbnail") return media.src ? [media.src] : [];
@@ -1182,6 +1372,21 @@ const HonestReviewPreviewMedia = ({ item, media }) => {
   }, [driveFileId, media.kind, media.src]);
   const [thumbnailIndex, setThumbnailIndex] = useState(0);
   const thumbnailSrc = thumbnailCandidates[thumbnailIndex] || "";
+
+  if (reviewImageSrc) {
+    return (
+      <div className="relative h-[420px] w-full overflow-hidden bg-[#e8d8d1] sm:h-[470px]">
+        <img
+          src={reviewImageSrc}
+          alt={item.title || "Honest review preview"}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        <span className="absolute right-4 top-4 text-white/90">↗</span>
+      </div>
+    );
+  }
 
   if (media.kind === "thumbnail") {
     return thumbnailSrc ? (
@@ -3024,6 +3229,7 @@ const ProductDetail = () => {
       ? Number(previewCouponForcedPrice.toFixed(2))
       : Number((previewCouponBasePrice + addonPrice).toFixed(2)))
     : 0;
+  const previewCouponOriginalPrice = Number((packBasePrice + addonPrice).toFixed(2));
   const previewCouponEffectivePercent = visibleAssignedCoupon && packBasePrice > 0
     ? Number(((previewCouponDiscountAmount / packBasePrice) * 100).toFixed(2))
     : 0;
@@ -3149,6 +3355,9 @@ const ProductDetail = () => {
   const savingPercent = effectiveMrp > price
     ? Math.max(0, Math.round(((effectiveMrp - price) / effectiveMrp) * 100))
     : 0;
+  const emiDisplayAmount = Number(
+    (couponForcedPrice && couponForcedPrice > 0 ? couponForcedPrice : price) || 0
+  );
   const addonCartSuffix = eligibleForCollagenAddon ? `__addon_${selectedCollagenAddon.count}` : "";
   const packCartSuffix = selectedPack ? `__pack_${selectedPack.id}` : "";
   const cartId = activeVariant
@@ -4574,13 +4783,26 @@ const ProductDetail = () => {
                                 </p>
                               </div>
                               <div className="min-w-0 text-right">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">Final Price</p>
-                                <p className="mt-1 whitespace-nowrap text-[14px] font-bold leading-none min-[360px]:text-[15px] sm:text-[16px]" style={{ color: detailTheme.price }}>
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-400">Original Price</p>
+                                <p className="mt-1 whitespace-nowrap text-[12px] font-medium leading-none text-gray-400 line-through min-[360px]:text-[13px] sm:text-[14px]">
+                                  ₹{previewCouponOriginalPrice.toLocaleString("en-IN")}
+                                </p>
+                                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-400">Final Price</p>
+                                <p className="mt-1 whitespace-nowrap text-[18px] font-extrabold leading-none min-[360px]:text-[20px] sm:text-[22px]" style={{ color: detailTheme.price }}>
                                   ₹{previewCouponFinalPrice.toLocaleString("en-IN")}
                                 </p>
                               </div>
                             </div>
                           ) : null}
+                          <div className="mt-3">
+                            <EmiOfferCard
+                              amount={emiDisplayAmount}
+                              detailTheme={detailTheme}
+                              onContinue={handleBuyNow}
+                              isProcessing={isBuying}
+                              disabled={isOutOfStock}
+                            />
+                          </div>
                         </div>
 
                     </div>
@@ -4925,13 +5147,26 @@ const ProductDetail = () => {
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] uppercase tracking-[0.12em] text-gray-400">Final price</p>
-                            <p className="mt-1 text-[14px] font-bold leading-none sm:text-[15px]" style={{ color: detailTheme.price }}>
+                            <p className="text-[9px] uppercase tracking-[0.12em] text-gray-400">Original price</p>
+                            <p className="mt-1 text-[11px] font-medium leading-none text-gray-400 line-through sm:text-[12px]">
+                              ₹{previewCouponOriginalPrice.toLocaleString("en-IN")}
+                            </p>
+                            <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-gray-400">Final price</p>
+                            <p className="mt-1 text-[18px] font-extrabold leading-none sm:text-[20px]" style={{ color: detailTheme.price }}>
                               ₹{previewCouponFinalPrice.toLocaleString("en-IN")}
                             </p>
                           </div>
                         </div>
                       ) : null}
+                      <div className="mt-3">
+                        <EmiOfferCard
+                          amount={emiDisplayAmount}
+                          detailTheme={detailTheme}
+                          onContinue={handleBuyNow}
+                          isProcessing={isBuying}
+                          disabled={isOutOfStock}
+                        />
+                      </div>
                     </div>
 
                   </div>

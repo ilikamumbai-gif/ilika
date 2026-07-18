@@ -8,7 +8,13 @@ import CartDrawer from "../components/CartDrawer";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
-import { PRIVATE_BLOGS, PRIVATE_BLOG_PATHS } from "../data/privateBlogs";
+import {
+  CUSTOM_VOICE_MASK_GUIDE_BLOG,
+  MASK_MAKER_CITY_BLOGS,
+  MASK_MAKER_TOPIC_BLOGS,
+  PRIVATE_BLOGS,
+  PRIVATE_BLOG_PATHS,
+} from "../data/privateBlogs";
 import voiceVersionMaskMakerImage from "./assets/voicevesion mask maker.jpeg";
 import voiceMaskMakerMainImage from "./assets/voicemaskmaker/machine.jpg";
 import voiceMaskMakerBeakerImage from "./assets/voicemaskmaker/Beaker.jpg";
@@ -368,6 +374,23 @@ const VoiceMaskMakerLanding = () => {
         ...blog,
         path: PRIVATE_BLOG_PATHS[blog.slug] || `/blog/private/${blog.slug}`,
       })),
+    []
+  );
+  const relatedPublicMaskMakerBlogs = useMemo(
+    () => [
+      {
+        ...CUSTOM_VOICE_MASK_GUIDE_BLOG,
+        path: `/blog/${CUSTOM_VOICE_MASK_GUIDE_BLOG.slug}`,
+      },
+      ...MASK_MAKER_TOPIC_BLOGS.map((blog) => ({
+        ...blog,
+        path: `/blog/${blog.slug}`,
+      })),
+      ...MASK_MAKER_CITY_BLOGS.map((blog) => ({
+        ...blog,
+        path: `/blog/${blog.slug}`,
+      })),
+    ],
     []
   );
   const landingReviews = useMemo(() => {
@@ -926,7 +949,35 @@ const VoiceMaskMakerLanding = () => {
           Explore quick skincare guides connected to the same voice mask maker routine, ingredients, and at-home skincare flow.
         </p>
 
+        <div className="mx-auto mb-8 max-w-[980px] rounded-[28px] border border-[#3F312D] bg-[#221B19] p-5 sm:p-7">
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.22em] text-[#B87161]">
+            Public Voice Mask Maker Pages
+          </p>
+          <div className="grid gap-3 md:grid-cols-2">
+            {relatedPublicMaskMakerBlogs.map((blog) => (
+              <Link
+                key={blog.id}
+                to={blog.path}
+                className="group flex items-start gap-3 rounded-2xl border border-[#3F312D] bg-[#241D1B] px-4 py-3 transition duration-300 hover:border-[#B87161] hover:bg-[#2A211F]"
+              >
+                <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-[#B87161]" />
+                <div className="min-w-0">
+                  <h3 className="text-[14px] font-semibold leading-[1.55] text-[#FFF8F5] transition group-hover:text-[#FFD5C8] sm:text-[15px]">
+                    {blog.title}
+                  </h3>
+                  <p className="mt-1 text-[12px] leading-6 text-[#D7C9C2]">
+                    Read guide
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         <div className="mx-auto max-w-[980px] rounded-[28px] border border-[#3F312D] bg-[#221B19] p-5 sm:p-7">
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.22em] text-[#B87161]">
+            Private Supporting Pages
+          </p>
           <div className="grid gap-3 md:grid-cols-2">
           {relatedPrivateBlogs.map((blog) => (
             <Link

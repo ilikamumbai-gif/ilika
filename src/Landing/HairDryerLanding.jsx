@@ -8,7 +8,7 @@ import CartDrawer from "../components/CartDrawer";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
-import { HAIR_DRYER_GUIDE_BLOG, HAIR_TOOL_COMPARISON_BLOGS } from "../data/privateBlogs";
+import { HAIR_DRYER_CITY_BLOGS, HAIR_DRYER_GUIDE_BLOG, HAIR_DRYER_TOPIC_BLOGS, HAIR_TOOL_COMPARISON_BLOGS } from "../data/privateBlogs";
 import reviewerPriya from "./assets/hairdryerreview1.png";
 import reviewerArjun from "./assets/hairdryerreview2.jpeg";
 import reviewerNeha from "./assets/hairdryerreview3.jpeg";
@@ -100,6 +100,9 @@ const reviews = [
     image: reviewerNeha,
   },
 ];
+
+const highlightedHairDryerReads = HAIR_DRYER_TOPIC_BLOGS.slice(0, 6);
+const allHairDryerReads = [...HAIR_DRYER_TOPIC_BLOGS, ...HAIR_DRYER_CITY_BLOGS];
 
 const HairDryerLanding = () => {
   const { products = [], loading } = useProducts();
@@ -391,11 +394,45 @@ const HairDryerLanding = () => {
               Compare Ilika BLDC hair dryer and multi-styler features with costly premium hair tools using safe,
               honest buyer guides focused on price, BLDC motor performance, ionic frizz control, voltage control, and warranty support.
             </p>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-[#ddd6fe]">
+              If you want everything in one place, start with the{" "}
+              <Link to={`/blog/${HAIR_DRYER_GUIDE_BLOG.slug}`} className="font-semibold text-[#c4b5fd] underline underline-offset-4 transition hover:text-[#f9f7ff]">
+                {HAIR_DRYER_GUIDE_BLOG.title}
+              </Link>.
+              It acts like a single BLDC guide page and collects the most useful comparison sections, buyer tips, and internal reading paths around the Ilika hair dryer.
+            </p>
           </div>
           <a href={productPath} className="text-[11px] uppercase tracking-[0.14em] text-[#c4b5fd] transition hover:text-[#f9f7ff] sm:text-xs">
             Shop Hair Dryer {"->"}
           </a>
         </div>
+
+        <div className="mb-8 rounded-[24px] border border-[#9569d0]/40 bg-[#171127] p-5 sm:p-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#c4b5fd]">
+            Single Guide Page
+          </p>
+          <h3 className="mt-3 text-xl font-semibold text-[#f9f7ff] sm:text-2xl">
+            {HAIR_DRYER_GUIDE_BLOG.title}
+          </h3>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-[#e5e7eb]">
+            {HAIR_DRYER_GUIDE_BLOG.excerpt}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              to={`/blog/${HAIR_DRYER_GUIDE_BLOG.slug}`}
+              className="inline-flex items-center rounded-full bg-[#9569d0] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[#140a25] transition hover:bg-[#c4b5fd]"
+            >
+              Open Full Guide {"->"}
+            </Link>
+            <a
+              href={productPath}
+              className="inline-flex items-center rounded-full border border-[#9569d0]/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#f5f3ff] transition hover:border-[#c4b5fd] hover:text-[#ffffff]"
+            >
+              Shop Product
+            </a>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 gap-[1px] bg-[#9569d0]/35 md:grid-cols-2 xl:grid-cols-3">
           {HAIR_TOOL_COMPARISON_BLOGS.map((blog, index) => {
             const blogPath = `/blog/${HAIR_DRYER_GUIDE_BLOG.slug}#${blog.anchor}`;
@@ -423,6 +460,61 @@ const HairDryerLanding = () => {
               </article>
             );
           })}
+        </div>
+
+        <div className="mt-8">
+          <div className="mb-5 flex items-center gap-4">
+            <span className="h-px w-8 bg-[#9569d0]" />
+            <p className="[font-family:'Bebas_Neue',sans-serif] text-2xl font-bold leading-none tracking-[0.08em] text-[#f5f3ff] sm:text-3xl">
+              More Helpful Reads
+            </p>
+          </div>
+          <p className="mb-5 max-w-3xl text-sm leading-7 text-[#ddd6fe]">
+            These additional BLDC hair dryer articles are also useful if you want more detailed answers on heat settings, frizz control, drying habits, how to choose the right dryer for your hair type, and city-specific buyer pages.
+          </p>
+          <div className="grid grid-cols-1 gap-[1px] bg-[#9569d0]/35 md:grid-cols-2 xl:grid-cols-3">
+            {highlightedHairDryerReads.map((blog) => (
+              <article key={blog.id} className="flex min-h-[220px] flex-col bg-[#1b1630] p-5 transition hover:bg-[#251d40] sm:p-6">
+                <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-[#c4b5fd]">
+                  Hair Dryer Blog
+                </p>
+                <h3 className="mb-3 text-base font-semibold leading-snug text-[#f9f7ff] sm:text-lg">
+                  {blog.title}
+                </h3>
+                <p className="mb-5 line-clamp-4 text-sm leading-6 text-[#e5e7eb]">
+                  {blog.excerpt}
+                </p>
+                <div className="mt-auto border-t border-[#9569d0]/30 pt-4">
+                  <Link to={`/blog/${blog.slug}`} className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#c4b5fd] transition hover:text-[#f9f7ff]">
+                    Read Blog {"->"}
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-[24px] border border-[#9569d0]/40 bg-[#171127] p-5 sm:p-6">
+          <div className="mb-4 flex items-center gap-4">
+            <span className="h-px w-8 bg-[#9569d0]" />
+            <p className="[font-family:'Bebas_Neue',sans-serif] text-2xl font-bold leading-none tracking-[0.08em] text-[#f5f3ff] sm:text-3xl">
+              All Linked Pages
+            </p>
+          </div>
+          <p className="mb-5 max-w-3xl text-sm leading-7 text-[#ddd6fe]">
+            This section links every related BLDC hair dryer page currently available from the site, so the landing page works like a complete content hub.
+          </p>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {allHairDryerReads.map((blog) => (
+              <Link
+                key={blog.id}
+                to={`/blog/${blog.slug}`}
+                className="rounded-[18px] border border-[#9569d0]/30 bg-[#1b1630] px-4 py-3 text-sm font-medium text-[#f5f3ff] transition hover:border-[#c4b5fd] hover:bg-[#251d40] hover:text-[#ffffff]"
+              >
+                {blog.title}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

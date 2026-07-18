@@ -19,6 +19,8 @@ import {
   getCartItemVariantName,
 } from "../utils/productPricing";
 
+const PREFERRED_PAYMENT_METHOD_KEY = "ilika_preferred_payment_method";
+
 // ─── OTP WIDGET - defined OUTSIDE Checkout so it never re-mounts on re-render ─
 // If defined inside the parent component, React treats it as a new component
 // type on every render and unmounts/remounts it, destroying all input state.
@@ -863,7 +865,20 @@ const Checkout = () => {
   };
 
   // ─── PAYMENT METHOD ───────────────────────────────────────────────────────
-  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [paymentMethod, setPaymentMethod] = useState(() => {
+    if (typeof window === "undefined") return "COD";
+    const preferred = sessionStorage.getItem(PREFERRED_PAYMENT_METHOD_KEY);
+    return preferred === "ONLINE" ? "ONLINE" : "COD";
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (paymentMethod === "ONLINE") {
+      sessionStorage.setItem(PREFERRED_PAYMENT_METHOD_KEY, "ONLINE");
+      return;
+    }
+    sessionStorage.removeItem(PREFERRED_PAYMENT_METHOD_KEY);
+  }, [paymentMethod]);
 
   // ─── PHONE VERIFIED CHECK ─────────────────────────────────────────────────
   const selectedPhone = normalizeIndianPhone(selectedAddress?.phone || "");
