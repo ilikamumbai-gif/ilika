@@ -44,6 +44,15 @@ const BLDC_HAIR_DRYER_GALLERY_VIDEO = {
   url: "/HonestReview/instagram-reel-youtube-short.mp4",
   title: "Ilika BLDC Hair Dryer Video",
 };
+const LEAFLESS_HAIR_DRYER_PRODUCT_SLUG = "leafless-hair-dryer";
+const LEAFLESS_HAIR_DRYER_BASE_PRICE = 2999;
+const LEAFLESS_HAIR_DRYER_COUPON = {
+  code: "ILIKADIY",
+  discountPercent: 10,
+  forcedPrice: 2699,
+  name: "Leafless Hair Dryer Offer",
+  isVisible: true,
+};
 const COLLAGEN_ADDON_OPTIONS = [
   { id: "pack0", count: 0, label: "No extra collagen Peptide pack", tablets: 0, price: 0 },
   { id: "pack1", count: 1, label: "1 Collagen Peptide Pack (16 no.s)", tablets: 16, price: 799 },
@@ -2865,7 +2874,18 @@ const ProductDetail = () => {
           new Set([currentProductUrl, canonicalAliasSlug].map((value) => normalizeRouteSlug(value)).filter(Boolean))
         );
         const cachedProduct = products.find((p) =>
-          slugCandidates.includes(normalizeRouteSlug(p?.productUrl))
+          slugCandidates.some((slugCandidate) => {
+            const productSlugCandidates = [
+              p?.productUrl,
+              p?.slug,
+              p?.name ? createSlug(p.name) : "",
+              getCanonicalProductSlugAlias(p?.productUrl || p?.slug || p?.name || ""),
+            ]
+              .map((value) => normalizeRouteSlug(value))
+              .filter(Boolean);
+
+            return productSlugCandidates.includes(slugCandidate);
+          })
         );
         let resolved = null;
 
@@ -3037,7 +3057,19 @@ const ProductDetail = () => {
     () => getProductDisplayPricing(product, activeVariant),
     [product, activeVariant]
   );
-  const basePrice = Number(activeDisplayPricing.price || 0);
+  const isLeaflessHairDryerProduct = useMemo(() => {
+    const rawValues = [
+      product?.productUrl,
+      product?.slug,
+      product?.name,
+      productUrl,
+    ];
+
+    return rawValues.some((value) => createSlug(String(value || "")) === LEAFLESS_HAIR_DRYER_PRODUCT_SLUG);
+  }, [product?.name, product?.productUrl, product?.slug, productUrl]);
+  const basePrice = isLeaflessHairDryerProduct
+    ? Number(LEAFLESS_HAIR_DRYER_BASE_PRICE)
+    : Number(activeDisplayPricing.price || 0);
   const mrp = Number(activeDisplayPricing.compareAtPrice || 0);
   const packOptions = useMemo(() => {
     const raw = Array.isArray(product?.packOptions) ? product.packOptions : [];
@@ -3123,6 +3155,10 @@ const ProductDetail = () => {
   }, [assignedCouponId]);
 
   const assignedCoupon = useMemo(() => {
+    if (isLeaflessHairDryerProduct) {
+      return LEAFLESS_HAIR_DRYER_COUPON;
+    }
+
     const snapshot = liveAssignedCoupon || sanitizeCouponData(product?.couponSnapshot) || sanitizeCouponData(product?.coupon) || null;
     if (!snapshot) return null;
     const code = normalizeCouponCode(snapshot.code);
@@ -3131,19 +3167,22 @@ const ProductDetail = () => {
     const normalizedName = String(product?.name || "").toLowerCase();
     const isVoiceMaskMakerProduct = normalizedName.includes("automatic voice version face mask maker machine");
     const fallbackForcedPrice =
-      isVoiceMaskMakerProduct && code.toLowerCase() === "ilikadiy" ? 4999 : 0;
+      isVoiceMaskMakerProduct && code.toLowerCase() === "ilikadiy"
+        ? 4999
+        : 0;
+    const resolvedDiscountPercent = discountPercent > 0 ? discountPercent : 0;
     const resolvedForcedPrice = forcedPrice > 0 ? forcedPrice : fallbackForcedPrice;
-    const hasDiscount = discountPercent > 0;
+    const hasDiscount = resolvedDiscountPercent > 0;
     const hasForcedPrice = resolvedForcedPrice > 0;
     if (!code || (!hasDiscount && !hasForcedPrice) || snapshot.isActive === false) return null;
     return {
       code,
-      discountPercent,
+      discountPercent: resolvedDiscountPercent,
       forcedPrice: hasForcedPrice ? resolvedForcedPrice : null,
       name: snapshot.name || "",
       isVisible: snapshot.isVisible !== false,
     };
-  }, [liveAssignedCoupon, product?.couponSnapshot, product?.coupon, product?.name]);
+  }, [isLeaflessHairDryerProduct, liveAssignedCoupon, product?.couponSnapshot, product?.coupon, product?.name]);
   const visibleAssignedCoupon = assignedCoupon?.isVisible === false ? null : assignedCoupon;
   const freeGiftSlug = freeGiftProduct ? getProductSlug(freeGiftProduct) : "";
   const freeGiftImage = freeGiftProduct?.images?.[0] || freeGiftProduct?.imageUrl || freeGiftProduct?.image || "";
@@ -4027,7 +4066,7 @@ const ProductDetail = () => {
         "@type": "Offer",
         url: productUrlAbsolute,
         priceCurrency: "INR",
-        price: Number(activeDisplayPricing?.price || product?.price || 0) || undefined,
+        price: Number(price || activeDisplayPricing?.price || product?.price || 0) || undefined,
         availability: getProductVariantAvailability(product, activeVariant)
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
@@ -4085,6 +4124,7 @@ const ProductDetail = () => {
     canonicalProductSlug,
     activeDisplayPricing?.price,
     activeVariant,
+    price,
   ]);
 
   useSeo({

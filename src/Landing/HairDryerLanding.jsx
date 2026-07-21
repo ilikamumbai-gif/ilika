@@ -110,7 +110,8 @@ const HairDryerLanding = () => {
   const navigate = useNavigate();
   const [couponApplied, setCouponApplied] = useState(false);
   const couponCode = "ILIKADIY";
-  const couponPercent = 15;
+  const couponPercent = 10;
+  const landingBasePrice = 2999;
 
  const targetProduct = useMemo(() => {
   const targetSlug =
@@ -128,7 +129,7 @@ const HairDryerLanding = () => {
 
   const defaultVariant = targetProduct?.variants?.find((v) => v?.isDefault) || targetProduct?.variants?.[0];
   const productName = targetProduct?.name || "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control";
-  const productPrice = Number(defaultVariant?.price ?? targetProduct?.price ?? 1999);
+  const productPrice = Number(landingBasePrice);
   const productMrp = Number(defaultVariant?.mrp ?? targetProduct?.mrp ?? 3499);
   const productImage =
     defaultVariant?.images?.[0] ||
@@ -137,7 +138,7 @@ const HairDryerLanding = () => {
     "https://placehold.co/680x760/111111/c9a84c?text=Ilika+Leafless+Hair+Dryer";
 
   const productSlug = getProductSlug(targetProduct);
-  const productPath = `/product/${productSlug}`;
+  const productPath = productSlug ? `/product/${productSlug}` : "/leafless-hair-dryer";
   const discountedPrice = couponApplied
     ? Math.max(0, Math.round(productPrice * (100 - couponPercent) / 100))
     : productPrice;
@@ -148,6 +149,11 @@ const HairDryerLanding = () => {
   };
 
   const handleBuyNow = async () => {
+    if (!targetProduct) {
+      navigate(productPath);
+      return;
+    }
+
     const cartPayload = {
       id: String(targetProduct?.id || targetProduct?._id || productSlug),
       name: productName,
@@ -158,7 +164,7 @@ const HairDryerLanding = () => {
       discountApplied: couponApplied
         ? {
             code: "ILIKADIY",
-            percent: 15,
+            percent: 10,
             amount: Math.max(productPrice - discountedPrice, 0),
             basedOn: "selling_price",
           }
