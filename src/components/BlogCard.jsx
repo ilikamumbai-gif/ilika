@@ -14,6 +14,7 @@ const BlogCard = ({
   compact = false,
 }) => {
   const blogPath = linkPath || `/blog/${blog?.slug || createSlug(blog?.title || "") || blog?.id}`;
+  const visibleTitle = blog?.displayTitle || blog?.title;
   const formattedDate = blog?.createdAt
     ? new Date(blog.createdAt).toLocaleDateString("en-GB", {
         day: "2-digit",
@@ -45,7 +46,7 @@ const BlogCard = ({
             width="720"
             height="480"
             src={blog.image}
-            alt={blog.title}
+            alt={visibleTitle}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className={`${squareImage || !compact ? "h-full" : "h-[260px] sm:h-[280px]"} w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${imageClassName}`}
           />
@@ -62,7 +63,7 @@ const BlogCard = ({
           </p>
 
           <h3 className={`${compact ? "text-lg sm:text-[20px]" : "text-[22px] sm:text-[24px]"} line-clamp-2 font-semibold leading-[1.18] text-[#0f2f17]`}>
-            {blog.title}
+            {visibleTitle}
           </h3>
 
           {/* {!compact && teaser && (

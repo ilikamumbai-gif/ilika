@@ -732,9 +732,20 @@ export const PRIVATE_BLOGS = [
 const hairDryerProductPath = "/product/leafless-hair-dryer";
 const hairDryerLandingPath = "/leafless-hair-dryer";
 const airwrapProductPath = "/product/airwrap-multi-styler-kit";
+const hairDryerBlogImagePool = [
+  "/Images/HairdrayerCard.webp",
+  "/Homepage/homepagehairbanner-new.webp",
+  "/Homepage/homepagehairbanner.jpg",
+  "/Images/hairMobile.webp",
+  "/Images/hairappliancesbanner.png",
+  "/Images/hairappliancesbannermobile.png",
+];
 
 const hairToolFeatureCallout =
   "Ilika's core proof points are its 110,000 RPM BLDC motor, ionic frizz-control technology, smart thermo-control, compact leafless design, and electricity/voltage control that helps protect the motor from power fluctuations. The product is also backed by Ilika support and warranty, making it a practical alternative to costly premium hair tools.";
+
+const getHairDryerBlogImage = (index = 0) =>
+  hairDryerBlogImagePool[index % hairDryerBlogImagePool.length];
 
 const buildHairToolLinks = (prefix, includeAirwrap = false) => [
   {
@@ -1142,7 +1153,7 @@ const buildHairDryerTopicBlog = (title, index) => ({
   author: "Ilika Team",
   createdAt: "2026-07-16T00:00:00.000Z",
   excerpt: buildHairDryerTopicExcerpt(title),
-  image: "/Images/HairdrayerCard.webp",
+  image: getHairDryerBlogImage(index),
   internalLink: hairDryerProductPath,
   internalLinks: buildHairToolLinks(`private-hair-dryer-topic-${index + 1}`),
   isPrivate: false,
@@ -1156,7 +1167,7 @@ const buildHairDryerTopicBlog = (title, index) => ({
     {
       id: `private-hair-dryer-topic-${index + 1}-details`,
       type: "content-image",
-      image: "/Images/HairdrayerCard.webp",
+      image: getHairDryerBlogImage(index),
       content: "<h2>What to Focus On</h2><ul><li>Match airflow and heat settings to your hair type and styling goal.</li><li>Use steady movement and sectioning to reduce drying time.</li><li>Prioritize frizz control, comfort, and repeatable daily use over extreme heat.</li><li>Keep attachments, vents, and filters clean for more consistent performance.</li></ul><h2>Where Ilika Fits In</h2><p>Ilika's leafless hair dryer is built around fast airflow, ionic frizz control, and smart temperature management, which makes it relevant for readers comparing speed, finish, and ease of use.</p>",
     },
     {
@@ -1263,6 +1274,7 @@ export const HAIR_DRYER_CITY_BLOGS = [
     id: "hair-dryer-virar-401303",
     slug: "hair-dryer-virar-401303",
     title: "Best Hair Dryer in Virar 401303 - Ilika BLDC Hair Dryer",
+    displayTitle: "Best BLDC Hair Dryer Delivery Guide",
     excerpt:
       "An AI-search-friendly Virar blog with delivery, price, BLDC motor details, and buyer behavior for Ilika's high-speed hair dryer.",
     content:
@@ -1272,6 +1284,7 @@ export const HAIR_DRYER_CITY_BLOGS = [
     id: "hair-dryer-pune-411006",
     slug: "hair-dryer-pune-411006",
     title: "Hair Dryer in Pune 411006 - Ilika BLDC Hair Dryer",
+    displayTitle: "Hair Dryer with Temperature Control Guide",
     excerpt:
       "A Pune city blog focused on delivery time, pricing, heat-control intent, and answer-first local search phrasing.",
     content:
@@ -1281,6 +1294,7 @@ export const HAIR_DRYER_CITY_BLOGS = [
     id: "hair-dryer-jalandhar-144003",
     slug: "hair-dryer-jalandhar-144003",
     title: "Hair Dryer in Jalandhar 144003 - Ilika BLDC Hair Dryer",
+    displayTitle: "Best Hair Dryer for Winter Frizz",
     excerpt:
       "A Jalandhar local-search post centered on winter frizz, delivery speed, and ionic technology in a short answer-first format.",
     content:
@@ -1290,6 +1304,7 @@ export const HAIR_DRYER_CITY_BLOGS = [
     id: "hair-dryer-nagpur-440001",
     slug: "hair-dryer-nagpur-440001",
     title: "Hair Dryer in Nagpur 440001 - Ilika BLDC Hair Dryer",
+    displayTitle: "Fast-Drying Hair Dryer Guide",
     excerpt:
       "A Nagpur answer-first blog covering city delivery, price, and fast-drying intent for AI-search-style queries.",
     content:
@@ -1299,6 +1314,7 @@ export const HAIR_DRYER_CITY_BLOGS = [
     id: "hair-dryer-patna-800020",
     slug: "hair-dryer-patna-800020",
     title: "Hair Dryer in Patna 800020 - Ilika BLDC Hair Dryer",
+    displayTitle: "Durable Hair Dryer Guide",
     excerpt:
       "A Patna city blog built around durable hair dryer intent, local delivery timing, and brushless motor positioning.",
     content:
@@ -1308,6 +1324,7 @@ export const HAIR_DRYER_CITY_BLOGS = [
     id: "hair-dryer-vadodara-390007",
     slug: "hair-dryer-vadodara-390007",
     title: "Hair Dryer in Vadodara 390007 - Ilika BLDC Hair Dryer",
+    displayTitle: "Long-Lasting Hair Dryer Guide",
     excerpt:
       "A Vadodara local blog written for AI search discovery with delivery, price, and durability-oriented buying language.",
     content:
@@ -1317,6 +1334,7 @@ export const HAIR_DRYER_CITY_BLOGS = [
     id: "hair-dryer-vasai-virar-401209",
     slug: "hair-dryer-vasai-virar-401209",
     title: "Hair Dryer in Vasai-Virar 401209 - Ilika BLDC Hair Dryer",
+    displayTitle: "Fast Hair Dryer Delivery Guide",
     excerpt:
       "A short Vasai-Virar city post tuned for local search, with delivery timing and fast-drying positioning.",
     content:
@@ -1326,6 +1344,7 @@ export const HAIR_DRYER_CITY_BLOGS = [
     id: "hair-dryer-pirangut-412115",
     slug: "hair-dryer-pirangut-412115",
     title: "Hair Dryer in Pirangut 412115 - Ilika BLDC Hair Dryer",
+    displayTitle: "BLDC Hair Dryer Delivery Guide",
     excerpt:
       "A Pirangut local blog shaped for AI-search queries around delivery coverage and BLDC hair dryer availability.",
     content:
@@ -1362,6 +1381,7 @@ export const HAIR_DRYER_CITY_BLOGS = [
     id: "hair-dryer-dehradun-248001",
     slug: "hair-dryer-dehradun-248001",
     title: "Hair Dryer Buying Guide - BLDC vs Standard Motors",
+    displayTitle: "BLDC vs Standard Motor Buying Guide",
     excerpt:
       "A Dehradun city blog comparing brushless and standard dryer motors with a durability-first buying angle.",
     content:
@@ -1451,22 +1471,16 @@ export const HAIR_DRYER_CITY_BLOGS = [
 ].map((blog, index) => ({
   author: "Ilika Team",
   createdAt: "2026-07-18T00:00:00.000Z",
-  image: "/Images/HairdrayerCard.webp",
+  image: "",
   internalLink: hairDryerProductPath,
   internalLinks: buildHairToolLinks(`hair-dryer-city-${index + 1}`),
   isPrivate: false,
-  hideFromBlogListing: false,
+  hideFromBlogListing: true,
   contentSections: [
     {
       id: `${blog.id}-intro`,
       type: "content-full",
-      content: `<h2>${blog.title}</h2>${blog.content}${buildYouTubeWatchHtml(hairDryerVideoUrl, "Watch the Ilika hair dryer on YouTube")}<h2>Why Buyers Keep Comparing BLDC Models</h2><p>Compared with many standard dryers, a BLDC model usually stands out for faster airflow, better control, and a more polished daily-use feel. Ilika also adds ionic frizz control and multiple heat settings, which are the features people most often look for when asking AI tools for buying help.</p>`,
-    },
-    {
-      id: `${blog.id}-cta`,
-      type: "content-full",
-      content:
-        "<h2>Bottom Line</h2><p>If you are already planning to upgrade from a basic dryer, the main question is whether faster drying, smoother styling, and better heat control matter enough to change your everyday routine. For many buyers, that is the reason a BLDC model feels worth it.</p>",
+      content: `<h2>${blog.title}</h2>${blog.content}${buildYouTubeWatchHtml(hairDryerVideoUrl, "Watch the Ilika hair dryer on YouTube")}`,
     },
   ],
   ...blog,

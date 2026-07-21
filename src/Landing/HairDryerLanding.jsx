@@ -502,7 +502,7 @@ const HairDryerLanding = () => {
             </p>
           </div>
           <p className="mb-5 max-w-3xl text-sm leading-7 text-[#ddd6fe]">
-            This section links every related BLDC hair dryer page currently available from the site, so the landing page works like a complete content hub.
+            This section links every related BLDC hair dryer page currently available from the site, including the city-specific blogs, so the landing page works like one complete content hub.
           </p>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {allHairDryerReads.map((blog) => (
@@ -511,7 +511,7 @@ const HairDryerLanding = () => {
                 to={`/blog/${blog.slug}`}
                 className="rounded-[18px] border border-[#9569d0]/30 bg-[#1b1630] px-4 py-3 text-sm font-medium text-[#f5f3ff] transition hover:border-[#c4b5fd] hover:bg-[#251d40] hover:text-[#ffffff]"
               >
-                {blog.title}
+                {blog.displayTitle || blog.title}
               </Link>
             ))}
           </div>

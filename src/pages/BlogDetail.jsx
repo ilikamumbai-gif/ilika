@@ -352,6 +352,7 @@ const BlogDetail = () => {
     () => normalizeInternalLinks(blog?.internalLinks, blog?.internalLink),
     [blog?.internalLinks, blog?.internalLink]
   );
+  const hasHeroImage = Boolean(String(blog?.image || "").trim());
 
   const linkedProduct = useMemo(() => {
     if (!blogInternalLink || !Array.isArray(products) || products.length === 0) return null;
@@ -516,7 +517,7 @@ const BlogDetail = () => {
               </p>
             </header>
 
-            <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:items-start md:gap-8">
+            <div className={`grid gap-5 sm:gap-6 md:items-start md:gap-8 ${hasHeroImage ? "md:grid-cols-2" : "max-w-3xl"}`}>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#801f1f]">Article Intro</p>
                 <p className="mt-3 text-[15px] leading-7 text-[#4a5f4a] sm:text-base sm:leading-8">
@@ -543,18 +544,20 @@ const BlogDetail = () => {
                 ) : null}
               </div>
 
-              <figure className="overflow-hidden rounded-2xl bg-[#f8fbf8]">
-                <img
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="async"
-                  width="1200"
-                  height="800"
-                  src={blog.image}
-                  alt={blog.title}
-                  className="h-full min-h-[220px] w-full object-cover sm:min-h-[260px]"
-                />
-              </figure>
+              {hasHeroImage ? (
+                <figure className="overflow-hidden rounded-2xl bg-[#f8fbf8]">
+                  <img
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                    width="1200"
+                    height="800"
+                    src={blog.image}
+                    alt={blog.title}
+                    className="h-full min-h-[220px] w-full object-cover sm:min-h-[260px]"
+                  />
+                </figure>
+              ) : null}
             </div>
 
             {contentSections.map((section, index) => renderSectionBlock(section, index))}

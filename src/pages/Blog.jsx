@@ -9,8 +9,12 @@ import blackSeedLandingImage from "../Landing/assets/Blackseed1.png";
 import herbalLandingImage from "../Landing/assets/Herbal1.png";
 import { useProducts } from "../admin/context/ProductContext";
 import {
+  HAIR_DRYER_CITY_BLOGS,
+  HAIR_DRYER_GUIDE_BLOG,
   HAIR_DRYER_TOPIC_BLOGS,
+  MASK_MAKER_CITY_BLOGS,
   MASK_MAKER_TOPIC_BLOGS,
+  CUSTOM_VOICE_MASK_GUIDE_BLOG,
   STATIC_BLOGS,
 } from "../data/privateBlogs";
 
@@ -61,6 +65,18 @@ const Blog = () => {
 
   const featuredBlog = useMemo(() => (blogs.length ? blogs[0] : null), [blogs]);
   const restBlogs = useMemo(() => (blogs.length > 1 ? blogs.slice(1) : []), [blogs]);
+  const visibleStaticBlogs = useMemo(() => {
+    const hiddenLandingHubBlogIds = new Set([
+      HAIR_DRYER_GUIDE_BLOG.id,
+      ...HAIR_DRYER_CITY_BLOGS.map((blog) => blog.id),
+      ...HAIR_DRYER_TOPIC_BLOGS.map((blog) => blog.id),
+      CUSTOM_VOICE_MASK_GUIDE_BLOG.id,
+      ...MASK_MAKER_CITY_BLOGS.map((blog) => blog.id),
+      ...MASK_MAKER_TOPIC_BLOGS.map((blog) => blog.id),
+    ]);
+
+    return STATIC_BLOGS.filter((blog) => !hiddenLandingHubBlogIds.has(blog.id));
+  }, []);
   const nonVoiceMaskMakerImage = useMemo(() => {
     const target = products.find((product) => {
       const name = normalizeName(product?.name);
@@ -246,46 +262,10 @@ const Blog = () => {
 
             <section>
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">
-                Featured Static Blogs ({STATIC_BLOGS.length})
+                Featured Static Blogs ({visibleStaticBlogs.length})
               </p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-                {STATIC_BLOGS.slice(0, 8).map((blog) => (
-                  <BlogCard
-                    key={blog.id}
-                    blog={blog}
-                    linkPath={`/blog/${blog.slug}`}
-                    ctaLabel="Read Blog"
-                    squareImage
-                    compact
-                  />
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">
-                Hair Dryer Blogs ({HAIR_DRYER_TOPIC_BLOGS.length})
-              </p>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-                {HAIR_DRYER_TOPIC_BLOGS.map((blog) => (
-                  <BlogCard
-                    key={blog.id}
-                    blog={blog}
-                    linkPath={`/blog/${blog.slug}`}
-                    ctaLabel="Read Blog"
-                    squareImage
-                    compact
-                  />
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">
-                Mask Maker Blogs ({MASK_MAKER_TOPIC_BLOGS.length})
-              </p>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-                {MASK_MAKER_TOPIC_BLOGS.map((blog) => (
+                {visibleStaticBlogs.slice(0, 8).map((blog) => (
                   <BlogCard
                     key={blog.id}
                     blog={blog}
