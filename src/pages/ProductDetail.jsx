@@ -4045,10 +4045,18 @@ const ProductDetail = () => {
     const reviewRatingValues = productReviews
       .map((review) => Number(review?.rating || 0))
       .filter((value) => value > 0);
+    const reviewCount = reviewRatingValues.length;
     const averageRating =
-      reviewRatingValues.length > 0
-        ? reviewRatingValues.reduce((sum, value) => sum + value, 0) / reviewRatingValues.length
-        : Number(product?.rating || 0);
+      reviewCount > 0
+        ? reviewRatingValues.reduce((sum, value) => sum + value, 0) / reviewCount
+        : 0;
+    const aggregateRatingData =
+      reviewCount > 0 && averageRating > 0
+        ? {
+            ratingValue: Number(averageRating.toFixed(1)),
+            reviewCount,
+          }
+        : null;
 
     const productSchema = {
       "@context": "https://schema.org",
@@ -4074,11 +4082,11 @@ const ProductDetail = () => {
         shippingDetails: PRODUCT_SHIPPING_DETAILS,
         hasMerchantReturnPolicy: PRODUCT_RETURN_POLICY,
       },
-      aggregateRating: averageRating > 0
+      aggregateRating: aggregateRatingData
         ? {
             "@type": "AggregateRating",
-            ratingValue: Number(averageRating.toFixed(1)),
-            reviewCount: Math.max(reviewRatingValues.length, productReviews.length || 1),
+            ratingValue: aggregateRatingData.ratingValue,
+            reviewCount: aggregateRatingData.reviewCount,
           }
         : undefined,
       review: validReviews.map((review) => ({
