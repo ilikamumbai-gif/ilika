@@ -1468,6 +1468,126 @@ export const HAIR_DRYER_CITY_BLOGS = [
     content:
       "<p>Fine hair and thick hair need different heat levels, so a single-setting dryer is always a compromise. Multiple heat settings paired with ionic technology help cover both ends without forcing you to own two separate tools.</p><p>That flexibility is usually what turns a dryer from an occasional tool into something that fits more than one styling routine well.</p>",
   },
+  {
+    id: "hair-dryer-price-drop-vasai-401200",
+    slug: "hair-dryer-price-drop-vasai-401200",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Vasai Delivery)",
+    displayTitle: "Hair Dryer Price Drop - Now Rs. 2,999",
+    excerpt:
+      "A Vasai retargeting-style blog focused on the drop from Rs. 3,999 to Rs. 2,999 for warm shoppers who already viewed the dryer.",
+    content:
+      "<p><strong>Direct answer:</strong> If you checked the Ilika High-Speed BLDC Hair Dryer earlier at Rs. 3,999, it is now priced at Rs. 2,999. The product is the same: 110,000 RPM motor, ionic anti-frizz technology, and smart overheat protection, but at a lower price point.</p><p>Delivery to Vasai 401200 typically takes about 2 days, which makes this price-drop update especially relevant for nearby warm leads who paused earlier on cost.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-mumbai-400013",
+    slug: "hair-dryer-price-drop-mumbai-400013",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Mumbai Delivery)",
+    displayTitle: "Price Drop on Ilika BLDC Hair Dryer",
+    excerpt:
+      "A Mumbai-focused price-drop blog for warm traffic that previously saw the dryer at Rs. 3,999.",
+    content:
+      "<p><strong>Direct answer:</strong> The Ilika BLDC Hair Dryer is now Rs. 2,999 instead of Rs. 3,999. The 110,000 RPM brushless motor, ionic frizz control, and magnetic nozzle remain the same. Only the price has changed.</p><p>Delivery to Mumbai 400013 usually takes around 2 days, making this a timely update for shoppers who were comparing before but did not convert.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-jaipur-302004",
+    slug: "hair-dryer-price-drop-jaipur-302004",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Jaipur Delivery)",
+    displayTitle: "BLDC Hair Dryer Price Drop Alert",
+    excerpt:
+      "A Jaipur price-drop update built for previous visitors who saw the old Rs. 3,999 price.",
+    content:
+      "<p><strong>Direct answer:</strong> If you saw the Ilika BLDC Hair Dryer earlier at Rs. 3,999, it is now available at Rs. 2,999. The 110,000 RPM motor, ionic technology, and smart thermo-control are unchanged.</p><p>Delivery to Jaipur 302004 usually takes about 3 business days, so this post works as a practical retargeting-style update for local warm intent.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-kanpur-208025",
+    slug: "hair-dryer-price-drop-kanpur-208025",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Kanpur Delivery)",
+    displayTitle: "Now Rs. 2,999 - Hair Dryer Price Drop",
+    excerpt:
+      "A Kanpur blog built around the drop from Rs. 3,999 to Rs. 2,999 for cost-sensitive repeat visitors.",
+    content:
+      "<p><strong>Direct answer:</strong> The Ilika BLDC Hair Dryer price has dropped from Rs. 3,999 to Rs. 2,999. If price was the main reason you held back earlier, that gap is now smaller while the product remains the same.</p><p>Shipping to Kanpur 208025 generally takes 3 to 4 business days, which keeps the offer relevant for warm traffic from that region.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-chandigarh-140603",
+    slug: "hair-dryer-price-drop-chandigarh-140603",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Chandigarh Delivery)",
+    displayTitle: "Chandigarh Hair Dryer Price Drop",
+    excerpt:
+      "A Chandigarh retargeting blog highlighting the reduced Rs. 2,999 price for recent local viewers.",
+    content:
+      "<p><strong>Direct answer:</strong> The Ilika Hair Dryer is now Rs. 2,999, down from Rs. 3,999, with the same 110,000 RPM brushless motor and ionic anti-frizz technology as before.</p><p>Delivery to Chandigarh 140603 usually takes about 3 business days, making this a useful update for local users who were comparing at the older price.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-hyderabad-500055",
+    slug: "hair-dryer-price-drop-hyderabad-500055",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Hyderabad Delivery)",
+    displayTitle: "Hyderabad Price Drop on Ilika Hair Dryer",
+    excerpt:
+      "A Hyderabad blog built for warm local traffic that saw the product before the price dropped to Rs. 2,999.",
+    content:
+      "<p><strong>Direct answer:</strong> If you were comparing the Ilika BLDC Hair Dryer at Rs. 3,999, the current price is Rs. 2,999. The 110,000 RPM motor, smart overheat protection, and magnetic nozzle remain unchanged.</p><p>Delivery to Hyderabad, including 500055, usually takes 2 to 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-ahmedabad-380004",
+    slug: "hair-dryer-price-drop-ahmedabad-380004",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Ahmedabad Delivery)",
+    displayTitle: "Ahmedabad Hair Dryer Price Update",
+    excerpt:
+      "An Ahmedabad price-drop blog that uses the old Rs. 3,999 price as the conversion hook for warm leads.",
+    content:
+      "<p><strong>Direct answer:</strong> Price update: the Ilika BLDC Hair Dryer has moved from Rs. 3,999 to Rs. 2,999. The product itself is unchanged, including the brushless motor, ionic frizz control, and adjustable heat settings.</p><p>Shipping to Ahmedabad 380004 typically takes 2 to 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-indore-452009",
+    slug: "hair-dryer-price-drop-indore-452009",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Indore Delivery)",
+    displayTitle: "Indore BLDC Hair Dryer Price Drop",
+    excerpt:
+      "An Indore retargeting-style post focused on the drop to Rs. 2,999 for warm previous visitors.",
+    content:
+      "<p><strong>Direct answer:</strong> The Ilika BLDC Hair Dryer is now Rs. 2,999, down from the Rs. 3,999 price some shoppers saw earlier. The 110,000 RPM motor and overheat protection sensor are the same as before.</p><p>Delivery to Indore 452009 usually takes around 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-pune-411006",
+    slug: "hair-dryer-price-drop-pune-411006",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Pune Delivery)",
+    displayTitle: "Pune Hair Dryer Price Drop Update",
+    excerpt:
+      "A Pune warm-intent blog built around the current Rs. 2,999 price after earlier visits at Rs. 3,999.",
+    content:
+      "<p><strong>Direct answer:</strong> If you were weighing the Ilika Hair Dryer at Rs. 3,999 earlier, it is now Rs. 2,999. This is a genuine price change, while the core product specs remain the same.</p><p>Delivery to Pune 411006 typically takes 2 to 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-vadodara-390007",
+    slug: "hair-dryer-price-drop-vadodara-390007",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Vadodara Delivery)",
+    displayTitle: "Vadodara Price Drop on BLDC Hair Dryer",
+    excerpt:
+      "A Vadodara price-drop post for warm leads who previously saw the dryer listed at Rs. 3,999.",
+    content:
+      "<p><strong>Direct answer:</strong> The Ilika BLDC Hair Dryer price has dropped from Rs. 3,999 to Rs. 2,999. The brushless motor, ionic technology, and warranty support stay the same.</p><p>Delivery to Vadodara 390007 generally takes about 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-virar-401303",
+    slug: "hair-dryer-price-drop-virar-401303",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Virar Delivery)",
+    displayTitle: "Virar Hair Dryer Price Drop",
+    excerpt:
+      "A Virar blog using the strongest repeat-interest city signal together with the new Rs. 2,999 price.",
+    content:
+      "<p><strong>Direct answer:</strong> Virar has shown some of the strongest repeat interest for this dryer, and the current price is now Rs. 2,999 instead of Rs. 3,999. If price was the hesitation before, the offer is now more accessible.</p><p>Delivery to Virar 401303 usually takes around 2 days.</p>",
+  },
+  {
+    id: "hair-dryer-price-drop-jalandhar-144003",
+    slug: "hair-dryer-price-drop-jalandhar-144003",
+    title: "Hair Dryer Price Drop - Now Rs. 2,999 (Jalandhar Delivery)",
+    displayTitle: "Jalandhar Price Drop for Ilika Hair Dryer",
+    excerpt:
+      "A Jalandhar price-drop blog built for recent viewers who saw the dryer at the old Rs. 3,999 price.",
+    content:
+      "<p><strong>Direct answer:</strong> The Ilika BLDC Hair Dryer is now Rs. 2,999, previously Rs. 3,999. The product is unchanged, including the 110,000 RPM motor and ionic anti-frizz technology.</p><p>Delivery to Jalandhar 144003 generally takes 3 to 4 business days.</p>",
+  },
 ].map((blog, index) => ({
   author: "Ilika Team",
   createdAt: "2026-07-18T00:00:00.000Z",
