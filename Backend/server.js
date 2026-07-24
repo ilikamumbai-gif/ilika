@@ -817,7 +817,9 @@ const escapeVisitorAnalyticsCsvValue = (value) => {
 const buildVisitorAnalyticsCsv = (events = []) => {
   const headers = [
     "Date",
-    "Time",
+    "Time (IST)",
+    "Timestamp (IST)",
+    "Timestamp (UTC)",
     "Event Type",
     "Visitor ID",
     "Session ID",
@@ -840,12 +842,28 @@ const buildVisitorAnalyticsCsv = (events = []) => {
   const formatDatePart = (value, options) => {
     const date = new Date(value || "");
     if (Number.isNaN(date.getTime())) return "";
-    return date.toLocaleString("en-IN", options);
+    return date.toLocaleString("en-IN", {
+      ...options,
+      timeZone: "Asia/Kolkata",
+    });
   };
 
   const rows = events.map((event) => [
     formatDatePart(event.createdAt, { day: "2-digit", month: "short", year: "numeric" }),
     formatDatePart(event.createdAt, { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }),
+    formatDatePart(event.createdAt, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    }),
+    (() => {
+      const date = new Date(event.createdAt || "");
+      return Number.isNaN(date.getTime()) ? "" : date.toISOString();
+    })(),
     event?.eventType || "",
     event?.visitorId || "",
     event?.sessionId || "",
