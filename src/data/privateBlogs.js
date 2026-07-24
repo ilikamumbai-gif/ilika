@@ -29,9 +29,11 @@ const bestIngredientsForHomemadeFaceMasksTitle =
 const diyFaceMaskMachineBuyingGuideTitle =
   "DIY Face Mask Machine Buying Guide (2026): How to Choose the Right Face Mask Maker";
 const voiceMaskMakerPath = "/product/voice-face-mask-maker";
+const hairDryerProductPath = "/product/leafless-hair-dryer";
 const ilikaYouTubeChannelUrl = "https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg";
 const voiceMaskMakerVideoUrl = ilikaYouTubeChannelUrl;
 const hairDryerVideoUrl = ilikaYouTubeChannelUrl;
+const hairDryerEmiOfferImage = "/Images/hair-dryer-emi-offer.webp";
 const disclaimerHtml =
   "<h2>Disclaimer</h2><p>The information in this article is for educational purposes only and is not intended as medical advice. Results from skincare routines vary between individuals. If you have persistent skin concerns or a medical condition, consult a qualified dermatologist before trying new skincare products or ingredients.</p><p>Patch test new ingredients before use, and remember that homemade masks are best used as part of a broader skincare routine rather than as a replacement for regular skin care or professional advice.</p>";
 const buildYouTubeWatchHtml = (url, label) =>
@@ -729,7 +731,6 @@ export const PRIVATE_BLOGS = [
   },
 ];
 
-const hairDryerProductPath = "/product/leafless-hair-dryer";
 const hairDryerLandingPath = "/leafless-hair-dryer";
 const airwrapProductPath = "/product/airwrap-multi-styler-kit";
 const hairDryerBlogImagePool = [
@@ -1606,6 +1607,237 @@ export const HAIR_DRYER_CITY_BLOGS = [
   ...blog,
 }));
 
+export const HAIR_DRYER_EMI_CITY_BLOGS = [
+  {
+    id: "hair-dryer-emi-vasai-401200",
+    slug: "hair-dryer-emi-vasai-401200",
+    title: "Grab the Hair Dryer for Rs. 1,000 EMI - Vasai Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Ilika BLDC Hair Dryer now Rs. 2,999, with Rs. 1,000 due today via EMI and fast delivery to Vasai.",
+    content:
+      "<p>Vasai has shown strong repeat interest in this hair dryer, and the easiest update is this: the total price is now Rs. 2,999, while Razorpay EMI lets you start with just Rs. 1,000 today.</p><p>The remaining balance can be split into Rs. 500 a month for 6 months or Rs. 334 a month for 9 months, with 0% interest shown when eligible and no extra cost depending on your bank offer.</p><p>You still get the same 110,000 RPM BLDC motor, ionic anti-frizz technology, smart thermo-control, magnetic nozzle, and 1-year warranty.</p><p><strong>Delivery to Vasai:</strong> usually fast, with a practical payment option for buyers who were waiting on budget timing.</p>",
+  },
+  {
+    id: "hair-dryer-emi-mumbai-400037",
+    slug: "hair-dryer-emi-mumbai-400037",
+    title: "Hair Dryer Rs. 1,000 EMI Offer - Mumbai Delivery in 2 Days",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Get the Ilika BLDC Hair Dryer for Rs. 2,999 total, with Rs. 1,000 due today and fast Mumbai delivery.",
+    content:
+      "<p>If you are in Mumbai and want something faster than a basic single-setting dryer, this offer lowers the starting cost without changing the product. Total price is Rs. 2,999, and Razorpay EMI brings the upfront amount down to Rs. 1,000 today.</p><p>The rest can be paid as Rs. 500 per month for 6 months or Rs. 334 per month for 9 months.</p><p>The dryer includes a 110,000 RPM BLDC motor, ionic anti-frizz support, smart heat protection, a magnetic nozzle, and a 1-year warranty.</p><p><strong>Delivery to Mumbai:</strong> usually about 2 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-pune-411019",
+    slug: "hair-dryer-emi-pune-411019",
+    title: "Hair Dryer Rs. 1,000 EMI - Pune Delivery, 110000 RPM Motor",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Ilika BLDC Hair Dryer now Rs. 2,999 with a Rs. 1,000 EMI option and delivery to Pune in 2 to 3 days.",
+    content:
+      "<p>Pune buyers usually compare features before buying, and this dryer holds up well on the things that matter: a 110,000 RPM BLDC motor, ionic frizz control, and thermo-control that checks temperature continuously during use.</p><p>The total price is Rs. 2,999. With Razorpay EMI, you can start with Rs. 1,000 today and split the rest into smaller monthly payments.</p><p><strong>Delivery to Pune:</strong> typically 2 to 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-nashik-422222",
+    slug: "hair-dryer-emi-nashik-422222",
+    title: "Hair Dryer for Rs. 1,000 EMI - Nashik Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Ilika BLDC Hair Dryer at Rs. 2,999 total, with just Rs. 1,000 due today and Nashik delivery.",
+    content:
+      "<p>If the full Rs. 2,999 felt like a bigger one-time spend than you wanted, this EMI option changes the math. Only Rs. 1,000 is due today, followed by smaller monthly instalments.</p><p>The dryer itself stays the same: BLDC motor, ionic support for frizz control, smart overheat protection, and a detachable magnetic nozzle.</p><p><strong>Delivery to Nashik:</strong> around 3 business days in many cases.</p>",
+  },
+  {
+    id: "hair-dryer-emi-udaipur-313001",
+    slug: "hair-dryer-emi-udaipur-313001",
+    title: "Hair Dryer Rs. 1,000 EMI Offer - Udaipur Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Rs. 2,999 total price with Rs. 1,000 due today via EMI, plus delivery support for Udaipur buyers.",
+    content:
+      "<p>Udaipur has shown repeated interest in this product, and the EMI structure makes it easier to act on that interest. The hair dryer is now Rs. 2,999 total, with Rs. 1,000 due today through Razorpay EMI.</p><p>You still get the same BLDC motor, ionic technology, smart temperature management, and warranty support.</p><p><strong>Delivery to Udaipur:</strong> commonly 3 to 4 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-jaipur-302004",
+    slug: "hair-dryer-emi-jaipur-302004",
+    title: "Hair Dryer for Rs. 1,000 EMI - Jaipur Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Ilika BLDC Hair Dryer for Rs. 2,999 total with a Rs. 1,000 EMI start and Jaipur delivery.",
+    content:
+      "<p>Jaipur buyers looking for better control than a basic dryer can now start with a lower upfront payment. Razorpay EMI brings the first payment to Rs. 1,000 today on a current price of Rs. 2,999.</p><p>The product includes adjustable heat, ionic anti-frizz support, and a BLDC motor designed for fast airflow and longer motor life.</p><p><strong>Delivery to Jaipur:</strong> roughly 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-mysuru-570004",
+    slug: "hair-dryer-emi-mysuru-570004",
+    title: "Hair Dryer Rs. 1,000 EMI - Mysuru Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Mysuru delivery plus a Rs. 1,000 EMI start on the Ilika BLDC Hair Dryer priced at Rs. 2,999.",
+    content:
+      "<p>Mysuru has shown clear repeat interest in this hair dryer, which usually means the product is already appealing and the payment format matters most. This offer lets you begin with Rs. 1,000 today instead of paying the full Rs. 2,999 upfront.</p><p>The same 110,000 RPM BLDC motor, ionic support, and 1-year warranty remain included.</p>",
+  },
+  {
+    id: "hair-dryer-emi-bengaluru-560001",
+    slug: "hair-dryer-emi-bengaluru-560001",
+    title: "Hair Dryer for Rs. 1,000 EMI - Bengaluru Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Get the Ilika BLDC Hair Dryer for Rs. 2,999 total, starting at Rs. 1,000 today with Bengaluru delivery.",
+    content:
+      "<p>Bengaluru buyers often care about speed and routine efficiency, and that is where this dryer is strongest. The 110,000 RPM BLDC motor helps cut drying time, while ionic support helps reduce static and frizz.</p><p>The total price is Rs. 2,999, and Razorpay EMI reduces the starting amount to Rs. 1,000 today.</p><p><strong>Delivery to Bengaluru:</strong> about 2 to 3 business days in many orders.</p>",
+  },
+  {
+    id: "hair-dryer-emi-ahmedabad-380004",
+    slug: "hair-dryer-emi-ahmedabad-380004",
+    title: "Hair Dryer Rs. 1,000 EMI Offer - Ahmedabad Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Ahmedabad buyers can now order the Ilika BLDC Hair Dryer at Rs. 2,999 with only Rs. 1,000 due today.",
+    content:
+      "<p>If you compared this dryer earlier as a one-time payment, EMI makes it easier to start. Only Rs. 1,000 is due today, and the rest can be spread over monthly payments.</p><p>The product keeps the same BLDC motor, ionic support, smart thermo-control, and warranty coverage.</p><p><strong>Delivery to Ahmedabad:</strong> usually 2 to 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-vadodara-390009",
+    slug: "hair-dryer-emi-vadodara-390009",
+    title: "Hair Dryer for Rs. 1,000 EMI - Vadodara Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Vadodara delivery and a Rs. 1,000 EMI start on the Ilika BLDC Hair Dryer now priced at Rs. 2,999.",
+    content:
+      "<p>For Vadodara buyers comparing durability and day-to-day value, this offer keeps the same brushless motor story while lowering the first payment. Start with Rs. 1,000 today on a product currently priced at Rs. 2,999.</p><p><strong>Delivery to Vadodara:</strong> commonly around 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-rajkot-360022",
+    slug: "hair-dryer-emi-rajkot-360022",
+    title: "Hair Dryer Rs. 1,000 EMI - Rajkot Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Rajkot buyers can start at Rs. 1,000 today for the Ilika BLDC Hair Dryer priced at Rs. 2,999 total.",
+    content:
+      "<p>Rajkot shoppers who prefer practical value now have a lower entry point. Instead of paying the full Rs. 2,999 upfront, EMI lets you begin with Rs. 1,000 today.</p><p>The dryer still includes a 110,000 RPM BLDC motor, ionic anti-frizz support, and smart heat protection for daily use.</p><p><strong>Delivery to Rajkot:</strong> about 3 business days in many cases.</p>",
+  },
+  {
+    id: "hair-dryer-emi-hyderabad-500055",
+    slug: "hair-dryer-emi-hyderabad-500055",
+    title: "Hair Dryer for Rs. 1,000 EMI - Hyderabad Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Hyderabad delivery plus a Rs. 1,000 EMI start on the Ilika BLDC Hair Dryer now priced at Rs. 2,999.",
+    content:
+      "<p>Hyderabad buyers can now get started with Rs. 1,000 today rather than the full Rs. 2,999. Razorpay EMI splits the balance while keeping the same product features intact.</p><p>This includes the BLDC motor, ionic frizz control, magnetic nozzle, and 1-year warranty.</p><p><strong>Delivery to Hyderabad:</strong> usually 2 to 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-haridwar-249401",
+    slug: "hair-dryer-emi-haridwar-249401",
+    title: "Hair Dryer Rs. 1,000 EMI Offer - Haridwar Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Haridwar buyers can order the Ilika BLDC Hair Dryer at Rs. 2,999 total with only Rs. 1,000 due today.",
+    content:
+      "<p>This EMI offer lowers the first payment to Rs. 1,000 today while keeping the total product price at Rs. 2,999. The same BLDC motor, ionic anti-frizz support, and smart thermo-control remain part of the offer.</p><p><strong>Delivery to Haridwar:</strong> available with a practical instalment-based option for buyers watching budget timing.</p>",
+  },
+  {
+    id: "hair-dryer-emi-jalandhar-144003",
+    slug: "hair-dryer-emi-jalandhar-144003",
+    title: "Hair Dryer for Rs. 1,000 EMI - Jalandhar Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Jalandhar delivery and a Rs. 1,000 EMI start on the Ilika BLDC Hair Dryer priced at Rs. 2,999.",
+    content:
+      "<p>Jalandhar buyers dealing with static and winter frizz often care more about finish quality than just raw heat. This dryer combines ionic support with a BLDC motor and adjustable heat, and EMI lowers the first payment to Rs. 1,000 today.</p><p><strong>Delivery to Jalandhar:</strong> generally 3 to 4 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-chandigarh-140603",
+    slug: "hair-dryer-emi-chandigarh-140603",
+    title: "Hair Dryer Rs. 1,000 EMI Offer - Chandigarh Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Chandigarh buyers can order the Ilika BLDC Hair Dryer with Rs. 1,000 due today on a Rs. 2,999 price.",
+    content:
+      "<p>Chandigarh buyers can split the cost of this dryer into a smaller starting payment and monthly instalments. The first amount due is Rs. 1,000 today, while the total product price remains Rs. 2,999.</p><p>The 110,000 RPM motor, ionic support, and 1-year warranty stay the same whichever payment option you choose.</p><p><strong>Delivery to Chandigarh:</strong> roughly 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-new-delhi-110002",
+    slug: "hair-dryer-emi-new-delhi-110002",
+    title: "Hair Dryer for Rs. 1,000 EMI - Delhi NCR Delivery in 2 Days",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Delhi NCR delivery in about 2 days with a Rs. 1,000 EMI start on the Ilika BLDC Hair Dryer.",
+    content:
+      "<p>Delhi NCR delivery is often among the fastest, and EMI now makes the dryer easier to start with only Rs. 1,000 due today. The total price is Rs. 2,999, and the product remains unchanged.</p><p>The BLDC motor and ionic anti-frizz support are especially useful for users who want smoother drying without depending on excessive heat.</p>",
+  },
+  {
+    id: "hair-dryer-emi-indore-452009",
+    slug: "hair-dryer-emi-indore-452009",
+    title: "Hair Dryer Rs. 1,000 EMI - Indore Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Indore buyers can now start at Rs. 1,000 today for the Ilika BLDC Hair Dryer priced at Rs. 2,999 total.",
+    content:
+      "<p>Indore buyers can now spread the payment across smaller steps instead of paying Rs. 2,999 in one go. Start with Rs. 1,000 today and keep the same BLDC motor, ionic support, and warranty coverage.</p><p><strong>Delivery to Indore:</strong> commonly around 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-guwahati-781030",
+    slug: "hair-dryer-emi-guwahati-781030",
+    title: "Hair Dryer for Rs. 1,000 EMI - Guwahati Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Guwahati buyers can order the Ilika BLDC Hair Dryer with Rs. 1,000 due today and a total price of Rs. 2,999.",
+    content:
+      "<p>Guwahati is a newer but meaningful market for this dryer, and EMI makes it easier to try without a larger upfront spend. Only Rs. 1,000 is due today while the total current price stays Rs. 2,999.</p><p><strong>Delivery to Guwahati:</strong> usually around 4 to 5 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-chennai-600003",
+    slug: "hair-dryer-emi-chennai-600003",
+    title: "Hair Dryer Rs. 1,000 EMI Offer - Chennai Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Chennai delivery plus a Rs. 1,000 EMI start on the Ilika BLDC Hair Dryer now priced at Rs. 2,999.",
+    content:
+      "<p>Chennai's humidity makes fast drying and frizz control more relevant than in drier regions. This dryer combines a BLDC motor with ionic support, and the payment option now starts at Rs. 1,000 today on a total price of Rs. 2,999.</p><p><strong>Delivery to Chennai:</strong> typically 2 to 3 business days.</p>",
+  },
+  {
+    id: "hair-dryer-emi-kanpur-208025",
+    slug: "hair-dryer-emi-kanpur-208025",
+    title: "Hair Dryer for Rs. 1,000 EMI - Kanpur Delivery",
+    displayTitle: "Hair Dryer Rs. 1,000 EMI Offer",
+    excerpt:
+      "Kanpur buyers can start at Rs. 1,000 today for the Ilika BLDC Hair Dryer, priced at Rs. 2,999 total.",
+    content:
+      "<p>Kanpur buyers can now get this dryer moving with just Rs. 1,000 today and split the remaining amount across monthly instalments. The product features remain the same: 110,000 RPM BLDC motor, ionic support, and a 1-year warranty.</p><p><strong>Delivery to Kanpur:</strong> generally 3 to 4 business days.</p>",
+  },
+].map((blog, index) => ({
+  author: "Ilika Team",
+  createdAt: "2026-07-24T00:00:00.000Z",
+  image: hairDryerEmiOfferImage,
+  internalLink: hairDryerProductPath,
+  internalLinks: [
+    ...buildHairToolLinks(`hair-dryer-emi-city-${index + 1}`),
+    {
+      id: `hair-dryer-emi-city-${index + 1}-product`,
+      label: "Buy Ilika Hair Dryer",
+      url: hairDryerProductPath,
+    },
+    {
+      id: `hair-dryer-emi-city-${index + 1}-landing`,
+      label: "Explore Hair Dryer Landing Page",
+      url: "/leafless-hair-dryer",
+    },
+  ],
+  isPrivate: false,
+  hideFromBlogListing: true,
+  contentSections: [
+    {
+      id: `${blog.id}-intro`,
+      type: "content-full",
+      content: `<h2>${blog.title}</h2>${blog.content}${buildYouTubeWatchHtml(hairDryerVideoUrl, "Watch the Ilika hair dryer on YouTube")}`,
+    },
+  ],
+  ...blog,
+}));
+
 export const MASK_MAKER_CITY_BLOGS = [
   {
     id: "mask-maker-hyderabad-500055",
@@ -1760,6 +1992,7 @@ export const MASK_MAKER_TOPIC_BLOGS = maskMakerTopicTitles.map(buildMaskMakerTop
 export const STATIC_BLOGS = [
   CUSTOM_VOICE_MASK_GUIDE_BLOG,
   ...HAIR_DRYER_CITY_BLOGS,
+  ...HAIR_DRYER_EMI_CITY_BLOGS,
   ...MASK_MAKER_CITY_BLOGS,
   HAIR_DRYER_GUIDE_BLOG,
   ...HAIR_DRYER_TOPIC_BLOGS,
