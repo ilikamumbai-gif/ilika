@@ -53,6 +53,14 @@ const LEAFLESS_HAIR_DRYER_COUPON = {
   name: "Leafless Hair Dryer Offer",
   isVisible: true,
 };
+const VOICE_MASK_MAKER_PRODUCT_SLUG = "voice-face-mask-maker";
+const VOICE_MASK_MAKER_COUPON = {
+  code: "ILIKADIY",
+  discountPercent: 0,
+  forcedPrice: 3999,
+  name: "Voice Mask Maker Offer",
+  isVisible: true,
+};
 const COLLAGEN_ADDON_OPTIONS = [
   { id: "pack0", count: 0, label: "No extra collagen Peptide pack", tablets: 0, price: 0 },
   { id: "pack1", count: 1, label: "1 Collagen Peptide Pack (16 no.s)", tablets: 16, price: 799 },
@@ -3067,6 +3075,17 @@ const ProductDetail = () => {
 
     return rawValues.some((value) => createSlug(String(value || "")) === LEAFLESS_HAIR_DRYER_PRODUCT_SLUG);
   }, [product?.name, product?.productUrl, product?.slug, productUrl]);
+  const isVoiceMaskMakerProduct = useMemo(() => {
+    const rawValues = [
+      product?.productUrl,
+      product?.slug,
+      product?.name,
+      productUrl,
+      getCanonicalProductSlugAlias(product?.productUrl || product?.slug || product?.name || productUrl || ""),
+    ];
+
+    return rawValues.some((value) => createSlug(String(value || "")) === VOICE_MASK_MAKER_PRODUCT_SLUG);
+  }, [product?.name, product?.productUrl, product?.slug, productUrl]);
   const basePrice = isLeaflessHairDryerProduct
     ? Number(LEAFLESS_HAIR_DRYER_BASE_PRICE)
     : Number(activeDisplayPricing.price || 0);
@@ -3158,18 +3177,16 @@ const ProductDetail = () => {
     if (isLeaflessHairDryerProduct) {
       return LEAFLESS_HAIR_DRYER_COUPON;
     }
+    if (isVoiceMaskMakerProduct) {
+      return VOICE_MASK_MAKER_COUPON;
+    }
 
     const snapshot = liveAssignedCoupon || sanitizeCouponData(product?.couponSnapshot) || sanitizeCouponData(product?.coupon) || null;
     if (!snapshot) return null;
     const code = normalizeCouponCode(snapshot.code);
     const discountPercent = Number(snapshot.discountPercent || 0);
     const forcedPrice = Number(snapshot.forcedPrice || 0);
-    const normalizedName = String(product?.name || "").toLowerCase();
-    const isVoiceMaskMakerProduct = normalizedName.includes("automatic voice version face mask maker machine");
-    const fallbackForcedPrice =
-      isVoiceMaskMakerProduct && code.toLowerCase() === "ilikadiy"
-        ? 4999
-        : 0;
+    const fallbackForcedPrice = 0;
     const resolvedDiscountPercent = discountPercent > 0 ? discountPercent : 0;
     const resolvedForcedPrice = forcedPrice > 0 ? forcedPrice : fallbackForcedPrice;
     const hasDiscount = resolvedDiscountPercent > 0;
@@ -3182,7 +3199,7 @@ const ProductDetail = () => {
       name: snapshot.name || "",
       isVisible: snapshot.isVisible !== false,
     };
-  }, [isLeaflessHairDryerProduct, liveAssignedCoupon, product?.couponSnapshot, product?.coupon, product?.name]);
+  }, [isLeaflessHairDryerProduct, isVoiceMaskMakerProduct, liveAssignedCoupon, product?.couponSnapshot, product?.coupon]);
   const visibleAssignedCoupon = assignedCoupon?.isVisible === false ? null : assignedCoupon;
   const freeGiftSlug = freeGiftProduct ? getProductSlug(freeGiftProduct) : "";
   const freeGiftImage = freeGiftProduct?.images?.[0] || freeGiftProduct?.imageUrl || freeGiftProduct?.image || "";
@@ -3959,7 +3976,14 @@ const ProductDetail = () => {
     [product?.faqs]
   );
 
-  const rating = product?.rating || 4;
+  const publicReviewRatings = useMemo(
+    () => productReviews.map((review) => Number(review?.rating || 0)).filter((value) => value > 0),
+    [productReviews]
+  );
+  const publicReviewCount = publicReviewRatings.length;
+  const publicAverageRating = publicReviewCount
+    ? publicReviewRatings.reduce((sum, value) => sum + value, 0) / publicReviewCount
+    : 0;
   const beforeAfterPairs = product?.beforeAfter || [];
   const hasBeforeAfter = Array.isArray(beforeAfterPairs) && beforeAfterPairs.length > 0;
   const currentRouteSlug = useMemo(
@@ -4642,13 +4666,17 @@ const ProductDetail = () => {
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: detailTheme.ratingBg, color: getContrastText(detailTheme.ratingBg) }}>
-                  <Star className="h-3 w-3 fill-white" />
-                  <span>{rating.toFixed(1)}</span>
+              {publicReviewCount > 0 ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: detailTheme.ratingBg, color: getContrastText(detailTheme.ratingBg) }}>
+                    <Star className="h-3 w-3 fill-white" />
+                    <span>{publicAverageRating.toFixed(1)}</span>
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    Verified Reviews ({publicReviewCount})
+                  </span>
                 </div>
-                <span className="text-xs text-gray-400">Verified Reviews</span>
-              </div>
+              ) : null}
 
               {product.hasVariants && <div>{renderVariantSelector()}</div>}
 

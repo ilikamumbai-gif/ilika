@@ -83,6 +83,14 @@ const sanitizeCouponData = (coupon) => {
   };
 };
 
+const VOICE_MASK_MAKER_COUPON = {
+  code: "ILIKADIY",
+  discountPercent: 0,
+  forcedPrice: 3999,
+  isActive: true,
+  isVisible: true,
+};
+
 const features = [
   {
     icon: Volume2,
@@ -365,7 +373,11 @@ const VoiceMaskMakerLanding = () => {
   }, [assignedCouponId]);
 
   const assignedCoupon = useMemo(
-    () => liveCoupon || sanitizeCouponData(targetProduct?.couponSnapshot) || sanitizeCouponData(targetProduct?.coupon) || null,
+    () =>
+      liveCoupon ||
+      sanitizeCouponData(targetProduct?.couponSnapshot) ||
+      sanitizeCouponData(targetProduct?.coupon) ||
+      VOICE_MASK_MAKER_COUPON,
     [liveCoupon, targetProduct?.couponSnapshot, targetProduct?.coupon]
   );
   const relatedPrivateBlogs = useMemo(
