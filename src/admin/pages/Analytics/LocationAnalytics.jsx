@@ -392,10 +392,14 @@ const triggerCsvDownload = (blob, fileName) => {
 
   link.href = downloadUrl;
   link.setAttribute("download", fileName);
+  link.style.display = "none";
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(downloadUrl);
+
+  window.setTimeout(() => {
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+  }, 1000);
 };
 
 const StatCard = ({ title, value, hint, icon, tone = "pink" }) => {
@@ -609,8 +613,21 @@ const LocationAnalytics = () => {
       setError("");
 
       const fallbackFileName = `location-analytics-${new Date().toISOString().slice(0, 10)}.csv`;
+      const params = new URLSearchParams();
 
-      const res = await fetch(getApiUrl("/api/visitor-analytics/export.csv"), {
+      if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
+      if (filters.dateTo) params.set("dateTo", filters.dateTo);
+      if (filters.eventType) params.set("eventType", filters.eventType);
+      if (filters.country) params.set("country", filters.country);
+      if (filters.state) params.set("state", filters.state);
+      if (filters.city) params.set("city", filters.city);
+      if (filters.product) params.set("product", filters.product);
+
+      const csvUrl = params.toString()
+        ? getApiUrl(`/api/visitor-analytics/export.csv?${params.toString()}`)
+        : getApiUrl("/api/visitor-analytics/export.csv");
+
+      const res = await fetch(csvUrl, {
         headers: {
           ...getAdminAuthHeaders(),
         },

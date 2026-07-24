@@ -5167,9 +5167,72 @@ app.get("/api/visitor-analytics/export.csv", async (req, res) => {
     if (!requester) {
       return res.status(403).json({ error: "Admin access required" });
     }
-    const query = db.collection("visitorAnalytics").orderBy("createdAt", "desc");
+    const {
+      dateFrom = "",
+      dateTo = "",
+      eventType = "",
+      country = "",
+      state = "",
+      city = "",
+      product = "",
+      exportAll = "",
+    } = req.query || {};
+
+    const normalizedEventType = trimToLength(eventType, 50);
+    const normalizedCountry = trimToLength(country, 120);
+    const normalizedState = trimToLength(state, 120);
+    const normalizedCity = trimToLength(city, 120);
+    const normalizedProduct = trimToLength(product, 300).toLowerCase();
+    const shouldExportAll =
+      String(exportAll || "").trim() === "1" ||
+      String(exportAll || "").trim().toLowerCase() === "true";
+
+    const isIndiaCountryFilter = isIndiaLocationValue(normalizedCountry);
+    const startDate = dateFrom ? new Date(`${dateFrom}T00:00:00.000Z`) : null;
+    const endDate = dateTo ? new Date(`${dateTo}T23:59:59.999Z`) : null;
+
+    if (normalizedEventType && !VISITOR_ANALYTICS_EVENT_TYPES.has(normalizedEventType)) {
+      return res.status(400).json({ error: "Invalid eventType filter" });
+    }
+
+    if (startDate && Number.isNaN(startDate.getTime())) {
+      return res.status(400).json({ error: "Invalid dateFrom filter" });
+    }
+
+    if (endDate && Number.isNaN(endDate.getTime())) {
+      return res.status(400).json({ error: "Invalid dateTo filter" });
+    }
+
+    let query = db.collection("visitorAnalytics");
+
+    if (normalizedEventType) {
+      query = query.where("eventType", "==", normalizedEventType);
+    }
+
+    if (normalizedCountry && !isIndiaCountryFilter) {
+      query = query.where("locationCountry", "==", normalizedCountry);
+    }
+
+    if (normalizedState) {
+      query = query.where("locationState", "==", normalizedState);
+    }
+
+    if (normalizedCity) {
+      query = query.where("locationCity", "==", normalizedCity);
+    }
+
+    if (startDate) {
+      query = query.where("createdAt", ">=", startDate);
+    }
+
+    if (endDate) {
+      query = query.where("createdAt", "<=", endDate);
+    }
+
+    query = query.orderBy("createdAt", "desc");
 
     const batchSize = 1000;
+    const maxDocs = shouldExportAll ? 100000 : startDate || endDate ? 20000 : 5000;
     let analyticsDocs = [];
 
     const fetchAnalyticsInPages = async (baseQuery) => {
@@ -5177,8 +5240,8 @@ app.get("/api/visitor-analytics/export.csv", async (req, res) => {
       let lastDoc = null;
       let hasMore = true;
 
-      while (hasMore) {
-        let pagedQuery = baseQuery.limit(batchSize);
+      while (hasMore && docs.length < maxDocs) {
+        let pagedQuery = baseQuery.limit(Math.min(batchSize, maxDocs - docs.length));
 
         if (lastDoc) {
           pagedQuery = pagedQuery.startAfter(lastDoc);
@@ -5199,7 +5262,7 @@ app.get("/api/visitor-analytics/export.csv", async (req, res) => {
     };
 
     try {
-      analyticsDocs = await fetchAnalyticsInPages(query);
+      analyticsDocs = shouldExportAll ? await fetchAnalyticsInPages(query) : (await query.limit(5000).get()).docs;
     } catch (queryError) {
       const message = String(queryError?.message || "");
       const needsFallback =
@@ -5215,8 +5278,20 @@ app.get("/api/visitor-analytics/export.csv", async (req, res) => {
       let lastDoc = null;
       let hasMore = true;
 
-      while (hasMore) {
-        let fallbackQuery = db.collection("visitorAnalytics").orderBy("createdAt", "desc").limit(batchSize);
+      while (hasMore && analyticsDocs.length < maxDocs) {
+        let fallbackQuery = db.collection("visitorAnalytics");
+
+        if (startDate) {
+          fallbackQuery = fallbackQuery.where("createdAt", ">=", startDate);
+        }
+
+        if (endDate) {
+          fallbackQuery = fallbackQuery.where("createdAt", "<=", endDate);
+        }
+
+        fallbackQuery = fallbackQuery.orderBy("createdAt", "desc").limit(
+          Math.min(batchSize, maxDocs - analyticsDocs.length)
+        );
 
         if (lastDoc) {
           fallbackQuery = fallbackQuery.startAfter(lastDoc);
@@ -5234,8 +5309,35 @@ app.get("/api/visitor-analytics/export.csv", async (req, res) => {
       }
     }
 
-    const queriedEvents = analyticsDocs.map(mapVisitorAnalyticsDoc);
-    const csvContent = buildVisitorAnalyticsCsv(queriedEvents);
+    const queriedEvents = analyticsDocs
+      .map(mapVisitorAnalyticsDoc)
+      .filter((event) => {
+        const clientIp = event?.locationDebug?.clientIp || event?.clientIp || "";
+        const requestIp = event?.locationDebug?.requestIp || "";
+        return !isExcludedVisitorAnalyticsIp(clientIp) && !isExcludedVisitorAnalyticsIp(requestIp);
+      });
+
+    const filteredEvents = queriedEvents.filter((event) => {
+      const createdAtDate = new Date(event.createdAt);
+      const eventProductValue = String(event.productName || event.productId || "").toLowerCase();
+      const eventCountryValue = trimToLength(event.ipLocation?.country, 120);
+      const matchesCountry = !normalizedCountry
+        ? true
+        : isIndiaCountryFilter
+          ? isIndiaLocationValue(eventCountryValue)
+          : eventCountryValue === normalizedCountry;
+
+      if (startDate && createdAtDate < startDate) return false;
+      if (endDate && createdAtDate > endDate) return false;
+      if (normalizedEventType && event.eventType !== normalizedEventType) return false;
+      if (!matchesCountry) return false;
+      if (normalizedState && trimToLength(event.ipLocation?.state, 120) !== normalizedState) return false;
+      if (normalizedCity && trimToLength(event.ipLocation?.city, 120) !== normalizedCity) return false;
+      if (normalizedProduct && eventProductValue !== normalizedProduct) return false;
+      return true;
+    });
+
+    const csvContent = buildVisitorAnalyticsCsv(filteredEvents);
     const stamp = new Date().toISOString().slice(0, 10);
 
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
