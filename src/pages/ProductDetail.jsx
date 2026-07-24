@@ -3412,7 +3412,9 @@ const ProductDetail = () => {
     ? Math.max(0, Math.round(((effectiveMrp - price) / effectiveMrp) * 100))
     : 0;
   const emiDisplayAmount = Number(
-    (couponForcedPrice && couponForcedPrice > 0 ? couponForcedPrice : price) || 0
+    (visibleAssignedCoupon && previewCouponFinalPrice > 0
+      ? previewCouponFinalPrice
+      : price) || 0
   );
   const addonCartSuffix = eligibleForCollagenAddon ? `__addon_${selectedCollagenAddon.count}` : "";
   const packCartSuffix = selectedPack ? `__pack_${selectedPack.id}` : "";
