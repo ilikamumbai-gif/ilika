@@ -280,7 +280,7 @@ const productAngles = [
 
 const VoiceMaskMakerLanding = () => {
   const [secs, setSecs] = useState(23 * 60 + 47);
-  const [couponApplied, setCouponApplied] = useState(false);
+  const [couponApplied, setCouponApplied] = useState(true);
   const [liveCoupon, setLiveCoupon] = useState(null);
   const navigate = useNavigate();
   const { addToCart } = useCart();

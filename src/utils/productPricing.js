@@ -3,6 +3,48 @@ const normalizeNumber = (value) => {
   return Number.isFinite(numeric) ? numeric : null;
 };
 
+const normalizeLookupValue = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "")
+    .replace(/^product\//, "");
+
+const VOICE_MASK_MAKER_PRICE_OVERRIDE = {
+  price: 3999,
+  compareAtPrice: 5999,
+  lookups: [
+    "voice-face-mask-maker",
+    "ilika-voice-face-mask-maker-machine-with-collagen-peptide",
+    "ilika-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
+  ],
+  nameSnippets: [
+    "voice face mask maker",
+    "automatic voice version face mask maker machine",
+  ],
+};
+
+const getVoiceMaskMakerOverride = (product = {}) => {
+  const lookupValues = [
+    product?.productUrl,
+    product?.slug,
+    product?.name,
+    product?.baseProductId,
+    product?.id,
+  ].map(normalizeLookupValue);
+
+  const matchesLookup = lookupValues.some((value) =>
+    VOICE_MASK_MAKER_PRICE_OVERRIDE.lookups.includes(value)
+  );
+
+  const normalizedName = normalizeLookupValue(product?.name || "");
+  const matchesNameSnippet = VOICE_MASK_MAKER_PRICE_OVERRIDE.nameSnippets.some((snippet) =>
+    normalizedName.includes(normalizeLookupValue(snippet))
+  );
+
+  return matchesLookup || matchesNameSnippet ? VOICE_MASK_MAKER_PRICE_OVERRIDE : null;
+};
+
 const getPositiveNumber = (value) => {
   const numeric = normalizeNumber(value);
   return numeric !== null && numeric > 0 ? numeric : null;
@@ -113,10 +155,12 @@ export const findVariantByQueryValue = (product = {}, queryValue = "") => {
 
 export const getProductDisplayPricing = (product = {}, selectedVariant = null) => {
   const activeVariant = findMatchingVariant(product, selectedVariant) || selectedVariant || getDefaultVariant(product);
+  const voiceMaskMakerOverride = getVoiceMaskMakerOverride(product);
 
   const variantPrice = getNonNegativeNumber(activeVariant?.price);
   const productPrice = getNonNegativeNumber(product?.price);
-  const price = variantPrice ?? productPrice ?? 0;
+  const resolvedBasePrice = variantPrice ?? productPrice ?? 0;
+  const price = voiceMaskMakerOverride?.price ?? resolvedBasePrice;
 
   const variantCompareAt =
     getPositiveNumber(activeVariant?.compareAtPrice) ??
@@ -126,7 +170,14 @@ export const getProductDisplayPricing = (product = {}, selectedVariant = null) =
     getPositiveNumber(product?.compareAtPrice) ??
     getPositiveNumber(product?.originalPrice) ??
     getPositiveNumber(product?.mrp);
-  const compareAtPrice = variantCompareAt ?? productCompareAt ?? null;
+  const resolvedCompareAt = variantCompareAt ?? productCompareAt ?? null;
+  const compareAtPrice = voiceMaskMakerOverride
+    ? Math.max(
+        Number(voiceMaskMakerOverride.compareAtPrice || 0),
+        Number(resolvedCompareAt || 0),
+        Number(price || 0)
+      ) || null
+    : resolvedCompareAt;
 
   return {
     price,
@@ -190,12 +241,21 @@ export const buildCartProductSnapshot = (product = {}, options = {}) => {
   } = options;
 
   const pricing = getProductDisplayPricing(product, variant);
+  const voiceMaskMakerOverride = getVoiceMaskMakerOverride(product);
   const activeVariant = pricing.activeVariant;
   const productId = String(product?.docId || product?.id || product?._id || "").trim();
   const variantId = String(activeVariant?.id || "").trim() || null;
   const variantName = getVariantNameValue(activeVariant);
-  const price = getNonNegativeNumber(selectedPrice) ?? pricing.price;
-  const compareAtPrice = getPositiveNumber(selectedCompareAtPrice) ?? pricing.compareAtPrice;
+  const price = voiceMaskMakerOverride
+    ? Number(voiceMaskMakerOverride.price)
+    : getNonNegativeNumber(selectedPrice) ?? pricing.price;
+  const compareAtPrice = voiceMaskMakerOverride
+    ? Math.max(
+        Number(voiceMaskMakerOverride.compareAtPrice || 0),
+        Number(getPositiveNumber(selectedCompareAtPrice) ?? pricing.compareAtPrice ?? 0),
+        Number(price || 0)
+      ) || null
+    : getPositiveNumber(selectedCompareAtPrice) ?? pricing.compareAtPrice;
   const image = selectedImage || getProductDisplayImage(product, activeVariant);
   const sku = getProductVariantSku(product, activeVariant);
   const stock = getProductVariantStock(product, activeVariant);
@@ -220,11 +280,25 @@ export const buildCartProductSnapshot = (product = {}, options = {}) => {
 
 export const getCartItemDisplayPricing = (item = {}) => {
   const pricing = getProductDisplayPricing(item, item);
-  const itemPrice = getNonNegativeNumber(item?.price);
+  const voiceMaskMakerOverride = getVoiceMaskMakerOverride(item);
+  const itemPrice = voiceMaskMakerOverride
+    ? Number(voiceMaskMakerOverride.price)
+    : getNonNegativeNumber(item?.price);
   const compareAtPrice =
-    getPositiveNumber(item?.compareAtPrice) ??
-    getPositiveNumber(item?.originalPrice) ??
-    pricing.compareAtPrice;
+    voiceMaskMakerOverride
+      ? Math.max(
+          Number(voiceMaskMakerOverride.compareAtPrice || 0),
+          Number(
+            getPositiveNumber(item?.compareAtPrice) ??
+              getPositiveNumber(item?.originalPrice) ??
+              pricing.compareAtPrice ??
+              0
+          ),
+          Number(itemPrice ?? pricing.price ?? 0)
+        ) || null
+      : getPositiveNumber(item?.compareAtPrice) ??
+        getPositiveNumber(item?.originalPrice) ??
+        pricing.compareAtPrice;
 
   return {
     price: itemPrice ?? pricing.price,

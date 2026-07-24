@@ -3446,8 +3446,14 @@ const ProductDetail = () => {
       setCouponMessage({ type: "", text: "" });
       return;
     }
+    if (isVoiceMaskMakerProduct) {
+      setCouponCodeInput(visibleAssignedCoupon.code);
+      setAppliedCoupon(visibleAssignedCoupon);
+      setCouponMessage({ type: "", text: "" });
+      return;
+    }
     setAppliedCoupon((prev) => (prev?.code === visibleAssignedCoupon.code ? visibleAssignedCoupon : prev));
-  }, [visibleAssignedCoupon]);
+  }, [visibleAssignedCoupon, isVoiceMaskMakerProduct]);
 
   const applyCouponCode = useCallback((rawCode) => {
     if (!visibleAssignedCoupon) return;

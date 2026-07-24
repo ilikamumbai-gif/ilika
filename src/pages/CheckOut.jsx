@@ -157,7 +157,7 @@ const getEligibleCouponForCheckoutItem = (item = {}, liveCouponMap = {}) => {
   const normalizedName = String(item?.name || "").toLowerCase();
   const isVoiceMaskMakerProduct = normalizedName.includes("automatic voice version face mask maker machine");
   const fallbackForcedPrice =
-    isVoiceMaskMakerProduct && code.toLowerCase() === "ilikadiy" ? 4999 : 0;
+    isVoiceMaskMakerProduct && code.toLowerCase() === "ilikadiy" ? 3999 : 0;
   const resolvedForcedPrice = forcedPrice > 0 ? forcedPrice : fallbackForcedPrice;
   const hasDiscount = discountPercent > 0;
   const hasForcedPrice = resolvedForcedPrice > 0;
