@@ -45,17 +45,7 @@ const getVoiceMaskMakerOverride = (product = {}) => {
     product?.id,
   ].map(normalizeLookupValue);
 
-  const matchesLookup = lookupValues.some((value) =>
-    VOICE_MASK_MAKER_PRICE_OVERRIDE.lookups.includes(value)
-  );
-
   const normalizedName = normalizeLookupValue(product?.name || "");
-  const matchesNameSnippet = VOICE_MASK_MAKER_PRICE_OVERRIDE.nameSnippets.some((snippet) =>
-    normalizedName.includes(normalizeLookupValue(snippet))
-  );
-
-  if (matchesLookup || matchesNameSnippet) return VOICE_MASK_MAKER_PRICE_OVERRIDE;
-
   const nonVoiceLookupMatch = lookupValues.some((value) =>
     NONVOICE_MASK_MAKER_PRICE_OVERRIDE.lookups.includes(value)
   );
@@ -63,7 +53,16 @@ const getVoiceMaskMakerOverride = (product = {}) => {
     normalizedName.includes(normalizeLookupValue(snippet))
   );
 
-  return nonVoiceLookupMatch || nonVoiceNameMatch ? NONVOICE_MASK_MAKER_PRICE_OVERRIDE : null;
+  if (nonVoiceLookupMatch || nonVoiceNameMatch) return NONVOICE_MASK_MAKER_PRICE_OVERRIDE;
+
+  const voiceLookupMatch = lookupValues.some((value) =>
+    VOICE_MASK_MAKER_PRICE_OVERRIDE.lookups.includes(value)
+  );
+  const voiceNameMatch = VOICE_MASK_MAKER_PRICE_OVERRIDE.nameSnippets.some((snippet) =>
+    normalizedName.includes(normalizeLookupValue(snippet))
+  );
+
+  return voiceLookupMatch || voiceNameMatch ? VOICE_MASK_MAKER_PRICE_OVERRIDE : null;
 };
 
 const getPositiveNumber = (value) => {
