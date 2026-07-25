@@ -5,6 +5,7 @@ import { useCart } from "../context/CartProvider";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { normalizeSearchText, productMatchesSearch } from "../utils/productDiscovery";
+import { getProductDisplayPricing } from "../utils/productPricing";
 
 const isActivePath = (pathname = "", target = "") => {
   if (target === "/") return pathname === "/";
@@ -31,10 +32,7 @@ const getProductPreviewImage = (product = {}) => {
 };
 
 const getProductPreviewPrice = (product = {}) => {
-  const variant = getDefaultVariant(product);
-  const raw = variant?.price ?? product?.price ?? 0;
-  const numeric = Number(raw);
-  return Number.isFinite(numeric) ? numeric : 0;
+  return getProductDisplayPricing(product).price;
 };
 
 const getItemVisual = (item = {}) => ({
