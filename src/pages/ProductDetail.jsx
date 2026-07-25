@@ -3087,7 +3087,7 @@ const ProductDetail = () => {
     return rawValues.some((value) => createSlug(String(value || "")) === VOICE_MASK_MAKER_PRODUCT_SLUG);
   }, [product?.name, product?.productUrl, product?.slug, productUrl]);
   const productDisplayTitle = isLeaflessHairDryerProduct
-    ? "Ilika BLDC Hair Dryer | 110000 RPM Brushless Motor | Ionic Anti-Frizz | Hot Cold Air | For Men & Women"
+    ? `${product?.name || "Ilika High-Speed BLDC Hair Dryer"} | For Men & Women`
     : product?.name || "Ilika Product";
   const basePrice = isLeaflessHairDryerProduct
     ? Number(LEAFLESS_HAIR_DRYER_BASE_PRICE)
