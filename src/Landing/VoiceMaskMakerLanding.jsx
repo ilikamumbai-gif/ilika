@@ -280,7 +280,6 @@ const productAngles = [
 
 const VoiceMaskMakerLanding = () => {
   const [secs, setSecs] = useState(23 * 60 + 47);
-  const [couponApplied, setCouponApplied] = useState(true);
   const [liveCoupon, setLiveCoupon] = useState(null);
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -325,15 +324,12 @@ const VoiceMaskMakerLanding = () => {
   const productName = targetProduct?.name || "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin";
   const rawProductPrice = defaultVariant?.price ?? targetProduct?.price;
   const rawProductMrp = defaultVariant?.mrp ?? targetProduct?.mrp;
-  const productPrice =
-    rawProductPrice === undefined || rawProductPrice === null || rawProductPrice === ""
-      ? null
-      : Number(rawProductPrice);
+  const productPrice = 4499;
   const productMrp =
     rawProductMrp === undefined || rawProductMrp === null || rawProductMrp === ""
       ? null
       : Number(rawProductMrp);
-  const hasLivePrice = Number.isFinite(productPrice);
+  const hasLivePrice = Boolean(targetProduct);
   const hasLiveMrp = Number.isFinite(productMrp);
   const productImage =
     voiceVersionMaskMakerImage ||
@@ -431,16 +427,7 @@ const VoiceMaskMakerLanding = () => {
     }));
   }, [targetProduct?.reviews]);
 
-  const couponCode = assignedCoupon?.code || "ilikaDIY";
-  const couponForcedPrice = Number(assignedCoupon?.forcedPrice || 0) > 0 ? Number(assignedCoupon.forcedPrice) : null;
-  const couponPercent = Number(assignedCoupon?.discountPercent || 0);
-  const discountedPrice = hasLivePrice
-    ? couponApplied
-      ? (couponForcedPrice
-          ? Math.min(productPrice, couponForcedPrice)
-          : Math.max(0, Number((productPrice - ((productPrice * couponPercent) / 100)).toFixed(2))))
-      : productPrice
-    : null;
+  const discountedPrice = hasLivePrice ? productPrice : null;
   const effectiveSavings =
     hasLiveMrp && Number.isFinite(discountedPrice)
       ? Math.max(productMrp - discountedPrice, 0)
@@ -449,11 +436,6 @@ const VoiceMaskMakerLanding = () => {
     ? `₹${discountedPrice.toLocaleString("en-IN")}`
     : "Loading price...";
   const mrpLabel = hasLiveMrp ? `₹${productMrp.toLocaleString("en-IN")}` : "MRP unavailable";
-
-  const handleApplyCoupon = () => {
-    if (!assignedCoupon) return;
-    setCouponApplied(true);
-  };
 
   const handleBuyNow = async () => {
     if (!targetProduct || !hasLivePrice || !Number.isFinite(discountedPrice)) {
@@ -467,16 +449,7 @@ const VoiceMaskMakerLanding = () => {
       originalPrice: hasLiveMrp ? productMrp : discountedPrice,
       image: productImage,
       images: [productImage],
-      discountApplied: couponApplied
-        ? {
-            code: couponCode,
-            percent: couponForcedPrice && hasLivePrice && productPrice > 0
-              ? Number((((productPrice - discountedPrice) / productPrice) * 100).toFixed(2))
-              : couponPercent,
-            amount: hasLivePrice ? Math.max(productPrice - discountedPrice, 0) : 0,
-            basedOn: "selling_price",
-          }
-        : null,
+      discountApplied: null,
     };
 
     await addToCart(cartPayload);
@@ -543,31 +516,6 @@ const VoiceMaskMakerLanding = () => {
             </button>
 
             <div className="mb-3 flex w-full max-w-[760px] flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <button
-                type="button"
-                onClick={handleApplyCoupon}
-                disabled={!hasLivePrice || !assignedCoupon}
-                className={`inline-flex h-auto min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] border border-dashed px-3 py-2 text-[13px] font-semibold tracking-[0.03em] transition sm:h-[48px] sm:min-w-[320px] sm:flex-1 sm:px-4 sm:py-0 sm:text-[16px] sm:tracking-[0.04em] ${
-                  couponApplied
-                    ? "border-[#F0C24A] bg-[#FFD54A] text-[#5C3A00]"
-                    : "border-[#E4B63E] bg-[#F7C948] text-[#5C3A00] hover:bg-[#FFD54A]"
-                } disabled:cursor-not-allowed disabled:opacity-60`}
-              >
-                <Tag className="h-3.5 w-3.5" />
-                {couponApplied
-                  ? `Coupon Applied: ${couponCode} · ${couponForcedPrice ? `Price Locked at ${priceLabel}` : `${couponPercent}% Off`}`
-                  : hasLivePrice
-                    ? assignedCoupon
-                      ? `Use Code: ${couponCode} · ${couponForcedPrice ? `Price ${priceLabel}` : `Get ${couponPercent}% Off`}`
-                      : "Coupon unavailable right now"
-                    : "Waiting for live price"}
-                {!couponApplied && (
-                  <span className="hidden animate-bounce items-center gap-1 rounded-full border border-[#E4B63E] bg-[#FFF1C2] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.08em] text-[#7A4D00] sm:inline-flex">
-                    <MousePointerClick className="h-3 w-3" />
-                    Click Me
-                  </span>
-                )}
-              </button>
               <a
                 href={productPath}
                 className="inline-flex h-[42px] w-full items-center justify-center px-1 text-[14px] font-semibold text-[#D77A63] underline-offset-2 hover:text-[#E69682] hover:underline sm:h-[48px] sm:min-w-[170px] sm:w-auto sm:text-[15px]"
@@ -1022,14 +970,7 @@ const VoiceMaskMakerLanding = () => {
           <em className="text-[rgba(255,255,255,0.75)]">Every Single Day?</em>
         </h2>
         <p className="relative z-[1] mb-9 text-[16px] font-light text-[rgba(255,255,255,0.88)]">
-          {assignedCoupon ? (
-            <>
-              Use code <strong>{couponCode}</strong>{" "}
-              {couponForcedPrice ? `for special price ${priceLabel}` : `for ${couponPercent}% off`} · Inclusive of all taxes · Fast delivery across India
-            </>
-          ) : (
-            <>Inclusive of all taxes · Fast delivery across India</>
-          )}
+          Inclusive of all taxes · Fast delivery across India
         </p>
 
         <div className="relative z-[1]">

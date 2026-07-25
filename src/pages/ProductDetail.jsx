@@ -54,13 +54,7 @@ const LEAFLESS_HAIR_DRYER_COUPON = {
   isVisible: true,
 };
 const VOICE_MASK_MAKER_PRODUCT_SLUG = "voice-face-mask-maker";
-const VOICE_MASK_MAKER_COUPON = {
-  code: "ILIKADIY",
-  discountPercent: 0,
-  forcedPrice: 3999,
-  name: "Voice Mask Maker Offer",
-  isVisible: true,
-};
+const NONVOICE_MASK_MAKER_PRODUCT_SLUG = "non-voice-face-mask-maker";
 const COLLAGEN_ADDON_OPTIONS = [
   { id: "pack0", count: 0, label: "No extra collagen Peptide pack", tablets: 0, price: 0 },
   { id: "pack1", count: 1, label: "1 Collagen Peptide Pack (16 no.s)", tablets: 16, price: 799 },
@@ -3086,6 +3080,17 @@ const ProductDetail = () => {
 
     return rawValues.some((value) => createSlug(String(value || "")) === VOICE_MASK_MAKER_PRODUCT_SLUG);
   }, [product?.name, product?.productUrl, product?.slug, productUrl]);
+  const isNonVoiceMaskMakerProduct = useMemo(() => {
+    const rawValues = [
+      product?.productUrl,
+      product?.slug,
+      product?.name,
+      productUrl,
+      getCanonicalProductSlugAlias(product?.productUrl || product?.slug || product?.name || productUrl || ""),
+    ];
+
+    return rawValues.some((value) => createSlug(String(value || "")) === NONVOICE_MASK_MAKER_PRODUCT_SLUG);
+  }, [product?.name, product?.productUrl, product?.slug, productUrl]);
   const productDisplayTitle = isLeaflessHairDryerProduct
     ? `${product?.name || "Ilika High-Speed BLDC Hair Dryer"} | For Men & Women`
     : product?.name || "Ilika Product";
@@ -3180,8 +3185,8 @@ const ProductDetail = () => {
     if (isLeaflessHairDryerProduct) {
       return LEAFLESS_HAIR_DRYER_COUPON;
     }
-    if (isVoiceMaskMakerProduct) {
-      return VOICE_MASK_MAKER_COUPON;
+    if (isVoiceMaskMakerProduct || isNonVoiceMaskMakerProduct) {
+      return null;
     }
 
     const snapshot = liveAssignedCoupon || sanitizeCouponData(product?.couponSnapshot) || sanitizeCouponData(product?.coupon) || null;
@@ -3202,7 +3207,7 @@ const ProductDetail = () => {
       name: snapshot.name || "",
       isVisible: snapshot.isVisible !== false,
     };
-  }, [isLeaflessHairDryerProduct, isVoiceMaskMakerProduct, liveAssignedCoupon, product?.couponSnapshot, product?.coupon]);
+  }, [isLeaflessHairDryerProduct, isVoiceMaskMakerProduct, isNonVoiceMaskMakerProduct, liveAssignedCoupon, product?.couponSnapshot, product?.coupon]);
   const visibleAssignedCoupon = assignedCoupon?.isVisible === false ? null : assignedCoupon;
   const freeGiftSlug = freeGiftProduct ? getProductSlug(freeGiftProduct) : "";
   const freeGiftImage = freeGiftProduct?.images?.[0] || freeGiftProduct?.imageUrl || freeGiftProduct?.image || "";

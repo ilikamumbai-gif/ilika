@@ -155,9 +155,12 @@ const getEligibleCouponForCheckoutItem = (item = {}, liveCouponMap = {}) => {
   const discountPercent = Number(snapshot?.discountPercent || 0);
   const forcedPrice = Number(snapshot?.forcedPrice || 0);
   const normalizedName = String(item?.name || "").toLowerCase();
-  const isVoiceMaskMakerProduct = normalizedName.includes("automatic voice version face mask maker machine");
-  const fallbackForcedPrice =
-    isVoiceMaskMakerProduct && code.toLowerCase() === "ilikadiy" ? 3999 : 0;
+  const isMaskMakerProduct =
+    normalizedName.includes("voice face mask maker") ||
+    normalizedName.includes("nonvoice mask maker") ||
+    normalizedName.includes("non-voice face mask maker");
+  if (isMaskMakerProduct) return null;
+  const fallbackForcedPrice = 0;
   const resolvedForcedPrice = forcedPrice > 0 ? forcedPrice : fallbackForcedPrice;
   const hasDiscount = discountPercent > 0;
   const hasForcedPrice = resolvedForcedPrice > 0;
@@ -209,6 +212,15 @@ const applyCheckoutCouponToItem = (item = {}, appliedCode = "", liveCouponMap = 
       basedOn: "checkout_coupon",
       amount: Number((discountAmountPerUnit * quantity).toFixed(2)),
     },
+  };
+};
+
+const normalizeCheckoutItemPrice = (item = {}) => {
+  const pricing = getCartItemDisplayPricing(item);
+  return {
+    ...item,
+    price: pricing.price,
+    compareAtPrice: pricing.compareAtPrice ?? item.compareAtPrice ?? null,
   };
 };
 
@@ -668,13 +680,13 @@ const Checkout = () => {
 
   const cartSubtotal = useMemo(
     () => cartItems.reduce(
-      (acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+      (acc, item) => acc + getCartItemDisplayPricing(item).price * (Number(item.quantity) || 1),
       0
     ),
     [cartItems]
   );
   const checkoutItems = useMemo(
-    () => cartItems.map((item) => applyCheckoutCouponToItem(item, appliedCheckoutCouponCode, liveCouponMap)),
+    () => cartItems.map((item) => applyCheckoutCouponToItem(normalizeCheckoutItemPrice(item), appliedCheckoutCouponCode, liveCouponMap)),
     [cartItems, appliedCheckoutCouponCode, liveCouponMap]
   );
   const subtotal = useMemo(

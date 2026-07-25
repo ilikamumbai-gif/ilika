@@ -11,8 +11,8 @@ const normalizeLookupValue = (value = "") =>
     .replace(/^product\//, "");
 
 const VOICE_MASK_MAKER_PRICE_OVERRIDE = {
-  price: 3999,
-  compareAtPrice: 5999,
+  price: 4499,
+  compareAtPrice: 0,
   lookups: [
     "voice-face-mask-maker",
     "ilika-voice-face-mask-maker-machine-with-collagen-peptide",
@@ -22,6 +22,18 @@ const VOICE_MASK_MAKER_PRICE_OVERRIDE = {
     "voice face mask maker",
     "automatic voice version face mask maker machine",
   ],
+};
+
+const NONVOICE_MASK_MAKER_PRICE_OVERRIDE = {
+  price: 3999,
+  compareAtPrice: 0,
+  lookups: [
+    "non-voice-face-mask-maker",
+    "facial-mask-maker-machine-none-voice",
+    "facial-mask-maker-machine-non-voice",
+    "ilika-non-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
+  ],
+  nameSnippets: ["non-voice face mask maker", "nonvoice mask maker machine"],
 };
 
 const getVoiceMaskMakerOverride = (product = {}) => {
@@ -42,7 +54,16 @@ const getVoiceMaskMakerOverride = (product = {}) => {
     normalizedName.includes(normalizeLookupValue(snippet))
   );
 
-  return matchesLookup || matchesNameSnippet ? VOICE_MASK_MAKER_PRICE_OVERRIDE : null;
+  if (matchesLookup || matchesNameSnippet) return VOICE_MASK_MAKER_PRICE_OVERRIDE;
+
+  const nonVoiceLookupMatch = lookupValues.some((value) =>
+    NONVOICE_MASK_MAKER_PRICE_OVERRIDE.lookups.includes(value)
+  );
+  const nonVoiceNameMatch = NONVOICE_MASK_MAKER_PRICE_OVERRIDE.nameSnippets.some((snippet) =>
+    normalizedName.includes(normalizeLookupValue(snippet))
+  );
+
+  return nonVoiceLookupMatch || nonVoiceNameMatch ? NONVOICE_MASK_MAKER_PRICE_OVERRIDE : null;
 };
 
 const getPositiveNumber = (value) => {
