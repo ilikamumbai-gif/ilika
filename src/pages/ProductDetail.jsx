@@ -3086,6 +3086,9 @@ const ProductDetail = () => {
 
     return rawValues.some((value) => createSlug(String(value || "")) === VOICE_MASK_MAKER_PRODUCT_SLUG);
   }, [product?.name, product?.productUrl, product?.slug, productUrl]);
+  const productDisplayTitle = isLeaflessHairDryerProduct
+    ? "Ilika BLDC Hair Dryer | 110000 RPM Brushless Motor | Ionic Anti-Frizz | Hot Cold Air | For Men & Women"
+    : product?.name || "Ilika Product";
   const basePrice = isLeaflessHairDryerProduct
     ? Number(LEAFLESS_HAIR_DRYER_BASE_PRICE)
     : Number(activeDisplayPricing.price || 0);
@@ -4094,7 +4097,7 @@ const ProductDetail = () => {
       "@context": "https://schema.org",
       "@type": "Product",
       "@id": `${productUrlAbsolute}#product`,
-      name: product?.name || "Ilika Product",
+      name: productDisplayTitle,
       description: seoProductDescription,
       image: images?.length ? images.map((item) => toAbsoluteUrl(item)).filter(Boolean) : [toAbsoluteUrl(seoProductImage)],
       brand: {
@@ -4155,6 +4158,7 @@ const ProductDetail = () => {
     return [productSchema, faqSchema].filter(Boolean);
   }, [
     product,
+    productDisplayTitle,
     canonicalPath,
     productReviews,
     productFaqs,
@@ -4667,7 +4671,7 @@ const ProductDetail = () => {
                   </span>
                 )}
                 <h1 className="text-[20px] font-luxury font-bold leading-[1.18] sm:text-[1.75rem] xl:text-[2.2rem]" style={{ color: detailTheme.heading }}>
-                  {product.name}
+                  {productDisplayTitle}
                 </h1>
                 <p className="mt-2 text-[14px] leading-6 text-gray-500 sm:text-[15px]">
                   {product.shortInfo || "Deep nourishment & long lasting hydration"}

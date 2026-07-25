@@ -230,7 +230,7 @@ export const PRODUCT_SEO_CONTENT = [
     slugs: ["high-speed-leafless-hair-dryer-for-men-women", "leafless-hair-dryer"],
     names: ["ilika high-speed leafless hair dryer", "ilika leafless hair dryer", "high-speed leafless hair dryer", "leafless hair dryer"],
     topKeyword: "high speed ionic hair dryer India",
-    title: "ilika High-Speed Leafless Hair Dryer - Ionic, Zero Heat Damage",
+    title: "Ilika BLDC Hair Dryer | 110000 RPM Brushless Motor | Ionic Anti-Frizz | Hot Cold Air | For Men & Women",
     description: "ilika's 110,000 RPM Leafless Hair Dryer dries hair fast with ionic technology for smooth, frizz-free results and zero heat damage. Shop now.",
     keywords: keywordRows([
       ["high speed hair dryer", "Buyer", "High"],
