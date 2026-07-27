@@ -304,7 +304,7 @@ export const CartProvider = ({ children }) => {
 
     // SAVE CART EVENT
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/cart-events`, {
+      void fetch(`${import.meta.env.VITE_API_URL}/api/cart-events`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -323,6 +323,8 @@ export const CartProvider = ({ children }) => {
           userEmail: currentUser?.email || null,
           ...getAttributionData(),
         }),
+      }).catch((err) => {
+        console.log("cart event error", err);
       });
     } catch (err) {
       console.log("cart event error", err);
