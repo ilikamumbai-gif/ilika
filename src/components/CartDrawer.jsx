@@ -47,8 +47,6 @@ const CartDrawer = () => {
     if (!cartItems.length) return;
     if (preferredPaymentMethod) {
       sessionStorage.setItem(PREFERRED_PAYMENT_METHOD_KEY, preferredPaymentMethod);
-    } else {
-      sessionStorage.removeItem(PREFERRED_PAYMENT_METHOD_KEY);
     }
     closeCart();
     navigate("/checkout");

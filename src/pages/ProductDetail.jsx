@@ -47,6 +47,7 @@ const BLDC_HAIR_DRYER_GALLERY_VIDEO = {
 const LEAFLESS_HAIR_DRYER_PRODUCT_SLUG = "leafless-hair-dryer";
 const LEAFLESS_HAIR_DRYER_BASE_PRICE = 2699;
 const PREPAID_ORDER_DISCOUNT = 100;
+const PREFERRED_PAYMENT_METHOD_KEY = "ilika_preferred_payment_method";
 const VOICE_MASK_MAKER_PRODUCT_SLUG = "voice-face-mask-maker";
 const NONVOICE_MASK_MAKER_PRODUCT_SLUG = "non-voice-face-mask-maker";
 const COLLAGEN_ADDON_OPTIONS = [
@@ -2622,6 +2623,10 @@ const ProductDetail = () => {
   const [marketplaceLivePrices, setMarketplaceLivePrices] = useState({});
   const [selectedPackId, setSelectedPackId] = useState("");
   const [collagenAddonCount, setCollagenAddonCount] = useState(0);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(() => {
+    if (typeof window === "undefined") return "ONLINE";
+    return sessionStorage.getItem(PREFERRED_PAYMENT_METHOD_KEY) === "COD" ? "COD" : "ONLINE";
+  });
   // const [footerHeight, setFooterHeight] = useState(0);
 
   // Lightbox state
@@ -3514,11 +3519,16 @@ const ProductDetail = () => {
   }, []);
 
   const handleAddToCart = useCallback(async () => {
-    if (isOutOfStock || isAdding) return;
+    if (isOutOfStock || isAdding) return false;
 
     setIsAdding(true);
 
     try {
+      if (selectedPaymentMethod === "ONLINE") {
+        sessionStorage.setItem(PREFERRED_PAYMENT_METHOD_KEY, "ONLINE");
+      } else {
+        sessionStorage.removeItem(PREFERRED_PAYMENT_METHOD_KEY);
+      }
       const cartItem = buildCartProductSnapshot(product, {
         variant: activeVariant,
         cartId,
@@ -3558,9 +3568,10 @@ const ProductDetail = () => {
         },
       });
 
-      addToCart(cartItem);
+      await addToCart(cartItem);
 
       trackAddToCart(productId, product?.name, price, 1);
+      return true;
     } finally {
       setTimeout(() => setIsAdding(false), 600); // small delay = better UX
     }
@@ -3580,7 +3591,8 @@ const ProductDetail = () => {
     addToCart,
     eligibleForCollagenAddon,
     selectedCollagenAddon,
-    selectedPack]);
+    selectedPack,
+    selectedPaymentMethod]);
 
   const handleBuyNow = useCallback(async () => {
     if (isBuying || isOutOfStock) return;
@@ -3588,12 +3600,16 @@ const ProductDetail = () => {
     setIsBuying(true);
 
     try {
+      if (selectedPaymentMethod === "ONLINE") {
+        sessionStorage.setItem(PREFERRED_PAYMENT_METHOD_KEY, "ONLINE");
+      } else {
+        sessionStorage.removeItem(PREFERRED_PAYMENT_METHOD_KEY);
+      }
       if (!isInCart) {
-        handleAddToCart();
-        setTimeout(() => {
-          closeCart();
-          navigate("/checkout");
-        }, 150);
+        const added = await handleAddToCart();
+        if (!added) return;
+        closeCart();
+        navigate("/checkout");
       } else {
         trackAddToCart(productId, product?.name, price, 1);
         closeCart();
@@ -3610,7 +3626,8 @@ const ProductDetail = () => {
     navigate,
     productId,
     product,
-    price]);
+    price,
+    selectedPaymentMethod]);
 
   const handleSwipe = () => {
     if (!images?.length) return;
@@ -3771,6 +3788,58 @@ const ProductDetail = () => {
   }, [product?.detailPageDefaultBg]);
 
   const detailTheme = useMemo(() => buildDetailTheme(detailPageBgColor), [detailPageBgColor]);
+  const selectPaymentMethod = (method) => {
+    setSelectedPaymentMethod(method);
+    if (method === "ONLINE") {
+      sessionStorage.setItem(PREFERRED_PAYMENT_METHOD_KEY, "ONLINE");
+    } else {
+      sessionStorage.removeItem(PREFERRED_PAYMENT_METHOD_KEY);
+    }
+  };
+  const paymentPriceStrip = prepaidOrderPrice !== null ? (
+    <div className="mt-3 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white text-left shadow-[0_6px_16px_rgba(15,23,42,0.06)]">
+      <button
+        type="button"
+        onClick={() => selectPaymentMethod("ONLINE")}
+        aria-pressed={selectedPaymentMethod === "ONLINE"}
+        className={`grid w-full grid-cols-[48px_minmax(0,1fr)_auto_28px] items-center gap-2.5 px-3 py-3 text-left transition ${selectedPaymentMethod === "ONLINE" ? "bg-[#f4fcf6]" : "bg-white hover:bg-gray-50"}`}
+      >
+        <div className="flex h-11 w-11 items-center justify-center rounded-[11px] border border-[#e1eee4] bg-white px-1.5">
+          <img src={PRODUCT_DETAIL_PAYMENT_METHOD_IMAGE} alt="UPI, cards and wallet payment options" className="w-full object-contain" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="text-[13px] font-bold leading-none" style={{ color: detailTheme.heading }}>Pay Online</p>
+            <span className="rounded-full bg-[#daf2df] px-2 py-1 text-[10px] font-bold leading-none text-[#16833d]">✿ Flat ₹100 off</span>
+          </div>
+          <p className="mt-1 text-[10px] font-medium text-gray-500">UPI, Cards, Wallets & Net Banking</p>
+        </div>
+        <p className="text-[17px] font-extrabold leading-none text-[#0a8f45]">₹{prepaidOrderPrice.toLocaleString("en-IN")}</p>
+        <span className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${selectedPaymentMethod === "ONLINE" ? "border-[#159447]" : "border-gray-400"}`}>
+          {selectedPaymentMethod === "ONLINE" ? <span className="h-2.5 w-2.5 rounded-full bg-[#159447]" /> : null}
+        </span>
+      </button>
+      <div className="mx-3 border-t border-[#e5e7eb]" />
+      <button
+        type="button"
+        onClick={() => selectPaymentMethod("COD")}
+        aria-pressed={selectedPaymentMethod === "COD"}
+        className={`grid w-full grid-cols-[48px_minmax(0,1fr)_auto_28px] items-center gap-2.5 px-3 py-3 text-left transition ${selectedPaymentMethod === "COD" ? "bg-[#f8fafc]" : "bg-white hover:bg-gray-50"}`}
+      >
+        <div className="flex h-11 w-11 items-center justify-center rounded-[11px] bg-[#eef5ff] text-[#387bd8]">
+          <Wallet className="h-5 w-5" strokeWidth={2} />
+        </div>
+        <div>
+          <p className="text-[13px] font-bold leading-none" style={{ color: detailTheme.heading }}>Cash on Delivery</p>
+          <p className="mt-1 text-[10px] font-medium text-gray-500">Pay when delivered</p>
+        </div>
+        <p className="text-[17px] font-extrabold leading-none" style={{ color: detailTheme.price }}>₹{price.toLocaleString("en-IN")}</p>
+        <span className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${selectedPaymentMethod === "COD" ? "border-[#159447]" : "border-gray-400"}`}>
+          {selectedPaymentMethod === "COD" ? <span className="h-2.5 w-2.5 rounded-full bg-[#159447]" /> : null}
+        </span>
+      </button>
+    </div>
+  ) : null;
   const detailCtaColors = useMemo(() => getDetailCtaColors(detailTheme), [detailTheme]);
   const marketplaceSourceLinks = useMemo(() => getMarketplaceLinks(product), [product]);
   const marketplaceLinks = useMemo(
@@ -4849,11 +4918,7 @@ const ProductDetail = () => {
                               )}
                             </div>
                           )}
-                          {prepaidOrderPrice !== null && (
-                            <p className="mt-1.5 text-[11px] font-semibold text-[#0a8f45] sm:text-xs">
-                              ₹100 off on prepaid orders · Pay ₹{prepaidOrderPrice.toLocaleString("en-IN")}
-                            </p>
-                          )}
+                          {paymentPriceStrip}
                           {visibleAssignedCoupon && previewCouponFinalPrice > 0 ? (
                             <div
                               className="mt-3 grid grid-cols-2 items-start gap-3 rounded-[14px] border px-3 py-3"
@@ -5221,11 +5286,7 @@ const ProductDetail = () => {
                           )}
                         </div>
                       )}
-                      {prepaidOrderPrice !== null && (
-                        <p className="mt-1.5 text-[11px] font-semibold text-[#0a8f45] sm:text-xs">
-                          ₹100 off on prepaid orders · Pay ₹{prepaidOrderPrice.toLocaleString("en-IN")}
-                        </p>
-                      )}
+                      {paymentPriceStrip}
                       {visibleAssignedCoupon && previewCouponFinalPrice > 0 ? (
                         <div
                           className="mt-3 flex items-center justify-between gap-3 rounded-[14px] border px-3 py-2.5"
