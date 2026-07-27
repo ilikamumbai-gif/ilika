@@ -5,6 +5,7 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import PrepaidPriceOffer from "../components/PrepaidPriceOffer";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
@@ -137,7 +138,6 @@ const HairDryerLanding = () => {
   const productSlug = getProductSlug(targetProduct);
   const productPath = productSlug ? `/product/${productSlug}` : "/leafless-hair-dryer";
   const savings = Math.max(productMrp - productPrice, 0);
-  const prepaidPrice = Math.max(0, productPrice - 100);
 
   const handleBuyNow = async () => {
     if (!targetProduct) {
@@ -217,7 +217,7 @@ const HairDryerLanding = () => {
             <p className="[font-family:'Bebas_Neue',sans-serif] text-3xl leading-none text-[#f9f7ff] sm:text-4xl">
               INR {productPrice.toLocaleString("en-IN")}
             </p>
-            <p className="mt-1 text-[10px] font-semibold text-[#86efac]">₹100 off on prepaid orders · Pay ₹{prepaidPrice.toLocaleString("en-IN")}</p>
+            <PrepaidPriceOffer price={productPrice} className="mt-1 text-[10px] text-[#86efac]" />
             <p className="text-sm text-[#c4c4d0] line-through">INR {productMrp.toLocaleString("en-IN")}</p>
           </div>
         </div>

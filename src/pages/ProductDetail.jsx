@@ -21,6 +21,7 @@ import {
   Wallet
 } from "lucide-react";
 import ProductCard from "../components/ProductCard";
+import PrepaidPriceOffer from "../components/PrepaidPriceOffer";
 import Lazy360ViewButton from "../components/product/Lazy360ViewButton";
 import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
@@ -46,7 +47,6 @@ const BLDC_HAIR_DRYER_GALLERY_VIDEO = {
 };
 const LEAFLESS_HAIR_DRYER_PRODUCT_SLUG = "leafless-hair-dryer";
 const LEAFLESS_HAIR_DRYER_BASE_PRICE = 2699;
-const LEAFLESS_HAIR_DRYER_PREPAID_DISCOUNT = 100;
 const VOICE_MASK_MAKER_PRODUCT_SLUG = "voice-face-mask-maker";
 const NONVOICE_MASK_MAKER_PRODUCT_SLUG = "non-voice-face-mask-maker";
 const COLLAGEN_ADDON_OPTIONS = [
@@ -3294,9 +3294,6 @@ const ProductDetail = () => {
       : previewCouponEffectivePercent
     : 0;
   const price = Number(baseSellingPrice + addonPrice);
-  const prepaidOrderPrice = isLeaflessHairDryerProduct
-    ? Math.max(0, price - LEAFLESS_HAIR_DRYER_PREPAID_DISCOUNT)
-    : null;
 
   const ingredients = useMemo(() => {
     const raw = Array.isArray(product?.ingredients) ? product.ingredients : [];
@@ -4851,11 +4848,7 @@ const ProductDetail = () => {
                               )}
                             </div>
                           )}
-                          {prepaidOrderPrice !== null && (
-                            <p className="mt-1.5 text-[11px] font-semibold text-[#0a8f45] sm:text-xs">
-                              ₹100 off on prepaid orders · Pay ₹{prepaidOrderPrice.toLocaleString("en-IN")}
-                            </p>
-                          )}
+                          <PrepaidPriceOffer price={price} className="mt-1.5 text-[11px] sm:text-xs" />
                           {visibleAssignedCoupon && previewCouponFinalPrice > 0 ? (
                             <div
                               className="mt-3 grid grid-cols-2 items-start gap-3 rounded-[14px] border px-3 py-3"
@@ -5223,11 +5216,7 @@ const ProductDetail = () => {
                           )}
                         </div>
                       )}
-                      {prepaidOrderPrice !== null && (
-                        <p className="mt-1.5 text-[11px] font-semibold text-[#0a8f45] sm:text-xs">
-                          ₹100 off on prepaid orders · Pay ₹{prepaidOrderPrice.toLocaleString("en-IN")}
-                        </p>
-                      )}
+                      <PrepaidPriceOffer price={price} className="mt-1.5 text-[11px] sm:text-xs" />
                       {visibleAssignedCoupon && previewCouponFinalPrice > 0 ? (
                         <div
                           className="mt-3 flex items-center justify-between gap-3 rounded-[14px] border px-3 py-2.5"

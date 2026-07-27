@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CartDrawer from "../components/CartDrawer";
 import Heading from "../components/Heading";
+import { PREPAID_ORDER_DISCOUNT } from "../components/PrepaidPriceOffer";
 import {
   getCartItemDisplayImage,
   getCartItemDisplayPricing,
@@ -20,7 +21,6 @@ import {
 } from "../utils/productPricing";
 
 const PREFERRED_PAYMENT_METHOD_KEY = "ilika_preferred_payment_method";
-const PREPAID_ORDER_DISCOUNT = 100;
 
 // ─── OTP WIDGET - defined OUTSIDE Checkout so it never re-mounts on re-render ─
 // If defined inside the parent component, React treats it as a new component

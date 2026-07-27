@@ -36,7 +36,14 @@ const NONVOICE_MASK_MAKER_PRICE_OVERRIDE = {
   nameSnippets: ["non-voice face mask maker", "nonvoice mask maker machine"],
 };
 
-const getVoiceMaskMakerOverride = (product = {}) => {
+const LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE = {
+  price: 2699,
+  compareAtPrice: 0,
+  lookups: ["leafless-hair-dryer"],
+  nameSnippets: ["bldc hair dryer", "leafless hair dryer"],
+};
+
+const getProductPriceOverride = (product = {}) => {
   const lookupValues = [
     product?.productUrl,
     product?.slug,
@@ -46,6 +53,15 @@ const getVoiceMaskMakerOverride = (product = {}) => {
   ].map(normalizeLookupValue);
 
   const normalizedName = normalizeLookupValue(product?.name || "");
+  const hairDryerLookupMatch = lookupValues.some((value) =>
+    LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE.lookups.includes(value)
+  );
+  const hairDryerNameMatch = LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE.nameSnippets.some((snippet) =>
+    normalizedName.includes(normalizeLookupValue(snippet))
+  );
+
+  if (hairDryerLookupMatch || hairDryerNameMatch) return LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE;
+
   const nonVoiceLookupMatch = lookupValues.some((value) =>
     NONVOICE_MASK_MAKER_PRICE_OVERRIDE.lookups.includes(value)
   );
@@ -300,22 +316,13 @@ export const buildCartProductSnapshot = (product = {}, options = {}) => {
 
 export const getCartItemDisplayPricing = (item = {}) => {
   const pricing = getProductDisplayPricing(item, item);
-  const voiceMaskMakerOverride = getVoiceMaskMakerOverride(item);
-  const itemPrice = voiceMaskMakerOverride
-    ? Number(voiceMaskMakerOverride.price)
+  const priceOverride = getProductPriceOverride(item);
+  const itemPrice = priceOverride
+    ? Number(priceOverride.price)
     : getNonNegativeNumber(item?.price);
   const compareAtPrice =
-    voiceMaskMakerOverride
-      ? Math.max(
-          Number(voiceMaskMakerOverride.compareAtPrice || 0),
-          Number(
-            getPositiveNumber(item?.compareAtPrice) ??
-              getPositiveNumber(item?.originalPrice) ??
-              pricing.compareAtPrice ??
-              0
-          ),
-          Number(itemPrice ?? pricing.price ?? 0)
-        ) || null
+    priceOverride
+      ? getPositiveNumber(priceOverride.compareAtPrice)
       : getPositiveNumber(item?.compareAtPrice) ??
         getPositiveNumber(item?.originalPrice) ??
         pricing.compareAtPrice;

@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { getProductSlug } from "../utils/slugify";
 import OptimizedImage from "./OptimizedImage";
+import PrepaidPriceOffer from "./PrepaidPriceOffer";
 import {
   buildCartProductSnapshot,
   getDefaultVariant,
@@ -231,6 +232,7 @@ const ProductCard = ({
                 )}
               </button>
             </div>
+            <PrepaidPriceOffer price={displayPrice} className="mt-1.5 text-[9px] sm:text-[11px]" />
           </div>
 
         </article>
