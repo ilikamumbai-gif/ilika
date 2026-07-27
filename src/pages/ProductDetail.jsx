@@ -5356,13 +5356,13 @@ const ProductDetail = () => {
                     alt="Available payment methods"
                     width={1200}
                     height={180}
-                    className="h-auto w-full object-contain"
+                    className="hidden"
                   />
                 </div>
 
                 {trustStripItems.length > 0 && (
                   <div
-                    className="rounded-[18px] border bg-white px-3 py-3"
+                    className="hidden rounded-[18px] border bg-white px-3 py-3"
                     style={{
                       borderColor: detailTheme.borderSoft,
                       boxShadow: "0 10px 24px rgba(69,39,34,0.05)",
