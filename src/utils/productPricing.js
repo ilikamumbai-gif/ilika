@@ -191,7 +191,7 @@ export const findVariantByQueryValue = (product = {}, queryValue = "") => {
 
 export const getProductDisplayPricing = (product = {}, selectedVariant = null) => {
   const activeVariant = findMatchingVariant(product, selectedVariant) || selectedVariant || getDefaultVariant(product);
-  const voiceMaskMakerOverride = getVoiceMaskMakerOverride(product);
+  const voiceMaskMakerOverride = getProductPriceOverride(product);
 
   const variantPrice = getNonNegativeNumber(activeVariant?.price);
   const productPrice = getNonNegativeNumber(product?.price);
@@ -277,7 +277,7 @@ export const buildCartProductSnapshot = (product = {}, options = {}) => {
   } = options;
 
   const pricing = getProductDisplayPricing(product, variant);
-  const voiceMaskMakerOverride = getVoiceMaskMakerOverride(product);
+  const voiceMaskMakerOverride = getProductPriceOverride(product);
   const activeVariant = pricing.activeVariant;
   const productId = String(product?.docId || product?.id || product?._id || "").trim();
   const variantId = String(activeVariant?.id || "").trim() || null;

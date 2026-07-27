@@ -7,7 +7,6 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { getProductSlug } from "../utils/slugify";
 import OptimizedImage from "./OptimizedImage";
-import PrepaidPriceOffer from "./PrepaidPriceOffer";
 import {
   buildCartProductSnapshot,
   getDefaultVariant,
@@ -30,6 +29,7 @@ const ProductCard = ({
 
   const defaultVariant = getDefaultVariant(product);
   const { price: displayPrice, compareAtPrice: displayMrp } = getProductDisplayPricing(product, defaultVariant);
+  const prepaidPrice = Math.max(0, Number(displayPrice || 0) - 100);
 
   const cartId = defaultVariant
     ? `${productId}_${defaultVariant.id}`
@@ -232,7 +232,11 @@ const ProductCard = ({
                 )}
               </button>
             </div>
-            <PrepaidPriceOffer price={displayPrice} className="mt-1.5 text-[9px] sm:text-[11px]" />
+            {displayPrice > 0 && (
+              <p className="mt-1.5 text-[9px] font-semibold text-[#0a8f45] sm:text-[11px]">
+                ₹100 off prepaid · Pay ₹{prepaidPrice.toLocaleString("en-IN")}
+              </p>
+            )}
           </div>
 
         </article>

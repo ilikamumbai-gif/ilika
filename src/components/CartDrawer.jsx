@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { X, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
-import PrepaidPriceOffer from "./PrepaidPriceOffer";
 import {
   getCartItemDisplayImage,
   getCartItemDisplayPricing,
@@ -223,7 +222,11 @@ const CartDrawer = () => {
               <span>Grand Total</span>
               <span>{formatInr(grandTotal)}</span>
             </div>
-            <PrepaidPriceOffer price={grandTotal} className="text-[11px]" />
+            {grandTotal > 0 && (
+              <p className="text-[11px] font-semibold text-[#0a8f45]">
+                ₹100 off prepaid · Pay {formatInr(Math.max(0, grandTotal - 100))}
+              </p>
+            )}
           </div>
 
           {cartItems.length > 0 && primaryEmiPlan ? (
