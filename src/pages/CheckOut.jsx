@@ -20,6 +20,7 @@ import {
 } from "../utils/productPricing";
 
 const PREFERRED_PAYMENT_METHOD_KEY = "ilika_preferred_payment_method";
+const PREPAID_ORDER_DISCOUNT = 100;
 
 // ─── OTP WIDGET - defined OUTSIDE Checkout so it never re-mounts on re-render ─
 // If defined inside the parent component, React treats it as a new component
@@ -256,7 +257,11 @@ const Checkout = () => {
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCheckoutCouponCode, setAppliedCheckoutCouponCode] = useState("");
   const [couponFeedback, setCouponFeedback] = useState({ type: "", text: "" });
-
+  const [paymentMethod, setPaymentMethod] = useState(() => {
+    if (typeof window === "undefined") return "COD";
+    const preferred = sessionStorage.getItem(PREFERRED_PAYMENT_METHOD_KEY);
+    return preferred === "ONLINE" ? "ONLINE" : "COD";
+  });
   useEffect(() => {
     trackVisitorEvent({
       eventType: "checkout",
@@ -702,16 +707,22 @@ const Checkout = () => {
   );
   const giftWrapFee = isGiftOrder && wantsGiftWrap ? GIFT_WRAP_FEE : 0;
   const total = parseFloat((subtotal + giftWrapFee).toFixed(2));
+  const availablePrepaidDiscount = Math.min(PREPAID_ORDER_DISCOUNT, total);
+  const prepaidPayableTotal = parseFloat((total - availablePrepaidDiscount).toFixed(2));
+  const prepaidDiscountAmount = paymentMethod === "ONLINE"
+    ? availablePrepaidDiscount
+    : 0;
+  const payableTotal = parseFloat((total - prepaidDiscountAmount).toFixed(2));
   const source = localStorage.getItem("traffic_source") || "WEBSITE";
 
   useEffect(() => {
-    if (!cartItems.length || total <= 0) return;
+    if (!cartItems.length || payableTotal <= 0) return;
     trackGtmBeginCheckout({
-      value: total,
+      value: payableTotal,
       items: checkoutItems,
       source,
     });
-  }, [cartItems.length, checkoutItems, total, source]);
+  }, [cartItems.length, checkoutItems, payableTotal, source]);
 
   useEffect(() => {
     if (!appliedCheckoutCouponCode) return;
@@ -876,13 +887,6 @@ const Checkout = () => {
     }
   };
 
-  // ─── PAYMENT METHOD ───────────────────────────────────────────────────────
-  const [paymentMethod, setPaymentMethod] = useState(() => {
-    if (typeof window === "undefined") return "COD";
-    const preferred = sessionStorage.getItem(PREFERRED_PAYMENT_METHOD_KEY);
-    return preferred === "ONLINE" ? "ONLINE" : "COD";
-  });
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (paymentMethod === "ONLINE") {
@@ -978,8 +982,8 @@ const Checkout = () => {
 
     setLoading(true);
 
-    trackInitiateCheckout(total, checkoutItems.length);
-    trackAddPaymentInfo(total, checkoutItems.length);
+    trackInitiateCheckout(payableTotal, checkoutItems.length);
+    trackAddPaymentInfo(payableTotal, checkoutItems.length);
 
     try {
       const itemsPayload = checkoutItems.map((item) => {
@@ -1028,7 +1032,7 @@ const Checkout = () => {
             userId: currentUser?.uid || null,
             userEmail: currentUser?.email || null,
             items: itemsPayload,
-            totalAmount: total,
+            totalAmount: payableTotal,
             shippingAddressId: currentUser ? selectedAddressId : null,
             shippingAddress: selectedAddress || null,
             giftOptions: giftOptionsPayload,
@@ -1041,10 +1045,10 @@ const Checkout = () => {
         if (!res.ok) throw new Error(data.error);
 
         if (window.__allowNextPurchase) window.__allowNextPurchase();
-        trackPurchase(data.orderId, parseFloat(Number(total).toFixed(2)), checkoutItems.length);
+        trackPurchase(data.orderId, payableTotal, checkoutItems.length);
         savePendingGtmPurchase({
           orderId: data.orderId,
-          value: parseFloat(Number(total).toFixed(2)),
+          value: payableTotal,
           items: checkoutItems,
           paymentMethod: "COD",
           source,
@@ -1059,7 +1063,7 @@ const Checkout = () => {
       const orderRes = await fetch(`${API_URL}/api/payments/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: total }),
+        body: JSON.stringify({ amount: payableTotal }),
       });
       const razorpayOrder = await orderRes.json();
       if (!orderRes.ok) throw new Error(razorpayOrder.error);
@@ -1084,10 +1088,12 @@ const Checkout = () => {
                   userId: currentUser?.uid || null,
                   userEmail: currentUser?.email || null,
                   items: itemsPayload,
-                  totalAmount: total,
+                  totalAmount: payableTotal,
+                  prepaidDiscountAmount,
                   shippingAddressId: currentUser ? selectedAddressId : null,
                   shippingAddress: selectedAddress || null,
                   giftOptions: giftOptionsPayload,
+                  paymentMethod: "ONLINE",
                   source,
                 },
               }),
@@ -1097,10 +1103,10 @@ const Checkout = () => {
             if (!verifyRes.ok) throw new Error(verifyData.error);
 
             if (window.__allowNextPurchase) window.__allowNextPurchase();
-            trackPurchase(verifyData.orderId, parseFloat(Number(total).toFixed(2)), checkoutItems.length);
+            trackPurchase(verifyData.orderId, payableTotal, checkoutItems.length);
             savePendingGtmPurchase({
               orderId: verifyData.orderId,
-              value: parseFloat(Number(total).toFixed(2)),
+              value: payableTotal,
               items: checkoutItems,
               paymentMethod: "ONLINE",
               source,
@@ -1397,23 +1403,38 @@ const Checkout = () => {
 
             {/* PAYMENT METHOD */}
             <div className="bg-white border rounded-xl p-4">
-              <h3 className="font-semibold mb-3">Payment Method</h3>
-              <label className="flex items-center gap-2 text-sm mb-2">
-                <input
-                  type="radio"
-                  checked={paymentMethod === "COD"}
-                  onChange={() => setPaymentMethod("COD")}
-                />
-                Cash on Delivery
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  checked={paymentMethod === "ONLINE"}
-                  onChange={() => setPaymentMethod("ONLINE")}
-                />
-                Pay Online
-              </label>
+              <h3 className="font-semibold">Choose payment method</h3>
+              <p className="mt-1 text-xs text-gray-500">Select an option to see your final payable amount.</p>
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("COD")}
+                  aria-pressed={paymentMethod === "COD"}
+                  className={`rounded-xl border p-3 text-left transition ${
+                    paymentMethod === "COD"
+                      ? "border-black bg-gray-50 ring-1 ring-black"
+                      : "border-gray-200 hover:border-gray-400"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold">Cash on Delivery</span>
+                  <span className="mt-1 block text-lg font-bold">₹{total.toLocaleString("en-IN")}</span>
+                  <span className="block text-xs text-gray-500">Pay when your order arrives</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("ONLINE")}
+                  aria-pressed={paymentMethod === "ONLINE"}
+                  className={`rounded-xl border p-3 text-left transition ${
+                    paymentMethod === "ONLINE"
+                      ? "border-emerald-600 bg-emerald-50 ring-1 ring-emerald-600"
+                      : "border-emerald-200 hover:border-emerald-500"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold text-emerald-800">Prepaid / Pay Online</span>
+                  <span className="mt-1 block text-lg font-bold text-emerald-800">₹{prepaidPayableTotal.toLocaleString("en-IN")}</span>
+                  <span className="block text-xs font-medium text-emerald-700">Save ₹{availablePrepaidDiscount.toLocaleString("en-IN")} on prepaid payment</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1540,9 +1561,15 @@ const Checkout = () => {
                 <span>Shipping</span>
                 <span className="text-green-900">Free</span>
               </div>
+              {prepaidDiscountAmount > 0 ? (
+                <div className="flex justify-between font-medium text-emerald-700">
+                  <span>Prepaid order discount</span>
+                  <span>-₹{prepaidDiscountAmount.toLocaleString("en-IN")}</span>
+                </div>
+              ) : null}
               <hr />
               <div className="flex justify-between font-semibold text-lg">
-                <span>Total</span><span>₹{total.toLocaleString("en-IN")}</span>
+                <span>{prepaidDiscountAmount > 0 ? "Payable total" : "Total"}</span><span>₹{payableTotal.toLocaleString("en-IN")}</span>
               </div>
             </div>
 

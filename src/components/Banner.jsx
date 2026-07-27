@@ -32,6 +32,7 @@ const Banner = ({
   slides = [],
   preserveFullImage = false,
   mergeWithMatchedBanners = false,
+  standardSize = true,
 }) => {
   const bannerCtx = useOptionalBanners();
   const matchedBanners = useMemo(() => (bannerKey && bannerCtx?.activeBanners?.length
@@ -58,7 +59,7 @@ const Banner = ({
   }, [matchedBanners, mergeWithMatchedBanners, normalizedSlides]);
   const hasMultiple = activeSlides.length > 1;
   const aspectRatio = `${width} / ${height}`;
-  const shouldUseNaturalHeight = preserveFullImage || imageFit === "contain";
+  const shouldUseNaturalHeight = !standardSize && (preserveFullImage || imageFit === "contain");
 
   useEffect(() => {
     setActiveIndex(0);
@@ -111,11 +112,13 @@ const Banner = ({
 
   return (
     <section
-      className={`relative w-full overflow-hidden ${className}`}
-      style={shouldUseNaturalHeight ? undefined : { aspectRatio }}
+      className={`relative w-full overflow-hidden ${
+        standardSize ? "aspect-[5/7] sm:aspect-[12/5]" : ""
+      } ${className}`}
+      style={!standardSize && !shouldUseNaturalHeight ? { aspectRatio } : undefined}
     >
       <div
-        className={`flex transition-transform duration-500 ease-in-out ${
+        className={`flex h-full transition-transform duration-500 ease-in-out ${
           isTransitioning ? "will-change-transform" : ""
         }`}
         style={{ transform: `translateX(-${activeIndex * 100}%)` }}
@@ -128,7 +131,7 @@ const Banner = ({
           const resolvedAlt = slide?.alt || alt || "Banner";
 
           const content = shouldRenderSlide(index) ? (
-            <picture>
+            <picture className="block h-full">
               <source media="(max-width: 639px)" srcSet={mobileImageSrc} />
               <OptimizedImage
                 priority={priority && index === activeIndex}
@@ -153,14 +156,14 @@ const Banner = ({
           );
 
           return (
-            <div key={`${resolvedAlt}-${index}`} className="w-full shrink-0 grow-0 basis-full">
+            <div key={`${resolvedAlt}-${index}`} className="h-full w-full shrink-0 grow-0 basis-full">
               {resolvedLink ? (
                 isExternalLink ? (
-                  <a href={resolvedLink} aria-label={resolvedAlt || "Banner link"}>
+                  <a href={resolvedLink} aria-label={resolvedAlt || "Banner link"} className="block h-full">
                     {content}
                   </a>
                 ) : (
-                  <Link to={resolvedLink} aria-label={resolvedAlt || "Banner link"}>
+                  <Link to={resolvedLink} aria-label={resolvedAlt || "Banner link"} className="block h-full">
                     {content}
                   </Link>
                 )

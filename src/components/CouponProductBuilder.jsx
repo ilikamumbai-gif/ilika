@@ -253,7 +253,7 @@ const CouponProductBuilder = () => {
       )}
 
       <Banner
-        className="md:h-[50vh] mt-0 mb-10"
+        className="mt-0 mb-10"
         src={offBanner}
         mobileSrc={offBannerMobile}
         bannerKey="coupon-builder-top"

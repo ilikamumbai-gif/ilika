@@ -63,6 +63,8 @@ const isGroomingProduct = (product = {}) => {
 };
 
 const getAssignedCoupon = (product = {}) => {
+  if (getProductSlug(product) === "leafless-hair-dryer") return null;
+
   const coupon = product?.couponSnapshot || product?.coupon || null;
   if (!coupon || coupon?.isActive === false) return null;
 

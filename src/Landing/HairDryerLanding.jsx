@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaWind, FaTemperatureHigh, FaBolt, FaFeatherAlt, FaUsers, FaVolumeMute, FaStar, FaCheckCircle } from "react-icons/fa";
 import MiniDivider from "../components/MiniDivider";
@@ -108,10 +108,7 @@ const HairDryerLanding = () => {
   const { products = [], loading } = useProducts();
   const { addToCart } = useCart();
   const navigate = useNavigate();
-  const [couponApplied, setCouponApplied] = useState(false);
-  const couponCode = "ILIKADIY";
-  const couponPercent = 10;
-  const landingBasePrice = 2999;
+  const landingBasePrice = 2699;
 
  const targetProduct = useMemo(() => {
   const targetSlug =
@@ -139,14 +136,8 @@ const HairDryerLanding = () => {
 
   const productSlug = getProductSlug(targetProduct);
   const productPath = productSlug ? `/product/${productSlug}` : "/leafless-hair-dryer";
-  const discountedPrice = couponApplied
-    ? Math.max(0, Math.round(productPrice * (100 - couponPercent) / 100))
-    : productPrice;
-  const savings = Math.max(productMrp - discountedPrice, 0);
-  const handleApplyCoupon = () => {
-    if (couponApplied) return;
-    setCouponApplied(true);
-  };
+  const savings = Math.max(productMrp - productPrice, 0);
+  const prepaidPrice = Math.max(0, productPrice - 100);
 
   const handleBuyNow = async () => {
     if (!targetProduct) {
@@ -157,18 +148,11 @@ const HairDryerLanding = () => {
     const cartPayload = {
       id: String(targetProduct?.id || targetProduct?._id || productSlug),
       name: productName,
-      price: discountedPrice,
+      price: productPrice,
       originalPrice: productMrp,
       image: productImage,
       images: [productImage],
-      discountApplied: couponApplied
-        ? {
-            code: "ILIKADIY",
-            percent: 10,
-            amount: Math.max(productPrice - discountedPrice, 0),
-            basedOn: "selling_price",
-          }
-        : null,
+      discountApplied: null,
     };
 
     await addToCart(cartPayload);
@@ -204,43 +188,17 @@ const HairDryerLanding = () => {
               className="group relative min-h-[68px] w-full max-w-[620px] cursor-pointer overflow-hidden rounded-[8px] border border-[#9569d0] bg-[#9569d0] px-5 py-4 text-sm font-bold uppercase tracking-[0.12em] text-white transition duration-300 hover:-translate-y-0.5 sm:min-h-[82px] sm:px-10 sm:py-5 sm:text-lg sm:tracking-[0.14em]"
             >
               <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[26%] -skew-x-12 bg-[rgba(255,255,255,0.35)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
-              <span className="relative z-[1]">Buy Now - INR {discountedPrice.toLocaleString("en-IN")}</span>
+              <span className="relative z-[1]">Buy Now - INR {productPrice.toLocaleString("en-IN")}</span>
               <span className="absolute bottom-2 right-2 rounded-full border border-[rgba(17,17,17,0.25)] bg-[rgba(17,17,17,0.12)] px-2 py-[2px] text-[9px] font-semibold tracking-[0.08em] text-[#1b1b1b] sm:bottom-2.5 sm:right-3 sm:px-2.5 sm:text-[10px]">
                 LIMITED STOCK
               </span>
             </button>
           </div>
           <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-            <button
-              type="button"
-              onClick={handleApplyCoupon}
-              disabled={couponApplied}
-              className={`w-full rounded border px-3 py-2 text-[11px] uppercase tracking-[0.1em] sm:w-fit sm:px-4 sm:text-xs sm:tracking-[0.14em] ${
-                couponApplied
-                  ? "cursor-default border-[#9569d0]/60 bg-[#9569d0]/20 text-[#e9ddff]"
-                  : "border-dashed border-[#9569d0]/80 bg-[#9569d0]/10 text-[#c4b5fd]"
-              }`}
-            >
-              <span className="inline-flex items-center gap-2">
-                {couponApplied
-                  ? `Coupon Applied: ${couponCode} (${couponPercent}% Off)`
-                  : `Use Coupon ${couponCode} for ${couponPercent}% Off`}
-                {!couponApplied ? (
-                  <span className="inline-flex animate-bounce items-center rounded-full border border-[#c4b5fd] bg-[#111] px-2 py-[2px] text-[10px] font-bold tracking-[0.08em] text-[#ddd6fe]">
-                    Click Me
-                  </span>
-                ) : null}
-              </span>
-            </button>
             <a href={productPath} className="text-[11px] uppercase tracking-[0.12em] text-[#f9f7ff]/80 transition hover:text-[#f9f7ff] sm:text-xs sm:tracking-[0.16em]">
               See details {"->"}
             </a>
           </div>
-          {couponApplied ? (
-            <p className="mt-2 text-xs text-[#c4b5fd]">
-              Discount applied. New price: INR {discountedPrice.toLocaleString("en-IN")}
-            </p>
-          ) : null}
           {loading && !targetProduct ? <p className="mt-4 text-xs text-[#f5f3ff]">Loading live product details...</p> : null}
         </div>
 
@@ -257,8 +215,9 @@ const HairDryerLanding = () => {
           <div className="absolute bottom-3 right-3 z-[3] rounded-md border border-[#9569d0]/60 bg-black/70 px-3 py-2 text-right backdrop-blur-sm sm:bottom-5 sm:right-5 sm:px-4 sm:py-3">
             <p className="text-[10px] uppercase tracking-[0.2em] text-[#c4b5fd]">Launch Price</p>
             <p className="[font-family:'Bebas_Neue',sans-serif] text-3xl leading-none text-[#f9f7ff] sm:text-4xl">
-              INR {discountedPrice.toLocaleString("en-IN")}
+              INR {productPrice.toLocaleString("en-IN")}
             </p>
+            <p className="mt-1 text-[10px] font-semibold text-[#86efac]">₹100 off on prepaid orders · Pay ₹{prepaidPrice.toLocaleString("en-IN")}</p>
             <p className="text-sm text-[#c4c4d0] line-through">INR {productMrp.toLocaleString("en-IN")}</p>
           </div>
         </div>
@@ -322,7 +281,7 @@ const HairDryerLanding = () => {
             className="group relative mt-6 min-h-[68px] w-full max-w-[620px] cursor-pointer overflow-hidden rounded-[8px] border border-[#9569d0] bg-[#9569d0] px-5 py-4 text-sm font-bold uppercase tracking-[0.12em] text-white transition duration-300 hover:-translate-y-0.5 sm:mt-8 sm:min-h-[82px] sm:px-10 sm:py-5 sm:text-lg sm:tracking-[0.14em]"
           >
             <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[26%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
-            <span className="relative z-[1]">Buy Now - INR {discountedPrice.toLocaleString("en-IN")}</span>
+            <span className="relative z-[1]">Buy Now - INR {productPrice.toLocaleString("en-IN")}</span>
             <span className="absolute bottom-2.5 right-3 rounded-full border border-[rgba(17,17,17,0.25)] bg-[rgba(17,17,17,0.12)] px-2.5 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[#e9ddff]">
               LIMITED STOCK
             </span>
@@ -532,7 +491,7 @@ const HairDryerLanding = () => {
         </div>
         <div className="border border-[#9569d0] bg-[#9569d0]/10 p-5 sm:p-8">
           <p className="mb-1 [font-family:'Bebas_Neue',sans-serif] text-5xl text-[#c4b5fd] sm:text-6xl">
-            INR {discountedPrice.toLocaleString("en-IN")} <span className="text-xl text-[#9ca3af] line-through">INR {productMrp.toLocaleString("en-IN")}</span>
+            INR {productPrice.toLocaleString("en-IN")} <span className="text-xl text-[#9ca3af] line-through">INR {productMrp.toLocaleString("en-IN")}</span>
           </p>
           <p className="mb-6 inline-block bg-[#7c3aed] px-3 py-1 text-xs uppercase tracking-[0.1em]">Save INR {savings.toLocaleString("en-IN")} today</p>
           <ul className="mb-8 space-y-2 border-b border-[#9569d0]/45 pb-6 text-sm text-[#e5e7eb]">
@@ -560,7 +519,7 @@ const HairDryerLanding = () => {
           onClick={handleBuyNow}
           className="w-full cursor-pointer rounded bg-[#9569d0] px-4 py-3 text-center text-sm font-bold uppercase tracking-[0.12em] text-white"
         >
-          Buy Now - INR {discountedPrice.toLocaleString("en-IN")}
+          Buy Now - INR {productPrice.toLocaleString("en-IN")}
         </button>
       </div>
 

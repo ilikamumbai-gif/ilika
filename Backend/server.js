@@ -3761,13 +3761,21 @@ app.post("/api/payments/verify", async (req, res) => {
 
     const pricing = calculateOrderPricing(validatedItems);
     const giftWrapFee = normalizedGiftOptions.wantsGiftWrap ? Number(normalizedGiftOptions.giftWrapFee || 0) : 0;
+    const prepaidDiscountAmount = orderData?.paymentMethod === "ONLINE"
+      ? Math.min(100, Math.max(0, pricing.grandTotal + giftWrapFee))
+      : 0;
+    const payableTotal = Number((pricing.grandTotal + giftWrapFee - prepaidDiscountAmount).toFixed(2));
+    const razorpayOrder = await razorpay.orders.fetch(razorpay_order_id);
+    if (Number(razorpayOrder.amount) !== Math.round(payableTotal * 100)) {
+      return res.status(400).json({ error: "Payment amount does not match the order total" });
+    }
     const orderPayload = {
       userId: orderData.userId,
       userEmail: orderData.userEmail,
       items: validatedItems,
-      totalAmount: Number((pricing.grandTotal + giftWrapFee).toFixed(2)),
+      totalAmount: payableTotal,
       originalSubtotal: pricing.originalSubtotal,
-      discountAmount: pricing.discountAmount,
+      discountAmount: Number((pricing.discountAmount + prepaidDiscountAmount).toFixed(2)),
       shippingAddress: resolvedShippingAddress,
       giftOrder: {
         isGiftOrder: normalizedGiftOptions.isGiftOrder,
@@ -3778,6 +3786,7 @@ app.post("/api/payments/verify", async (req, res) => {
       },
       status: "Placed",
       paymentStatus: "Paid",
+      paymentMethod: "ONLINE",
       source: orderData.source || "WEBSITE",
       tracking: {
         trackingId: "",

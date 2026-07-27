@@ -30,9 +30,9 @@ import blackSeedLandingImage from "../Landing/assets/Blackseed1.png";
 import herbalLandingImage from "../Landing/assets/Herbal1.png";
 
 const homeTopHairBannerDesktop = "/Homepage/homepagehairbanner-new.webp";
-const homeTopHairBannerMobile = "/Homepage/homepagehairbanner-new.webp";
+const homeTopHairBannerMobile = "/Homepage/homepagehairbanner-phone.webp";
 const hairBannerDesktop = "/Homepage/homepagehairbanner.jpg";
-const hairBannerMobile = "/Homepage/homepagehairbannermobile.jpg";
+const hairBannerMobile = "/Homepage/homepagehairbanner-phone.webp";
 const BannerStyle = "/Images/Banner.webp";
 const endBannerDesktop = "/Homepage/homepagemaskcome1banner.jpg";
 const endBannerMobile = "/Homepage/homepagemaskcome1bannermobile.png";
