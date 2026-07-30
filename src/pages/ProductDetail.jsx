@@ -365,7 +365,13 @@ const EmiOfferCard = ({
   className = "",
   autoOpen = false,
 }) => {
-  const [isOpen, setIsOpen] = useState(autoOpen);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!autoOpen) return undefined;
+    const timer = window.setTimeout(() => setIsOpen(true), 300);
+    return () => window.clearTimeout(timer);
+  }, [autoOpen]);
 
   const safeAmount = Math.max(0, Number(amount) || 0);
   const plans = EMI_PLAN_MONTHS.map((months) => ({
