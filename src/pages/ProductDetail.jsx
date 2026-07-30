@@ -5332,6 +5332,7 @@ const ProductDetail = () => {
                           onContinue={handleBuyNow}
                           isProcessing={isBuying}
                           disabled={isOutOfStock}
+                          autoOpen
                         />
                       </div>
                     </div>
