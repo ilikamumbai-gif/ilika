@@ -66,7 +66,7 @@ const Banner = ({
   }, [bannerKey, activeSlides.length]);
 
   useEffect(() => {
-    if (activeSlides.length <= 1) return undefined;
+    if (activeSlides.length <= 1 || Number(autoSlideMs) <= 0) return undefined;
     const timer = window.setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % activeSlides.length);
     }, Math.max(Number(autoSlideMs) || 0, 2000));

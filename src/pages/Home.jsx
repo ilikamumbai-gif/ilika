@@ -947,7 +947,7 @@ const Home = () => {
               {
                 desktopSrc: maskBannerDesktop,
                 mobileSrc: maskBannerMobile,
-                linkUrl: "/voice-mask-maker",
+                linkUrl: "/product/voice-face-mask-maker",
                 alt: "Voice Mask Maker Banner",
               },
               {
@@ -977,7 +977,7 @@ const Home = () => {
 
             ]}
             imageFit="contain"
-            autoSlideMs={5000}
+            autoSlideMs={0}
             showControls
             priority
             preserveFullImage
