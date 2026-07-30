@@ -6,6 +6,7 @@ import {
   getCartItemDisplayImage,
   getCartItemDisplayPricing,
   getCartItemVariantName,
+  isPrepaidOfferEligible,
 } from "../utils/productPricing";
 
 const EMI_PLAN_MONTHS = [3, 6, 9];
@@ -25,14 +26,22 @@ const CartDrawer = () => {
   const navigate = useNavigate();
   const [showEmiDetails, setShowEmiDetails] = useState(false);
 
-  if (!isCartOpen) return null;
-
   const subtotal = cartItems.reduce(
     (acc, item) => acc + getCartItemDisplayPricing(item).price * item.quantity,
     0
   );
 
   const grandTotal = subtotal;
+  const prepaidEligibleTotal = cartItems.reduce(
+    (acc, item) => {
+      const itemPrice = getCartItemDisplayPricing(item).price;
+      return acc + (isPrepaidOfferEligible(item, itemPrice)
+        ? itemPrice * item.quantity
+        : 0);
+    },
+    0
+  );
+  const prepaidDiscount = Math.min(100, Math.max(0, prepaidEligibleTotal));
   const emiPlans = useMemo(
     () =>
       EMI_PLAN_MONTHS.map((months) => ({
@@ -42,6 +51,8 @@ const CartDrawer = () => {
     [grandTotal]
   );
   const primaryEmiPlan = emiPlans[0];
+
+  if (!isCartOpen) return null;
 
   const goToCheckout = (preferredPaymentMethod = "") => {
     if (!cartItems.length) return;
@@ -220,9 +231,9 @@ const CartDrawer = () => {
               <span>Grand Total</span>
               <span>{formatInr(grandTotal)}</span>
             </div>
-            {grandTotal > 0 && (
+            {prepaidDiscount > 0 && (
               <p className="text-[11px] font-semibold text-[#0a8f45]">
-                ₹100 off prepaid · Pay {formatInr(Math.max(0, grandTotal - 100))}
+                ₹{prepaidDiscount.toLocaleString("en-IN")} off prepaid · Pay {formatInr(Math.max(0, grandTotal - prepaidDiscount))}
               </p>
             )}
           </div>

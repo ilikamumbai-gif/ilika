@@ -17,6 +17,7 @@ import {
   getCartItemDisplayImage,
   getCartItemDisplayPricing,
   getCartItemVariantName,
+  isPrepaidOfferEligible,
 } from "../utils/productPricing";
 
 const PREFERRED_PAYMENT_METHOD_KEY = "ilika_preferred_payment_method";
@@ -707,7 +708,16 @@ const Checkout = () => {
   );
   const giftWrapFee = isGiftOrder && wantsGiftWrap ? GIFT_WRAP_FEE : 0;
   const total = parseFloat((subtotal + giftWrapFee).toFixed(2));
-  const availablePrepaidDiscount = Math.min(PREPAID_ORDER_DISCOUNT, total);
+  const prepaidEligibleTotal = useMemo(
+    () => checkoutItems.reduce(
+      (acc, item) => acc + (isPrepaidOfferEligible(item, item.price)
+        ? (Number(item.price) || 0) * (Number(item.quantity) || 1)
+        : 0),
+      0
+    ),
+    [checkoutItems]
+  );
+  const availablePrepaidDiscount = Math.min(PREPAID_ORDER_DISCOUNT, prepaidEligibleTotal);
   const prepaidPayableTotal = parseFloat((total - availablePrepaidDiscount).toFixed(2));
   const prepaidDiscountAmount = paymentMethod === "ONLINE"
     ? availablePrepaidDiscount
@@ -1430,9 +1440,11 @@ const Checkout = () => {
                       : "border-emerald-200 hover:border-emerald-500"
                   }`}
                 >
-                  <span className="block text-sm font-semibold text-emerald-800">Prepaid / Pay Online</span>
+                  <span className="block text-sm font-semibold text-emerald-800">{availablePrepaidDiscount > 0 ? "Prepaid / Pay Online" : "Pay Online"}</span>
                   <span className="mt-1 block text-lg font-bold text-emerald-800">₹{prepaidPayableTotal.toLocaleString("en-IN")}</span>
-                  <span className="block text-xs font-medium text-emerald-700">Save ₹{availablePrepaidDiscount.toLocaleString("en-IN")} on prepaid payment</span>
+                  {availablePrepaidDiscount > 0 && (
+                    <span className="block text-xs font-medium text-emerald-700">Save ₹{availablePrepaidDiscount.toLocaleString("en-IN")} on eligible prepaid payment</span>
+                  )}
                 </button>
               </div>
             </div>

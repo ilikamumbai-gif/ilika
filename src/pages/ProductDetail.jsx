@@ -35,6 +35,7 @@ import {
   getProductDisplayPricing,
   getProductVariantName,
   getProductVariantAvailability,
+  isPrepaidOfferEligible,
   getVariantQueryValue,
   slugifyVariantValue,
 } from "../utils/productPricing";
@@ -3299,7 +3300,9 @@ const ProductDetail = () => {
       : previewCouponEffectivePercent
     : 0;
   const price = Number(baseSellingPrice + addonPrice);
-  const prepaidOrderPrice = price > 0 ? Math.max(0, price - PREPAID_ORDER_DISCOUNT) : null;
+  const prepaidOrderPrice = isPrepaidOfferEligible(product, price)
+    ? Math.max(0, price - PREPAID_ORDER_DISCOUNT)
+    : null;
 
   const ingredients = useMemo(() => {
     const raw = Array.isArray(product?.ingredients) ? product.ingredients : [];

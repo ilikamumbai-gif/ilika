@@ -12,6 +12,7 @@ import {
   getDefaultVariant,
   getProductDisplayImage,
   getProductDisplayPricing,
+  isPrepaidOfferEligible,
 } from "../utils/productPricing";
 
 const ProductCard = ({
@@ -232,7 +233,7 @@ const ProductCard = ({
                 )}
               </button>
             </div>
-            {displayPrice > 0 && (
+            {isPrepaidOfferEligible(product, displayPrice) && displayPrice > 0 && (
               <p className="mt-1.5 text-[9px] font-semibold text-[#0a8f45] sm:text-[11px]">
                 ₹100 off prepaid · Pay ₹{prepaidPrice.toLocaleString("en-IN")}
               </p>

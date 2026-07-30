@@ -91,6 +91,16 @@ const getNonNegativeNumber = (value) => {
   return numeric !== null && numeric >= 0 ? numeric : null;
 };
 
+export const isManufacturerProduct = (product = {}) =>
+  String(product?.warranty || "").trim().toLowerCase() === "manufacturer";
+
+const PREPAID_OFFER_EXCLUDED_PRODUCT_PATTERN = /\b(?:mask\s*sheets?|sheet\s*masks?|toners?|shampoos?|serums?|cleansers?|face\s*washes?|moisturi[sz]ers?|sunscreens?|creams?|lotions?|scrubs?|conditioners?|body\s*washes?|soaps?)\b/i;
+const MINIMUM_PREPAID_OFFER_PRICE = 1500;
+
+export const isPrepaidOfferEligible = (product = {}, price = product?.price) =>
+  !PREPAID_OFFER_EXCLUDED_PRODUCT_PATTERN.test(String(product?.name || "")) &&
+  Number(price || 0) >= MINIMUM_PREPAID_OFFER_PRICE;
+
 const getVariantNameValue = (variant = {}) => {
   const value = String(
     variant?.variantName ||

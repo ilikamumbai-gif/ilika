@@ -2345,6 +2345,13 @@ const calculateOrderPricing = (items = []) => {
   };
 };
 
+const PREPAID_OFFER_EXCLUDED_PRODUCT_PATTERN = /\b(?:mask\s*sheets?|sheet\s*masks?|toners?|shampoos?|serums?|cleansers?|face\s*washes?|moisturi[sz]ers?|sunscreens?|creams?|lotions?|scrubs?|conditioners?|body\s*washes?|soaps?)\b/i;
+const MINIMUM_PREPAID_OFFER_PRICE = 1500;
+
+const isPrepaidOfferEligibleProduct = (product = {}, price = product?.price) =>
+  !PREPAID_OFFER_EXCLUDED_PRODUCT_PATTERN.test(String(product?.name || "")) &&
+  Number(price || 0) >= MINIMUM_PREPAID_OFFER_PRICE;
+
 const normalizeIndianPhone = (phone = "") => {
   const digits = String(phone).replace(/\D/g, "");
   return digits.length >= 10 ? digits.slice(-10) : digits;
@@ -3694,6 +3701,7 @@ app.post("/api/payments/verify", async (req, res) => {
     }
 
     let totalAmount = 0;
+    let prepaidDiscountEligibleTotal = 0;
     const validatedItems = [];
 
     for (const item of orderData.items) {
@@ -3737,6 +3745,9 @@ app.post("/api/payments/verify", async (req, res) => {
         ? submittedPrice
         : (Number.isFinite(productPrice) ? productPrice : 0);
       totalAmount += finalPrice * quantity;
+      if (isPrepaidOfferEligibleProduct(productData, finalPrice)) {
+        prepaidDiscountEligibleTotal += finalPrice * quantity;
+      }
 
         validatedItems.push({
           productId: resolvedProductId,
@@ -3762,7 +3773,7 @@ app.post("/api/payments/verify", async (req, res) => {
     const pricing = calculateOrderPricing(validatedItems);
     const giftWrapFee = normalizedGiftOptions.wantsGiftWrap ? Number(normalizedGiftOptions.giftWrapFee || 0) : 0;
     const prepaidDiscountAmount = orderData?.paymentMethod === "ONLINE"
-      ? Math.min(100, Math.max(0, pricing.grandTotal + giftWrapFee))
+      ? Math.min(100, Math.max(0, prepaidDiscountEligibleTotal))
       : 0;
     const payableTotal = Number((pricing.grandTotal + giftWrapFee - prepaidDiscountAmount).toFixed(2));
     const razorpayOrder = await razorpay.orders.fetch(razorpay_order_id);
