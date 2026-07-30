@@ -363,8 +363,9 @@ const EmiOfferCard = ({
   isProcessing = false,
   disabled = false,
   className = "",
+  autoOpen = false,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(autoOpen);
 
   const safeAmount = Math.max(0, Number(amount) || 0);
   const plans = EMI_PLAN_MONTHS.map((months) => ({
@@ -4959,6 +4960,7 @@ const ProductDetail = () => {
                               onContinue={handleBuyNow}
                               isProcessing={isBuying}
                               disabled={isOutOfStock}
+                              autoOpen
                             />
                           </div>
                         </div>
