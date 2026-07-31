@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { trackViewContent, trackAddToCart } from "../utils/pixel";
 import { markCurrentPageAsLastVisited, trackVisitorEvent } from "../utils/visitorAnalytics";
@@ -51,6 +52,7 @@ const PREPAID_ORDER_DISCOUNT = 100;
 const PREFERRED_PAYMENT_METHOD_KEY = "ilika_preferred_payment_method";
 const VOICE_MASK_MAKER_PRODUCT_SLUG = "voice-face-mask-maker";
 const NONVOICE_MASK_MAKER_PRODUCT_SLUG = "non-voice-face-mask-maker";
+const COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG = "ilika-collagen-peptide-8-peptide-pack-for-facial-mask-maker-machine";
 const COLLAGEN_ADDON_OPTIONS = [
   { id: "pack0", count: 0, label: "No extra collagen Peptide pack", tablets: 0, price: 0 },
   { id: "pack1", count: 1, label: "1 Collagen Peptide Pack (16 no.s)", tablets: 16, price: 799 },
@@ -424,9 +426,9 @@ const EmiOfferCard = ({
         </div>
       </button>
 
-      {isOpen ? (
+      {isOpen ? createPortal(
         <div
-          className="fixed inset-0 z-[500] flex items-center justify-center overflow-y-auto bg-black/60 p-4 py-8 backdrop-blur-[2px] sm:p-6 sm:py-10"
+          className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/60 p-4 py-8 backdrop-blur-[2px] sm:p-6 sm:py-10"
           onClick={() => setIsOpen(false)}
         >
           <div
@@ -536,7 +538,8 @@ const EmiOfferCard = ({
               </p>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       ) : null}
     </>
   );
@@ -2610,6 +2613,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [isImageZoomActive, setIsImageZoomActive] = useState(false);
+  const [imageZoomPosition, setImageZoomPosition] = useState({ x: 50, y: 50 });
   const [isHeroImageLoaded, setIsHeroImageLoaded] = useState(false);
   const [pendingImagesToPreload, setPendingImagesToPreload] = useState([]);
   const [selectedVideoUrl, setSelectedVideoUrl] = useState("");
@@ -2648,6 +2653,9 @@ const ProductDetail = () => {
   const detailsTabsRef = useRef(null);
   const thumbsRef = useRef(null);
   const autoScrollRef = useRef(null);
+  const touchZoomTimerRef = useRef(null);
+  const isTouchZoomActiveRef = useRef(false);
+  const suppressImageClickRef = useRef(false);
   const desktopPriceCardRef = useRef(null);
   // const footerRef = useRef(null);
 
@@ -3341,48 +3349,6 @@ const ProductDetail = () => {
     setShowAllThumbnails(false);
   }, [productId, activeVariant?.id, galleryCount]);
 
-  /* â”€â”€ Auto-scroll thumbnails on product page â”€â”€ */
-  useEffect(() => {
-    clearInterval(autoScrollRef.current);
-    if (selectedVideoUrl) return;
-    if (!images || images.length === 0) return;
-
-    const currentImages = images;
-    const lastImageIndex = currentImages.length - 1;
-    let idx = 0;
-    setSelectedImage(currentImages[0]);
-    setSelectedVideoUrl("");
-    setSelectedVideoPlaying(false);
-
-    autoScrollRef.current = setInterval(() => {
-      if (idx < lastImageIndex) {
-        idx += 1;
-        setSelectedImage(currentImages[idx]);
-        setSelectedVideoUrl("");
-        setSelectedVideoPlaying(false);
-      } else if (productVideos.length > 0) {
-        setSelectedVideoUrl(productVideos[0].embedUrl);
-        setSelectedVideoPlaying(true);
-        clearInterval(autoScrollRef.current);
-      } else {
-        clearInterval(autoScrollRef.current);
-      }
-      if (thumbsRef.current) {
-        const targetIndex = idx < lastImageIndex ? idx : currentImages.length;
-        const visibleTargetIndex = hasThumbnailOverflow
-          ? Math.min(targetIndex, overflowStartIndex)
-          : targetIndex;
-        const thumb = thumbsRef.current.querySelectorAll("button")[visibleTargetIndex];
-        if (thumb) {
-          const strip = thumbsRef.current;
-          strip.scrollTo({ left: thumb.offsetLeft - strip.offsetWidth / 2 + thumb.offsetWidth / 2, behavior: "smooth" });
-        }
-      }
-    }, 3500);
-
-    return () => clearInterval(autoScrollRef.current);
-  }, [images.join("|"), activeVariant?.id, selectedVideoUrl, productVideos, hasThumbnailOverflow, overflowStartIndex]);
-
   const stopAuto = () => clearInterval(autoScrollRef.current);
   const selectedVideoIndex = useMemo(
     () => productVideos.findIndex((video) => video.embedUrl === selectedVideoUrl),
@@ -3654,6 +3620,68 @@ const ProductDetail = () => {
       setSelectedVideoPlaying(false);
     }
   };
+
+  const updateImageZoomPosition = useCallback((element, clientX, clientY) => {
+    const bounds = element.getBoundingClientRect();
+    const x = Math.min(100, Math.max(0, ((clientX - bounds.left) / bounds.width) * 100));
+    const y = Math.min(100, Math.max(0, ((clientY - bounds.top) / bounds.height) * 100));
+
+    setImageZoomPosition({ x, y });
+  }, []);
+
+  const handleImageZoomMove = useCallback((event) => {
+    updateImageZoomPosition(event.currentTarget, event.clientX, event.clientY);
+    setIsImageZoomActive(true);
+  }, [updateImageZoomPosition]);
+
+  const hideImageZoom = useCallback(() => {
+    setIsImageZoomActive(false);
+  }, []);
+
+  const handleImageTouchStart = useCallback((event) => {
+    const touch = event.targetTouches[0];
+    if (!touch) return;
+
+    setTouchStartX(touch.clientX);
+    setTouchEndX(touch.clientX);
+    if (selectedVideoUrl || !selectedImage) return;
+
+    updateImageZoomPosition(event.currentTarget, touch.clientX, touch.clientY);
+    touchZoomTimerRef.current = window.setTimeout(() => {
+      isTouchZoomActiveRef.current = true;
+      setIsImageZoomActive(true);
+    }, 300);
+  }, [selectedImage, selectedVideoUrl, updateImageZoomPosition]);
+
+  const handleImageTouchMove = useCallback((event) => {
+    const touch = event.targetTouches[0];
+    if (!touch) return;
+
+    setTouchEndX(touch.clientX);
+    if (!isTouchZoomActiveRef.current) {
+      if (Math.abs(touch.clientX - touchStartX) > 10) {
+        window.clearTimeout(touchZoomTimerRef.current);
+      }
+      return;
+    }
+
+    event.preventDefault();
+    updateImageZoomPosition(event.currentTarget, touch.clientX, touch.clientY);
+  }, [touchStartX, updateImageZoomPosition]);
+
+  const handleImageTouchEnd = useCallback(() => {
+    window.clearTimeout(touchZoomTimerRef.current);
+    if (isTouchZoomActiveRef.current) {
+      isTouchZoomActiveRef.current = false;
+      suppressImageClickRef.current = true;
+      setIsImageZoomActive(false);
+      return;
+    }
+
+    handleSwipe();
+  }, [handleSwipe]);
+
+  useEffect(() => () => window.clearTimeout(touchZoomTimerRef.current), []);
 
   const loopedIngredients = useMemo(() => {
     if (!ingredients.length) return [];
@@ -3999,12 +4027,25 @@ const ProductDetail = () => {
   }, [ingredients]);
 
   const additionalInfoArray = useMemo(() => {
-    if (Array.isArray(product?.additionalInfo)) return product.additionalInfo;
-    if (typeof product?.additionalInfo === "string" && product.additionalInfo.trim()) {
-      return product.additionalInfo.split(",").map(i => i.trim()).filter(Boolean);
-    }
-    return [];
-  }, [product?.additionalInfo]);
+    const savedDetails = Array.isArray(product?.additionalInfo)
+      ? product.additionalInfo
+      : typeof product?.additionalInfo === "string" && product.additionalInfo.trim()
+        ? product.additionalInfo.split(",").map((item) => item.trim()).filter(Boolean)
+        : [];
+    const productIdentifiers = [product?.productUrl, product?.slug, product?.name, productUrl];
+    const isCollagenPeptidePack = productIdentifiers.some(
+      (value) => createSlug(String(value || "")) === COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG
+    );
+
+    if (!isCollagenPeptidePack) return savedDetails;
+
+    return [
+      ...savedDetails,
+      "Ingredients: Carrageenan, PEG-5M, Tartaric Acid, Glucomannan, Sodium Carbonate, Maltodextrin, Sodium Bicarbonate, and Potassium Chloride.",
+      "Designed for use with facial mask maker machines to create fresh DIY collagen masks with fruits or vegetables.",
+      "Use one tablet per mask.",
+    ];
+  }, [product?.additionalInfo, product?.name, product?.productUrl, product?.slug, productUrl]);
 
   const whyLoveItItems = useMemo(
     () => sanitizeWhyYouLoveItItems(product?.whyYouLoveIt, product?.whyLoveIt, product?.benefits),
@@ -4298,7 +4339,7 @@ const ProductDetail = () => {
     }
 
     if (tabId === "additional") {
-      return additionalInfoArray.length > 0 ? (
+      return additionalInfoArray.length > 0 || ingredients.length > 0 ? (
         <>
           <div className="overflow-hidden transition-all duration-300">
             <ul className="space-y-1 text-sm text-gray-700">
@@ -4319,6 +4360,25 @@ const ProductDetail = () => {
               {expandedInfo ? "Read Less ▲" : "Read More ▼"}
             </button>
           )}
+          {ingredients.length > 0 ? (
+            <div className="mt-5 border-t pt-4" style={{ borderColor: detailTheme.borderSoft }}>
+              <p className="mb-3 text-sm font-semibold" style={{ color: detailTheme.heading }}>
+                Ingredients
+              </p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {ingredients.map((image, index) => (
+                  <img
+                    key={`${image}-${index}`}
+                    src={image}
+                    alt={`${product.name} ingredient ${index + 1}`}
+                    loading="lazy"
+                    className="aspect-square w-full rounded-xl border object-cover"
+                    style={{ borderColor: detailTheme.borderSoft }}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
         </>
       ) : (
         <p className="text-sm text-gray-400">No additional information available.</p>
@@ -4622,10 +4682,17 @@ const ProductDetail = () => {
                 <div className="order-1 flex-1 xl:max-w-[640px]">
                   <div
                     className={`relative overflow-hidden rounded-[16px] sm:rounded-[24px] border border-[#f4dfdb] bg-[#fff5f4] select-none group shadow-[0_14px_28px_rgba(69,39,34,0.06)] sm:shadow-[0_18px_40px_rgba(69,39,34,0.06)] ${selectedVideoUrl ? "cursor-default" : "cursor-zoom-in"}`}
-                    onTouchStart={(e) => setTouchStartX(e.targetTouches[0].clientX)}
-                    onTouchMove={(e) => setTouchEndX(e.targetTouches[0].clientX)}
-                    onTouchEnd={handleSwipe}
+                    onTouchStart={handleImageTouchStart}
+                    onTouchMove={handleImageTouchMove}
+                    onTouchEnd={handleImageTouchEnd}
+                    onTouchCancel={handleImageTouchEnd}
+                    onMouseMove={selectedVideoUrl || !selectedImage ? undefined : handleImageZoomMove}
+                    onMouseLeave={hideImageZoom}
                     onClick={() => {
+                      if (suppressImageClickRef.current) {
+                        suppressImageClickRef.current = false;
+                        return;
+                      }
                       if (selectedVideoUrl) {
                         openVideoLightbox(selectedVideoIndex);
                         return;
@@ -4704,6 +4771,18 @@ const ProductDetail = () => {
                           height="1080"
                           className="block min-h-full w-full object-contain transition-opacity duration-300 ease-out"
                         />
+
+                        {isImageZoomActive ? (
+                          <span
+                            className="pointer-events-none absolute z-10 h-[34%] w-[34%] rounded-full border-2 border-white bg-white/15 shadow-[0_2px_12px_rgba(0,0,0,0.25)]"
+                            style={{
+                              left: `${imageZoomPosition.x}%`,
+                              top: `${imageZoomPosition.y}%`,
+                              transform: "translate(-50%, -50%)",
+                            }}
+                            aria-hidden="true"
+                          />
+                        ) : null}
                       </div>
                     ) : (
                       <div className="w-full aspect-square bg-gray-100 animate-pulse" />
@@ -4714,6 +4793,20 @@ const ProductDetail = () => {
                         <ZoomIn className="w-5 h-5" style={{ color: detailTheme.heading }} />
                       </div>
                     </div>
+
+                    {isImageZoomActive && selectedImage && !selectedVideoUrl ? createPortal(
+                      <div
+                        className="pointer-events-none fixed inset-x-3 bottom-3 z-[120] aspect-square max-h-[58vh] rounded-[24px] border-2 border-white bg-white shadow-[0_20px_55px_rgba(30,20,18,0.28)] xl:inset-x-auto xl:bottom-auto xl:right-6 xl:top-1/2 xl:w-[min(32vw,500px)] xl:-translate-y-1/2"
+                        style={{
+                          backgroundImage: `url("${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}")`,
+                          backgroundPosition: `${imageZoomPosition.x}% ${imageZoomPosition.y}%`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "220%",
+                        }}
+                        aria-hidden="true"
+                      />,
+                      document.body
+                    ) : null}
 
                     {galleryCount > 1 && (
                       <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none xl:hidden">
@@ -5449,6 +5542,40 @@ const ProductDetail = () => {
         </section>
 
         <div className="xl:pr-[23rem]">
+
+        {productVideos.length > 0 && (
+          <section className="max-w-[90rem] mx-auto mb-12 px-3 sm:px-6 sm:mb-16">
+            <div className="overflow-hidden rounded-[20px] border bg-white shadow-[0_12px_28px_rgba(69,39,34,0.05)] sm:rounded-[26px]" style={{ borderColor: detailTheme.borderSoft }}>
+              <div className="border-b px-4 py-3 sm:px-5 sm:py-4" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
+                <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>Watch it in action</p>
+              </div>
+              <div className="aspect-video w-full bg-black">
+                {productVideos[0].kind === "native" ? (
+                  <video
+                    src={productVideos[0].url}
+                    title={productVideos[0].title || "Product video"}
+                    className="h-full w-full object-contain"
+                    autoPlay
+                    muted
+                    loop
+                    controls
+                    playsInline
+                    preload="metadata"
+                  />
+                ) : (
+                  <iframe
+                    src={productVideos[0].embedUrl}
+                    title={productVideos[0].title || "Product video"}
+                    className="h-full w-full"
+                    style={{ border: "none" }}
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowFullScreen
+                  />
+                )}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* BEFORE / AFTER */}
         {hasBeforeAfter && (

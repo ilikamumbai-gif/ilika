@@ -16,7 +16,7 @@ export const PRODUCT_SEO_CONTENT = [
   {
     canonicalSlug: "voice-face-mask-maker",
     slugs: ["facial-mask-maker-machine", "voice-face-mask-maker"],
-    names: ["ilika facial mask maker machine", "ilika voice face mask maker", "facial mask maker machine", "automatic voice version face mask maker machine"],
+    names: ["ilika facial mask maker machine", "ilika voice face mask maker", "automatic voice version face mask maker machine"],
     topKeyword: "mask maker machine price India",
     title: "ilika Facial Mask Maker Machine - DIY Natural Face Masks at Home",
     description: "Make fresh, natural face masks at home with the ilika Facial Mask Maker Machine. Mix fruit, collagen & herbal masks in minutes. Buy online in India.",
