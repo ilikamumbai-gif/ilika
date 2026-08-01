@@ -29,10 +29,10 @@ const TestimonialList = lazy(() => import("../components/TestimonialList"));
 import blackSeedLandingImage from "../Landing/assets/Blackseed1.png";
 import herbalLandingImage from "../Landing/assets/Herbal1.png";
 
-const homeTopHairBannerDesktop = "/Homepage/banner-hair-dryer-desktop.webp";
-const homeTopHairBannerMobile = "/Homepage/homepagehairbanner-phone.webp";
-const hairBannerDesktop = "/Homepage/banner-hair-dryer-desktop.webp";
-const hairBannerMobile = "/Homepage/homepagehairbanner-phone.webp";
+const homeTopHairBannerDesktop = "/Homepage/hair-dryer-banner-desktop.webp";
+const homeTopHairBannerMobile = "/Homepage/hair-dryer-banner-mobile.webp";
+const hairBannerDesktop = "/Homepage/hair-dryer-banner-desktop.webp";
+const hairBannerMobile = "/Homepage/hair-dryer-banner-mobile.webp";
 const BannerStyle = "/Images/Banner.webp";
 const endBannerDesktop = "/Homepage/homepagemaskcome1banner.jpg";
 const endBannerMobile = "/Homepage/homepagemaskcome1bannermobile.png";
