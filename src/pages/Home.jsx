@@ -29,9 +29,9 @@ const TestimonialList = lazy(() => import("../components/TestimonialList"));
 import blackSeedLandingImage from "../Landing/assets/Blackseed1.png";
 import herbalLandingImage from "../Landing/assets/Herbal1.png";
 
-const homeTopHairBannerDesktop = "/Homepage/homepagehairbanner-new.webp";
+const homeTopHairBannerDesktop = "/Homepage/banner-hair-dryer-desktop.webp";
 const homeTopHairBannerMobile = "/Homepage/homepagehairbanner-phone.webp";
-const hairBannerDesktop = "/Homepage/homepagehairbanner.jpg";
+const hairBannerDesktop = "/Homepage/banner-hair-dryer-desktop.webp";
 const hairBannerMobile = "/Homepage/homepagehairbanner-phone.webp";
 const BannerStyle = "/Images/Banner.webp";
 const endBannerDesktop = "/Homepage/homepagemaskcome1banner.jpg";
