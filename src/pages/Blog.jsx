@@ -47,7 +47,7 @@ const Blog = () => {
         const data = await res.json();
         if (!ignore) {
           const visibleBlogs = (Array.isArray(data) ? data : []).filter(
-            (entry) => !entry?.isPrivate && !entry?.hideFromBlogListing
+            (entry) => !entry?.hideFromBlogListing
           );
           setBlogs(visibleBlogs);
         }
@@ -245,7 +245,7 @@ const Blog = () => {
           <div className="space-y-8 sm:space-y-10">
             <section>
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Product Landing Pages</p>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 {LANDING_BLOG_CARDS.map((card) => (
                   <BlogCard
                     key={card.id}
@@ -264,7 +264,7 @@ const Blog = () => {
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">
                 Featured Static Blogs ({visibleStaticBlogs.length})
               </p>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 {visibleStaticBlogs.slice(0, 8).map((blog) => (
                   <BlogCard
                     key={blog.id}
@@ -281,7 +281,7 @@ const Blog = () => {
             {featuredBlog && (
               <section>
                 <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">Featured</p>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                   <BlogCard blog={featuredBlog} prioritizeImage />
                   {restBlogs.map((blog) => (
                     <BlogCard key={blog.id} blog={blog} />

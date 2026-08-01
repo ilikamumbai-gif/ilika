@@ -3,6 +3,7 @@ import path from "node:path";
 import {
   STATIC_BLOGS,
 } from "../src/data/privateBlogs.js";
+import { buildBlogUrl } from "../src/utils/blogRoutes.js";
 
 const readEnvFile = async (filePath) => {
   try {
@@ -438,15 +439,20 @@ async function main() {
     fetchResource({
       label: "Blogs",
       endpoints: blogsEndpoints,
-      toUrls: (list) =>
-        list
+      toUrls: (list) => {
+        const usedPaths = new Set();
+        return list
           .filter((b) => b?.title)
-          .map((b) => ({
-            loc: `/blog/${createSlug(b.slug || b.title)}`,
-            priority: "0.7",
-            changefreq: "weekly",
-            lastmod: toIsoDate(b.updatedAt || b.createdAt, today),
-          })),
+          .map((b) => {
+            const loc = buildBlogUrl(b, { usedPaths });
+            return {
+              loc,
+              priority: "0.7",
+              changefreq: "weekly",
+              lastmod: toIsoDate(b.updatedAt || b.createdAt, today),
+            };
+          });
+      },
     }),
   ]);
 
@@ -454,12 +460,18 @@ async function main() {
     ...u,
     lastmod: today.toISOString().slice(0, 10),
   }));
-  const staticBlogUrls = staticBlogCollections.map((blog) => ({
-    loc: `/blog/${blog.slug}`,
-    priority: "0.7",
-    changefreq: "weekly",
-    lastmod: toIsoDate(blog.updatedAt || blog.createdAt, today),
-  }));
+  const staticBlogUrls = (() => {
+    const usedPaths = new Set();
+    return staticBlogCollections.map((blog) => {
+      const loc = buildBlogUrl(blog, { usedPaths });
+      return {
+        loc,
+        priority: "0.7",
+        changefreq: "weekly",
+        lastmod: toIsoDate(blog.updatedAt || blog.createdAt, today),
+      };
+    });
+  })();
 
   const combinedBlogUrls = dedupeUrls([...staticBlogUrls, ...blogUrls]);
   const urls = dedupeUrls([...staticUrls, ...productUrls, ...categoryUrls, ...combinedBlogUrls]);
