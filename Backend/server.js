@@ -1860,7 +1860,67 @@ const getSiteBaseUrl = () =>
 const getMerchantProductId = (offerId = "") =>
   `${MERCHANT_CHANNEL}:${MERCHANT_CONTENT_LANGUAGE}:${MERCHANT_TARGET_COUNTRY}:${offerId}`;
 
+const normalizeMerchantLookupValue = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "")
+    .replace(/^product\//, "");
+
+const getMerchantProductPriceOverride = (product = {}) => {
+  const lookupValues = [
+    product?.productUrl,
+    product?.slug,
+    product?.name,
+    product?.baseProductId,
+    product?.id,
+  ].map(normalizeMerchantLookupValue);
+
+  const normalizedName = normalizeMerchantLookupValue(product?.name || "");
+
+  const hairDryerLookups = ["leafless-hair-dryer"];
+  const hairDryerNameSnippets = ["bldc hair dryer", "leafless hair dryer"];
+  const hairDryerLookupMatch = lookupValues.some((value) => hairDryerLookups.includes(value));
+  const hairDryerNameMatch = hairDryerNameSnippets.some((snippet) =>
+    normalizedName.includes(normalizeMerchantLookupValue(snippet))
+  );
+  if (hairDryerLookupMatch || hairDryerNameMatch) {
+    return { price: 2699, compareAtPrice: 0 };
+  }
+
+  const nonVoiceLookups = [
+    "non-voice-face-mask-maker",
+    "facial-mask-maker-machine-none-voice",
+    "facial-mask-maker-machine-non-voice",
+    "ilika-non-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
+  ];
+  const nonVoiceNameSnippets = ["non-voice face mask maker", "nonvoice mask maker machine"];
+  const nonVoiceLookupMatch = lookupValues.some((value) => nonVoiceLookups.includes(value));
+  const nonVoiceNameMatch = nonVoiceNameSnippets.some((snippet) =>
+    normalizedName.includes(normalizeMerchantLookupValue(snippet))
+  );
+  if (nonVoiceLookupMatch || nonVoiceNameMatch) {
+    return { price: 3999, compareAtPrice: 0 };
+  }
+
+  const voiceLookups = [
+    "voice-face-mask-maker",
+    "ilika-voice-face-mask-maker-machine-with-collagen-peptide",
+    "ilika-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
+  ];
+  const voiceNameSnippets = ["voice face mask maker", "automatic voice version face mask maker machine"];
+  const voiceLookupMatch = lookupValues.some((value) => voiceLookups.includes(value));
+  const voiceNameMatch = voiceNameSnippets.some((snippet) =>
+    normalizedName.includes(normalizeMerchantLookupValue(snippet))
+  );
+
+  return voiceLookupMatch || voiceNameMatch ? { price: 4499, compareAtPrice: 0 } : null;
+};
+
 const getProductSellPrice = (product = {}) => {
+  const priceOverride = getMerchantProductPriceOverride(product);
+  if (priceOverride?.price) return priceOverride.price;
+
   if (product?.hasVariants && Array.isArray(product?.variants)) {
     const variantPrices = product.variants
       .map((variant) => Number(variant?.price))

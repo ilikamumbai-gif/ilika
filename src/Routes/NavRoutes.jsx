@@ -294,12 +294,23 @@ const buildBreadcrumbJsonLd = (pathname = "", seoTitle = "Page") => {
 };
 
 const RouteSeo = () => {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const seo = getRouteSeo(pathname);
   const isAdminPath = pathname.startsWith("/admin");
   const isKnownRoute = Boolean(matchRoutes(SEO_MATCHER_ROUTES, pathname));
   const isHomePage = pathname === "/";
   const isProductDetailPage = pathname.startsWith("/product/");
+  const isCheckoutPath = pathname === "/checkout" || pathname === "/cart";
+  const hasFilterLikeQuery = Boolean(
+    search && /(?:^|[?&])(sort|filter|price|page|q|view|brand|tag|category)=/i.test(search)
+  );
+  const shouldNoindex =
+    isAdminPath ||
+    !isKnownRoute ||
+    isCheckoutPath ||
+    (pathname === "/products" && hasFilterLikeQuery) ||
+    (pathname === "/shopall" && hasFilterLikeQuery) ||
+    (pathname.startsWith("/category/") && hasFilterLikeQuery);
   const pageTitle = pathname === "/" ? seo.title : `${seo.title} | Ilika`;
 
   const organizationJsonLd = {
@@ -324,7 +335,7 @@ const RouteSeo = () => {
     title: pageTitle,
     description: seo.description,
     path: pathname,
-    robots: isAdminPath || !isKnownRoute ? "noindex, nofollow" : "index, follow",
+    robots: shouldNoindex ? "noindex, follow" : "index, follow",
     keywords: seo.keywords,
   });
 

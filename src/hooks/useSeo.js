@@ -2,6 +2,51 @@ import { useEffect } from "react";
 
 const SITE_URL = "https://ilika.in";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/Images/logo2.webp`;
+const TRACKING_PARAM_NAMES = new Set([
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "utm_id",
+  "gclid",
+  "fbclid",
+  "mc_cid",
+  "mc_eid",
+  "igshid",
+  "ref",
+  "source",
+  "campaign",
+  "medium",
+  "content",
+  "keyword",
+]);
+
+const buildCanonicalUrl = (canonical, path = "/") => {
+  const rawValue = canonical || path || "/";
+  const trimmedValue = String(rawValue || "").trim();
+
+  if (!trimmedValue) return `${SITE_URL}/`;
+
+  try {
+    const parsed = new URL(trimmedValue, SITE_URL);
+    parsed.hash = "";
+    parsed.search = "";
+
+    for (const key of Array.from(parsed.searchParams.keys())) {
+      if (TRACKING_PARAM_NAMES.has(key)) {
+        parsed.searchParams.delete(key);
+      }
+    }
+
+    parsed.search = "";
+    return parsed.toString();
+  } catch {
+    const normalizedPath = trimmedValue.split(/[?#]/)[0] || "/";
+    const prefixedPath = normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`;
+    return `${SITE_URL}${prefixedPath}`;
+  }
+};
 
 const upsertMeta = (attribute, key, content) => {
   if (!content) return;
@@ -36,9 +81,7 @@ export const useSeo = ({
   keywords,
 }) => {
   useEffect(() => {
-    const canonicalUrl = canonical
-      ? new URL(canonical, SITE_URL).toString()
-      : new URL(path, SITE_URL).toString();
+    const canonicalUrl = buildCanonicalUrl(canonical, path);
 
     if (title) {
       document.title = title;

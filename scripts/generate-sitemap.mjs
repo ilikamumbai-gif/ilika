@@ -134,7 +134,10 @@ const createSlug = (text = "") =>
 
 const PRODUCT_URL_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-const normalizeProductUrl = (value = "") => String(value || "").trim().toLowerCase();
+const normalizeProductUrl = (value = "") => {
+  const raw = String(value || "").trim().toLowerCase();
+  return raw.split(/[?#]/)[0].replace(/^\/+|\/+$/g, "");
+};
 
 const readProductUrl = (product = {}) => {
   const productUrl = normalizeProductUrl(product?.productUrl);
