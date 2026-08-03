@@ -47,7 +47,7 @@ const HomeDivisionSttrip = ({
       }}
       className="block w-full cursor-pointer"
     >
-      <section className="mx-auto max-w-[1500px] px-4 py-4 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-[1500px] px-4 py-4 sm:px-6 lg:px-8 mb-8">
         <div className="group relative overflow-hidden border border-[#8f302f] bg-[#b34140] text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(179,65,64,0.22)]">
           <span className="pointer-events-none absolute left-[-48px] top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-white/10 blur-2xl" />
           <span className="pointer-events-none absolute right-[-36px] top-1/2 h-20 w-20 -translate-y-1/2 rounded-full bg-white/10 blur-2xl" />

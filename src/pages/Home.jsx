@@ -101,46 +101,6 @@ const HOME_SUPPORT_ITEMS = [
   },
 ];
 
-const normalizeName = (value = "") =>
-  String(value || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const getProductImage = (product, fallback) =>
-  product?.variants?.[0]?.images?.[0] ||
-  product?.images?.[0] ||
-  product?.image ||
-  product?.imageUrl ||
-  fallback;
-
-const getYouTubeVideoId = (url = "") => {
-  try {
-    if (!url) return "";
-    if (url.includes("youtu.be/")) {
-      return url.split("youtu.be/")[1]?.split(/[?&]/)[0] || "";
-    }
-    if (url.includes("/shorts/")) {
-      return url.split("/shorts/")[1]?.split(/[?&]/)[0] || "";
-    }
-    return new URL(url).searchParams.get("v") || "";
-  } catch {
-    return "";
-  }
-};
-
-const getDriveFileId = (url = "") => {
-  if (!url) return "";
-  const fromFilePath = url.match(/\/d\/([^/]+)/)?.[1];
-  if (fromFilePath) return fromFilePath;
-  try {
-    return new URL(url).searchParams.get("id") || "";
-  } catch {
-    return "";
-  }
-};
-
 const getDriveThumbnailCandidates = (fileId = "") => {
   const id = String(fileId || "").trim();
   if (!id) return [];
@@ -150,75 +110,6 @@ const getDriveThumbnailCandidates = (fileId = "") => {
     `https://drive.google.com/thumbnail?id=${id}&sz=w1000`,
     `https://drive.google.com/uc?export=view&id=${id}`,
   ];
-};
-
-const normalizePublicAssetPath = (value = "") => {
-  const raw = String(value || "").trim();
-  if (!raw) return "";
-  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("data:")) return raw;
-  return raw.startsWith("/") ? raw : `/${raw}`;
-};
-
-const getHonestReviewLinkHref = (value = "") => {
-  const raw = String(value || "").trim();
-  if (!raw) return "";
-  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("mailto:") || raw.startsWith("tel:")) return raw;
-  return raw.startsWith("/") ? raw : `/${raw}`;
-};
-
-const getHonestReviewMedia = (url = "", { preview = true } = {}) => {
-  const rawUrl = String(url || "").trim();
-  if (!rawUrl) return { kind: "video", src: "" };
-
-  const withParams = (base, params) => {
-    const queryString = new URLSearchParams(params).toString();
-    return `${base}${base.includes("?") ? "&" : "?"}${queryString}`;
-  };
-
-  try {
-    if (rawUrl.includes("youtube.com") || rawUrl.includes("youtu.be")) {
-      const videoId = getYouTubeVideoId(rawUrl);
-      return videoId
-        ? {
-            kind: "iframe",
-            src: withParams(`https://www.youtube-nocookie.com/embed/${videoId}`, {
-              autoplay: 1,
-              mute: preview ? 1 : 0,
-              playsinline: 1,
-              loop: preview ? 1 : 0,
-              playlist: preview ? videoId : undefined,
-              rel: 0,
-              modestbranding: 1,
-              controls: preview ? 0 : 1,
-              fs: preview ? 0 : 1,
-              disablekb: preview ? 1 : 0,
-            }),
-          }
-        : { kind: "video", src: "" };
-    }
-
-    if (rawUrl.includes("drive.google.com")) {
-      const fileId = getDriveFileId(rawUrl);
-      return fileId
-        ? {
-            kind: preview ? "thumbnail" : "iframe",
-            src: preview
-              ? getDriveThumbnailCandidates(fileId)[0]
-              : withParams(`https://drive.google.com/file/d/${fileId}/preview`, {
-                  autoplay: 1,
-                  mute: 0,
-                  controls: 1,
-                  playsinline: 1,
-                  embedded: 1,
-                }),
-          }
-        : { kind: "video", src: "" };
-    }
-  } catch {
-    return { kind: "video", src: rawUrl };
-  }
-
-  return { kind: "video", src: rawUrl };
 };
 
 const HomeHonestReviewLightbox = ({ item, onClose }) => {
@@ -283,6 +174,123 @@ const HomeHonestReviewLightbox = ({ item, onClose }) => {
       </div>
     </div>
   );
+};
+
+const getYouTubeVideoId = (url = "") => {
+  try {
+    if (!url) return "";
+    const raw = String(url || "").trim();
+    if (!raw) return "";
+    if (raw.includes("youtu.be/")) return raw.split("youtu.be/")[1]?.split(/[?&]/)[0] || "";
+    if (raw.includes("/shorts/")) return raw.split("/shorts/")[1]?.split(/[?&]/)[0] || "";
+    const params = new URL(raw).searchParams;
+    return params.get("v") || "";
+  } catch {
+    return "";
+  }
+};
+
+const normalizeName = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+
+const getProductImage = (product, fallback) =>
+  product?.variants?.[0]?.images?.[0] ||
+  product?.images?.[0] ||
+  product?.image ||
+  product?.imageUrl ||
+  fallback;
+
+const getDriveFileId = (url = "") => {
+  if (!url) return "";
+  const fromFilePath = url.match(/\/d\/([^/]+)/)?.[1];
+  if (fromFilePath) return fromFilePath;
+  try {
+    const parsed = new URL(url);
+    return parsed.searchParams.get("id") || "";
+  } catch {
+    return "";
+  }
+};
+
+const getHonestReviewMedia = (url = "", { preview = true } = {}) => {
+  const rawUrl = String(url || "").trim();
+  if (!rawUrl) return { kind: "video", src: "" };
+
+  const withParams = (base, params) => {
+    const queryString = new URLSearchParams(params).toString();
+    return `${base}${base.includes("?") ? "&" : "?"}${queryString}`;
+  };
+
+  try {
+    if (rawUrl.includes("youtube.com") || rawUrl.includes("youtu.be")) {
+      let videoId = "";
+      if (rawUrl.includes("youtu.be/")) {
+        videoId = rawUrl.split("youtu.be/")[1]?.split(/[?&]/)[0] || "";
+      } else if (rawUrl.includes("/shorts/")) {
+        videoId = rawUrl.split("/shorts/")[1]?.split(/[?&]/)[0] || "";
+      } else {
+        videoId = new URL(rawUrl).searchParams.get("v") || "";
+      }
+
+      return videoId
+        ? {
+            kind: "iframe",
+            src: withParams(`https://www.youtube-nocookie.com/embed/${videoId}`, {
+              autoplay: preview ? 1 : 1,
+              mute: preview ? 1 : 0,
+              playsinline: 1,
+              loop: preview ? 1 : 0,
+              playlist: preview ? videoId : undefined,
+              rel: 0,
+              modestbranding: 1,
+              controls: preview ? 0 : 1,
+              fs: preview ? 0 : 1,
+              disablekb: preview ? 1 : 0,
+            }),
+          }
+        : { kind: "video", src: "" };
+    }
+
+    if (rawUrl.includes("drive.google.com")) {
+      const fileId = getDriveFileId(rawUrl);
+
+      return fileId
+        ? {
+            kind: preview ? "thumbnail" : "iframe",
+            src: preview
+              ? getDriveThumbnailCandidates(fileId)[0]
+              : withParams(`https://drive.google.com/file/d/${fileId}/preview`, {
+                  autoplay: 1,
+                  mute: 0,
+                  controls: 1,
+                  playsinline: 1,
+                  embedded: 1,
+                }),
+          }
+        : { kind: "video", src: "" };
+    }
+  } catch {
+    return { kind: "video", src: rawUrl };
+  }
+
+  return { kind: "video", src: rawUrl };
+};
+
+const normalizePublicAssetPath = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith("data:")) return raw;
+  return raw.startsWith("/") ? raw : `/${raw}`;
+};
+
+const getHonestReviewLinkHref = (linkPath = "") => {
+  const raw = String(linkPath || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return raw.startsWith("/") ? raw : `/${raw}`;
 };
 
 const HomeHonestReviewCard = ({ item, onOpen }) => {
@@ -756,14 +764,6 @@ const Home = () => {
         linkPath: "/high-frequency-therapy-wand",
       },
       {
-        id: "landing-leafless-hairdryer",
-        title: "Explore Ilika High-Speed Leafless Hair Dryer",
-        author: "Team Ilika",
-        eyebrow: "High-speed styling, simplified.",
-        image: getProductImage(hairDryer, "/Images/HairdrayerCard.webp"),
-        linkPath: "/leafless-hair-dryer",
-      },
-      {
         id: "landing-nonvoice-mask-maker",
         title: "Explore Ilika Non-Voice Face Mask Maker Machine",
         author: "Team Ilika",
@@ -934,8 +934,8 @@ const Home = () => {
           <CartDrawer />
         </Suspense>
         <main>
-          <Banner
-            className="mt-0 bg-[#fdecef]"
+            <Banner
+              className="mt-0 pt-0 bg-[#fdecef] z-0 h-screen"
             bannerKey="home-top"
             slides={[
               {
@@ -976,11 +976,12 @@ const Home = () => {
               },
 
             ]}
-            imageFit="contain"
+            imageFit="cover"
             autoSlideMs={0}
             showControls
             priority
             preserveFullImage
+            standardSize={false}
             mergeWithMatchedBanners
           />
 
@@ -1155,59 +1156,7 @@ const Home = () => {
             <Suspense fallback={<ProductShelfSkeleton minHeight={620} dark showCircleRow />}>
 
 
-              {/* HAIR CARE */}
-              <div className="relative">
-                <Banner
-                  className="mt-0"
-                  src={hairBannerDesktop}
-                  mobileSrc={hairBannerMobile}
-                  linkUrl={hairBannerProductLink}
-                  bannerKey="home-haircare"
-                  imageFit="contain"
-                  preserveFullImage
-                />
-                <div className="absolute inset-0 px-4 pt-4 sm:flex sm:items-center sm:justify-center sm:px-10 sm:pt-0 lg:px-20">
-                  <div className="w-full max-w-[42%] text-left text-[#211816] sm:max-w-[40%] sm:translate-x-[-34%] lg:translate-x-[-40%]">
-                    <p
-                      className="hidden sm:block text-3xl font-bold sm:text-[3.6rem] lg:text-[4.7rem] sm:font-semibold leading-[0.95] tracking-[-0.03em]"
-                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                    >
-                      Color That&apos;s
-                      <br />
-                      All Yours
-                    </p>
-                    <div className="hidden sm:block mt-5 mb-5 h-px w-24 bg-[#a88474] sm:mt-6 sm:mb-6 sm:w-32 lg:w-48" />
-                    <p className="hidden sm:block max-w-[28rem] text-[11px] sm:text-base lg:text-[1.2rem] font-light leading-[1.65] text-[#6b4639]">
-                      Ilika&apos;s Black Seed Hair Oil, made to fight premature greying naturally
-                    </p>
-                    <h2
-                      className="hidden sm:block mt-4 max-w-[28rem] text-sm sm:text-lg lg:text-[1.5rem] leading-[1.55] font-normal text-[#3f2b25]"
-                      style={{ fontFamily: "'Lato', sans-serif" }}
-                    >
-                      Your shine. Ilika&apos;s formula.
-                    </h2>
-                  </div>
-                  <div className="absolute right-4 top-5 max-w-[42%] text-right text-[#3f2b25] sm:hidden">
-                    <p
-                      className="text-[1.55rem] font-bold leading-[1.02] tracking-[-0.03em]"
-                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                    >
-                      Color That&apos;s
-                      <br />
-                      All Yours
-                    </p>
-                    <p className="mt-3 text-[11px] font-bold leading-[1.55] text-[#6b4639]">
-                      Ilika&apos;s Black Seed Hair Oil, made to fight premature greying naturally
-                    </p>
-                    <p
-                      className="mt-2 text-[0.9rem] font-bold leading-[1.35]"
-                      style={{ fontFamily: "'Lato', sans-serif" }}
-                    >
-                      Your shine. Ilika&apos;s formula.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              {/* HAIR CARE banner removed per request */}
 
 
               <Carousel
@@ -1522,128 +1471,7 @@ const Home = () => {
             </section>
           </LazyMountSection>
 
-          <LazyMountSection minHeight={420} placeholder={<LandingPagesSkeleton />}>
-            <section className="bg-black px-4 py-8 sm:px-6 sm:py-10">
-              <div className="mx-auto max-w-7xl">
-                <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-white/72">
-                  Product Landing Pages
-                </p>
-
-                <div className="flex gap-3 overflow-x-auto pb-2 sm:hidden scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {landingCards.map((card) => (
-                    <Link
-                      key={card.id}
-                      to={card.linkPath}
-                      className="group relative block snap-start shrink-0 w-[68vw] max-w-[230px] overflow-hidden rounded-[18px] bg-[#111111]"
-                    >
-                      <div className="relative aspect-[4/6] overflow-hidden">
-                        <OptimizedImage
-                          src={card.image}
-                          alt={card.title}
-                          width={900}
-                          height={1350}
-                          sizes="68vw"
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/60" />
-                        <div className="absolute inset-x-0 top-0 p-3">
-                          <p className="text-[10px] font-medium leading-4 text-white/90">
-                            {card.eyebrow}
-                          </p>
-                          <h3
-                            className="mt-2 max-w-[88%] text-[17px] font-semibold leading-[0.95] tracking-[-0.03em] text-white"
-                            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                          >
-                            {card.title.replace(/^Explore\s+/i, "")}
-                          </h3>
-                        </div>
-                        <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-3 text-white">
-                          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/80">
-                            View Page
-                          </span>
-                          <span className="text-[13px] font-semibold">
-                            Swipe &gt;
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-
-                <div className="relative hidden sm:block">
-                  {canSlideLandingDesktop ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setLandingStart((current) =>
-                            current <= 0 ? maxLandingDesktopStart : current - 1
-                          )
-                        }
-                        className="absolute left-[-16px] top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white text-black shadow-[0_10px_24px_rgba(0,0,0,0.28)] transition hover:bg-[#f3ece8] lg:inline-flex"
-                        aria-label="Show previous landing pages"
-                      >
-                        <ChevronLeft className="h-5 w-5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setLandingStart((current) =>
-                            current >= maxLandingDesktopStart ? 0 : current + 1
-                          )
-                        }
-                        className="absolute right-[-16px] top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white text-black shadow-[0_10px_24px_rgba(0,0,0,0.28)] transition hover:bg-[#f3ece8] lg:inline-flex"
-                        aria-label="Show next landing pages"
-                      >
-                        <ChevronRight className="h-5 w-5" />
-                      </button>
-                    </>
-                  ) : null}
-
-                  <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
-                    {visibleLandingCards.map((card) => (
-                      <Link
-                        key={card.id}
-                        to={card.linkPath}
-                        className="group relative block overflow-hidden rounded-[22px] bg-[#111111] sm:rounded-[28px]"
-                      >
-                        <div className="relative aspect-[4/5.25] overflow-hidden">
-                          <OptimizedImage
-                            src={card.image}
-                            alt={card.title}
-                            width={900}
-                            height={1350}
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
-                          <div className="absolute inset-x-0 top-0 p-4 sm:p-5">
-                            <p className="text-sm font-medium leading-6 text-white/90 sm:text-[15px]">
-                              {card.eyebrow}
-                            </p>
-                            <h3
-                              className="mt-3 max-w-[85%] text-[30px] font-semibold leading-[0.95] tracking-[-0.03em] text-white sm:text-[38px]"
-                              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                            >
-                              {card.title.replace(/^Explore\s+/i, "")}
-                            </h3>
-                          </div>
-                          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-4 text-white sm:p-5">
-                            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
-                              View Page
-                            </span>
-                            <span className="text-base font-semibold transition-transform duration-300 group-hover:translate-x-1">
-                              Swipe &gt;
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </section>
-          </LazyMountSection>
+          {/* Product Landing Pages section removed per request */}
 
           {activeHonestReview ? (
             <HomeHonestReviewLightbox

@@ -13,15 +13,15 @@ const HomeProductCard = ({ product, prioritizeImage = false, theme = "light" }) 
   return (
     <Link to={`/product/${slug}`} state={{ id: productId }} className="group block w-full">
       <article className={`flex h-full flex-col transition-all duration-300 hover:-translate-y-1 ${isDark ? "bg-black" : "bg-white"}`}>
-        <div className={`relative overflow-hidden ${isDark ? "bg-black" : "bg-white"}`}>
+        <div className={`relative overflow-hidden aspect-[4/5] ${isDark ? "bg-black" : "bg-white"}`}>
           <OptimizedImage
             priority={prioritizeImage}
             width={720}
-            height={720}
+            height={900}
             sizes="(max-width: 640px) 72vw, (max-width: 1024px) 33vw, 25vw"
             src={`${productImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
             alt={`${product.name} product image`}
-            className="block h-auto w-full transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
           />
         </div>
 
