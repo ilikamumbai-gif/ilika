@@ -244,7 +244,7 @@ async function fetchProducts(endpoints) {
     }
   }
 
-  return [];
+  throw new Error("[prerender] Could not fetch products from any endpoint. Refusing to publish product pages without prerendered metadata.");
 }
 
 const injectOrReplace = (html, pattern, replacement) =>

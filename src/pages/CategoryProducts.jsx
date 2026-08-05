@@ -175,6 +175,7 @@ const CategoryProducts = () => {
   }, [categories, includeGroupWide, matchedGroups]);
 
   const categoryLabel = giftCollection?.label || matchedCategories[0]?.name || toReadable(categorySlug) || "Category";
+  const isValidCategory = Boolean(giftCollection || matchedCategories.length);
   const canonicalCategorySlug = useMemo(
     () =>
       String(
@@ -251,6 +252,7 @@ const CategoryProducts = () => {
     canonical: `/category/${canonicalCategorySlug}`,
     image: filtered?.[0]?.images?.[0] || filtered?.[0]?.imageUrl || "https://ilika.in/Images/logo2.webp",
     keywords: ["Ilika", "category products", categoryLabel, `${categoryLabel} products`],
+    robots: isValidCategory ? "index, follow" : "noindex, follow",
   });
 
   useEffect(() => {
@@ -258,6 +260,25 @@ const CategoryProducts = () => {
     if (String(categorySlug).trim().toLowerCase() === canonicalCategorySlug) return;
     navigate(`/category/${canonicalCategorySlug}`, { replace: true });
   }, [categorySlug, canonicalCategorySlug, navigate]);
+
+  if (!isValidCategory) {
+    return (
+      <>
+        <MiniDivider />
+        <section className="w-full primary-bg-color">
+          <Header />
+          <main className="mx-auto flex min-h-[50vh] max-w-4xl flex-col items-center justify-center px-4 py-16 text-center sm:px-6">
+            <h1 className="text-3xl font-semibold text-[#1f1a17]">Category not found</h1>
+            <p className="mt-3 text-sm text-[#6e5b55]">This category is unavailable or has been removed.</p>
+            <Link to="/products" className="mt-6 rounded-full bg-[#1f1a17] px-6 py-3 text-sm font-semibold text-white">
+              Browse products
+            </Link>
+          </main>
+        </section>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

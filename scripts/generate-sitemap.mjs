@@ -267,8 +267,7 @@ async function fetchResource({ label, endpoints, toUrls }) {
     }
   }
 
-  console.warn(`[sitemap] Could not fetch ${label} from any endpoint.`);
-  return [];
+  throw new Error(`[sitemap] Could not fetch ${label} from any endpoint. Refusing to publish an incomplete sitemap.`);
 }
 
 function toSitemapXml(urls, siteUrl) {
@@ -442,7 +441,7 @@ async function main() {
       toUrls: (list) => {
         const usedPaths = new Set();
         return list
-          .filter((b) => b?.title)
+          .filter((b) => b?.title && !b?.isPrivate)
           .map((b) => {
             const loc = buildBlogUrl(b, { usedPaths });
             return {
@@ -462,7 +461,7 @@ async function main() {
   }));
   const staticBlogUrls = (() => {
     const usedPaths = new Set();
-    return staticBlogCollections.map((blog) => {
+    return staticBlogCollections.filter((blog) => !blog?.isPrivate).map((blog) => {
       const loc = buildBlogUrl(blog, { usedPaths });
       return {
         loc,

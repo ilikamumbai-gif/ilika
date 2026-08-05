@@ -4157,9 +4157,7 @@ const ProductDetail = () => {
     () => getVariantQueryValue(activeVariant),
     [activeVariant]
   );
-  const canonicalPath = activeVariantQueryValue
-    ? `${canonicalBasePath}?variant=${encodeURIComponent(activeVariantQueryValue)}`
-    : canonicalBasePath;
+  const canonicalPath = canonicalBasePath;
   const seoProductKeywords = useMemo(() => {
     if (productSeoContent?.keywords?.length) {
       return productSeoContent.keywords.map((item) => item.keyword);

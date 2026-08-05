@@ -1,11 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { STATIC_BLOGS } from "../src/data/privateBlogs.js";
+import { buildBlogUrl } from "../src/utils/blogRoutes.js";
 
 const STATIC_ROUTES = [
   "/shopall",
   "/products",
   "/newarrival",
   "/offer",
+  "/best-seller",
   "/skin",
   "/hair",
   "/grooming",
@@ -28,16 +31,39 @@ const STATIC_ROUTES = [
   "/about/quality-promise",
   "/about/ingredient-philosophy",
   "/contact",
+  "/feedback",
+  "/warranty-registration",
+  "/support-ticket",
+  "/raise-complaint",
+  "/warranty-claim",
   "/privacy",
   "/termsandcondition",
   "/return",
   "/shippingpolicy",
   "/faq",
+  "/track-order",
+  "/social-feed",
+  "/knowskintype",
   "/voice-mask-maker",
   "/nonvoice-mask-maker",
   "/leafless-hair-dryer",
+  "/high-frequency-therapy-wand",
+  "/hot-cold-blackhead-remover",
   "/blackseed-hair-oil",
   "/herbal-hair-oil",
+  "/gift-store",
+  "/glow-therapy-combo",
+  "/glow-therapy-comb",
+  "/hydration-glow-combo",
+  "/mask-combo",
+  "/category/gifts-under-999",
+  "/category/gifts-under-1499",
+  "/category/gifts-under-2499",
+  "/category/gifts-2999-plus",
+  "/category/gifts-for-her",
+  "/category/gifts-for-him",
+  "/category/gifts-for-parents",
+  "/category/gifts-for-special-occasion",
 ];
 
 async function main() {
@@ -47,7 +73,12 @@ async function main() {
 
   let written = 0;
 
-  for (const route of STATIC_ROUTES) {
+  const usedBlogPaths = new Set();
+  const staticBlogRoutes = STATIC_BLOGS
+    .filter((blog) => !blog?.isPrivate)
+    .map((blog) => buildBlogUrl(blog, { usedPaths: usedBlogPaths }));
+
+  for (const route of [...new Set([...STATIC_ROUTES, ...staticBlogRoutes])]) {
     const cleanRoute = route.replace(/^\/+/, "");
     const routeDir = path.join(distDir, cleanRoute);
     await fs.mkdir(routeDir, { recursive: true });

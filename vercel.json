@@ -9,6 +9,11 @@
       "permanent": true
     },
     {
+      "source": "/product/:categorySlug/:productUrl",
+      "destination": "/product/:productUrl",
+      "permanent": true
+    },
+    {
       "source": "/sitemap.xml/",
       "destination": "/sitemap.xml",
       "permanent": true
@@ -36,8 +41,7 @@
     { "source": "/robots.txt", "destination": "/robots.txt" },
     { "source": "/llms.txt", "destination": "/llms.txt" },
     { "source": "/llms-full.txt", "destination": "/llms-full.txt" },
-    { "source": "/googleb361cfb7dba6801e.html", "destination": "/googleb361cfb7dba6801e.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/googleb361cfb7dba6801e.html", "destination": "/googleb361cfb7dba6801e.html" }
   ],
   "headers": [
     {
