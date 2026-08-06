@@ -30,19 +30,21 @@
     }
   ],
   "rewrites": [
-    { "source": "/wp-content/(.*)", "destination": "/api/not-found?status=410" },
-    { "source": "/wp-admin/(.*)", "destination": "/api/not-found?status=410" },
-    { "source": "/wp-includes/(.*)", "destination": "/api/not-found?status=410" },
-    { "source": "/xmlrpc.php", "destination": "/api/not-found?status=410" },
-    { "source": "/(1win.*)", "destination": "/api/not-found?status=410" },
-    { "source": "/.well-known/:path*", "destination": "/.well-known/:path*" },
-    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
-    { "source": "/sitemap.html", "destination": "/sitemap.html" },
-    { "source": "/robots.txt", "destination": "/robots.txt" },
-    { "source": "/llms.txt", "destination": "/llms.txt" },
-    { "source": "/llms-full.txt", "destination": "/llms-full.txt" },
-    { "source": "/googleb361cfb7dba6801e.html", "destination": "/googleb361cfb7dba6801e.html" }
-  ],
+  { "source": "/wp-content/(.*)", "destination": "/api/not-found?status=410" },
+  { "source": "/wp-admin/(.*)", "destination": "/api/not-found?status=410" },
+  { "source": "/wp-includes/(.*)", "destination": "/api/not-found?status=410" },
+  { "source": "/xmlrpc.php", "destination": "/api/not-found?status=410" },
+  { "source": "/(1win.*)", "destination": "/api/not-found?status=410" },
+  { "source": "/.well-known/:path*", "destination": "/.well-known/:path*" },
+  { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
+  { "source": "/sitemap.html", "destination": "/sitemap.html" },
+  { "source": "/robots.txt", "destination": "/robots.txt" },
+  { "source": "/llms.txt", "destination": "/llms.txt" },
+  { "source": "/llms-full.txt", "destination": "/llms-full.txt" },
+  { "source": "/googleb361cfb7dba6801e.html", "destination": "/googleb361cfb7dba6801e.html" },
+
+  { "source": "/:path*", "destination": "/index.html" }
+],
   "headers": [
     {
       "source": "/assets/(.*)",
