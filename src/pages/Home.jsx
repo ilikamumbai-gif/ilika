@@ -935,7 +935,7 @@ const Home = () => {
         </Suspense>
         <main>
             <Banner
-              className="mt-0 pt-0 bg-[#fdecef] z-0 h-screen"
+              className="mt-0 pt-0 bg-[#fdecef] z-0"
             bannerKey="home-top"
             slides={[
               {
@@ -981,7 +981,6 @@ const Home = () => {
             showControls
             priority
             preserveFullImage
-            standardSize={false}
             mergeWithMatchedBanners
           />
 

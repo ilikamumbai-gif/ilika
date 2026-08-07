@@ -131,7 +131,7 @@ const Banner = ({
           const resolvedAlt = slide?.alt || alt || "Banner";
 
           const content = shouldRenderSlide(index) ? (
-            <picture className="block h-full">
+            <picture className="block w-full h-full">
               <source media="(max-width: 639px)" srcSet={mobileImageSrc} />
               <OptimizedImage
                 priority={priority && index === activeIndex}
@@ -139,10 +139,14 @@ const Banner = ({
                 src={desktopSrc}
                 alt={resolvedAlt}
                 className={
-                  shouldUseNaturalHeight
-                    ? `block w-full h-auto ${imageFit === "contain" ? "object-contain" : "object-cover"}`
-                    : `w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`
-                }
+  shouldUseNaturalHeight
+    ? `block w-full h-full ${
+        preserveFullImage ? "object-contain" : "object-cover"
+      }`
+    : `block w-full h-full ${
+        imageFit === "contain" ? "object-contain" : "object-cover"
+      }`
+}
                 sizes="100vw"
                 width={width}
                 height={height}
