@@ -391,10 +391,11 @@ const BlogDetail = () => {
     [blog?.slug, blog?.title, slug]
   );
 
-  const seoTitle = blog?.title
+  const seoTitle = blog?.metaTitle || (blog?.title
     ? `${blog.title} | Ilika Blog`
-    : "Blog Details | Ilika";
+    : "Blog Details | Ilika");
   const seoDescription =
+    blog?.metaDescription ||
     blog?.excerpt ||
     "Read Ilika blog articles for skincare tips, beauty routines, and product insights.";
   const seoImage = blog?.image || "https://ilika.in/Images/logo2.webp";
@@ -402,6 +403,7 @@ const BlogDetail = () => {
     "Ilika blog",
     "skincare tips",
     "beauty guide",
+    ...(Array.isArray(blog?.targetKeywords) ? blog.targetKeywords : []),
     blog?.title || "",
   ].filter(Boolean);
   const canonicalPath = isPrivateBlog

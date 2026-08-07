@@ -1987,6 +1987,96 @@ export const MASK_MAKER_CITY_BLOGS = [
   ...blog,
 }));
 
+// City pages supplied for the Voice Face Mask Maker campaign. Keeping these in
+// static content means the article route, prerendered page, and sitemap are all
+// generated from the same canonical slug.
+export const VOICE_MASK_MAKER_LOCATION_BLOGS = [
+  {
+    id: "voice-mask-maker-panjim-goa-403001",
+    slug: "voice-face-mask-maker-panjim-goa-403001",
+    title: "Salon-Style Facials at Home, Right Here in Panjim",
+    metaTitle: "Voice Face Mask Maker in Panjim, Goa – ₹4,499 Offer",
+    metaDescription: "Buy the Voice Face Mask Maker in Panjim, Goa (403001) at ₹4,499. Fresh fruit + collagen facial mask in 2 minutes. Free delivery, EMI available.",
+    targetKeywords: ["face mask maker Panjim", "voice face mask machine Goa", "collagen mask maker 403001", "facial machine online Goa"],
+    content: "<p>Goa's humidity, sun and salt air can leave skin feeling dull and dehydrated. The Ilika Voice Face Mask Maker turns prepared papaya, cucumber or tomato with a collagen peptide scoop into a warm, ready-to-apply facial mask in under two minutes.</p><h2>What you get in Panjim</h2><ul><li>Voice-guided, hands-free routine</li><li>Fresh fruit + collagen peptide mask in 2 minutes</li><li>1-year warranty</li><li>Free delivery to Panjim 403001 and nearby areas including Miramar, Dona Paula and Porvorim</li><li>COD and EMI options</li></ul><p>Available at the limited-period offer price of ₹4,499.</p>",
+  },
+  {
+    id: "voice-mask-maker-indore-452005",
+    slug: "voice-face-mask-maker-indore-452005",
+    title: "Indore's Skincare Upgrade: Salon Facials Without Leaving Home",
+    metaTitle: "Voice Face Mask Maker in Indore – ₹4,499 Limited Offer",
+    metaDescription: "Get the Voice Face Mask Maker in Indore (452005) for ₹4,499. Salon-quality collagen facial at home in 2 minutes. COD & EMI available with free delivery.",
+    targetKeywords: ["face mask maker Indore", "voice facial machine Indore", "collagen mask maker 452005", "facial device Indore"],
+    content: "<p>Between dust, traffic and changing weather, Indore skin routines need to be easy to repeat. Make a fresh facial mask at home with prepared papaya, cucumber or tomato and a collagen peptide scoop; the voice-guided machine handles the timing.</p><h2>Highlights for Indore</h2><ul><li>Voice-guided routine with no timing guesswork</li><li>Fresh collagen facial mask in about 2 minutes</li><li>1-year warranty and free delivery across 452005, including Vijay Nagar, Palasia and Rajwada nearby</li><li>COD and EMI options</li></ul><p>The current limited-period price is ₹4,499.</p>",
+  },
+  {
+    id: "voice-mask-maker-hyderabad-500055",
+    slug: "voice-face-mask-maker-hyderabad-500055",
+    title: "A Fresh Facial in 2 Minutes — Now in Hyderabad, 500055",
+    metaTitle: "Voice Face Mask Maker Hyderabad 500055 – ₹4,499 Offer",
+    metaDescription: "Voice Face Mask Maker now ₹4,499 in Hyderabad (500055). Fresh collagen facial mask at home in 2 minutes. Free delivery, COD & EMI available.",
+    targetKeywords: ["face mask maker Hyderabad", "voice facial machine 500055", "collagen mask maker Kompally", "skincare machine Hyderabad Telangana"],
+    content: "<p>Hyderabad heat and pollution can make a quick, consistent skincare routine especially useful. Add prepared fruit and a collagen peptide scoop, then follow the spoken prompts for a warm facial mask in under two minutes.</p><h2>Delivery and benefits</h2><ul><li>Hands-free voice guidance</li><li>Fresh fruit + collagen peptide mask in 2 minutes</li><li>1-year warranty</li><li>Free delivery to 500055 and surrounding Hyderabad areas</li><li>COD and EMI options</li></ul><p>Order during the ₹4,499 limited-period offer.</p>",
+  },
+  {
+    id: "voice-mask-maker-noida-110091",
+    slug: "voice-face-mask-maker-noida-110091",
+    title: "Noida's Busy Schedule, Simplified Skincare",
+    metaTitle: "Voice Face Mask Maker Noida – ₹4,499 Limited Time Offer",
+    metaDescription: "Buy the Voice Face Mask Maker in Noida (110091) at ₹4,499. Collagen facial mask at home in 2 minutes. Free delivery, COD & EMI available.",
+    targetKeywords: ["face mask maker Noida", "voice facial machine Noida", "collagen mask maker 110091", "skincare device Noida NCR"],
+    content: "<p>For a packed NCR routine, a fresh facial does not need a salon appointment. Prepare papaya, cucumber or tomato with a collagen peptide scoop and let the voice-guided maker walk you through the routine.</p><h2>Why Noida customers choose it</h2><ul><li>Voice-guided, hands-free routine</li><li>Ready-to-apply fresh mask in about 2 minutes</li><li>1-year warranty</li><li>Free delivery across Noida 110091 and nearby sectors</li><li>COD and EMI options</li></ul><p>The limited-period offer price is ₹4,499.</p>",
+  },
+  {
+    id: "voice-mask-maker-delhi-110054",
+    slug: "voice-face-mask-maker-delhi-110054",
+    title: "Beat Delhi's Pollution With a 2-Minute Facial Routine",
+    metaTitle: "Voice Face Mask Maker Delhi 110054 – ₹4,499 Offer",
+    metaDescription: "Voice Face Mask Maker available in Delhi (110054) for ₹4,499. Fresh collagen facial mask in 2 minutes. Free delivery, COD & EMI options.",
+    targetKeywords: ["face mask maker Delhi", "voice facial machine 110054", "collagen mask maker Delhi", "facial device Delhi NCR"],
+    content: "<p>Delhi's air and daily commute can make regular skincare feel harder to keep up with. The Ilika Voice Face Mask Maker combines prepared fruit with a collagen peptide scoop and guides each step out loud.</p><h2>Key features for Delhi</h2><ul><li>Voice-guided, hands-free routine</li><li>Fresh mask in under 2 minutes</li><li>1-year warranty</li><li>Free delivery to Delhi 110054, Civil Lines and Kamla Nagar nearby</li><li>COD and EMI options</li></ul><p>The offer price is ₹4,499 for a limited period.</p>",
+  },
+  {
+    id: "voice-mask-maker-pune-411007",
+    slug: "voice-face-mask-maker-pune-411007",
+    title: "Pune's At-Home Facial Upgrade — 2 Minutes, Real Ingredients",
+    metaTitle: "Voice Face Mask Maker Pune 411007 – ₹4,499 Offer",
+    metaDescription: "Get the Voice Face Mask Maker in Pune (411007) at ₹4,499. Fresh collagen facial in 2 minutes at home. Free delivery, COD & EMI available.",
+    targetKeywords: ["face mask maker Pune", "voice facial machine Pune", "collagen mask maker 411007", "facial machine Pune"],
+    content: "<p>Pune's college and IT schedules can leave little time for a salon visit. Use prepared fruit such as papaya, cucumber or tomato with a collagen peptide scoop, and the voice-guided machine creates a fresh facial mask in about two minutes.</p><h2>Highlights for Pune</h2><ul><li>Voice-guided routine</li><li>Fresh collagen peptide mask in 2 minutes</li><li>1-year warranty</li><li>Free delivery across Pune 411007, including Shivajinagar and Deccan nearby</li><li>COD and EMI options</li></ul><p>Now available at ₹4,499 for a limited time.</p>",
+  },
+  {
+    id: "voice-mask-maker-hyderabad-500002",
+    slug: "voice-face-mask-maker-hyderabad-500002",
+    title: "Salon-Quality Facials at Home — Hyderabad Central, 500002",
+    metaTitle: "Voice Face Mask Maker Hyderabad 500002 – ₹4,499 Offer",
+    metaDescription: "Voice Face Mask Maker now ₹4,499 in Hyderabad (500002). Fresh collagen facial mask at home in 2 minutes. Free delivery, COD & EMI available.",
+    targetKeywords: ["face mask maker Hyderabad old city", "voice facial machine 500002", "collagen mask maker Hyderabad", "skincare machine Hyderabad"],
+    content: "<p>For Hyderabad central and old-city residents with packed schedules, this maker offers a fast at-home facial option. Prepared papaya, cucumber or tomato plus a collagen peptide scoop becomes a warm, ready-to-apply mask in roughly two minutes.</p><h2>What you get</h2><ul><li>Voice-guided, hands-free routine</li><li>Fresh fruit + collagen peptide mask in 2 minutes</li><li>1-year warranty</li><li>Free delivery to 500002 and nearby Hyderabad localities</li><li>COD and EMI options</li></ul><p>The limited-period offer price is ₹4,499.</p>",
+  },
+  {
+    id: "voice-mask-maker-mumbai-400034",
+    slug: "voice-face-mask-maker-mumbai-400034",
+    title: "Mumbai's Humidity Meets Its Match: A 2-Minute Facial at Home",
+    metaTitle: "Voice Face Mask Maker Mumbai 400034 – ₹4,499 Offer",
+    metaDescription: "Buy the Voice Face Mask Maker in Mumbai (400034) at ₹4,499. Fresh collagen facial mask at home in 2 minutes. Free delivery, COD & EMI available.",
+    targetKeywords: ["face mask maker Mumbai", "voice facial machine Mumbai", "collagen mask maker 400034", "skincare device Mumbai"],
+    content: "<p>Mumbai humidity and pollution can make a simple, fresh routine valuable. The Ilika Voice Face Mask Maker blends prepared papaya, cucumber or tomato with a collagen peptide scoop into a ready-to-apply facial mask in under two minutes.</p><h2>Why it works for Mumbai</h2><ul><li>Voice-guided, hands-free routine</li><li>Fresh fruit + collagen peptide mask in 2 minutes</li><li>1-year warranty</li><li>Free delivery across Mumbai 400034, including Prabhadevi and Worli nearby</li><li>COD and EMI options</li></ul><p>Order while the ₹4,499 limited-period offer is live.</p>",
+  },
+].map((blog, index) => ({
+  author: "Ilika Team",
+  createdAt: "2026-08-07T00:00:00.000Z",
+  image: "/Images/MaskMakercard.webp",
+  internalLink: voiceMaskMakerPath,
+  internalLinks: buildVoiceMaskMakerLinks(`voice-mask-maker-location-${index + 1}`),
+  isPrivate: false,
+  hideFromBlogListing: false,
+  contentSections: [
+    { id: `${blog.id}-content`, type: "content-full", content: `<h2>${blog.title}</h2>${blog.content}${disclaimerHtml}` },
+  ],
+  ...blog,
+}));
+
 export const HAIR_DRYER_TOPIC_BLOGS = hairDryerTopicTitles.map(buildHairDryerTopicBlog);
 export const MASK_MAKER_TOPIC_BLOGS = maskMakerTopicTitles.map(buildMaskMakerTopicBlog);
 const READY_TO_PUBLISH_BLOGS = [
@@ -2039,6 +2129,7 @@ export const STATIC_BLOGS = [
   ...HAIR_DRYER_CITY_BLOGS,
   ...HAIR_DRYER_EMI_CITY_BLOGS,
   ...MASK_MAKER_CITY_BLOGS,
+  ...VOICE_MASK_MAKER_LOCATION_BLOGS,
   HAIR_DRYER_GUIDE_BLOG,
   ...HAIR_DRYER_TOPIC_BLOGS,
   ...MASK_MAKER_TOPIC_BLOGS,

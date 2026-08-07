@@ -16,6 +16,7 @@ import {
   MASK_MAKER_TOPIC_BLOGS,
   CUSTOM_VOICE_MASK_GUIDE_BLOG,
   STATIC_BLOGS,
+  VOICE_MASK_MAKER_LOCATION_BLOGS,
 } from "../data/privateBlogs";
 
 const API = import.meta.env.VITE_API_URL;
@@ -96,6 +97,14 @@ const Blog = () => {
 
     return getProductImage(target, "/Images/MaskMakercard.webp");
   }, [products]);
+  const voiceMaskMakerLocationBlogs = useMemo(
+    () =>
+      VOICE_MASK_MAKER_LOCATION_BLOGS.map((blog) => ({
+        ...blog,
+        image: voiceMaskMakerImage,
+      })),
+    [voiceMaskMakerImage]
+  );
   const hfWandImage = useMemo(() => {
     const target = products.find((product) => {
       const name = normalizeName(product?.name);
@@ -266,6 +275,24 @@ const Blog = () => {
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 {visibleStaticBlogs.slice(0, 8).map((blog) => (
+                  <BlogCard
+                    key={blog.id}
+                    blog={blog}
+                    linkPath={`/blog/${blog.slug}`}
+                    ctaLabel="Read Blog"
+                    squareImage
+                    compact
+                  />
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#801f1f]">
+                Voice Face Mask Maker Near You
+              </p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+                {voiceMaskMakerLocationBlogs.map((blog) => (
                   <BlogCard
                     key={blog.id}
                     blog={blog}
