@@ -3367,6 +3367,12 @@ const ProductDetail = () => {
   const handleOverflowThumbClick = useCallback(() => {
     stopAuto();
     setShowAllThumbnails(true);
+    requestAnimationFrame(() => {
+      thumbsRef.current?.scrollTo({
+        left: thumbsRef.current.scrollWidth,
+        behavior: "smooth",
+      });
+    });
     if (images[overflowStartIndex]) {
       setSelectedImage(images[overflowStartIndex]);
       setSelectedVideoUrl("");
@@ -4638,7 +4644,7 @@ const ProductDetail = () => {
                       <button
                         type="button"
                         onClick={handleOverflowThumbClick}
-                        className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 ${selectedGalleryIndex >= overflowStartIndex ? "shadow-sm" : "hover:border-gray-200"}`}
+                        className={`relative snap-start flex-shrink-0 overflow-hidden rounded-[16px] border transition-all duration-300 sm:hidden ${selectedGalleryIndex >= overflowStartIndex ? "shadow-sm" : "hover:border-gray-200"}`}
                         style={{
                           width: "56px",
                           height: "56px",
@@ -4672,6 +4678,17 @@ const ProductDetail = () => {
                         <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-base font-semibold text-white sm:text-lg">
                           +{overflowCount}
                         </span>
+                      </button>
+                    )}
+                    {hasThumbnailOverflow && !showAllThumbnails && (
+                      <button
+                        type="button"
+                        onClick={handleOverflowThumbClick}
+                        className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-[16px] border border-[#f3e2df] bg-white text-2xl font-medium text-[#2b2a29] transition hover:border-[#d9b5aa] hover:bg-[#fff5f4] sm:flex"
+                        aria-label={`Show ${overflowCount} more gallery items`}
+                        title={`Show ${overflowCount} more`}
+                      >
+                        <ChevronRight className="h-6 w-6" aria-hidden="true" />
                       </button>
                     )}
                   </div>

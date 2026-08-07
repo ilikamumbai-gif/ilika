@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useCombos } from "../admin/context/ComboContext";
 import { useProducts } from "../admin/context/ProductContext";
@@ -10,7 +10,7 @@ import MiniDivider from "../components/MiniDivider";
 import CartDrawer from "../components/CartDrawer";
 
 import { getProductSlug } from "../utils/slugify";
-import { Truck, ShieldCheck, BadgeCheck } from "lucide-react";
+import { Truck, ShieldCheck, BadgeCheck, ChevronRight } from "lucide-react";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 
@@ -25,6 +25,8 @@ const ComboDetail = () => {
   const { addToCart } = useCart();
 
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showAllThumbnails, setShowAllThumbnails] = useState(false);
+  const thumbnailScrollRef = useRef(null);
 
   useEffect(() => {
     if (!combos.length) fetchCombos();
@@ -45,11 +47,31 @@ const ComboDetail = () => {
   const getProductById = (pid) => productsById.get(String(pid));
 
   const images = useMemo(() => combo?.images || [], [combo?.images]);
+  const MAX_VISIBLE_THUMBS = 6;
+  const overflowStartIndex = MAX_VISIBLE_THUMBS - 1;
+  const hasThumbnailOverflow = images.length > MAX_VISIBLE_THUMBS;
+  const visibleImages = hasThumbnailOverflow && !showAllThumbnails
+    ? images.slice(0, overflowStartIndex)
+    : images;
   const primaryImage = selectedImage || images[0] || "/Images/logo2.webp";
   const comboPath = `/combo/${id}`;
   const comboDescription = combo
     ? `${combo.name} combo at Rs ${combo.price}. Includes curated skincare products with fast shipping and secure checkout.`
     : "Explore Ilika skincare combos with curated products and special savings.";
+
+  useEffect(() => {
+    setShowAllThumbnails(false);
+  }, [combo?.id, images.length]);
+
+  const revealThumbnails = () => {
+    setShowAllThumbnails(true);
+    requestAnimationFrame(() => {
+      thumbnailScrollRef.current?.scrollTo({
+        left: thumbnailScrollRef.current.scrollWidth,
+        behavior: "smooth",
+      });
+    });
+  };
 
   const productSchema = combo
     ? {
@@ -147,13 +169,17 @@ const ComboDetail = () => {
               </div>
 
               {images.length > 1 && (
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                <div
+                  ref={thumbnailScrollRef}
+                  className="flex gap-3 overflow-x-auto pb-1"
+                  style={{ scrollbarWidth: "none" }}
+                >
 
-                  {images.map((img, i) => (
+                  {visibleImages.map((img, i) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(img)}
-                      className="rounded-lg overflow-hidden border"
+                      className="h-20 w-20 shrink-0 rounded-lg overflow-hidden border"
                       aria-label={`View image ${i + 1} of ${images.length}`}
                     >
                       <img
@@ -165,6 +191,28 @@ const ComboDetail = () => {
                       />
                     </button>
                   ))}
+                  {hasThumbnailOverflow && !showAllThumbnails && (
+                    <button
+                      type="button"
+                      onClick={revealThumbnails}
+                      className="hidden h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-[#f3e2df] bg-white text-[#2b2a29] transition hover:border-[#d9b5aa] hover:bg-[#fff5f4] sm:flex"
+                      aria-label={`Show ${images.length - overflowStartIndex} more gallery images`}
+                      title={`Show ${images.length - overflowStartIndex} more`}
+                    >
+                      <ChevronRight className="h-6 w-6" aria-hidden="true" />
+                    </button>
+                  )}
+                  {hasThumbnailOverflow && !showAllThumbnails && (
+                    <button
+                      type="button"
+                      onClick={revealThumbnails}
+                      className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border sm:hidden"
+                      aria-label={`Show ${images.length - overflowStartIndex} more gallery images`}
+                    >
+                      <img src={images[overflowStartIndex]} alt={`${combo.name} thumbnail ${overflowStartIndex + 1}`} className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-base font-semibold text-white">+{images.length - overflowStartIndex}</span>
+                    </button>
+                  )}
 
                 </div>
               )}
