@@ -310,7 +310,7 @@ const OrderDetail = () => {
 
       /* ── SOLD BY box — height calculated from content ── */
       const soldByLines = [
-        "Office No. 201-202, Hirubai Residency",
+        "Office No. 202, Hirubai Residency",
         "Virar (West) - 401303, Maharashtra, India",
         "+91 92701 14738",
         "GSTIN: 27AALCP9913F1Z2",

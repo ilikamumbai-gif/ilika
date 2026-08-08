@@ -144,7 +144,7 @@ const Footer = () => {
           <div>
             <p className="font-semibold text-white">Corporate Office Address</p>
             <p className="mt-1 text-white">
-              Office no. 201-202, Hirubai Residency
+              Office no. 202, Hirubai Residency
               <br />
               Virar (West) - 401303, Maharashtra, India.
             </p>
@@ -329,7 +329,7 @@ const Footer = () => {
                   Corporate Office Address
                 </p>
                 <p className="text-white">
-                  Office no. 201-202, Hirubai Residency
+                  Office no. 202, Hirubai Residency
                   <br />
                   Virar (West) - 401303, Maharashtra, India.
                 </p>
