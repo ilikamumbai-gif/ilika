@@ -136,6 +136,27 @@ const toAbsoluteUrl = (value = "", fallbackOrigin = SITE_URL) => {
 
 const buildCanonicalUrl = (slug) => `${SITE_URL}/product/${slug}`;
 
+const buildProductContent = (product, canonicalUrl, image, description) => {
+  const name = escapeHtml(String(product?.name || "Product"));
+  const price = Number(product?.salePrice || product?.price || product?.mrp || 0);
+  const details = String(product?.description || product?.shortInfo || "").trim();
+  const category = escapeHtml(String(product?.categoryName || product?.category || "Beauty and personal care"));
+  const priceMarkup = price > 0 ? `<p><strong>Price:</strong> Rs. ${escapeHtml(price.toLocaleString("en-IN"))}</p>` : "";
+
+  return `<main id="prerendered-content" data-prerendered="product">
+  <article>
+    <nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/products">Products</a> / ${name}</nav>
+    <h1>${name}</h1>
+    <img src="${escapeHtml(image)}" alt="${name}" />
+    <p>${escapeHtml(description)}</p>
+    ${priceMarkup}
+    <p><strong>Category:</strong> ${category}</p>
+    ${details ? `<section><h2>Product details</h2>${details}</section>` : ""}
+    <p><a href="${escapeHtml(canonicalUrl)}">View ${name}</a></p>
+  </article>
+</main>`;
+};
+
 const buildSeoDescription = (product = {}) =>
   String(product?.seoDescription || "").trim() ||
   stripHtml(product?.shortInfo) ||
@@ -314,6 +335,10 @@ function buildProductHtml(templateHtml, product, slug) {
     .map((item) => `  <script type="application/ld+json">${JSON.stringify(item)}</script>`)
     .join("\n")}\n`;
   html = html.replace(/<\/head>/i, `${schemaMarkup}</head>`);
+  html = html.replace(
+    /<div id="root"><\/div>/i,
+    `<div id="root">${buildProductContent(product, canonicalUrl, image, description)}</div>`
+  );
 
   return html;
 }

@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run sitemap && vite build && npm run prerender:products && npm run prerender:catalog && npm run prerender:routes",
+    "build": "npm run sitemap && vite build && npm run prerender:products && npm run prerender:catalog && npm run prerender:routes && npm run verify:indexability",
     "prerender:products": "node scripts/prerender-product-pages.mjs",
     "prerender:catalog": "node scripts/prerender-catalog-pages.mjs",
     "prerender:routes": "node scripts/prerender-static-routes.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
+    "verify:indexability": "node scripts/verify-indexability.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

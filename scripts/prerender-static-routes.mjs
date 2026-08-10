@@ -1,9 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { STATIC_BLOGS } from "../src/data/privateBlogs.js";
-import { buildBlogUrl } from "../src/utils/blogRoutes.js";
-
 const STATIC_ROUTES = [
+  "/",
   "/shopall",
   "/products",
   "/newarrival",
@@ -25,7 +23,6 @@ const STATIC_ROUTES = [
   "/glow-therapy-comb",
   "/hydration-glow-combo",
   "/mask-combo",
-  "/blog",
   "/about",
   "/about/why-ilika",
   "/about/quality-promise",
@@ -70,19 +67,17 @@ async function main() {
   const distDir = path.resolve(process.cwd(), "dist");
   const templatePath = path.join(distDir, "index.html");
   const templateHtml = await fs.readFile(templatePath, "utf8");
+  const crawlLinksPath = path.join(distDir, "_crawl-links.html");
+  const crawlLinks = await fs.readFile(crawlLinksPath, "utf8").catch(() => "");
 
   let written = 0;
 
-  const usedBlogPaths = new Set();
-  const staticBlogRoutes = STATIC_BLOGS
-    .filter((blog) => !blog?.isPrivate)
-    .map((blog) => buildBlogUrl(blog, { usedPaths: usedBlogPaths }));
-
-  for (const route of [...new Set([...STATIC_ROUTES, ...staticBlogRoutes])]) {
+  for (const route of new Set(STATIC_ROUTES)) {
     const cleanRoute = route.replace(/^\/+/, "");
     const routeDir = path.join(distDir, cleanRoute);
     await fs.mkdir(routeDir, { recursive: true });
-    await fs.writeFile(path.join(routeDir, "index.html"), templateHtml, "utf8");
+    const content = crawlLinks ? `<div id="root"><main id="prerendered-content" data-prerendered="catalogue-links">${crawlLinks}</main></div>` : '<div id="root"></div>';
+    await fs.writeFile(path.join(routeDir, "index.html"), templateHtml.replace(/<div id="root"><\/div>/i, content), "utf8");
     written += 1;
   }
 

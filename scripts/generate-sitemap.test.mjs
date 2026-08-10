@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildBlogUrl } from "../src/utils/blogRoutes.js";
-import { STATIC_BLOGS, VOICE_MASK_MAKER_LOCATION_BLOGS } from "../src/data/privateBlogs.js";
+import {
+  HAIR_TOOL_COMPARISON_BLOGS,
+  STATIC_BLOGS,
+  VOICE_MASK_MAKER_LOCATION_BLOGS,
+} from "../src/data/privateBlogs.js";
 
 test("buildBlogUrl uses the private blog route for private entries", () => {
   const blog = { id: "blog-1", slug: "My Private Blog", isPrivate: true };
@@ -25,4 +29,19 @@ test("Voice Mask Maker location blog URLs are unique and included in static blog
   assert.equal(new Set(locationPaths).size, locationPaths.length);
   locationPaths.forEach((path) => assert.ok(staticPaths.includes(path), `${path} is missing from STATIC_BLOGS`));
   assert.equal(new Set(staticPaths).size, staticPaths.length);
+});
+
+test("Hair dryer comparison blogs are public, use varied images, and are sitemap eligible", () => {
+  const publicStaticSlugs = new Set(
+    STATIC_BLOGS.filter((blog) => !blog.isPrivate).map((blog) => blog.slug)
+  );
+  const images = new Set(HAIR_TOOL_COMPARISON_BLOGS.map((blog) => blog.image));
+
+  assert.ok(HAIR_TOOL_COMPARISON_BLOGS.length > 1);
+  assert.ok(HAIR_TOOL_COMPARISON_BLOGS.every((blog) => !blog.isPrivate));
+  assert.ok(HAIR_TOOL_COMPARISON_BLOGS.every((blog) => Boolean(blog.image)));
+  assert.ok(images.size > 1);
+  HAIR_TOOL_COMPARISON_BLOGS.forEach((blog) => {
+    assert.ok(publicStaticSlugs.has(blog.slug), `${blog.slug} is missing from STATIC_BLOGS`);
+  });
 });

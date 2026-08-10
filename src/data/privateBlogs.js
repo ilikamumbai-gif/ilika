@@ -748,6 +748,11 @@ const hairToolFeatureCallout =
 const getHairDryerBlogImage = (index = 0) =>
   hairDryerBlogImagePool[index % hairDryerBlogImagePool.length];
 
+const getHairDryerBlogImageForId = (id = "") =>
+  getHairDryerBlogImage(
+    Array.from(String(id)).reduce((total, character) => total + character.charCodeAt(0), 0)
+  );
+
 const buildHairToolLinks = (prefix, includeAirwrap = false) => [
   {
     id: `${prefix}-hair-dryer-product`,
@@ -793,11 +798,11 @@ const buildHairToolBlog = ({
   author: "Ilika Team",
   createdAt: "2026-07-11T00:00:00.000Z",
   excerpt,
-  image: "/Images/HairdrayerCard.webp",
+  image: getHairDryerBlogImageForId(id),
   internalLink: hairDryerProductPath,
   internalLinks: buildHairToolLinks(id),
-  isPrivate: true,
-  hideFromBlogListing: true,
+  isPrivate: false,
+  hideFromBlogListing: false,
   contentSections: [
     {
       id: `${id}-section-1`,
@@ -807,7 +812,7 @@ const buildHairToolBlog = ({
     {
       id: `${id}-section-2`,
       type: "content-image",
-      image: "/Images/HairdrayerCard.webp",
+      image: getHairDryerBlogImageForId(id),
       content: `<h2>Comparison Angle</h2><p>${angle}</p><h2>Ilika Feature Callout</h2><p>${hairToolFeatureCallout}</p>`,
     },
     {
@@ -1592,7 +1597,7 @@ export const HAIR_DRYER_CITY_BLOGS = [
 ].map((blog, index) => ({
   author: "Ilika Team",
   createdAt: "2026-07-18T00:00:00.000Z",
-  image: "",
+  image: getHairDryerBlogImage(index),
   internalLink: hairDryerProductPath,
   internalLinks: buildHairToolLinks(`hair-dryer-city-${index + 1}`),
   isPrivate: false,
@@ -1811,7 +1816,7 @@ export const HAIR_DRYER_EMI_CITY_BLOGS = [
 ].map((blog, index) => ({
   author: "Ilika Team",
   createdAt: "2026-07-24T00:00:00.000Z",
-  image: hairDryerEmiOfferImage,
+  image: getHairDryerBlogImage(index + 1),
   internalLink: hairDryerProductPath,
   internalLinks: [
     ...buildHairToolLinks(`hair-dryer-emi-city-${index + 1}`),
@@ -2126,6 +2131,7 @@ const READY_TO_PUBLISH_BLOGS = [
 export const STATIC_BLOGS = [
   CUSTOM_VOICE_MASK_GUIDE_BLOG,
   ...READY_TO_PUBLISH_BLOGS,
+  ...HAIR_TOOL_COMPARISON_BLOGS,
   ...HAIR_DRYER_CITY_BLOGS,
   ...HAIR_DRYER_EMI_CITY_BLOGS,
   ...MASK_MAKER_CITY_BLOGS,
