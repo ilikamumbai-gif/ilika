@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { getCanonicalProductSlugAlias, getProductSeoContent } from "../src/data/productSeoContent.js";
 
 const SITE_URL = "https://ilika.in";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/Images/logo2.webp`;
@@ -110,6 +111,9 @@ const readProductUrl = (product = {}) => {
   return productUrl;
 };
 
+const getCanonicalProductSlug = (product = {}) =>
+  getCanonicalProductSlugAlias(readProductUrl(product));
+
 const stripHtml = (value = "") =>
   String(value || "")
     .replace(/<[^>]*>/g, " ")
@@ -136,7 +140,7 @@ const toAbsoluteUrl = (value = "", fallbackOrigin = SITE_URL) => {
 
 const buildCanonicalUrl = (slug) => `${SITE_URL}/product/${slug}`;
 
-const buildProductContent = (product, canonicalUrl, image, description) => {
+const buildProductContent = (product, canonicalUrl, image, description, faqs = []) => {
   const name = escapeHtml(String(product?.name || "Product"));
   const price = Number(product?.salePrice || product?.price || product?.mrp || 0);
   const details = String(product?.description || product?.shortInfo || "").trim();
@@ -152,6 +156,7 @@ const buildProductContent = (product, canonicalUrl, image, description) => {
     ${priceMarkup}
     <p><strong>Category:</strong> ${category}</p>
     ${details ? `<section><h2>Product details</h2>${details}</section>` : ""}
+    ${faqs.length ? `<section id="faq"><h2>Frequently Asked Questions</h2>${faqs.map((faq) => `<div class="faq-item"><h3>${escapeHtml(faq.question)}</h3><p>${escapeHtml(faq.answer)}</p></div>`).join("")}</section>` : ""}
     <p><a href="${escapeHtml(canonicalUrl)}">View ${name}</a></p>
   </article>
 </main>`;
@@ -277,9 +282,20 @@ function buildProductHtml(templateHtml, product, slug) {
   const description = buildSeoDescription(product);
   const image = buildSeoImage(product);
   const keywords = String(product?.seoKeywords || "").trim();
+  const faqs = getProductSeoContent(product, slug)?.faqs || product?.faqs || [];
   const schema = [
     buildProductJsonLd(product, slug, canonicalUrl, image, description),
     buildBreadcrumbJsonLd(product, canonicalUrl),
+    ...(faqs.length ? [{
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "@id": `${canonicalUrl}#faq`,
+      mainEntity: faqs.map((faq) => ({
+        "@type": "Question",
+        name: String(faq?.question || "").trim(),
+        acceptedAnswer: { "@type": "Answer", text: String(faq?.answer || "").trim() },
+      })).filter((faq) => faq.name && faq.acceptedAnswer.text),
+    }] : []),
   ];
 
   let html = templateHtml;
@@ -337,7 +353,7 @@ function buildProductHtml(templateHtml, product, slug) {
   html = html.replace(/<\/head>/i, `${schemaMarkup}</head>`);
   html = html.replace(
     /<div id="root"><\/div>/i,
-    `<div id="root">${buildProductContent(product, canonicalUrl, image, description)}</div>`
+    `<div id="root">${buildProductContent(product, canonicalUrl, image, description, faqs)}</div>`
   );
 
   return html;
@@ -360,7 +376,7 @@ async function main() {
   let written = 0;
 
   for (const product of activeProducts) {
-    const slug = readProductUrl(product);
+    const slug = getCanonicalProductSlug(product);
     if (!slug) continue;
 
     const productDir = path.join(distDir, "product", slug);

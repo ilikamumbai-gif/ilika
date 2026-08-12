@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getCanonicalProductSlugAlias } from "./src/data/productSeoContent.js";
 
 const SITE_URL = "https://ilika.in";
 
@@ -29,8 +30,10 @@ const normalizeApiUrl = (value = "") => String(value || "").trim().replace(/\/+$
 const normalizeKeywords = (value = "") =>
   Array.isArray(value) ? value.filter(Boolean).join(", ") : String(value || "").trim();
 
-const readProductSlug = (product = {}, fallbackSlug = "") =>
-  normalizeRouteSlug(product?.productUrl || product?.slug || fallbackSlug);
+const readProductSlug = (product = {}, fallbackSlug = "") => {
+  const storedSlug = normalizeRouteSlug(product?.productUrl || product?.slug || fallbackSlug);
+  return normalizeRouteSlug(getCanonicalProductSlugAlias(storedSlug));
+};
 
 const readProductCategory = (product = {}) => {
   const seoCategory = String(product?.seoCategory || "").trim();

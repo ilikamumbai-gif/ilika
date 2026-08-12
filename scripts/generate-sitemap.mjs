@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { getCanonicalProductSlugAlias } from "../src/data/productSeoContent.js";
 import {
   STATIC_BLOGS,
 } from "../src/data/privateBlogs.js";
@@ -407,7 +408,7 @@ async function main() {
         list
           .flatMap((p) => {
             if (p?.isActive === false) return [];
-            const productUrl = readProductUrl(p);
+            const productUrl = getCanonicalProductSlugAlias(readProductUrl(p));
             if (!productUrl) {
               skippedProducts.push(
                 String(p?.id || p?._id || p?.name || "unknown-product")

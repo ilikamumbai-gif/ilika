@@ -2079,21 +2079,23 @@ const ProductFaqSection = ({ faqs = [], theme, className = "" }) => {
               className="overflow-hidden rounded-[22px] border bg-white shadow-[0_10px_24px_rgba(69,39,34,0.04)]"
               style={{ borderColor: theme.borderSoft }}
             >
-              <button
-                type="button"
-                onClick={() => setOpenIndex((prev) => (prev === index ? -1 : index))}
-                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
-              >
-                <span className="text-[13px] font-semibold leading-6 sm:text-[14px]" style={{ color: theme.heading }}>
-                  {faq.question}
-                </span>
-                <span
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition ${isOpen ? "rotate-180" : ""}`}
-                  style={{ borderColor: theme.accentSoft, color: theme.accent }}
+              <h3 className="m-0">
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex((prev) => (prev === index ? -1 : index))}
+                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
                 >
-                  <ChevronDown className="h-4 w-4" />
-                </span>
-              </button>
+                  <span className="text-[13px] font-semibold leading-6 sm:text-[14px]" style={{ color: theme.heading }}>
+                    {faq.question}
+                  </span>
+                  <span
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition ${isOpen ? "rotate-180" : ""}`}
+                    style={{ borderColor: theme.accentSoft, color: theme.accent }}
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </span>
+                </button>
+              </h3>
 
               {isOpen ? (
                 <div
@@ -4106,8 +4108,11 @@ const ProductDetail = () => {
     [product?.honestReviews]
   );
   const productFaqs = useMemo(
-    () => sanitizeProductFaqs(product?.faqs),
-    [product?.faqs]
+    () => {
+      const configuredFaqs = getProductSeoContent(product, normalizeRouteSlug(productUrl))?.faqs;
+      return sanitizeProductFaqs(configuredFaqs?.length ? configuredFaqs : product?.faqs);
+    },
+    [product, productUrl]
   );
 
   const publicReviewRatings = useMemo(
@@ -4129,8 +4134,8 @@ const ProductDetail = () => {
     [product, currentRouteSlug]
   );
   const canonicalProductSlug = useMemo(
-    () => normalizeRouteSlug(getProductSlug(product)),
-    [product]
+    () => normalizeRouteSlug(getCanonicalProductSlugAlias(getProductSlug(product) || currentRouteSlug)),
+    [product, currentRouteSlug]
   );
   const productMatchesCurrentRoute = useMemo(() => {
     if (!product || !currentRouteSlug) return false;
