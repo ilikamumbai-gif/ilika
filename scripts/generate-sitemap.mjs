@@ -436,11 +436,10 @@ async function main() {
       label: "Blogs",
       endpoints: blogsEndpoints,
       toUrls: (list) => {
-        const usedPaths = new Set();
         return list
           .filter((b) => b?.title && !b?.isPrivate)
           .map((b) => {
-            const loc = buildBlogUrl(b, { usedPaths });
+            const loc = buildBlogUrl(b);
             return {
               loc,
               priority: "0.7",
@@ -456,10 +455,10 @@ async function main() {
     ...u,
     lastmod: today.toISOString().slice(0, 10),
   }));
-  const staticBlogUrls = (() => {
-    const usedPaths = new Set();
-    return staticBlogCollections.filter((blog) => !blog?.isPrivate).map((blog) => {
-      const loc = buildBlogUrl(blog, { usedPaths });
+  const staticBlogUrls = staticBlogCollections
+    .filter((blog) => !blog?.isPrivate)
+    .map((blog) => {
+      const loc = buildBlogUrl(blog);
       return {
         loc,
         priority: "0.7",
@@ -467,7 +466,6 @@ async function main() {
         lastmod: toIsoDate(blog.updatedAt || blog.createdAt, today),
       };
     });
-  })();
 
   const combinedBlogUrls = dedupeUrls([...staticBlogUrls, ...blogUrls]);
   const urls = dedupeUrls([...staticUrls, ...productUrls, ...categoryUrls, ...combinedBlogUrls]);

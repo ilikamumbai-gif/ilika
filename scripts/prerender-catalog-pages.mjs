@@ -59,8 +59,8 @@ async function fetchList(endpoint, key) {
 }
 
 const replaceHead = (html, title, description, canonical, type) => {
-  const replace = (pattern, value) => pattern.test(html) ? html.replace(pattern, value) : html;
   let output = html;
+  const replace = (pattern, value) => pattern.test(output) ? output.replace(pattern, value) : output;
   output = replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   output = replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(description)}" />`);
   output = replace(/<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/i, `<meta name="robots" content="index, follow" />`);
@@ -71,8 +71,11 @@ const replaceHead = (html, title, description, canonical, type) => {
   return output;
 };
 
-const injectRoot = (html, content) => html.replace(/<div id="root"><\/div>/i, `<div id="root">${content}</div>`);
-const getBlogSlug = (blog) => String(blog?.slug || slugify(blog?.title || "")).trim().toLowerCase();
+const injectRoot = (html, content) => {
+  const root = `<div id="root">${content}</div>`;
+  return html.replace(/<div id="root">[\s\S]*?<\/body>/i, `${root}\n</body>`);
+};
+const getBlogRoute = (blog) => buildBlogUrl(blog);
 const getBlogBody = (blog) => {
   if (Array.isArray(blog?.contentSections) && blog.contentSections.length) {
     return blog.contentSections.map((section) => `${section?.image ? `<img src="${escapeHtml(section.image)}" alt="${escapeHtml(blog.title)}" />` : ""}${section?.content || ""}`).join("\n");
@@ -101,7 +104,15 @@ async function writeRoute(template, distDir, route, content, metadata = {}) {
 
 async function main() {
   const cwd = process.cwd();
-  const env = { ...await readEnvFile(path.join(cwd, ".env")), ...await readEnvFile(path.join(cwd, ".env.local")), ...process.env };
+  // Keep the prerender API sources in sync with sitemap generation. The
+  // deployment configuration is commonly stored in Backend/.env, so omitting
+  // it here can leave sitemap URLs without a corresponding prerendered page.
+  const env = {
+    ...await readEnvFile(path.join(cwd, "Backend", ".env")),
+    ...await readEnvFile(path.join(cwd, ".env")),
+    ...await readEnvFile(path.join(cwd, ".env.local")),
+    ...process.env,
+  };
   const distDir = path.join(cwd, "dist");
   const template = await fs.readFile(path.join(distDir, "index.html"), "utf8");
   const [products, categories, apiBlogs] = await Promise.all([
@@ -110,15 +121,16 @@ async function main() {
     fetchList(getEndpoint(env, "blogs"), "blogs"),
   ]);
   const publicProducts = products.filter((product) => product?.isActive !== false && product?.productUrl);
-  const staticBlogs = STATIC_BLOGS.filter((blog) => !blog?.isPrivate);
-  const blogBySlug = new Map(staticBlogs.map((blog) => [getBlogSlug(blog), blog]));
-  apiBlogs.filter((blog) => blog?.title && !blog?.isPrivate).forEach((blog) => {
-    const slug = getBlogSlug(blog);
-    if (!blogBySlug.has(slug)) blogBySlug.set(slug, blog);
-  });
-  const blogs = Array.from(blogBySlug.values());
+  const blogByRoute = new Map();
+  [...STATIC_BLOGS, ...apiBlogs]
+    .filter((blog) => blog?.title && !blog?.isPrivate)
+    .forEach((blog) => {
+      const route = getBlogRoute(blog);
+      if (!blogByRoute.has(route)) blogByRoute.set(route, blog);
+    });
+  const blogs = Array.from(blogByRoute, ([route, blog]) => ({ route, blog }));
   const productLinks = publicProducts.map((product) => `<li><a href="/product/${escapeHtml(product.productUrl)}">${escapeHtml(product.name || product.productUrl)}</a></li>`).join("");
-  const blogLinks = blogs.map((blog) => `<li><a href="/blog/${escapeHtml(getBlogSlug(blog))}">${escapeHtml(blog.title)}</a></li>`).join("");
+  const blogLinks = blogs.map(({ route, blog }) => `<li><a href="${escapeHtml(route)}">${escapeHtml(blog.title)}</a></li>`).join("");
   const crawlLinks = `<section aria-label="Product and blog catalogue"><h2>Products</h2><ul>${productLinks}</ul><h2>Articles</h2><ul>${blogLinks}</ul></section>`;
   await fs.writeFile(path.join(distDir, "_crawl-links.html"), crawlLinks, "utf8");
   await writeRoute(template, distDir, "/blog", `<main id="prerendered-content" data-prerendered="blog-index"><h1>Ilika Blog</h1>${crawlLinks}</main>`, { title: "Ilika Blog | Skincare and Beauty Guides", description: "Browse Ilika skincare, beauty, haircare, and device guides.", canonical: `${SITE_URL}/blog` });
@@ -126,8 +138,7 @@ async function main() {
     const route = `/category/${slugify(category.slug || category.name)}`;
     await writeRoute(template, distDir, route, `<main id="prerendered-content" data-prerendered="category"><h1>${escapeHtml(category.name || category.slug)}</h1>${crawlLinks}</main>`, { title: `${category.name || category.slug} | Ilika`, description: `Shop ${category.name || category.slug} products from Ilika.`, canonical: absoluteUrl(route) });
   }
-  for (const blog of blogs) {
-    const route = `/blog/${getBlogSlug(blog)}`;
+  for (const { route, blog } of blogs) {
     const page = buildBlogPage(blog, route);
     await writeRoute(template, distDir, route, page.content, { ...page, type: "article" });
   }
