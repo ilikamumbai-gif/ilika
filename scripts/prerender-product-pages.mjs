@@ -63,44 +63,30 @@ const resolveEnv = async () => {
 };
 
 const normalizeEndpoint = (url = "") => String(url || "").trim().replace(/\/+$/, "");
-const stripKnownApiSuffix = (url = "") =>
-  normalizeEndpoint(url).replace(/\/api\/(products|categories|blogs)$/i, "");
 
-const addEndpointCandidates = (set, raw, endpointPath) => {
-  const normalized = normalizeEndpoint(raw);
-  if (!normalized) return;
-
-  const hasOtherApiSuffix =
-    /\/api\/(products|categories|blogs)$/i.test(normalized) &&
-    !new RegExp(`${endpointPath.replace("/", "\\/")}$`, "i").test(normalized);
-
-  if (!hasOtherApiSuffix) {
-    set.add(normalized);
+const resolveProductsEndpoint = (env) => {
+  const endpoint = normalizeEndpoint(
+    env.SITEMAP_PRODUCTS_URL || "https://ilika-7.onrender.com/api/products"
+  );
+  let parsed;
+  try {
+    parsed = new URL(endpoint);
+  } catch {
+    throw new Error("[prerender] SITEMAP_PRODUCTS_URL must be a valid absolute URL.");
   }
 
-  const base = stripKnownApiSuffix(normalized);
-  if (base) set.add(base);
-
-  const endpointRegex = new RegExp(`${endpointPath.replace("/", "\\/")}$`, "i");
-  if (!endpointRegex.test(normalized)) {
-    set.add(`${base || normalized}${endpointPath}`);
+  if (parsed.pathname.replace(/\/+$/, "") !== "/api/products") {
+    throw new Error(`[prerender] SITEMAP_PRODUCTS_URL must point directly to /api/products, not ${endpoint}.`);
   }
-};
 
-const resolveApiEndpoints = (env, endpointPath) => {
-  const endpoints = new Set();
-  addEndpointCandidates(endpoints, env.SITEMAP_API_URL, endpointPath);
-  addEndpointCandidates(endpoints, env.VITE_API_URL, endpointPath);
-  addEndpointCandidates(endpoints, env.SITEMAP_PRODUCTS_URL, endpointPath);
-  addEndpointCandidates(endpoints, "http://localhost:5000", endpointPath);
-  return Array.from(endpoints);
+  return endpoint;
 };
 
 const extractList = (data) => {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.products)) return data.products;
   if (Array.isArray(data?.data)) return data.data;
-  return [];
+  return null;
 };
 
 const normalizeProductUrl = (value = "") => String(value || "").trim().toLowerCase();
@@ -252,25 +238,19 @@ const buildBreadcrumbJsonLd = (product, canonicalUrl) => ({
   ],
 });
 
-async function fetchProducts(endpoints) {
-  for (const endpoint of endpoints) {
-    try {
-      const res = await fetch(endpoint);
-      if (!res.ok) {
-        console.warn(`[prerender] Products API failed (${res.status}) for ${endpoint}. Trying next endpoint...`);
-        continue;
-      }
-
-      const data = await res.json();
-      const list = extractList(data);
-      console.log(`[prerender] Products source: ${endpoint}`);
-      return list;
-    } catch (err) {
-      console.warn(`[prerender] Products API error for ${endpoint}: ${err?.message || err}. Trying next endpoint...`);
-    }
+async function fetchProducts(endpoint) {
+  const res = await fetch(endpoint);
+  if (!res.ok) {
+    throw new Error(`[prerender] Products API failed (${res.status}) for ${endpoint}.`);
   }
 
-  throw new Error("[prerender] Could not fetch products from any endpoint. Refusing to publish product pages without prerendered metadata.");
+  const list = extractList(await res.json());
+  if (!list) {
+    throw new Error(`[prerender] Products API returned an unexpected JSON shape for ${endpoint}.`);
+  }
+
+  console.log(`[prerender] Products source: ${endpoint}`);
+  return list;
 }
 
 const injectOrReplace = (html, pattern, replacement) =>
@@ -365,13 +345,8 @@ async function main() {
   const indexPath = path.join(distDir, "index.html");
   const templateHtml = await fs.readFile(indexPath, "utf8");
 
-  const productsEndpoints = resolveApiEndpoints(env, "/api/products");
-  if (!productsEndpoints.length) {
-    console.warn("[prerender] No products endpoint configured. Skipping product prerender.");
-    return;
-  }
-
-  const products = await fetchProducts(productsEndpoints);
+  const productsEndpoint = resolveProductsEndpoint(env);
+  const products = await fetchProducts(productsEndpoint);
   const activeProducts = products.filter((product) => product?.isActive !== false);
   let written = 0;
 

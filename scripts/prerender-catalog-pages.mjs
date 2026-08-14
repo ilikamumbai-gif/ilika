@@ -26,19 +26,36 @@ const readEnvFile = async (filePath) => {
 };
 
 const normalizeEndpoint = (url = "") => String(url || "").trim().replace(/\/+$/, "");
-const apiBase = (url = "") => normalizeEndpoint(url).replace(/\/api\/(products|categories|blogs)$/i, "");
-const getEndpoints = (env, resource) => Array.from(new Set([env.SITEMAP_API_URL, env.VITE_API_URL, env[`SITEMAP_${resource.toUpperCase()}_URL`]].filter(Boolean).map(apiBase).map((base) => `${base}/api/${resource}`)));
-const getList = (payload, key) => Array.isArray(payload) ? payload : Array.isArray(payload?.[key]) ? payload[key] : Array.isArray(payload?.data) ? payload.data : [];
+const getEndpoint = (env, resource) => {
+  const endpointPath = `/api/${resource}`;
+  const endpoint = normalizeEndpoint(
+    env[`SITEMAP_${resource.toUpperCase()}_URL`] || `https://ilika-7.onrender.com${endpointPath}`
+  );
+  let parsed;
+  try {
+    parsed = new URL(endpoint);
+  } catch {
+    throw new Error(`[prerender] SITEMAP_${resource.toUpperCase()}_URL must be a valid absolute URL.`);
+  }
+  if (parsed.pathname.replace(/\/+$/, "") !== endpointPath) {
+    throw new Error(`[prerender] SITEMAP_${resource.toUpperCase()}_URL must point directly to ${endpointPath}, not ${endpoint}.`);
+  }
+  return endpoint;
+};
+const getList = (payload, key) => Array.isArray(payload) ? payload : Array.isArray(payload?.[key]) ? payload[key] : Array.isArray(payload?.data) ? payload.data : null;
 const slugify = (value = "") => String(value || "").toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
 
-async function fetchList(endpoints, key) {
-  for (const endpoint of endpoints) {
-    try {
-      const response = await fetch(endpoint);
-      if (response.ok) return getList(await response.json(), key);
-    } catch { /* Try the next configured endpoint. */ }
+async function fetchList(endpoint, key) {
+  const response = await fetch(endpoint);
+  if (!response.ok) {
+    throw new Error(`[prerender] ${key} API failed (${response.status}) for ${endpoint}.`);
   }
-  throw new Error(`[prerender] Could not fetch ${key} from any endpoint.`);
+  const list = getList(await response.json(), key);
+  if (!list) {
+    throw new Error(`[prerender] ${key} API returned an unexpected JSON shape for ${endpoint}.`);
+  }
+  console.log(`[prerender] ${key} source: ${endpoint}`);
+  return list;
 }
 
 const replaceHead = (html, title, description, canonical, type) => {
@@ -88,9 +105,9 @@ async function main() {
   const distDir = path.join(cwd, "dist");
   const template = await fs.readFile(path.join(distDir, "index.html"), "utf8");
   const [products, categories, apiBlogs] = await Promise.all([
-    fetchList(getEndpoints(env, "products"), "products"),
-    fetchList(getEndpoints(env, "categories"), "categories"),
-    fetchList(getEndpoints(env, "blogs"), "blogs"),
+    fetchList(getEndpoint(env, "products"), "products"),
+    fetchList(getEndpoint(env, "categories"), "categories"),
+    fetchList(getEndpoint(env, "blogs"), "blogs"),
   ]);
   const publicProducts = products.filter((product) => product?.isActive !== false && product?.productUrl);
   const staticBlogs = STATIC_BLOGS.filter((blog) => !blog?.isPrivate);
