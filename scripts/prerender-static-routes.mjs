@@ -76,7 +76,10 @@ async function main() {
     const cleanRoute = route.replace(/^\/+/, "");
     const routeDir = path.join(distDir, cleanRoute);
     await fs.mkdir(routeDir, { recursive: true });
-    const content = crawlLinks ? `<div id="root"><main id="prerendered-content" data-prerendered="catalogue-links">${crawlLinks}</main></div>` : '<div id="root"></div>';
+    // The catalogue is retained for crawlability, but React replaces this root
+    // immediately on the client. Hiding the fallback prevents thousands of
+    // links flashing on screen before the route UI renders.
+    const content = crawlLinks ? `<div id="root"><main id="prerendered-content" data-prerendered="catalogue-links" hidden aria-hidden="true">${crawlLinks}</main></div>` : '<div id="root"></div>';
     await fs.writeFile(path.join(routeDir, "index.html"), templateHtml.replace(/<div id="root"><\/div>/i, content), "utf8");
     written += 1;
   }
