@@ -159,53 +159,46 @@ const escapeXml = (value = "") =>
 const absolute = (siteUrl, loc) => `${siteUrl}${loc}`;
 
 const normalizeEndpoint = (url = "") => String(url || "").trim().replace(/\/+$/, "");
-const stripKnownApiSuffix = (url = "") =>
-  normalizeEndpoint(url).replace(/\/api\/(products|categories|blogs)$/i, "");
-
-const addEndpointCandidates = (set, raw, endpointPath) => {
-  const normalized = normalizeEndpoint(raw);
-  if (!normalized) return;
-
-  const hasOtherApiSuffix = /\/api\/(products|categories|blogs)$/i.test(normalized)
-    && !new RegExp(`${endpointPath.replace("/", "\\/")}$`, "i").test(normalized);
-
-  if (!hasOtherApiSuffix) {
-    set.add(normalized);
-  }
-  const base = stripKnownApiSuffix(normalized);
-  if (base) set.add(base);
-  const endpointRegex = new RegExp(`${endpointPath.replace("/", "\\/")}$`, "i");
-  if (!endpointRegex.test(normalized)) {
-    set.add(`${base || normalized}${endpointPath}`);
-  }
-};
+const SITEMAP_ENDPOINTS = Object.freeze({
+  "/api/products": {
+    envKey: "SITEMAP_PRODUCTS_URL",
+    defaultUrl: "https://ilika-7.onrender.com/api/products",
+  },
+  "/api/categories": {
+    envKey: "SITEMAP_CATEGORIES_URL",
+    defaultUrl: "https://ilika-7.onrender.com/api/categories",
+  },
+  "/api/blogs": {
+    envKey: "SITEMAP_BLOGS_URL",
+    defaultUrl: "https://ilika-7.onrender.com/api/blogs",
+  },
+});
 
 const resolveApiEndpoints = (env, endpointPath) => {
-  const endpoints = new Set();
-  addEndpointCandidates(endpoints, env.SITEMAP_API_URL, endpointPath);
-  addEndpointCandidates(endpoints, env.VITE_API_URL, endpointPath);
+  const config = SITEMAP_ENDPOINTS[endpointPath];
+  if (!config) throw new Error(`[sitemap] Unsupported API resource: ${endpointPath}`);
 
-  if (endpointPath === "/api/products") {
-    addEndpointCandidates(endpoints, env.SITEMAP_PRODUCTS_URL, endpointPath);
+  const endpoint = normalizeEndpoint(env[config.envKey] || config.defaultUrl);
+  let parsed;
+  try {
+    parsed = new URL(endpoint);
+  } catch {
+    throw new Error(`[sitemap] ${config.envKey} must be a valid absolute URL.`);
   }
-  if (endpointPath === "/api/categories") {
-    addEndpointCandidates(endpoints, env.SITEMAP_CATEGORIES_URL, endpointPath);
-  }
-  if (endpointPath === "/api/blogs") {
-    addEndpointCandidates(endpoints, env.SITEMAP_BLOGS_URL, endpointPath);
-  }
-  addEndpointCandidates(endpoints, "http://localhost:5000", endpointPath);
 
-  return Array.from(endpoints);
+  if (parsed.pathname.replace(/\/+$/, "") !== endpointPath) {
+    throw new Error(`[sitemap] ${config.envKey} must point directly to ${endpointPath}, not ${endpoint}.`);
+  }
+
+  return [endpoint];
 };
 
-const extractList = (data) => {
+const extractList = (data, label) => {
   if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.products)) return data.products;
-  if (Array.isArray(data?.categories)) return data.categories;
-  if (Array.isArray(data?.blogs)) return data.blogs;
+  const key = label.toLowerCase();
+  if (Array.isArray(data?.[key])) return data[key];
   if (Array.isArray(data?.data)) return data.data;
-  return [];
+  return null;
 };
 
 const toIsoDate = (value, fallback = new Date()) => {
@@ -259,7 +252,10 @@ async function fetchResource({ label, endpoints, toUrls }) {
       }
 
       const data = await res.json();
-      const list = extractList(data);
+      const list = extractList(data, label);
+      if (!list) {
+        throw new Error(`Unexpected ${label} API response shape`);
+      }
       const urls = dedupeUrls(toUrls(list));
       console.log(`[sitemap] ${label} source: ${endpoint}`);
       return urls;
