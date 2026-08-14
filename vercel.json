@@ -35,6 +35,8 @@
   { "source": "/wp-includes/(.*)", "destination": "/api/not-found?status=410" },
   { "source": "/xmlrpc.php", "destination": "/api/not-found?status=410" },
   { "source": "/(1win.*)", "destination": "/api/not-found?status=410" },
+  { "source": "/c:legacyId(\\d+).html", "destination": "/api/legacy-product?path=c:legacyId.html" },
+  { "source": "/detail/:legacyId(\\d+)", "destination": "/api/legacy-product?path=detail/:legacyId" },
   { "source": "/.well-known/:path*", "destination": "/.well-known/:path*" },
   { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
   { "source": "/sitemap.html", "destination": "/sitemap.html" },
@@ -43,7 +45,14 @@
   { "source": "/llms-full.txt", "destination": "/llms-full.txt" },
   { "source": "/googleb361cfb7dba6801e.html", "destination": "/googleb361cfb7dba6801e.html" },
 
-  { "source": "/:path*", "destination": "/index.html" }
+  { "source": "/checkout", "destination": "/index.html" },
+  { "source": "/login", "destination": "/index.html" },
+  { "source": "/signup", "destination": "/index.html" },
+  { "source": "/user", "destination": "/index.html" },
+  { "source": "/order-success/:id", "destination": "/index.html" },
+  { "source": "/admin/:path*", "destination": "/index.html" },
+
+  { "source": "/:path*", "destination": "/api/not-found?status=404" }
 ],
   "headers": [
     {
