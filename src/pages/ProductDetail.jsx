@@ -48,6 +48,14 @@ const BLDC_HAIR_DRYER_GALLERY_VIDEO = {
 };
 const LEAFLESS_HAIR_DRYER_PRODUCT_SLUG = "leafless-hair-dryer";
 const LEAFLESS_HAIR_DRYER_BASE_PRICE = 2699;
+const LEAFLESS_HAIR_DRYER_BANNERS = [
+  { url: "/ProductBanners/leafless-hair-dryer-banner-1.jpg", alt: "Fast airflow for flawless hair every day" },
+  { url: "/ProductBanners/leafless-hair-dryer-banner-2.jpg", alt: "Leafless hair dryer key benefits" },
+  { url: "/ProductBanners/leafless-hair-dryer-banner-3.jpg", alt: "Leafless hair dryer problem and solution" },
+  { url: "/ProductBanners/leafless-hair-dryer-banner-4.jpg", alt: "Leafless hair dryer before and after results" },
+  { url: "/ProductBanners/leafless-hair-dryer-banner-5.jpg", alt: "Leafless versus traditional hair dryers" },
+  { url: "/ProductBanners/leafless-hair-dryer-banner-6.jpg", alt: "About Ilika beauty tools" },
+];
 const PREPAID_ORDER_DISCOUNT = 100;
 const PREFERRED_PAYMENT_METHOD_KEY = "ilika_preferred_payment_method";
 const VOICE_MASK_MAKER_PRODUCT_SLUG = "voice-face-mask-maker";
@@ -3086,6 +3094,13 @@ const ProductDetail = () => {
 
     return rawValues.some((value) => createSlug(String(value || "")) === LEAFLESS_HAIR_DRYER_PRODUCT_SLUG);
   }, [product?.name, product?.productUrl, product?.slug, productUrl]);
+  const productBanners = isLeaflessHairDryerProduct
+    ? LEAFLESS_HAIR_DRYER_BANNERS
+    : product?.banners?.length > 0
+      ? product.banners
+      : product?.bannerImage
+        ? [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
+        : [];
   const isVoiceMaskMakerProduct = useMemo(() => {
     const rawValues = [
       product?.productUrl,
@@ -5840,7 +5855,7 @@ const ProductDetail = () => {
         )}
 
         {/* â•â•â•â• PRODUCT BANNERS â•â•â•â• */}
-        {((product.banners?.length > 0) || product.bannerImage) && (
+        {productBanners.length > 0 && (
           <DeferredSection
             minHeight={320}
             placeholder={
@@ -5850,10 +5865,7 @@ const ProductDetail = () => {
             }
           >
             <section className="w-full mx-auto px-4 sm:px-6 mb-12">
-              {(product.banners?.length > 0
-                ? product.banners
-                : [{ url: product.bannerImage, alt: product.bannerAlt || "" }]
-              ).filter(b => b?.url).map((banner, idx) => (
+              {productBanners.filter(b => b?.url).map((banner, idx) => (
                 <div key={idx}>
                   <img loading="lazy"
                     src={banner.url}
