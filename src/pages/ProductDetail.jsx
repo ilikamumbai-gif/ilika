@@ -1301,6 +1301,16 @@ const normalizePublicAssetPath = (value = "") => {
   return raw.startsWith("/") ? raw : `/${raw}`;
 };
 
+const HONEST_REVIEW_POSTERS = {
+  "/HonestReview/instagram-reel-review.mp4": "/HonestReview/instagram-reel-review-poster.jpg",
+  "/HonestReview/instagram-reel-youtube-short.mp4": "/HonestReview/instagram-reel-youtube-short-poster.jpg",
+};
+
+const getHonestReviewPosterSrc = (url = "") => {
+  const rawUrl = String(url || "").trim();
+  return Object.entries(HONEST_REVIEW_POSTERS).find(([videoUrl]) => rawUrl.includes(videoUrl))?.[1] || "";
+};
+
 const sanitizeHonestReviewItems = (items = []) => {
   if (!Array.isArray(items)) return [];
 
@@ -1460,6 +1470,7 @@ const HonestReviewPreviewMedia = ({ item, media }) => {
   return (
     <video
       src={media.src}
+      poster={getHonestReviewPosterSrc(media.src) || undefined}
       title={item.title || "Honest review video"}
       className="h-[420px] w-full bg-black object-cover sm:h-[470px]"
       autoPlay
@@ -1556,6 +1567,7 @@ const HonestReviewLightbox = ({ item, onClose }) => {
           <video
             ref={videoRef}
             src={media.src}
+            poster={getHonestReviewPosterSrc(media.src) || undefined}
             title={item.title || "Honest review video"}
             className="h-[78vh] w-full bg-black object-cover"
             autoPlay
