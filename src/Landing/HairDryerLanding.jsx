@@ -323,10 +323,13 @@ const HairDryerLanding = () => {
         <div className="grid grid-cols-1 gap-[1px] bg-[#9569d0]/35 lg:grid-cols-3">
           {reviews.map((r) => (
             <div key={r.name} className="bg-[#22163a] p-5 transition hover:bg-[#2d1f4d] sm:p-8">
-              <div className="mb-4 flex items-center gap-1 text-[#c4b5fd]">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <FaStar key={`${r.name}-${n}`} className="h-3.5 w-3.5" />
-                ))}
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1 text-[#c4b5fd]">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <FaStar key={`${r.name}-${n}`} className="h-3.5 w-3.5" />
+                  ))}
+                </div>
+                <p className="text-sm font-semibold text-[#f5f3ff]">{r.name}</p>
               </div>
               <div className="mb-5 flex h-[15rem] items-center justify-center overflow-hidden rounded-md border border-[#9569d0]/45 bg-[#0d0b12] sm:h-[24rem]">
                 <img src={r.image} alt={`${r.name} review`} className="h-full w-full object-contain" />
@@ -337,7 +340,6 @@ const HairDryerLanding = () => {
                   <span>{r.initials}</span>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">{r.name}</p>
                   <p className="text-xs text-[#ddd6fe]">{r.detail}</p>
                 </div>
               </div>

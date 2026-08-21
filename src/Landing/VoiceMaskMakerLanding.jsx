@@ -870,10 +870,13 @@ const VoiceMaskMakerLanding = () => {
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
           {landingReviews.map((r) => (
             <div key={r.id} className="rounded-2xl border border-[#3F312D] bg-[#202020] px-6 py-7">
-              <div className="mb-3 flex items-center gap-1 text-[#D3A157]">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <Star key={n} className={`h-4 w-4 ${n <= r.rating ? "fill-current" : "opacity-35"}`} />
-                ))}
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1 text-[#D3A157]">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star key={n} className={`h-4 w-4 ${n <= r.rating ? "fill-current" : "opacity-35"}`} />
+                  ))}
+                </div>
+                <p className="text-[13px] font-semibold text-[#FFF8F5]">{r.name}</p>
               </div>
               <p className="mb-5 text-[14px] italic font-light leading-[1.7] text-[#D8CCC6]">{r.text}</p>
               {r.images?.length ? (
@@ -894,7 +897,6 @@ const VoiceMaskMakerLanding = () => {
               <div className="flex items-center gap-3">
                 <span className="grid h-9 w-9 place-content-center rounded-full bg-[#2A211F] text-[13px] font-semibold text-[#D58A78]">{r.initials}</span>
                 <div>
-                  <p className="text-[13px] font-semibold">{r.name}</p>
                   <p className="text-[12px] text-[#CCBDB7]">{r.loc}</p>
                 </div>
               </div>

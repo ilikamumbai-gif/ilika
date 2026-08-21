@@ -737,10 +737,12 @@ const targetProduct = useMemo(() => {
                 key={review.name}
                 className="rounded-[20px] border border-[#c9a96e]/15 bg-white px-5 py-6 shadow-[0_12px_34px_rgba(26,20,16,0.06)] sm:rounded-[24px] sm:px-7 sm:py-8"
               >
-                <div className="text-[18px] tracking-[0.18em] text-[#c9a96e]">â˜…â˜…â˜…â˜…â˜…</div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[18px] tracking-[0.18em] text-[#c9a96e]">★★★★★</div>
+                  <p className="text-sm font-semibold text-[#1a1410]">{review.name}</p>
+                </div>
                 <p className="mt-4 text-[13px] leading-6 text-[#7a6757] sm:mt-5 sm:text-sm sm:leading-7">&quot;{review.text}&quot;</p>
                 <div className="mt-6 border-t border-[#c9a96e]/10 pt-4">
-                  <p className="text-sm font-semibold text-[#1a1410]">{review.name}</p>
                   <p className="mt-1 text-xs uppercase tracking-[0.08em] text-[#8b6e3a]">{review.detail}</p>
                 </div>
               </div>
