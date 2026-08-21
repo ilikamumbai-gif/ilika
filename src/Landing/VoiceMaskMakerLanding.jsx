@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
 import OptimizedImage from "../components/OptimizedImage";
 import CartDrawer from "../components/CartDrawer";
+import EmiAvailableNotice from "../components/EmiAvailableNotice";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
@@ -498,6 +499,8 @@ const VoiceMaskMakerLanding = () => {
                 )}
               </div>
             </div>
+
+            <EmiAvailableNotice tone="dark" className="mb-4 w-full max-w-[760px]" />
 
             <button
               type="button"

@@ -17,6 +17,7 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import EmiAvailableNotice from "../components/EmiAvailableNotice";
 import OptimizedImage from "../components/OptimizedImage";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
@@ -351,6 +352,7 @@ const HotColdBlackheadRemoverLanding = () => {
                 {loading ? "Loading live product details..." : "Live product price unavailable right now."}
               </p>
             ) : null}
+            <EmiAvailableNotice tone="dark" className="mx-auto mt-5 max-w-[420px] text-left lg:mx-0" />
           </div>
 
           <div className="relative order-1 mx-auto flex w-full max-w-[620px] items-center justify-center lg:order-2">
@@ -602,10 +604,12 @@ const HotColdBlackheadRemoverLanding = () => {
           <div className="mobile-scrollbar-hide mt-8 -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-4 lg:overflow-visible lg:px-0">
             {reviews.map((review) => (
               <div key={review.name} className="min-w-[86%] snap-center rounded-2xl border border-[#1e6fd9]/20 bg-[#0d1120] p-5 sm:min-w-0 sm:rounded-md sm:p-7">
-                <div className="text-sm tracking-[0.18em] text-[#e63946]">â˜…â˜…â˜…â˜…â˜…</div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm tracking-[0.18em] text-[#e63946]">★★★★★</div>
+                  <p className="text-sm font-medium text-[#e8ecf4]">{review.name}</p>
+                </div>
                 <p className="mt-4 text-[14px] font-light italic leading-7 text-[#e8ecf4]">{`"${review.text}"`}</p>
                 <p className="mt-5 text-[11px] uppercase tracking-[0.12em] text-[#8892a8]">{review.detail}</p>
-                <p className="mt-1 text-sm font-medium text-[#e8ecf4]">{review.name}</p>
               </div>
             ))}
           </div>

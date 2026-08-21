@@ -4,6 +4,7 @@ import { Leaf, Sparkles, ShieldCheck, Droplets, Snowflake, Feather, Truck, Badge
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import EmiAvailableNotice from "../components/EmiAvailableNotice";
 import MiniDivider from "../components/MiniDivider";
 import { useProducts } from "../admin/context/ProductContext";
 import { useCart } from "../context/CartProvider";
@@ -284,6 +285,7 @@ const Herbalhairoil = () => {
                 <span className="font-sans text-3xl font-bold">Rs.{price}</span>
                 <span className="font-sans text-base text-[#aaa] line-through">Rs.{mrp}</span>
               </div>
+              <EmiAvailableNotice className="order-4 mt-4 max-w-[360px] lg:order-1" />
               <div className="order-1 mt-6 hidden flex-wrap gap-3 lg:order-2 lg:mt-8 lg:flex">
                 <button onClick={handleBuyNow} disabled={!product} className="w-full border border-[#1a1a1a] bg-[#df573f] px-7 py-3.5 font-sans text-base font-bold text-white transition hover:bg-[#cf4f39] disabled:opacity-60 sm:w-auto sm:min-w-[290px]">Buy Now &nbsp;&nbsp; &gt;&gt; Save {discount}%</button>
               </div>

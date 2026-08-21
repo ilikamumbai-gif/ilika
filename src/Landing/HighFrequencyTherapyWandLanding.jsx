@@ -16,6 +16,7 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import EmiAvailableNotice from "../components/EmiAvailableNotice";
 import OptimizedImage from "../components/OptimizedImage";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
@@ -387,6 +388,8 @@ const targetProduct = useMemo(() => {
                 </span>
               )}
             </div>
+
+            <EmiAvailableNotice className="mt-5 max-w-[420px]" />
 
             <div className="mt-6 grid grid-cols-2 gap-2.5 border-t border-[#c9a96e]/20 pt-5 sm:mt-10 sm:flex sm:flex-wrap sm:gap-x-7 sm:gap-y-4 sm:pt-7">
               {trustItems.map((item) => {

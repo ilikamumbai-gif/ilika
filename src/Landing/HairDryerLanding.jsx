@@ -5,6 +5,7 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import EmiAvailableNotice from "../components/EmiAvailableNotice";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
@@ -499,9 +500,10 @@ const HairDryerLanding = () => {
             <li>* 3 Heat + 2 Speed Settings</li>
             <li>* 360 degree Swivel Cord (1.8m)</li>
             <li>* Concentrator Nozzle Attachment</li>
-            <li>* 2-Year Warranty + Free Support</li>
+            <li>* 1-Year Warranty + Free Support</li>
             <li>* Free shipping across India</li>
           </ul>
+          <EmiAvailableNotice tone="dark" className="mb-6" />
           <button type="button" onClick={handleBuyNow} className="block w-full cursor-pointer rounded bg-[#9569d0] px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-[#c4b5fd] sm:px-6 sm:py-4 sm:tracking-[0.2em]">
             Order Now - Limited Stock
           </button>
