@@ -1291,7 +1291,7 @@ const Home = () => {
               <HomeTrendingShowcase
                 heading="Style Your Hair, Your Way"
                 subheading="Smart hair appliances for salon-like results at home"
-                modelImage="/Homepage/homepagehaircarerange.png"
+                modelImage="/Homepage/hair-appliances-showcase.png"
                 viewAllTo="/hair/styling"
                 categoryId={hairstylingCategory?.id}
                 theme="dark"
