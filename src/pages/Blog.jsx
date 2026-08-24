@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import BlogCard from "../components/BlogCard";
 import Header from "../components/Header";
 import MiniDivider from "../components/MiniDivider";
@@ -15,19 +15,20 @@ const getProductImage = (product, fallback) => product?.variants?.[0]?.images?.[
 
 const Blog = () => {
   const { products = [] } = useProducts();
-  const productImage = (matches, fallback) => {
+  const productImage = useCallback((matches, fallback) => {
     const product = products.find((item) => matches(normalizeName(item?.name), String(item?.productUrl || "").toLowerCase()));
     return getProductImage(product, fallback);
-  };
+  }, [products]);
   const landingCards = useMemo(() => [
     { id: "landing-hot-cold-blackhead-remover", title: "Explore Ilika Blackhead Remover - Hot & Cold", image: productImage((name) => (name.includes("blackhead remover") || name.includes("facial pore cleanser")) && name.includes("hot") && name.includes("cold"), "/Images/MaskMakercard.webp"), linkPath: "/hot-cold-blackhead-remover" },
     { id: "landing-high-frequency-therapy-wand", title: "Explore Ilika High Frequency Therapy Wand", image: productImage((name, url) => name.includes("high frequency therapy wand") || url === "ilika-high-frequency-therapy-wand", "/Images/MaskMakercard.webp"), linkPath: "/high-frequency-therapy-wand" },
     { id: "landing-leafless-hairdryer", title: "Explore Ilika High-Speed Leafless Hair Dryer", image: productImage((name) => name.includes("leafless hair dryer"), "/Images/HairdrayerCard.webp"), linkPath: "/leafless-hair-dryer" },
+    { id: "hair-dryer-guides", title: "Hair Dryer Guides: Buying, Styling & Care", image: "/Images/HairdrayerCard.webp", linkPath: "/hair-dryer-guides" },
     { id: "landing-nonvoice-mask-maker", title: "Explore Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide", image: productImage((name) => name.includes("non voice") && name.includes("mask maker"), "/Images/MaskMakercard.webp"), linkPath: "/nonvoice-mask-maker" },
     { id: "landing-voice-mask-maker", title: "Explore Ilika Voice Face Mask Maker Machine with Collagen Peptide", image: productImage((name) => name.includes("voice face mask maker") && !name.includes("non voice"), "/Images/MaskMakercard.webp"), linkPath: "/voice-mask-maker" },
     { id: "landing-blackseed-hair-oil", title: "Explore Ilika Black Seed Hair Growth Oil", image: productImage((name) => name.includes("black seed hair growth oil"), blackSeedLandingImage), linkPath: "/blackseed-hair-oil" },
     { id: "landing-herbal-hair-oil", title: "Explore Ilika Herbal Hair Growth Oil", image: productImage((name) => name.includes("10 herbs herbal hair growth oil") || name.includes("hair fall control"), herbalLandingImage), linkPath: "/herbal-hair-oil" },
-  ], [products]);
+  ], [productImage]);
 
   return <>
     <MiniDivider />

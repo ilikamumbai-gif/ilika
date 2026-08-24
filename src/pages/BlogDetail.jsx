@@ -83,6 +83,20 @@ const LANDING_ROUTE_PRODUCT_MATCHERS = {
   ],
 };
 
+const HAIR_DRYER_PRODUCT_PATH = "/product/leafless-hair-dryer";
+const HAIR_DRYER_YOUTUBE_URL = "https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg";
+const HAIR_DRYER_IMAGE_FALLBACK = "/Images/HairdrayerCard.webp";
+
+const getProductGalleryImages = (product = {}) => {
+  const primaryVariant = product?.variants?.find((variant) => variant?.isDefault) || product?.variants?.[0];
+  return Array.from(new Set([
+  ...(Array.isArray(primaryVariant?.images) ? primaryVariant.images : []),
+  ...(Array.isArray(product?.images) ? product.images : []),
+  product?.image,
+  product?.imageUrl,
+].filter(Boolean)));
+};
+
 const matchesProductLookup = (product, lookups = []) => {
   if (!product || !Array.isArray(lookups) || !lookups.length) return false;
 
@@ -352,7 +366,6 @@ const BlogDetail = () => {
     () => normalizeInternalLinks(blog?.internalLinks, blog?.internalLink),
     [blog?.internalLinks, blog?.internalLink]
   );
-  const hasHeroImage = Boolean(String(blog?.image || "").trim());
 
   const linkedProduct = useMemo(() => {
     if (!blogInternalLink || !Array.isArray(products) || products.length === 0) return null;
@@ -373,6 +386,18 @@ const BlogDetail = () => {
     );
   }, [blogInternalLink, products]);
 
+  const isHairDryerBlog = useMemo(() => {
+    const title = String(blog?.title || "").toLowerCase();
+    return blogInternalLink === HAIR_DRYER_PRODUCT_PATH || title.includes("hair dryer") || title.includes("blow-dry");
+  }, [blog?.title, blogInternalLink]);
+  const hairDryerGalleryImages = useMemo(() => {
+    if (!isHairDryerBlog) return [];
+    const images = getProductGalleryImages(linkedProduct);
+    return images.length ? images : [HAIR_DRYER_IMAGE_FALLBACK];
+  }, [isHairDryerBlog, linkedProduct]);
+  const displayHeroImage = isHairDryerBlog ? hairDryerGalleryImages[0] : blog?.image;
+  const hasHeroImage = Boolean(String(displayHeroImage || "").trim());
+
   const handleAddLinkedProductToCart = () => {
     if (!linkedProduct) return;
 
@@ -386,6 +411,7 @@ const BlogDetail = () => {
     addToCart(cartItem);
   };
 
+
   const blogSlug = useMemo(
     () => String(blog?.slug || createSlug(blog?.title || slug || "blog")).trim().toLowerCase(),
     [blog?.slug, blog?.title, slug]
@@ -398,7 +424,7 @@ const BlogDetail = () => {
     blog?.metaDescription ||
     blog?.excerpt ||
     "Read Ilika blog articles for skincare tips, beauty routines, and product insights.";
-  const seoImage = blog?.image || "https://ilika.in/Images/logo2.webp";
+  const seoImage = displayHeroImage || "https://ilika.in/Images/logo2.webp";
   const seoKeywords = [
     "Ilika blog",
     "skincare tips",
@@ -416,6 +442,12 @@ const BlogDetail = () => {
         headline: blog.title,
         description: seoDescription,
         image: [seoImage],
+        about: isHairDryerBlog ? {
+          "@type": "Product",
+          name: "Ilika High-Speed BLDC Hair Dryer",
+          url: `https://ilika.in${HAIR_DRYER_PRODUCT_PATH}`,
+          image: hairDryerGalleryImages,
+        } : undefined,
         author: {
           "@type": "Organization",
           name: blog.author || "Ilika Team",
@@ -554,7 +586,7 @@ const BlogDetail = () => {
                     decoding="async"
                     width="1200"
                     height="800"
-                    src={blog.image}
+                    src={displayHeroImage}
                     alt={blog.title}
                     className="h-full min-h-[220px] w-full object-cover sm:min-h-[260px]"
                   />
@@ -563,6 +595,29 @@ const BlogDetail = () => {
             </div>
 
             {contentSections.map((section, index) => renderSectionBlock(section, index))}
+
+            {isHairDryerBlog ? (
+              <section className="rounded-[32px] border border-[#dfe8df] bg-[#f8fbf8] p-5 sm:p-7">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#801f1f]">Ilika product gallery</p>
+                    <h2 className="mt-2 text-2xl font-semibold text-[#1C371C] sm:text-3xl">Explore the Ilika High-Speed Hair Dryer</h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-[#4a5f4a]">See the actual product images, then visit the product page or watch Ilika videos on YouTube.</p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <Link to={HAIR_DRYER_PRODUCT_PATH} className="rounded-full bg-[#1C371C] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#315d35]">Shop Product</Link>
+                    <a href={HAIR_DRYER_YOUTUBE_URL} target="_blank" rel="noreferrer" className="rounded-full border border-[#1C371C] px-4 py-2.5 text-sm font-bold text-[#1C371C] transition hover:bg-white">Watch on YouTube</a>
+                  </div>
+                </div>
+                <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {hairDryerGalleryImages.map((image, index) => (
+                    <figure key={`${image}-${index}`} className="overflow-hidden rounded-2xl border border-[#e2ece2] bg-white">
+                      <img src={image} alt={`Ilika leafless hair dryer product view ${index + 1}`} loading="lazy" className="aspect-square h-full w-full object-cover" />
+                    </figure>
+                  ))}
+                </div>
+              </section>
+            ) : null}
 
             {blogInternalLinks.length > 0 && (
               <section className="relative overflow-hidden rounded-[32px] border border-[#dfe8df] bg-[linear-gradient(135deg,#f7fbf7_0%,#eef5ee_55%,#fdf8f4_100%)] p-5 shadow-[0_18px_50px_rgba(28,55,28,0.06)] sm:p-7">

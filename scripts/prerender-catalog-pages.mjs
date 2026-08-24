@@ -4,6 +4,9 @@ import { STATIC_BLOGS } from "../src/data/privateBlogs.js";
 import { buildBlogUrl } from "../src/utils/blogRoutes.js";
 
 const SITE_URL = "https://ilika.in";
+const HAIR_DRYER_PRODUCT_PATH = "/product/leafless-hair-dryer";
+const HAIR_DRYER_YOUTUBE_URL = "https://www.youtube.com/channel/UC-oOVpDlsRaNrEi1a4dMOTg";
+const HAIR_DRYER_IMAGE_FALLBACK = "/Images/HairdrayerCard.webp";
 
 const escapeHtml = (value = "") => String(value)
   .replace(/&/g, "&amp;")
@@ -76,6 +79,18 @@ const injectRoot = (html, content) => {
   return html.replace(/<div id="root">[\s\S]*?<\/body>/i, `${root}\n</body>`);
 };
 const getBlogRoute = (blog) => buildBlogUrl(blog);
+const isHairDryerBlog = (blog = {}) =>
+  String(blog?.internalLink || "").trim().toLowerCase() === HAIR_DRYER_PRODUCT_PATH ||
+  /hair dryer|blow-dry/i.test(String(blog?.title || ""));
+const getProductImages = (product = {}) => {
+  const primaryVariant = product?.variants?.find((variant) => variant?.isDefault) || product?.variants?.[0];
+  return Array.from(new Set([
+  ...(Array.isArray(primaryVariant?.images) ? primaryVariant.images : []),
+  ...(Array.isArray(product?.images) ? product.images : []),
+  product?.image,
+  product?.imageUrl,
+].filter(Boolean)));
+};
 const getBlogBody = (blog) => {
   if (Array.isArray(blog?.contentSections) && blog.contentSections.length) {
     return blog.contentSections.map((section) => `${section?.image ? `<img src="${escapeHtml(section.image)}" alt="${escapeHtml(blog.title)}" />` : ""}${section?.content || ""}`).join("\n");
@@ -83,14 +98,18 @@ const getBlogBody = (blog) => {
   return String(blog?.content || blog?.description || blog?.excerpt || "");
 };
 
-const buildBlogPage = (blog, route) => {
+const buildBlogPage = (blog, route, hairDryerProduct) => {
   const title = blog.metaTitle || `${blog.title} | Ilika Blog`;
   const description = blog.metaDescription || blog.excerpt || stripHtml(getBlogBody(blog)) || "Read this Ilika article.";
   const canonical = absoluteUrl(route);
   const body = getBlogBody(blog);
-  const image = blog.image ? `<img src="${escapeHtml(blog.image)}" alt="${escapeHtml(blog.title)}" />` : "";
-  const schema = JSON.stringify({ "@context": "https://schema.org", "@type": "Article", headline: blog.title, description, mainEntityOfPage: canonical, datePublished: blog.createdAt || undefined, dateModified: blog.updatedAt || blog.createdAt || undefined, author: { "@type": "Organization", name: blog.author || "Ilika Team" } });
-  return { title, description, canonical, content: `<main id="prerendered-content" data-prerendered="blog"><article><nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog">Blog</a> / ${escapeHtml(blog.title)}</nav><h1>${escapeHtml(blog.title)}</h1>${image}<p>${escapeHtml(description)}</p>${body}<p><a href="${escapeHtml(route)}">Read ${escapeHtml(blog.title)}</a></p></article></main>`, schema };
+  const hairDryerArticle = isHairDryerBlog(blog);
+  const galleryImages = hairDryerArticle ? (getProductImages(hairDryerProduct).length ? getProductImages(hairDryerProduct) : [HAIR_DRYER_IMAGE_FALLBACK]) : [];
+  const heroImage = hairDryerArticle ? galleryImages[0] : blog.image;
+  const image = heroImage ? `<img src="${escapeHtml(heroImage)}" alt="${escapeHtml(blog.title)}" />` : "";
+  const gallery = hairDryerArticle ? `<section><h2>Ilika Hair Dryer Product Gallery</h2>${galleryImages.map((imageUrl, index) => `<img src="${escapeHtml(imageUrl)}" alt="Ilika High-Speed BLDC Hair Dryer product view ${index + 1}" />`).join("")}<p><a href="${HAIR_DRYER_PRODUCT_PATH}">Shop Ilika Hair Dryer</a> | <a href="${HAIR_DRYER_YOUTUBE_URL}">Watch on YouTube</a></p></section>` : "";
+  const schema = JSON.stringify({ "@context": "https://schema.org", "@type": "Article", headline: blog.title, description, image: heroImage ? [absoluteUrl(heroImage)] : undefined, mainEntityOfPage: canonical, datePublished: blog.createdAt || undefined, dateModified: blog.updatedAt || blog.createdAt || undefined, author: { "@type": "Organization", name: blog.author || "Ilika Team" }, about: hairDryerArticle ? { "@type": "Product", name: hairDryerProduct?.name || "Ilika High-Speed BLDC Hair Dryer", url: absoluteUrl(HAIR_DRYER_PRODUCT_PATH), image: galleryImages.map(absoluteUrl) } : undefined });
+  return { title, description, canonical, content: `<main id="prerendered-content" data-prerendered="blog"><article><nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog">Blog</a> / ${escapeHtml(blog.title)}</nav><h1>${escapeHtml(blog.title)}</h1>${image}<p>${escapeHtml(description)}</p>${body}${gallery}<p><a href="${escapeHtml(route)}">Read ${escapeHtml(blog.title)}</a></p></article></main>`, schema };
 };
 
 async function writeRoute(template, distDir, route, content, metadata = {}) {
@@ -139,7 +158,8 @@ async function main() {
     await writeRoute(template, distDir, route, `<main id="prerendered-content" data-prerendered="category"><h1>${escapeHtml(category.name || category.slug)}</h1>${crawlLinks}</main>`, { title: `${category.name || category.slug} | Ilika`, description: `Shop ${category.name || category.slug} products from Ilika.`, canonical: absoluteUrl(route) });
   }
   for (const { route, blog } of blogs) {
-    const page = buildBlogPage(blog, route);
+    const hairDryerProduct = publicProducts.find((product) => String(product?.productUrl || "").toLowerCase() === "leafless-hair-dryer" || /bldc hair dryer|leafless hair dryer/i.test(String(product?.name || "")));
+    const page = buildBlogPage(blog, route, hairDryerProduct);
     await writeRoute(template, distDir, route, page.content, { ...page, type: "article" });
   }
   console.log(`[prerender] Wrote ${publicProducts.length} product links, ${blogs.length} blog pages, and ${categories.length} category pages.`);

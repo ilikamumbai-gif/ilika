@@ -16,6 +16,7 @@ import Ctm from "../pages/Ctm";
 import Blog from "../pages/Blog";
 import UserDetail from "../pages/UserDetail";
 import BlogDetail from "../pages/BlogDetail";
+import HairDryerGuides from "../pages/HairDryerGuides";
 import Contact from "../pages/Contact";
 import Privacy from "../pages/Privacy";
 import ProductDetail from "../pages/ProductDetail";
@@ -91,6 +92,7 @@ const SEO_MATCHER_ROUTES = [
   { path: "/ctm" },
   { path: "/ctmkit" },
   { path: "/blog" },
+  { path: "/hair-dryer-guides" },
   { path: "/shopall" },
   { path: "/user" },
   { path: "/blog/:slug" },
@@ -205,6 +207,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/ctm") return { title: "Explore CTM", description: "Build your CTM skincare routine with Ilika." };
   if (pathname === "/ctmkit") return { title: "Create CTM Kit", description: "Customize your CTM kit with Ilika products." };
   if (pathname === "/blog") return { title: "Blog", description: "Beauty tips, guides, and updates from Ilika.", keywords: [...baseKeywords, "beauty blog", "skincare tips"] };
+  if (pathname === "/hair-dryer-guides") return { title: "Hair Dryer Guides | Ilika", description: "Explore practical hair dryer buying guides, styling tutorials, hair-care tips and BLDC technology explainers from Ilika." };
   if (pathname.startsWith("/blog/private/")) return { title: "Private Blog", description: "Private Ilika blog article.", keywords: [...baseKeywords, "private blog article"] };
   if (pathname.startsWith("/blog/")) return { title: "Blog Details", description: "Read Ilika blog articles and beauty insights.", keywords: [...baseKeywords, "blog article"] };
   if (pathname.startsWith("/product/")) return { title: "Product Details", description: "Explore product details, benefits, and pricing at Ilika.", keywords: [...baseKeywords, "product details", "buy online"] };
@@ -232,7 +235,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/herbal-hair-oil") return { title: "Herbal Hair Oil", description: "Explore Ilika Herbal Hair Growth Oil benefits, ingredients, and offers." };
   if (pathname === "/voice-mask-maker") return { title: "Voice Face Mask Maker", description: "Explore Ilika Voice Face Mask Maker Machine with Collagen Peptide." };
   if (pathname === "/nonvoice-mask-maker") return { title: "Non-Voice Face Mask Maker", description: "Explore Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide." };
-  if (pathname === "/leafless-hair-dryer") return { title: "Leafless Hair Dryer", description: "Explore Ilika High-Speed Leafless Hair Dryer." };
+  if (pathname === "/leafless-hair-dryer") return { title: "Ilika Leafless Hair Dryer – 110,000 RPM BLDC Ionic Hair Dryer", description: "Shop Ilika High-Speed BLDC Leafless Hair Dryer with a 110,000 RPM motor, ionic technology, intelligent temperature control and lightweight design for fast, smooth drying.", keywords: ["Ilika leafless hair dryer", "110000 RPM BLDC hair dryer", "ionic hair dryer", "leafless hair dryer India"] };
   if (pathname === "/high-frequency-therapy-wand") return { title: "Ilika High Frequency Therapy Wand | For Acne Treatment, Skin Rejuvenation, Hair Growth & Scalp Care", description: "Explore Ilika High Frequency Therapy Wand." };
   if (pathname === "/hot-cold-blackhead-remover") return { title: "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening", description: "Explore Ilika Blackhead Remover - Hot & Cold." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
@@ -404,6 +407,7 @@ const NavRoutes = () => {
 
         <Route path="/blog" element={renderLazy(Blog)} />
         <Route path="/blog/private/:slug" element={renderLazy(BlogDetail)} />
+        <Route path="/hair-dryer-guides" element={renderLazy(HairDryerGuides)} />
         <Route path="/shopall" element={renderLazy(ShopAll)} />
 
         <Route
