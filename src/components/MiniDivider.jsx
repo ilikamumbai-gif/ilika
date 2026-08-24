@@ -2,8 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 export const MiniDividerStrip = () => {
-  const saleText = "Make Salon Quality Face Mask At Home - Use Coupon Code: ilikaDIY";
-  const productLink = "/product/ilika-automatic-voice-version-face-mask-maker-machine-with-collagen-peptide";
+  const saleText = "15% OFF on MRP - Raksha Bandhan Offer on Mask Makers & Hair Dryers";
+  const productLink = "/offers";
 
   return (
     <div className="h-6 w-full overflow-hidden bg-[#b34140] text-[#fff7f3]">

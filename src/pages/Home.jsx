@@ -17,7 +17,6 @@ import Banner from "../components/Banner";
 const CartDrawer = lazy(() => import("../components/CartDrawer"));
 const Footer = lazy(() => import("../components/Footer"));
 const CategoryNav = lazy(() => import("../components/CategoryNav"));
-const HomeDivisionSttrip = lazy(() => import("../components/HomeDivisionSttrip"));
 const HomeTrendingShowcase = lazy(() => import("../components/HomeTrendingShowcase"));
 const GroomingLeadOffer = lazy(() => import("../components/GroomingLeadOffer"));
 
@@ -516,12 +515,6 @@ const TrendingShowcaseSkeleton = ({ minHeight = 360, dark = false }) => (
         ))}
       </div>
     </div>
-  </HomeSectionSkeleton>
-);
-
-const DividerStripSkeleton = () => (
-  <HomeSectionSkeleton minHeight={120} className="py-4">
-    <SkeletonBlock className="h-[118px] w-full rounded-none bg-[#d8a2a1]" />
   </HomeSectionSkeleton>
 );
 
@@ -1055,35 +1048,6 @@ const Home = () => {
                 </Suspense>
               </LazyMountSection>
 
-              <LazyMountSection minHeight={120}>
-                <Suspense fallback={<DividerStripSkeleton />}>
-                  <HomeDivisionSttrip
-                    offers={[
-                      {
-                        title: "Extra 15% Off",
-                        subtitle: "on Voice Mask Maker Machine",
-                        codeLabel: "Use Code",
-                        code: "ILIKADIY",
-                        to: "/product/voice-face-mask-maker",
-                      },
-                      {
-                        title: "Extra 15% Off",
-                        subtitle: "on Hair Dryer",
-                        codeLabel: "Use Code",
-                        code: "ILIKA15",
-                        to: "/product/leafless-hair-dryer",
-                      },
-                      {
-                        title: "Extra 15% Off",
-                        subtitle: "on Airwrap",
-                        codeLabel: "Use Code",
-                        code: "ILIKA15",
-                        to: "/product/airwrap-multi-styler-kit",
-                      },
-                    ]}
-                  />
-                </Suspense>
-              </LazyMountSection>
             </>
           ) : (
             <>
@@ -1111,37 +1075,6 @@ const Home = () => {
                   />
                 </Suspense>
               </LazyMountSection>
-
-              <LazyMountSection minHeight={120}>
-                <Suspense fallback={<DividerStripSkeleton />}>
-                  <HomeDivisionSttrip
-                    offers={[
-                      {
-                        title: "Extra 15% Off",
-                        subtitle: "on Voice Mask Maker Machine",
-                        codeLabel: "Use Code",
-                        code: "ILIKADIY",
-                        to: "/product/voice-face-mask-maker",
-                      },
-                      {
-                        title: "Extra 15% Off",
-                        subtitle: "on Hair Dryer",
-                        codeLabel: "Use Code",
-                        code: "ILIKA15",
-                        to: "/product/leafless-hair-dryer",
-                      },
-                      {
-                        title: "Extra 15% Off",
-                        subtitle: "on Airwrap",
-                        codeLabel: "Use Code",
-                        code: "ILIKA15",
-                        to: "/product/airwrap-multi-styler-kit",
-                      },
-                    ]}
-                  />
-                </Suspense>
-              </LazyMountSection>
-
 
             </>
           )}
@@ -1252,36 +1185,6 @@ const Home = () => {
             </Suspense>
           </LazyMountSection>
 
-          <LazyMountSection minHeight={120} placeholder={<DividerStripSkeleton />}>
-            <Suspense fallback={<DividerStripSkeleton />}>
-              <HomeDivisionSttrip
-                offers={[
-                  {
-                    title: "Extra 15% Off",
-                    subtitle: "on Voice Mask Maker Machine",
-                    codeLabel: "Use Code",
-                    code: "ILIKADIY",
-                    to: "/product/voice-face-mask-maker",
-                  },
-                  {
-                    title: "Extra 15% Off",
-                    subtitle: "on Hair Dryer",
-                    codeLabel: "Use Code",
-                    code: "ILIKA15",
-                    to: "/product/leafless-hair-dryer",
-                  },
-                  {
-                    title: "Extra 15% Off",
-                    subtitle: "on Airwrap",
-                    codeLabel: "Use Code",
-                    code: "ILIKA15",
-                    to: "/product/airwrap-multi-styler-kit",
-                  },
-                ]}
-              />
-            </Suspense>
-          </LazyMountSection>
-
           {/* APPLIANCES RANGE*/}
           <LazyMountSection
             minHeight={620}
@@ -1379,36 +1282,6 @@ const Home = () => {
                   </p>
                 )}
               </div>
-            </Suspense>
-          </LazyMountSection>
-
-          <LazyMountSection minHeight={120} placeholder={<DividerStripSkeleton />}>
-            <Suspense fallback={<DividerStripSkeleton />}>
-              <HomeDivisionSttrip
-                offers={[
-                  {
-                    title: "Extra 15% Off",
-                    subtitle: "on Voice Mask Maker Machine",
-                    codeLabel: "Use Code",
-                    code: "ILIKADIY",
-                    to: "/product/voice-face-mask-maker",
-                  },
-                  {
-                    title: "Extra 15% Off",
-                    subtitle: "on Hair Dryer",
-                    codeLabel: "Use Code",
-                    code: "ILIKA15",
-                    to: "/product/leafless-hair-dryer",
-                  },
-                  {
-                    title: "Extra 15% Off",
-                    subtitle: "on Airwrap",
-                    codeLabel: "Use Code",
-                    code: "ILIKA15",
-                    to: "/product/airwrap-multi-styler-kit",
-                  },
-                ]}
-              />
             </Suspense>
           </LazyMountSection>
 
