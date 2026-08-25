@@ -443,10 +443,9 @@ const BlogDetail = () => {
         description: seoDescription,
         image: [seoImage],
         about: isHairDryerBlog ? {
-          "@type": "Product",
+          "@type": "Thing",
           name: "Ilika High-Speed BLDC Hair Dryer",
           url: `https://ilika.in${HAIR_DRYER_PRODUCT_PATH}`,
-          image: hairDryerGalleryImages,
         } : undefined,
         author: {
           "@type": "Organization",
