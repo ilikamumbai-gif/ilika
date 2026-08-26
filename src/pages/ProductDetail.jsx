@@ -99,6 +99,43 @@ const stripHtml = (value = "") =>
     .replace(/\s+/g, " ")
     .trim();
 
+// Pulls a written warranty duration (e.g. "18 Months", "1 Year") out of
+// whatever text the product actually has. Returns "" if nothing is found.
+const extractWarrantyDurationLabel = (text = "") => {
+  const durationMatch = String(text || "").match(
+    /(\d+)\s*[-\s]?\s*(year|years|yr|yrs|month|months|mo|mos)\b/i
+  );
+  if (!durationMatch) return "";
+
+  const amount = parseInt(durationMatch[1], 10);
+  if (!amount) return "";
+
+  const unitRaw = durationMatch[2].toLowerCase();
+  const isYear = unitRaw.startsWith("y");
+  const unitLabel = isYear
+    ? (amount === 1 ? "Year" : "Years")
+    : (amount === 1 ? "Month" : "Months");
+
+  return `${amount} ${unitLabel} Warranty`;
+};
+
+// Gathers the text from exactly the "Warranty Terms" tab — the only
+// place a duration should be pulled from — into one searchable string.
+const buildWarrantySearchText = (product = {}) => {
+  return Array.isArray(product?.warrantyTerms)
+    ? product.warrantyTerms.join(" \n ")
+    : String(product?.warrantyTerms || "");
+};
+
+// Only returns a warranty label when a real duration is written in the
+// Warranty Terms tab content. If the product has no duration written
+// there (most products), returns "" — nothing is guessed from the
+// warranty category, and no badge shows up anywhere.
+const getEffectiveWarrantyLabel = (product = {}) => {
+  if (!product?.warranty) return "";
+  return extractWarrantyDurationLabel(buildWarrantySearchText(product));
+};
+
 const splitWhyLoveItText = (value = "") => {
   const text = String(value || "").trim();
   if (!text) return { title: "", description: "" };
@@ -554,11 +591,68 @@ const EmiOfferCard = ({
 };
 
 const buildTrustStripItems = (product = {}) => [
-  { icon: Wallet, title: "COD Available", subtitle: "" },
-  { icon: ShieldCheck, title: "Secure Payment", subtitle: "" },
-  { icon: Package, title: "Free Delivery", subtitle: "" },
-  { icon: Truck, title: "Easy Replacement", subtitle: "", to: "/return" },
+  { icon: Package, title: "Free Delivery", subtitle: "Across India" },
+  { icon: Wallet, title: "COD Available", subtitle: "Pay at your doorstep" },
+  { icon: ShieldCheck, title: "Secure Payment", subtitle: "UPI, cards, wallet" },
+  { icon: Truck, title: "Easy Replacement", subtitle: "7-day easy replacement", to: "/return" },
 ];
+
+/**
+ * "Delivery & Trust Info" 2x2 grid — soft cream cards, each with a rounded
+ * icon badge, title, optional subtitle, and an optional "Read more" link.
+ * Cards fade/slide in with a subtle stagger on mount and lift softly on hover.
+ */
+const DeliveryTrustGrid = ({ items = [] }) => {
+  if (!items.length) return null;
+
+  return (
+    <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
+      <style>{`
+        @keyframes trustRowIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+      {items.map((item, index) => {
+        const ItemIcon = item.icon;
+        return (
+          <div
+            key={item.title || index}
+            className="group rounded-[16px] bg-[#faf5ec] px-4 py-3.5 opacity-0 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#f6efe0] hover:shadow-[0_8px_20px_rgba(69,39,34,0.08)]"
+            style={{
+              animation: "trustRowIn 0.45s ease-out forwards",
+              animationDelay: `${index * 70}ms`,
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#f1e6d3] text-[#8a6d3b] transition-transform duration-200 ease-out group-hover:scale-110">
+                {ItemIcon ? <ItemIcon className="h-4.5 w-4.5" strokeWidth={1.8} /> : null}
+              </span>
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold leading-[1.3] text-gray-900 sm:text-sm">
+                  {item.title}
+                </p>
+                {item.subtitle && (
+                  <p className="mt-0.5 text-[12px] leading-[1.3] text-gray-500 sm:text-[13px]">
+                    {item.subtitle}
+                  </p>
+                )}
+                {item.to && (
+                  <Link
+                    to={item.to}
+                    className="mt-1.5 inline-block text-[12px] font-semibold text-gray-900 underline-offset-2 hover:underline sm:text-[13px]"
+                  >
+                    Read more
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const toAbsoluteUrl = (value = "", fallbackOrigin = "https://ilika.in") => {
   const raw = String(value || "").trim();
@@ -1069,11 +1163,11 @@ const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex =
             </button>
 
             {/* Warranty note */}
-            {product?.warranty && (
+            {getEffectiveWarrantyLabel(product) && (
               <div className="flex items-center justify-center gap-1.5 pt-1">
                 <ShieldCheck className="w-3 h-3 text-[#801f1f]" />
                 <span className="text-[10px] text-[#801f1f] font-semibold">
-                  {product.warranty === "manufacturer" ? "18 Months Warranty" : "1 Year Warranty"}
+                  {getEffectiveWarrantyLabel(product)}
                 </span>
               </div>
             )}
@@ -2606,11 +2700,11 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
         </div>
 
         {/* WARRANTY STRIP */}
-        {product?.warranty && (
+        {getEffectiveWarrantyLabel(product) && (
           <div className="border-t py-1.5 flex items-center justify-center gap-1.5" style={{ backgroundColor: theme.reviewSurface, borderColor: theme.borderSoft }}>
             <ShieldCheck className="w-3 h-3 flex-shrink-0" style={{ color: theme.accent }} />
             <span className="text-[10px] font-semibold tracking-wide" style={{ color: theme.accent }}>
-              {product.warranty === "manufacturer" ? "18 Months Warranty" : "1 Year Warranty"}
+              {getEffectiveWarrantyLabel(product)}
             </span>
           </div>
         )}
@@ -2868,7 +2962,13 @@ const ProductDetail = () => {
       const footerTop = footerTrigger.getBoundingClientRect().top;
       const cardHeight = cardEl.offsetHeight || 0;
       const maxTopBeforeFooter = footerTop - cardHeight - FOOTER_GAP;
-      const nextTop = Math.min(DESKTOP_DEFAULT_TOP, maxTopBeforeFooter);
+      // Never let the card go above the top of the viewport — on a short page, or
+      // during the first paint before images/content settle, maxTopBeforeFooter can
+      // go negative, which pushed the whole price/Buy Now/Add to Cart card off the
+      // top of the screen (not just scrolled — actually invisible). Floor it at a
+      // small on-screen offset instead.
+      const MIN_TOP = 16;
+      const nextTop = Math.max(MIN_TOP, Math.min(DESKTOP_DEFAULT_TOP, maxTopBeforeFooter));
 
       setDesktopPriceCardTop(nextTop);
     };
@@ -3850,11 +3950,10 @@ const ProductDetail = () => {
     });
     return `/warranty-registration?${params.toString()}`;
   }, [product]);
-  const warrantyButtonLabel = useMemo(() => {
-    if (product?.warranty === "manufacturer") return "18 Months Warranty";
-    if (product?.warranty === "import") return "1 Year Warranty";
-    return "";
-  }, [product?.warranty]);
+  const warrantyButtonLabel = useMemo(
+    () => getEffectiveWarrantyLabel(product),
+    [product?.warranty]
+  );
 
   const detailPageBgColor = useMemo(() => {
     return normalizeHexColor(product?.detailPageDefaultBg) || DEFAULT_DETAIL_BG;
@@ -4087,6 +4186,23 @@ const ProductDetail = () => {
     [product?.whyYouLoveIt, product?.whyLoveIt, product?.benefits]
   );
   const trustStripItems = useMemo(() => buildTrustStripItems(product), [product]);
+  const trustGridItems = useMemo(() => {
+    const cards = trustStripItems.map((item) => ({
+      icon: item.icon,
+      title: item.title,
+      subtitle: item.subtitle,
+      to: item.to,
+    }));
+    if (warrantyButtonLabel) {
+      cards.push({
+        icon: ShieldCheck,
+        title: warrantyButtonLabel,
+        subtitle: "Ilika support",
+        to: product?.warranty === "import" ? warrantyRegistrationUrl : null,
+      });
+    }
+    return cards;
+  }, [trustStripItems, warrantyButtonLabel, product?.warranty, warrantyRegistrationUrl]);
 
   const warrantySections = useMemo(() => {
     const raw = Array.isArray(product?.warrantyTerms)
@@ -4908,6 +5024,8 @@ const ProductDetail = () => {
 
               {product.hasVariants && <div>{renderVariantSelector()}</div>}
 
+              <DeliveryTrustGrid items={trustGridItems} />
+
               {packOptions.length > 0 && (
                 <div className="px-0 py-0">
                   <p className="mb-3 text-sm font-semibold leading-snug sm:text-base" style={{ color: detailTheme.heading }}>
@@ -5209,78 +5327,6 @@ const ProductDetail = () => {
                         />
                       </div>
                     </div>
-
-                    {trustStripItems.length > 0 && (
-                      <div
-                        className="rounded-[18px] border bg-white px-3 py-3"
-                        style={{
-                          borderColor: detailTheme.borderSoft,
-                          boxShadow: "0 10px 24px rgba(69,39,34,0.05)",
-                        }}
-                      >
-                        <div className="grid grid-cols-4 gap-2">
-                        {trustStripItems.map((item) => {
-                          const TrustIcon = item.icon;
-                          const TrustItemTag = item.to ? Link : "div";
-                          return (
-                            <TrustItemTag
-                              key={item.title}
-                              {...(item.to ? { to: item.to } : {})}
-                              className="flex min-w-0 flex-col items-center justify-start gap-2 px-1 py-1 text-center"
-                            >
-                              <span
-                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border"
-                                style={{
-                                  color: detailTheme.accent,
-                                  borderColor: detailTheme.borderSoft,
-                                  backgroundColor: detailTheme.isDefaultWhite ? "#fffdfa" : hexToRgba(detailTheme.accentSoft, 0.16),
-                                }}
-                              >
-                                <TrustIcon className="h-4.5 w-4.5" />
-                              </span>
-                              <div className="min-w-0">
-                                <p
-                                  className="text-[10px] font-semibold leading-[1.25] tracking-[-0.01em] sm:text-[11px]"
-                                  style={{ color: detailTheme.heading }}
-                                >
-                                  {item.title}
-                                </p>
-                              </div>
-                            </TrustItemTag>
-                          );
-                        })}
-                        </div>
-                      </div>
-                    )}
-
-                    {warrantyButtonLabel && (
-                      product?.warranty === "import" ? (
-                        <Link
-                          to={warrantyRegistrationUrl}
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold"
-                          style={{
-                            color: detailTheme.accent,
-                            borderColor: detailTheme.accentLine,
-                            backgroundColor: detailTheme.reviewSurface,
-                          }}
-                        >
-                          <ShieldCheck className="h-3.5 w-3.5" />
-                          {warrantyButtonLabel}
-                        </Link>
-                      ) : (
-                        <div
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold"
-                          style={{
-                            color: detailTheme.accent,
-                            borderColor: detailTheme.accentLine,
-                            backgroundColor: detailTheme.reviewSurface,
-                          }}
-                        >
-                          <ShieldCheck className="h-3.5 w-3.5" />
-                          {warrantyButtonLabel}
-                        </div>
-                      )
-                    )}
                   </div>
                 </div>
               </div>
@@ -5395,8 +5441,12 @@ const ProductDetail = () => {
           >
             <div
               ref={desktopPriceCardRef}
-              className="rounded-[24px] border bg-white p-4 shadow-[0_18px_40px_rgba(69,39,34,0.06)] sm:p-5"
-              style={{ borderColor: detailTheme.borderSoft }}
+              className="rounded-[24px] border bg-white p-4 shadow-[0_18px_40px_rgba(69,39,34,0.06)] sm:p-5 overflow-y-auto [&::-webkit-scrollbar]:hidden"
+              style={{
+                borderColor: detailTheme.borderSoft,
+                scrollbarWidth: "none",
+                maxHeight: `calc(100vh - ${desktopPriceCardTop}px - 1.5rem)`,
+              }}
             >
               <div className="space-y-4">
                 <div className="rounded-[20px] px-4 py-4 sm:px-5" style={{ backgroundColor: detailTheme.reviewSurface }}>
@@ -5511,78 +5561,6 @@ const ProductDetail = () => {
                     className="hidden"
                   />
                 </div>
-
-                {trustStripItems.length > 0 && (
-                  <div
-                    className="hidden rounded-[18px] border bg-white px-3 py-3"
-                    style={{
-                      borderColor: detailTheme.borderSoft,
-                      boxShadow: "0 10px 24px rgba(69,39,34,0.05)",
-                    }}
-                  >
-                    <div className="grid grid-cols-4 gap-2">
-                    {trustStripItems.map((item) => {
-                      const TrustIcon = item.icon;
-                      const TrustItemTag = item.to ? Link : "div";
-                      return (
-                        <TrustItemTag
-                          key={item.title}
-                          {...(item.to ? { to: item.to } : {})}
-                          className="flex min-w-0 flex-col items-center justify-start gap-2 px-1 py-1 text-center"
-                        >
-                          <span
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border"
-                            style={{
-                              color: detailTheme.accent,
-                              borderColor: detailTheme.borderSoft,
-                              backgroundColor: detailTheme.isDefaultWhite ? "#fffdfa" : hexToRgba(detailTheme.accentSoft, 0.16),
-                            }}
-                          >
-                            <TrustIcon className="h-4.5 w-4.5" />
-                          </span>
-                          <div className="min-w-0">
-                            <p
-                              className="text-[10px] font-semibold leading-[1.25] tracking-[-0.01em] sm:text-[11px]"
-                              style={{ color: detailTheme.heading }}
-                            >
-                              {item.title}
-                            </p>
-                          </div>
-                        </TrustItemTag>
-                      );
-                    })}
-                    </div>
-                  </div>
-                )}
-
-                {warrantyButtonLabel && (
-                  product?.warranty === "import" ? (
-                    <Link
-                      to={warrantyRegistrationUrl}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold"
-                      style={{
-                        color: detailTheme.accent,
-                        borderColor: detailTheme.accentLine,
-                        backgroundColor: detailTheme.reviewSurface,
-                      }}
-                    >
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      {warrantyButtonLabel}
-                    </Link>
-                  ) : (
-                    <div
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold"
-                      style={{
-                        color: detailTheme.accent,
-                        borderColor: detailTheme.accentLine,
-                        backgroundColor: detailTheme.reviewSurface,
-                      }}
-                    >
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      {warrantyButtonLabel}
-                    </div>
-                  )
-                )}
               </div>
             </div>
           </div>
