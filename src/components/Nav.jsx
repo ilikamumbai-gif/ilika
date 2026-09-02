@@ -550,13 +550,17 @@ const Nav = ({ mobile, onClose, subheaderLinks = [] }) => {
               </div>
             )}
           </div>
-          <Link to="/user" className="shrink-0 text-[#231815] transition hover:text-black">
-            <User />
+          <Link to="/user" aria-label="Open account" className="shrink-0 text-[#231815] transition hover:text-black">
+            <User aria-hidden="true" />
           </Link>
-          <ShoppingBag
-            className="w-6 h-6 shrink-0 cursor-pointer text-[#231815] transition hover:text-black"
+          <button
+            type="button"
+            aria-label="Open shopping cart"
             onClick={openCart}
-          />
+            className="inline-flex shrink-0 text-[#231815] transition hover:text-black"
+          >
+            <ShoppingBag aria-hidden="true" className="h-6 w-6" />
+          </button>
         </div>
       )}
     </div>

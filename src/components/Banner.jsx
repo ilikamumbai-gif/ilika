@@ -104,10 +104,7 @@ const Banner = ({
 
   const shouldRenderSlide = (index) => {
     if (!hasMultiple) return true;
-    if (index === activeIndex) return true;
-    const prevIndex = (activeIndex - 1 + slidesToRender.length) % slidesToRender.length;
-    const nextIndex = (activeIndex + 1) % slidesToRender.length;
-    return index === prevIndex || index === nextIndex;
+    return index === activeIndex;
   };
 
   return (

@@ -75,7 +75,14 @@ const CartDrawer = () => {
           <h3 className="text-lg font-semibold">
             My Bag ({cartItems.length})
           </h3>
-          <X className="cursor-pointer" onClick={closeCart} />
+          <button
+            type="button"
+            onClick={closeCart}
+            aria-label="Close shopping cart"
+            className="inline-flex items-center justify-center"
+          >
+            <X aria-hidden="true" />
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">

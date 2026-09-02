@@ -993,7 +993,7 @@ const Home = () => {
                 </h1>
               </div>
 
-              <div className="mt-2 overflow-hidden bg-black">
+              <LazyMountSection minHeight={360} className="mt-2 overflow-hidden bg-black" rootMargin="0px">
                 <div className="relative aspect-video w-full bg-black">
                   {homeFeatureVideoId ? (
                     <iframe
@@ -1010,7 +1010,7 @@ const Home = () => {
                     </div>
                   )}
                 </div>
-              </div>
+              </LazyMountSection>
             </div>
           </section>
 
