@@ -426,6 +426,7 @@ const LazyMountSection = ({
   className = "",
   rootMargin = "40px 0px",
   placeholder = null,
+  onMount,
 }) => {
   const sectionRef = useRef(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -438,6 +439,7 @@ const LazyMountSection = ({
       (entries) => {
         if (entries[0]?.isIntersecting) {
           setIsMounted(true);
+          onMount?.();
           observer.disconnect();
         }
       },
@@ -652,6 +654,7 @@ const Home = () => {
   const [hairStart, setHairStart] = useState(0);
   const [landingStart, setLandingStart] = useState(0);
   const [activeHonestReview, setActiveHonestReview] = useState(null);
+  const [honestReviewsMounted, setHonestReviewsMounted] = useState(false);
   const honestReviewsScrollRef = useRef(null);
   const honestReviewsPausedRef = useRef(false);
   const [isMobile, setIsMobile] = useState(() =>
@@ -829,26 +832,18 @@ const Home = () => {
   }, [activeProducts]);
   const autoScrollHonestReviews = useMemo(() => {
     if (homeHonestReviews.length <= 1) return homeHonestReviews;
-    return [...homeHonestReviews, ...homeHonestReviews, ...homeHonestReviews];
+    return [...homeHonestReviews, ...homeHonestReviews];
   }, [homeHonestReviews]);
 
   useEffect(() => {
     const container = honestReviewsScrollRef.current;
-    if (!container || homeHonestReviews.length <= 1) return undefined;
+    if (!honestReviewsMounted || !container || homeHonestReviews.length <= 1) return undefined;
 
     let animationFrameId = 0;
     let lastTimestamp = 0;
     const speed = 220;
 
-    const getLoopWidth = () => container.scrollWidth / 3;
-    const setInitialPosition = () => {
-      const loopWidth = getLoopWidth();
-      if (loopWidth > 0) {
-        container.scrollLeft = loopWidth;
-      }
-    };
-
-    setInitialPosition();
+    const getLoopWidth = () => container.scrollWidth / 2;
 
     const handleResize = () => {
       const loopWidth = getLoopWidth();
@@ -856,7 +851,7 @@ const Home = () => {
 
       const normalizedOffset =
         ((container.scrollLeft % loopWidth) + loopWidth) % loopWidth;
-      container.scrollLeft = loopWidth + normalizedOffset;
+      container.scrollLeft = normalizedOffset;
     };
 
     const step = (timestamp) => {
@@ -876,7 +871,7 @@ const Home = () => {
       }
 
       const nextScrollLeft = container.scrollLeft + (speed * delta) / 1000;
-      const maxScrollLeft = singleLoopWidth * 2;
+      const maxScrollLeft = singleLoopWidth;
 
       if (nextScrollLeft >= maxScrollLeft) {
         container.scrollLeft = nextScrollLeft - singleLoopWidth;
@@ -896,7 +891,7 @@ const Home = () => {
       window.removeEventListener("resize", handleResize);
       window.cancelAnimationFrame(animationFrameId);
     };
-  }, [homeHonestReviews]);
+  }, [homeHonestReviews, honestReviewsMounted]);
 
   const getVisibleCount = (total) => {
     if (total <= 0) return 0;
@@ -1286,7 +1281,7 @@ const Home = () => {
           </LazyMountSection>
 
           {homeHonestReviews.length ? (
-            <LazyMountSection minHeight={520}>
+            <LazyMountSection minHeight={520} onMount={() => setHonestReviewsMounted(true)}>
               <section className="bg-white px-4 py-8 sm:px-6 sm:py-10">
                 <div className="mx-auto max-w-7xl">
                   <div className="mb-5 flex items-start gap-4">

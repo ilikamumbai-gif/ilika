@@ -234,7 +234,7 @@ const Footer = () => {
             className="text-[44px] font-semibold leading-[1.08] tracking-tight text-white sm:text-[54px] lg:text-[74px] xl:text-[84px]"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
-            Elegent. Bright. You.
+            Elegant. Bright. You.
           </p>
           <OptimizedImage
             src={logo}
@@ -244,7 +244,7 @@ const Footer = () => {
             className="mx-auto mt-5 h-16 sm:h-20 lg:h-24 xl:h-28"
           />
           <p className="mx-auto mt-4 max-w-[760px] text-sm leading-7 text-white sm:text-[15px] lg:text-base">
-            Discover premium yet affordable skin care, hair care, and grooming essentials designed to make everyday beauty feel elegant, bright, and easy.
+            Ilika — Premium Skincare, Haircare & Grooming | Safe & Affordable Beauty, Trusted Across India
           </p>
         </div>
 
