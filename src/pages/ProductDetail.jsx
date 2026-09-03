@@ -443,7 +443,7 @@ const EmiOfferCard = ({
         style={{ borderColor: detailTheme.heading || detailTheme.borderSoft }}
       >
         <span
-          className="absolute left-4 top-0 z-10 inline-flex min-h-[26px] -translate-y-[40%] items-center rounded-[9px] px-3.5 py-1 text-[10px] font-semibold leading-none text-white shadow-[0_8px_18px_rgba(0,0,0,0.18)]"
+          className="ilika-badge-pulse absolute left-4 top-0 z-10 inline-flex min-h-[26px] -translate-y-[40%] items-center rounded-[9px] px-3.5 py-1 text-[10px] font-semibold leading-none text-white shadow-[0_8px_18px_rgba(0,0,0,0.18)]"
           style={{ backgroundColor: detailTheme.heading || "#111827" }}
         >
           EMI available
@@ -4655,6 +4655,48 @@ const ProductDetail = () => {
 
   return (
     <>
+      <style>{`
+        @keyframes ilikaCardIn {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes ilikaBadgePulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(128, 31, 31, 0.35); }
+          50% { box-shadow: 0 0 0 6px rgba(128, 31, 31, 0); }
+        }
+        @keyframes ilikaAccentGrow {
+          from { transform: scaleY(0.3); opacity: 0.4; }
+          to { transform: scaleY(1); opacity: 1; }
+        }
+        @keyframes ilikaGradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .ilika-card-in {
+          animation: ilikaCardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .ilika-badge-pulse {
+          animation: ilikaBadgePulse 2.2s ease-out infinite;
+        }
+        .ilika-accent-bar {
+          transform-origin: center;
+          animation: ilikaAccentGrow 0.4s ease-out both;
+        }
+        .ilika-hover-lift {
+          transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .ilika-hover-lift:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 16px 32px rgba(69, 39, 34, 0.14);
+        }
+        .ilika-gradient-border {
+          position: relative;
+          background: linear-gradient(90deg, #fff, #fff5f4, #fff);
+          background-size: 200% 200%;
+          animation: ilikaGradientShift 4s ease infinite;
+        }
+      `}</style>
       <StructuredData schema={productStructuredData} />
       <MiniDivider />
         {showReviewModal && (
@@ -5168,7 +5210,7 @@ const ProductDetail = () => {
               {/* Mobile purchase card */}
               <div className="h-fit lg:col-span-2 xl:hidden">
               <div
-                className="rounded-[20px] border bg-white p-3.5 shadow-[0_14px_32px_rgba(69,39,34,0.06)] sm:rounded-[24px] sm:p-5 sm:shadow-[0_18px_40px_rgba(69,39,34,0.06)] xl:sticky xl:top-[164px]"
+                className="ilika-card-in rounded-[20px] border bg-white p-3.5 shadow-[0_14px_32px_rgba(69,39,34,0.06)] sm:rounded-[24px] sm:p-5 sm:shadow-[0_18px_40px_rgba(69,39,34,0.06)] xl:sticky xl:top-[164px]"
                 style={{ borderColor: detailTheme.borderSoft }}
               >
                   <div className="space-y-4">
@@ -5177,7 +5219,7 @@ const ProductDetail = () => {
                         <div>
                           {topPriceBadgeLabel && (
                             <span
-                              className="mb-3 inline-flex max-w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] shadow-[0_10px_24px_rgba(69,39,34,0.12)] sm:rounded-[12px] sm:px-3.5 sm:text-[11px] sm:tracking-[0.08em]"
+                              className="ilika-badge-pulse mb-3 inline-flex max-w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] shadow-[0_10px_24px_rgba(69,39,34,0.12)] sm:rounded-[12px] sm:px-3.5 sm:text-[11px] sm:tracking-[0.08em]"
                               style={{
                                 backgroundColor: detailTheme.accent,
                                 color: detailTheme.onPrimary || "#ffffff",
@@ -5260,7 +5302,7 @@ const ProductDetail = () => {
                     <div className="space-y-3">
                       {!appliedCoupon && (
                         <div
-                          className="grid min-h-[52px] grid-cols-[auto_minmax(0,1fr)_64px] overflow-hidden rounded-[18px] border bg-white shadow-[0_10px_24px_rgba(69,39,34,0.05)]"
+                          className="ilika-hover-lift grid min-h-[52px] grid-cols-[auto_minmax(0,1fr)_64px] overflow-hidden rounded-[18px] border bg-white shadow-[0_10px_24px_rgba(69,39,34,0.05)]"
                           style={{
                             borderColor: detailTheme.borderSoft,
                             backgroundColor: detailTheme.isDefaultWhite ? "#fffafa" : "#fff",
@@ -5357,7 +5399,7 @@ const ProductDetail = () => {
                 <div className="hidden space-y-3 xl:block">
                   {!appliedCoupon && (
                     <div
-                      className="grid min-h-[96px] grid-cols-[1fr_auto] overflow-hidden rounded-[18px] border bg-white sm:min-h-[102px] sm:rounded-[22px]"
+                      className="ilika-hover-lift grid min-h-[96px] grid-cols-[1fr_auto] overflow-hidden rounded-[18px] border bg-white sm:min-h-[102px] sm:rounded-[22px]"
                       style={{
                         borderColor: detailTheme.borderSoft,
                         boxShadow: "0 10px 28px rgba(69,39,34,0.04)",
@@ -5867,7 +5909,11 @@ const ProductDetail = () => {
 
               <div className="grid grid-cols-3 gap-x-1 gap-y-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
                 {inTheBoxItems.map((item, index) => (
-                  <div key={item.id || index} className="flex min-w-0 flex-col items-center rounded-[18px] bg-white/70 px-1 py-1.5 text-center sm:w-[128px] sm:bg-transparent sm:px-0 sm:py-0">
+                  <div
+                    key={item.id || index}
+                    className="ilika-card-in ilika-hover-lift flex min-w-0 flex-col items-center rounded-[18px] bg-white/70 px-1 py-1.5 text-center sm:w-[128px] sm:bg-transparent sm:px-0 sm:py-0"
+                    style={{ animationDelay: `${Math.min(index, 8) * 70}ms` }}
+                  >
                     {item.image ? (
                       <img
                         loading={index < 2 ? "eager" : "lazy"}
@@ -6009,15 +6055,18 @@ const ProductDetail = () => {
           >
             <section className="max-w-[90rem] mx-auto px-4 sm:px-6 pb-2">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
+                <div className="ilika-accent-bar w-1 h-6 rounded-full" style={{ backgroundColor: detailTheme.accentSoft }} />
                 <h2 className="text-xl font-semibold" style={{ color: detailTheme.heading }}>You may also like</h2>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
                 {relatedProducts.map((item, idx) => (
-                  <ProductCard
+                  <div
                     key={item._id || item.id || `${createSlug(item.name || "product")}-${idx}`}
-                    product={item}
-                  />
+                    className="ilika-card-in ilika-hover-lift rounded-[24px]"
+                    style={{ animationDelay: `${Math.min(idx, 8) * 60}ms` }}
+                  >
+                    <ProductCard product={item} />
+                  </div>
                 ))}
               </div>
             </section>
@@ -6034,7 +6083,7 @@ const ProductDetail = () => {
             style={{ top: "148px" }}
           >
             <div
-              className="rounded-[24px] border bg-white p-4 shadow-[0_18px_40px_rgba(69,39,34,0.06)] sm:p-5 overflow-y-auto [&::-webkit-scrollbar]:hidden"
+              className="ilika-card-in rounded-[24px] border bg-white p-4 shadow-[0_18px_40px_rgba(69,39,34,0.06)] sm:p-5 overflow-y-auto [&::-webkit-scrollbar]:hidden"
               style={{
                 borderColor: detailTheme.borderSoft,
                 scrollbarWidth: "none",
@@ -6047,7 +6096,7 @@ const ProductDetail = () => {
                     <div>
                       {topPriceBadgeLabel && (
                         <span
-                          className="mb-3 inline-flex max-w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] shadow-[0_10px_24px_rgba(69,39,34,0.12)] sm:rounded-[12px] sm:px-3.5 sm:text-[11px] sm:tracking-[0.08em]"
+                          className="ilika-badge-pulse mb-3 inline-flex max-w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] shadow-[0_10px_24px_rgba(69,39,34,0.12)] sm:rounded-[12px] sm:px-3.5 sm:text-[11px] sm:tracking-[0.08em]"
                           style={{
                             backgroundColor: detailTheme.accent,
                             color: detailTheme.onPrimary || "#ffffff",
