@@ -14,12 +14,11 @@ import { auth, storage } from "../firebase/firebaseConfig";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { getDownloadURL, ref as storageRef, uploadString } from "firebase/storage";
-import * as LucideIcons from "lucide-react";
 import {
   Truck, ShieldCheck, BadgeCheck, Package,
   X, ChevronLeft, ChevronRight, ChevronDown, Star, Sparkles, Leaf, Heart, Shield, Droplets, ImagePlus,
   ZoomIn, ShoppingCart, Lock, Copy,
-  Wallet
+  Wallet, Sun, Moon, Zap, Activity, Briefcase
 } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import Lazy360ViewButton from "../components/product/Lazy360ViewButton";
@@ -177,6 +176,12 @@ const WHY_LOVE_IT_ICON_ALIASES = {
   wallet: "Wallet",
 };
 
+const WHY_LOVE_IT_ICONS = {
+  Truck, ShieldCheck, BadgeCheck, Package, Star, Sparkles, Leaf, Heart, Shield,
+  Droplets, ImagePlus, ZoomIn, ShoppingCart, Lock, Wallet, Sun, Moon, Zap,
+  Activity, Briefcase,
+};
+
 const toPascalCaseIconName = (value = "") =>
   String(value || "")
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
@@ -198,8 +203,8 @@ const resolveWhyLoveItIcon = (value = "") => {
   ].filter(Boolean);
 
   for (const candidate of candidates) {
-    const IconComponent = LucideIcons[candidate];
-    if (IconComponent && (typeof IconComponent === "function" || typeof IconComponent === "object")) {
+    const IconComponent = WHY_LOVE_IT_ICONS[candidate];
+    if (IconComponent) {
       return IconComponent;
     }
   }
@@ -2717,6 +2722,63 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    PRODUCT DETAIL PAGE
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* PREMIUM ANIMATED CTA BUTTON (Buy Now / Add to Cart)
+   - Fixes vertical/horizontal centering (previous buttons relied only
+     on min-h without flex, so the label could sit off-center,
+     especially when text wraps to "Out of Stock" / "Processing...").
+   - Adds a subtle shimmer sweep, hover lift + glow, and a press-down
+     micro-interaction so the CTA reads as premium rather than flat. */
+const AnimatedCtaButton = ({
+  onClick,
+  disabled,
+  loading,
+  icon: Icon,
+  label,
+  loadingLabel = "Processing...",
+  disabledLabel,
+  colors,
+  size = "md",
+  className = "",
+}) => {
+  const isDisabled = disabled || loading;
+  const sizeClasses = size === "lg"
+    ? "min-h-[54px] rounded-2xl px-4 py-3.5 text-sm sm:text-[15px]"
+    : "min-h-[52px] rounded-[18px] px-3 py-3.5 text-sm sm:min-h-[54px] sm:rounded-2xl";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={isDisabled}
+      className={`group relative isolate flex w-full items-center justify-center gap-2 overflow-hidden font-semibold whitespace-nowrap transition-all duration-300 ease-out
+        ${sizeClasses}
+        ${isDisabled
+          ? "cursor-not-allowed bg-gray-300 text-gray-500"
+          : "shadow-[0_8px_22px_rgba(0,0,0,0.14)] hover:-translate-y-[2px] hover:shadow-[0_14px_30px_rgba(0,0,0,0.20)] active:translate-y-0 active:scale-[0.97] active:shadow-[0_6px_14px_rgba(0,0,0,0.14)]"}
+        ${className}`}
+      style={isDisabled ? undefined : colors}
+    >
+      {!isDisabled && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
+        />
+      )}
+      {loading ? (
+        <>
+          <span className="h-4 w-4 flex-shrink-0 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          <span className="relative">{loadingLabel}</span>
+        </>
+      ) : (
+        <>
+          {Icon && !disabled && <Icon className="h-4 w-4 flex-shrink-0 transition-transform duration-300 group-hover:scale-110" />}
+          <span className="relative">{disabled ? (disabledLabel || label) : label}</span>
+        </>
+      )}
+    </button>
+  );
+};
+
 const ProductDetail = () => {
   const { products = [] } = useProducts();
   const { productUrl } = useParams();
@@ -2764,7 +2826,6 @@ const ProductDetail = () => {
 
   // Sticky ATC bar
   const [showStickyBar, setShowStickyBar] = useState(false);
-  const [desktopPriceCardTop, setDesktopPriceCardTop] = useState(148);
   const atcButtonsRef = useRef(null);
   const detailsTabsRef = useRef(null);
   const thumbsRef = useRef(null);
@@ -2772,7 +2833,6 @@ const ProductDetail = () => {
   const touchZoomTimerRef = useRef(null);
   const isTouchZoomActiveRef = useRef(false);
   const suppressImageClickRef = useRef(false);
-  const desktopPriceCardRef = useRef(null);
   // const footerRef = useRef(null);
 
 
@@ -2939,49 +2999,11 @@ const ProductDetail = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);// re-register when product loads so ref is valid
 
-  useEffect(() => {
-    const DESKTOP_DEFAULT_TOP = 148;
-    const FOOTER_GAP = 24;
-
-    const updateDesktopPriceCardPosition = () => {
-      if (typeof window === "undefined") return;
-
-      if (window.innerWidth < 1280) {
-        setDesktopPriceCardTop(DESKTOP_DEFAULT_TOP);
-        return;
-      }
-
-      const footerTrigger = document.getElementById("footer-trigger");
-      const cardEl = desktopPriceCardRef.current;
-
-      if (!footerTrigger || !cardEl) {
-        setDesktopPriceCardTop(DESKTOP_DEFAULT_TOP);
-        return;
-      }
-
-      const footerTop = footerTrigger.getBoundingClientRect().top;
-      const cardHeight = cardEl.offsetHeight || 0;
-      const maxTopBeforeFooter = footerTop - cardHeight - FOOTER_GAP;
-      // Never let the card go above the top of the viewport — on a short page, or
-      // during the first paint before images/content settle, maxTopBeforeFooter can
-      // go negative, which pushed the whole price/Buy Now/Add to Cart card off the
-      // top of the screen (not just scrolled — actually invisible). Floor it at a
-      // small on-screen offset instead.
-      const MIN_TOP = 16;
-      const nextTop = Math.max(MIN_TOP, Math.min(DESKTOP_DEFAULT_TOP, maxTopBeforeFooter));
-
-      setDesktopPriceCardTop(nextTop);
-    };
-
-    window.addEventListener("scroll", updateDesktopPriceCardPosition, { passive: true });
-    window.addEventListener("resize", updateDesktopPriceCardPosition);
-    updateDesktopPriceCardPosition();
-
-    return () => {
-      window.removeEventListener("scroll", updateDesktopPriceCardPosition);
-      window.removeEventListener("resize", updateDesktopPriceCardPosition);
-    };
-  }, []);
+  // NOTE: the desktop price/Buy-Now sidebar now uses CSS `position: sticky`
+  // as a real flex sibling of the main content column, so it docks below
+  // the header and naturally stops once its flex container (which spans
+  // all the way down to just above the footer) runs out of room. No JS
+  // scroll math needed — this also fixes it floating on top of the footer.
 
 
   /* Product detail routing uses productUrl only. */
@@ -4698,7 +4720,9 @@ const ProductDetail = () => {
         <CartDrawer />
 
         {/* â•â•â•â• HERO â•â•â•â• */}
-        <section className="relative max-w-[90rem] mx-auto px-3 sm:px-6 pt-3 pb-5 sm:pt-12 sm:pb-8 xl:pr-[23rem]">
+        <div className="relative max-w-[90rem] mx-auto xl:flex xl:items-start xl:gap-8">
+          <div className="min-w-0 flex-1">
+          <section className="px-3 sm:px-6 pt-3 pb-5 sm:pt-12 sm:pb-8">
           <div className="grid grid-cols-1 gap-4 sm:gap-7 lg:grid-cols-2 lg:gap-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] xl:gap-10">
 
             {/* Gallery */}
@@ -5295,27 +5319,25 @@ const ProductDetail = () => {
                   {freeGiftCard}
 
                   <div ref={atcButtonsRef} className="grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2">
-                      <button
+                      <AnimatedCtaButton
                         onClick={handleBuyNow}
-                        disabled={isOutOfStock || isBuying}
-                        className={`w-full rounded-[18px] px-2 py-3.5 text-sm font-semibold transition min-h-[52px] sm:min-h-[54px] sm:rounded-2xl ${isOutOfStock || isBuying ? "cursor-not-allowed bg-gray-300 text-gray-500" : "shadow-sm hover:opacity-90"}`}
-                        style={isOutOfStock || isBuying ? undefined : detailCtaColors.buyNow}
-                      >
-                        {isBuying ? "Processing..." : !isOutOfStock ? "Buy Now" : "Out of Stock"}
-                      </button>
+                        disabled={isOutOfStock}
+                        loading={isBuying}
+                        icon={Lock}
+                        label="Buy Now"
+                        disabledLabel="Out of Stock"
+                        colors={detailCtaColors.buyNow}
+                      />
 
-                      <button
+                      <AnimatedCtaButton
                         onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
-                        disabled={isAdding}
-                        className={`w-full rounded-[18px] px-2 py-3.5 text-sm font-semibold transition min-h-[52px] sm:min-h-[54px] sm:rounded-2xl ${isAdding ? "bg-gray-300 text-gray-500" : ""}`}
-                        style={isAdding ? undefined : detailCtaColors.addToCart}
-                      >
-                        {isAdding
-                          ? "Adding..."
-                          : !isOutOfStock
-                            ? "Add To Cart"
-                            : "Notify Me"}
-                      </button>
+                        disabled={false}
+                        loading={isAdding}
+                        loadingLabel="Adding..."
+                        icon={isOutOfStock ? undefined : ShoppingCart}
+                        label={isOutOfStock ? "Notify Me" : "Add To Cart"}
+                        colors={detailCtaColors.addToCart}
+                      />
 
                       <div className="min-[420px]:col-span-2">
                         <OptimizedImage
@@ -5431,142 +5453,9 @@ const ProductDetail = () => {
             </div>
 
           </div>
+          </section>
 
-          <div
-            className="hidden xl:fixed xl:block xl:w-[21rem] xl:z-30"
-            style={{
-              top: `${desktopPriceCardTop}px`,
-              right: "1.5rem",
-            }}
-          >
-            <div
-              ref={desktopPriceCardRef}
-              className="rounded-[24px] border bg-white p-4 shadow-[0_18px_40px_rgba(69,39,34,0.06)] sm:p-5 overflow-y-auto [&::-webkit-scrollbar]:hidden"
-              style={{
-                borderColor: detailTheme.borderSoft,
-                scrollbarWidth: "none",
-                maxHeight: `calc(100vh - ${desktopPriceCardTop}px - 1.5rem)`,
-              }}
-            >
-              <div className="space-y-4">
-                <div className="rounded-[20px] px-4 py-4 sm:px-5" style={{ backgroundColor: detailTheme.reviewSurface }}>
-                  <div className="flex flex-col gap-3">
-                    <div>
-                      {topPriceBadgeLabel && (
-                        <span
-                          className="mb-3 inline-flex max-w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] shadow-[0_10px_24px_rgba(69,39,34,0.12)] sm:rounded-[12px] sm:px-3.5 sm:text-[11px] sm:tracking-[0.08em]"
-                          style={{
-                            backgroundColor: detailTheme.accent,
-                            color: detailTheme.onPrimary || "#ffffff",
-                          }}
-                        >
-                          {topPriceBadgeLabel}
-                        </span>
-                      )}
-                      {effectiveMrp > price && savingAmount > 0 ? (
-                        <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
-                          <span className="text-[24px] font-bold leading-none sm:text-[28px]" style={{ color: detailTheme.heading }}>
-                            ₹{price.toLocaleString("en-IN")}
-                          </span>
-                          <span className="text-[13px] font-semibold leading-none text-gray-400 line-through sm:text-[16px]">
-                            ₹{effectiveMrp.toLocaleString("en-IN")}
-                          </span>
-                          <span className="text-[13px] font-bold leading-none sm:text-[15px]" style={{ color: "#0a8f45" }}>
-                            ↓ {savingPercent}%
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
-                          <span className="text-[23px] font-bold sm:text-[26px]" style={{ color: detailTheme.price }}>
-                            ₹{price.toLocaleString("en-IN")}
-                          </span>
-                          {effectiveMrp > 0 && (
-                            <span className="text-xs text-gray-400 line-through sm:text-sm">
-                              MRP ₹{effectiveMrp.toLocaleString("en-IN")}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      {paymentPriceStrip}
-                      {visibleAssignedCoupon && previewCouponFinalPrice > 0 ? (
-                        <div
-                          className="mt-3 flex items-center justify-between gap-3 rounded-[14px] border px-3 py-2.5"
-                          style={{ borderColor: detailTheme.accentLine, backgroundColor: "#fff" }}
-                        >
-                          <div className="min-w-0">
-                            <p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: detailTheme.accent }}>
-                              After Coupon applied
-                            </p>
-                            <p className="mt-1 text-[14px] font-semibold leading-4" style={{ color: detailTheme.heading }}>
-                              {previewCouponDisplayPercent > 0
-                                ? `${Math.round(previewCouponDisplayPercent)}% OFF`
-                                : visibleAssignedCoupon.code}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-[9px] uppercase tracking-[0.12em] text-gray-400">Original price</p>
-                            <p className="mt-1 text-[11px] font-medium leading-none text-gray-400 line-through sm:text-[12px]">
-                              ₹{previewCouponOriginalPrice.toLocaleString("en-IN")}
-                            </p>
-                            <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-gray-400">Final price</p>
-                            <p className="mt-1 text-[18px] font-extrabold leading-none sm:text-[20px]" style={{ color: detailTheme.price }}>
-                              ₹{previewCouponFinalPrice.toLocaleString("en-IN")}
-                            </p>
-                          </div>
-                        </div>
-                      ) : null}
-                      <div className="mt-3">
-                        <EmiOfferCard
-                          amount={emiDisplayAmount}
-                          detailTheme={detailTheme}
-                          onContinue={handleBuyNow}
-                          isProcessing={isBuying}
-                          disabled={isOutOfStock}
-                          autoOpen
-                        />
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2.5">
-                  <button
-                    onClick={handleBuyNow}
-                    disabled={isOutOfStock || isBuying}
-                    className={`w-full rounded-2xl py-3.5 text-sm font-semibold transition min-h-[54px] ${isOutOfStock || isBuying ? "cursor-not-allowed bg-gray-300 text-gray-500" : "shadow-sm hover:opacity-90"}`}
-                    style={isOutOfStock || isBuying ? undefined : detailCtaColors.buyNow}
-                  >
-                    {isBuying ? "Processing..." : !isOutOfStock ? "Buy Now" : "Out of Stock"}
-                  </button>
-
-                  <button
-                    onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
-                    disabled={isAdding}
-                    className={`w-full rounded-2xl py-3.5 text-sm font-semibold transition min-h-[54px] ${isAdding ? "bg-gray-300 text-gray-500" : ""}`}
-                    style={isAdding ? undefined : detailCtaColors.addToCart}
-                  >
-                    {isAdding
-                      ? "Adding..."
-                      : !isOutOfStock
-                        ? "Add To Cart"
-                        : "Notify Me"}
-                  </button>
-
-                  <OptimizedImage
-                    src={PRODUCT_DETAIL_PAYMENT_METHOD_IMAGE}
-                    alt="Available payment methods"
-                    width={1200}
-                    height={180}
-                    className="hidden"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="xl:pr-[23rem]">
+          <div>
 
         {productVideos.length > 0 && (
           <section className="max-w-[90rem] mx-auto mb-12 px-3 sm:px-6 sm:mb-16">
@@ -6137,6 +6026,137 @@ const ProductDetail = () => {
 
         {/* Bottom padding so sticky bar doesn't cover content */}
         <div className="h-24" />
+        </div>
+          </div>
+
+          <div
+            className="hidden xl:block xl:w-[21rem] xl:flex-shrink-0 xl:sticky xl:z-30 xl:self-start"
+            style={{ top: "148px" }}
+          >
+            <div
+              className="rounded-[24px] border bg-white p-4 shadow-[0_18px_40px_rgba(69,39,34,0.06)] sm:p-5 overflow-y-auto [&::-webkit-scrollbar]:hidden"
+              style={{
+                borderColor: detailTheme.borderSoft,
+                scrollbarWidth: "none",
+                maxHeight: "calc(100vh - 148px - 1.5rem)",
+              }}
+            >
+              <div className="space-y-4">
+                <div className="rounded-[20px] px-4 py-4 sm:px-5" style={{ backgroundColor: detailTheme.reviewSurface }}>
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      {topPriceBadgeLabel && (
+                        <span
+                          className="mb-3 inline-flex max-w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] shadow-[0_10px_24px_rgba(69,39,34,0.12)] sm:rounded-[12px] sm:px-3.5 sm:text-[11px] sm:tracking-[0.08em]"
+                          style={{
+                            backgroundColor: detailTheme.accent,
+                            color: detailTheme.onPrimary || "#ffffff",
+                          }}
+                        >
+                          {topPriceBadgeLabel}
+                        </span>
+                      )}
+                      {effectiveMrp > price && savingAmount > 0 ? (
+                        <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
+                          <span className="text-[24px] font-bold leading-none sm:text-[28px]" style={{ color: detailTheme.heading }}>
+                            ₹{price.toLocaleString("en-IN")}
+                          </span>
+                          <span className="text-[13px] font-semibold leading-none text-gray-400 line-through sm:text-[16px]">
+                            ₹{effectiveMrp.toLocaleString("en-IN")}
+                          </span>
+                          <span className="text-[13px] font-bold leading-none sm:text-[15px]" style={{ color: "#0a8f45" }}>
+                            ↓ {savingPercent}%
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                          <span className="text-[23px] font-bold sm:text-[26px]" style={{ color: detailTheme.price }}>
+                            ₹{price.toLocaleString("en-IN")}
+                          </span>
+                          {effectiveMrp > 0 && (
+                            <span className="text-xs text-gray-400 line-through sm:text-sm">
+                              MRP ₹{effectiveMrp.toLocaleString("en-IN")}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {paymentPriceStrip}
+                      {visibleAssignedCoupon && previewCouponFinalPrice > 0 ? (
+                        <div
+                          className="mt-3 flex items-center justify-between gap-3 rounded-[14px] border px-3 py-2.5"
+                          style={{ borderColor: detailTheme.accentLine, backgroundColor: "#fff" }}
+                        >
+                          <div className="min-w-0">
+                            <p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: detailTheme.accent }}>
+                              After Coupon applied
+                            </p>
+                            <p className="mt-1 text-[14px] font-semibold leading-4" style={{ color: detailTheme.heading }}>
+                              {previewCouponDisplayPercent > 0
+                                ? `${Math.round(previewCouponDisplayPercent)}% OFF`
+                                : visibleAssignedCoupon.code}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[9px] uppercase tracking-[0.12em] text-gray-400">Original price</p>
+                            <p className="mt-1 text-[11px] font-medium leading-none text-gray-400 line-through sm:text-[12px]">
+                              ₹{previewCouponOriginalPrice.toLocaleString("en-IN")}
+                            </p>
+                            <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-gray-400">Final price</p>
+                            <p className="mt-1 text-[18px] font-extrabold leading-none sm:text-[20px]" style={{ color: detailTheme.price }}>
+                              ₹{previewCouponFinalPrice.toLocaleString("en-IN")}
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
+                      <div className="mt-3">
+                        <EmiOfferCard
+                          amount={emiDisplayAmount}
+                          detailTheme={detailTheme}
+                          onContinue={handleBuyNow}
+                          isProcessing={isBuying}
+                          disabled={isOutOfStock}
+                          autoOpen
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2.5">
+                  <AnimatedCtaButton
+                    onClick={handleBuyNow}
+                    disabled={isOutOfStock}
+                    loading={isBuying}
+                    icon={Lock}
+                    label="Buy Now"
+                    disabledLabel="Out of Stock"
+                    colors={detailCtaColors.buyNow}
+                    size="lg"
+                  />
+
+                  <AnimatedCtaButton
+                    onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
+                    disabled={false}
+                    loading={isAdding}
+                    loadingLabel="Adding..."
+                    icon={isOutOfStock ? undefined : ShoppingCart}
+                    label={isOutOfStock ? "Notify Me" : "Add To Cart"}
+                    colors={detailCtaColors.addToCart}
+                    size="lg"
+                  />
+
+                  <OptimizedImage
+                    src={PRODUCT_DETAIL_PAYMENT_METHOD_IMAGE}
+                    alt="Available payment methods"
+                    width={1200}
+                    height={180}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div>
