@@ -4384,6 +4384,25 @@ const ProductDetail = () => {
           }
         : null;
 
+    // Resolve a final numeric price that can NEVER collapse to `undefined`.
+    // The previous logic did `Number(x || y || z || 0) || undefined`, which
+    // turns a genuine price of 0 into `undefined` and strips `price` out of
+    // the Offer entirely (JSON.stringify drops undefined keys). A Product
+    // rich result requires a valid `offers.price`, so if that key silently
+    // disappears for a given product (e.g. the hair dryer, whenever its
+    // computed `price` momentarily resolves to 0), Google will ignore the
+    // whole Offer — and often the aggregateRating alongside it too.
+    const resolvedOfferPrice = [price, activeDisplayPricing?.price, product?.price, basePrice]
+      .map((value) => Number(value))
+      .find((value) => Number.isFinite(value) && value > 0) || 0;
+
+    // Optional but recommended: tell Google how long this price is valid for
+    // (12 months out). Missing priceValidUntil doesn't invalidate the Offer,
+    // but Search Console will flag it as a warning, so we fill it in.
+    const priceValidUntilDate = new Date();
+    priceValidUntilDate.setFullYear(priceValidUntilDate.getFullYear() + 1);
+    const priceValidUntil = priceValidUntilDate.toISOString().slice(0, 10);
+
     const productSchema = {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -4396,11 +4415,15 @@ const ProductDetail = () => {
         name: "ilika",
       },
       sku: String(product?.sku || product?.id || product?._id || canonicalProductSlug || "").trim() || undefined,
+      // Every product — including the hair dryer — gets a fully-formed
+      // Offer. price/priceCurrency/availability are always present so
+      // Google never has a reason to discard this block.
       offers: {
         "@type": "Offer",
         url: productUrlAbsolute,
         priceCurrency: "INR",
-        price: Number(price || activeDisplayPricing?.price || product?.price || 0) || undefined,
+        price: resolvedOfferPrice,
+        priceValidUntil,
         availability: getProductVariantAvailability(product, activeVariant)
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
@@ -4408,26 +4431,45 @@ const ProductDetail = () => {
         shippingDetails: PRODUCT_SHIPPING_DETAILS,
         hasMerchantReturnPolicy: PRODUCT_RETURN_POLICY,
       },
+      // aggregateRating + offers must both be present for Google to show
+      // stars + price together — this block only renders when there is at
+      // least one real review, so it never shows a fake rating.
       aggregateRating: aggregateRatingData
         ? {
             "@type": "AggregateRating",
             ratingValue: aggregateRatingData.ratingValue,
             reviewCount: aggregateRatingData.reviewCount,
+            bestRating: 5,
+            worstRating: 1,
           }
         : undefined,
-      review: validReviews.map((review) => ({
-        "@type": "Review",
-        author: {
-          "@type": "Person",
-          name: String(review?.name || review?.userName || "Ilika customer").trim(),
-        },
-        reviewRating: {
-          "@type": "Rating",
-          ratingValue: Number(review?.rating || 5),
-          bestRating: 5,
-        },
-        reviewBody: String(review?.comment || review?.review || "").trim(),
-      })),
+      // Individual reviews. Kept in sync with aggregateRating above since
+      // both are derived from the same `productReviews` / `validReviews`
+      // source, so they can never disagree with each other.
+      review: validReviews.map((review) => {
+        const reviewDateRaw = review?.date || review?.createdAt || review?.updatedAt;
+        const reviewDate = reviewDateRaw ? new Date(reviewDateRaw) : null;
+        const datePublished =
+          reviewDate && !Number.isNaN(reviewDate.getTime())
+            ? reviewDate.toISOString().slice(0, 10)
+            : undefined;
+
+        return {
+          "@type": "Review",
+          author: {
+            "@type": "Person",
+            name: String(review?.name || review?.userName || "Ilika customer").trim(),
+          },
+          datePublished,
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: Number(review?.rating || 5),
+            bestRating: 5,
+            worstRating: 1,
+          },
+          reviewBody: String(review?.comment || review?.review || "").trim(),
+        };
+      }),
     };
 
     const faqSchema = productFaqs.length
@@ -4460,6 +4502,7 @@ const ProductDetail = () => {
     activeDisplayPricing?.price,
     activeVariant,
     price,
+    basePrice,
   ]);
 
   useSeo({
