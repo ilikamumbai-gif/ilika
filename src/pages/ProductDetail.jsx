@@ -26,6 +26,8 @@ import { toast } from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
+import { buildProductReviewSchema, getProductReviews } from "../utils/productReviews";
+import { getProductMerchantMetadata } from "../utils/productPricing";
 import { getCanonicalProductSlugAlias, getProductSeoContent } from "../data/productSeoContent";
 import { getApiUrl, handleApiError } from "../utils/api";
 import {
@@ -1993,10 +1995,10 @@ const ProductReviewCarouselSection = ({
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.1em] sm:text-[13px] sm:tracking-[0.12em]" style={{ color: theme.accent }}>
-                  Verified
+                  Customer feedback
                 </p>
                 <p className="mt-1 text-[10px] leading-4 text-[#6b7280] sm:text-[11px]">
-                  All reviews are from verified buyers
+                  Reviews and experiences shared by customers
                 </p>
               </div>
             </div>
@@ -4265,8 +4267,8 @@ const ProductDetail = () => {
     [product?.warranty]
   );
   const productReviews = useMemo(
-    () => (Array.isArray(product?.reviews) ? product.reviews : []),
-    [product?.reviews]
+    () => getProductReviews(product),
+    [product]
   );
   const honestReviews = useMemo(
     () => sanitizeHonestReviewItems(product?.honestReviews),
@@ -4365,9 +4367,6 @@ const ProductDetail = () => {
     if (!product || !canonicalPath) return null;
 
     const productUrlAbsolute = toAbsoluteUrl(canonicalPath);
-    const validReviews = productReviews
-      .filter((review) => String(review?.comment || review?.review || "").trim())
-      .slice(0, 20);
     const reviewRatingValues = productReviews
       .map((review) => Number(review?.rating || 0))
       .filter((value) => value > 0);
@@ -4401,12 +4400,15 @@ const ProductDetail = () => {
     // but Search Console will flag it as a warning, so we fill it in.
     const priceValidUntilDate = new Date();
     priceValidUntilDate.setFullYear(priceValidUntilDate.getFullYear() + 1);
-    const priceValidUntil = priceValidUntilDate.toISOString().slice(0, 10);
+    const merchant = getProductMerchantMetadata(product);
+    const priceValidUntil = merchant.priceValidUntil || priceValidUntilDate.toISOString().slice(0, 10);
 
     const productSchema = {
       "@context": "https://schema.org",
       "@type": "Product",
       "@id": `${productUrlAbsolute}#product`,
+      url: productUrlAbsolute,
+      mainEntityOfPage: productUrlAbsolute,
       name: productDisplayTitle,
       description: seoProductDescription,
       image: images?.length ? images.map((item) => toAbsoluteUrl(item)).filter(Boolean) : [toAbsoluteUrl(seoProductImage)],
@@ -4414,7 +4416,7 @@ const ProductDetail = () => {
         "@type": "Brand",
         name: "ilika",
       },
-      sku: String(product?.sku || product?.id || product?._id || canonicalProductSlug || "").trim() || undefined,
+      sku: String(merchant.sku || product?.sku || product?.id || product?._id || canonicalProductSlug || "").trim() || undefined,
       // Every product — including the hair dryer — gets a fully-formed
       // Offer. price/priceCurrency/availability are always present so
       // Google never has a reason to discard this block.
@@ -4443,33 +4445,7 @@ const ProductDetail = () => {
             worstRating: 1,
           }
         : undefined,
-      // Individual reviews. Kept in sync with aggregateRating above since
-      // both are derived from the same `productReviews` / `validReviews`
-      // source, so they can never disagree with each other.
-      review: validReviews.map((review) => {
-        const reviewDateRaw = review?.date || review?.createdAt || review?.updatedAt;
-        const reviewDate = reviewDateRaw ? new Date(reviewDateRaw) : null;
-        const datePublished =
-          reviewDate && !Number.isNaN(reviewDate.getTime())
-            ? reviewDate.toISOString().slice(0, 10)
-            : undefined;
-
-        return {
-          "@type": "Review",
-          author: {
-            "@type": "Person",
-            name: String(review?.name || review?.userName || "Ilika customer").trim(),
-          },
-          datePublished,
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue: Number(review?.rating || 5),
-            bestRating: 5,
-            worstRating: 1,
-          },
-          reviewBody: String(review?.comment || review?.review || "").trim(),
-        };
-      }),
+      review: buildProductReviewSchema(productReviews),
     };
 
     const faqSchema = productFaqs.length
@@ -5277,7 +5253,7 @@ const ProductDetail = () => {
                                 ₹{price.toLocaleString("en-IN")}
                               </span>
                               <span className="text-[13px] font-semibold leading-none text-gray-400 line-through sm:text-[16px]">
-                                ₹{effectiveMrp.toLocaleString("en-IN")}
+                                MRP ₹{effectiveMrp.toLocaleString("en-IN")}
                               </span>
                               <span className="text-[13px] font-bold leading-none sm:text-[15px]" style={{ color: "#0a8f45" }}>
                                 ↓ {savingPercent}%

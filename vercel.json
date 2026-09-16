@@ -1,6 +1,16 @@
 {
   "redirects": [
     {
+      "source": "/leafless-hair-dryer",
+      "destination": "https://ilika.in/product/leafless-hair-dryer",
+      "statusCode": 301
+    },
+    {
+      "source": "/leafless-hair-dryer/",
+      "destination": "https://ilika.in/product/leafless-hair-dryer",
+      "statusCode": 301
+    },
+    {
       "source": "/:path*",
       "has": [
         { "type": "host", "value": "www.ilika.in" }

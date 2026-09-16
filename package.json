@@ -11,6 +11,7 @@
     "prerender:routes": "node scripts/prerender-static-routes.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "verify:indexability": "node scripts/verify-indexability.mjs",
+    "verify:hair-dryer": "node scripts/verify-hair-dryer.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

@@ -1,5 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { getProductDisplayPricing, getProductDisplayImage, getProductMerchantMetadata, getProductVariantAvailability } from "../src/utils/productPricing.js";
+import { buildProductReviewSchema, getProductReviews } from "../src/utils/productReviews.js";
 import { getCanonicalProductSlugAlias, getProductSeoContent } from "../src/data/productSeoContent.js";
 
 const SITE_URL = "https://ilika.in";
@@ -128,10 +130,11 @@ const buildCanonicalUrl = (slug) => `${SITE_URL}/product/${slug}`;
 
 const buildProductContent = (product, canonicalUrl, image, description, faqs = []) => {
   const name = escapeHtml(String(product?.name || "Product"));
-  const price = Number(product?.salePrice || product?.price || product?.mrp || 0);
+  const { price, compareAtPrice, hasDiscount } = getProductDisplayPricing(product);
+  const reviews = buildProductReviewSchema(getProductReviews(product));
   const details = String(product?.description || product?.shortInfo || "").trim();
   const category = escapeHtml(String(product?.categoryName || product?.category || "Beauty and personal care"));
-  const priceMarkup = price > 0 ? `<p><strong>Price:</strong> Rs. ${escapeHtml(price.toLocaleString("en-IN"))}</p>` : "";
+  const priceMarkup = price > 0 ? `<p><strong>Price:</strong> ₹${escapeHtml(price.toLocaleString("en-IN"))}${hasDiscount ? ` (MRP ₹${escapeHtml(compareAtPrice.toLocaleString("en-IN"))})` : ""}</p>` : "";
 
   return `<main id="prerendered-content" data-prerendered="product">
   <article>
@@ -140,6 +143,7 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
     <img src="${escapeHtml(image)}" alt="${name}" />
     <p>${escapeHtml(description)}</p>
     ${priceMarkup}
+    ${reviews.length ? `<section id="reviews"><h2>Customer reviews</h2>${reviews.map((review) => `<article><h3>${escapeHtml(review.author.name)}</h3><p>${review.reviewRating.ratingValue}/5${review.datePublished ? ` · <time datetime="${review.datePublished}">${review.datePublished}</time>` : ""}</p><p>${escapeHtml(review.reviewBody)}</p></article>`).join("")}</section>` : ""}
     <p><strong>Category:</strong> ${category}</p>
     ${details ? `<section><h2>Product details</h2>${details}</section>` : ""}
     ${faqs.length ? `<section id="faq"><h2>Frequently Asked Questions</h2>${faqs.map((faq) => `<div class="faq-item"><h3>${escapeHtml(faq.question)}</h3><p>${escapeHtml(faq.answer)}</p></div>`).join("")}</section>` : ""}
@@ -163,15 +167,15 @@ const buildSeoImage = (product = {}) =>
     product?.image ||
     product?.thumbnail ||
     (Array.isArray(product?.images) ? product.images[0] : "") ||
+    getProductDisplayImage(product) ||
     DEFAULT_OG_IMAGE
   ) || DEFAULT_OG_IMAGE;
 
 const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => {
   const offers = [];
-  const salePrice = Number(product?.salePrice || product?.price || 0);
-  const mrp = Number(product?.mrp || 0);
-  const price = salePrice > 0 ? salePrice : mrp > 0 ? mrp : null;
-  const reviews = Array.isArray(product?.reviews) ? product.reviews : [];
+  const { price } = getProductDisplayPricing(product);
+  const merchant = getProductMerchantMetadata(product);
+  const reviews = getProductReviews(product);
   const reviewCount = reviews.length;
   const averageRating = reviewCount
     ? Number(
@@ -192,7 +196,8 @@ const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => 
       "@type": "Offer",
       priceCurrency: "INR",
       price: String(price),
-      availability: product?.stock === 0 || product?.isOutOfStock ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      availability: !product?.isOutOfStock && getProductVariantAvailability(product) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      priceValidUntil: merchant.priceValidUntil,
       url: canonicalUrl,
       itemCondition: "https://schema.org/NewCondition",
       shippingDetails: PRODUCT_SHIPPING_DETAILS,
@@ -209,13 +214,14 @@ const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => 
     description,
     image: [image],
     url: canonicalUrl,
-    sku: String(product?.sku || product?._id || product?.id || slug),
+    sku: String(merchant.sku || product?.sku || product?._id || product?.id || slug),
     brand: {
       "@type": "Brand",
       name: "Ilika",
     },
     category: category || undefined,
     keywords: keywords || undefined,
+    review: buildProductReviewSchema(reviews),
     aggregateRating:
       averageRating && reviewCount
         ? {
@@ -328,7 +334,7 @@ function buildProductHtml(templateHtml, product, slug) {
   }
 
   const schemaMarkup = `${schema
-    .map((item) => `  <script type="application/ld+json">${JSON.stringify(item)}</script>`)
+    .map((item) => `  <script type="application/ld+json">${JSON.stringify(item).replace(/</g, "\\u003c")}</script>`)
     .join("\n")}\n`;
   html = html.replace(/<\/head>/i, `${schemaMarkup}</head>`);
   html = html.replace(

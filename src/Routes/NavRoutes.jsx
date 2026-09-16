@@ -62,7 +62,6 @@ const BlackseedHairOilLanding = lazy(() => import("../Landing/Blackseedhairoil")
 const HerbalHairOilLanding = lazy(() => import("../Landing/Herbalhairoil"));
 const VoiceMaskMakerLanding = lazy(() => import("../Landing/VoiceMaskMakerLanding"));
 const NonvoiceMaskMakerLanding = lazy(() => import("../Landing/NonvoiceMaskMakerLanding"));
-const HairDryerLanding = lazy(() => import("../Landing/HairDryerLanding"));
 const HighFrequencyTherapyWandLanding = lazy(() => import("../Landing/HighFrequencyTherapyWandLanding"));
 const HotColdBlackheadRemoverLanding = lazy(() => import("../Landing/HotColdBlackheadRemoverLanding"));
 const MaskCombo = lazy(() => import("../pages/MaskCombo"));
@@ -442,7 +441,7 @@ const NavRoutes = () => {
         <Route path="/herbal-hair-oil" element={renderLazy(HerbalHairOilLanding)} />
         <Route path="/voice-mask-maker" element={renderLazy(VoiceMaskMakerLanding)} />
         <Route path="/nonvoice-mask-maker" element={renderLazy(NonvoiceMaskMakerLanding)} />
-        <Route path="/leafless-hair-dryer" element={renderLazy(HairDryerLanding)} />
+        <Route path="/leafless-hair-dryer" element={<Navigate to="/product/leafless-hair-dryer" replace />} />
         <Route path="/high-frequency-therapy-wand" element={renderLazy(HighFrequencyTherapyWandLanding)} />
         <Route path="/hot-cold-blackhead-remover" element={renderLazy(HotColdBlackheadRemoverLanding)} />
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />

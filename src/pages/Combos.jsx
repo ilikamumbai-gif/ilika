@@ -108,7 +108,7 @@ const Combos = () => {
       title: "Ilika Leafless Hairdryer Deal",
       highlight: "15% OFF",
       description: "Use code ILIKA15 on the Ilika High-Speed Leafless Hair Dryer today.",
-      link: hairDryer ? getProductLink(hairDryer) : "/leafless-hair-dryer",
+      link: hairDryer ? getProductLink(hairDryer) : "/product/leafless-hair-dryer",
       image: "/Images/3.png",
       background: "linear-gradient(135deg, #edf6ff 0%, #cfe7ff 50%, #f4fbff 100%)",
       overlay:

@@ -4,6 +4,10 @@
   },
   "hosting": {
     "public": "dist",
+    "redirects": [
+      { "source": "/leafless-hair-dryer", "destination": "https://ilika.in/product/leafless-hair-dryer", "type": 301 },
+      { "source": "/leafless-hair-dryer/", "destination": "https://ilika.in/product/leafless-hair-dryer", "type": 301 }
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",

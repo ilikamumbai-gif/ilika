@@ -38,9 +38,16 @@ const NONVOICE_MASK_MAKER_PRICE_OVERRIDE = {
 
 const LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE = {
   price: 2699,
-  compareAtPrice: 0,
-  lookups: ["leafless-hair-dryer"],
+  compareAtPrice: 5999,
+  priceValidUntil: "2026-11-29",
+  sku: "E60fJP3XooasvrUaVXAH",
+  lookups: ["leafless-hair-dryer", "e60fjp3xooasvruavxah"],
   nameSnippets: ["bldc hair dryer", "leafless hair dryer"],
+};
+
+export const getProductMerchantMetadata = (product = {}) => {
+  const override = getProductPriceOverride(product);
+  return { sku: override?.sku, priceValidUntil: override?.priceValidUntil };
 };
 
 const getProductPriceOverride = (product = {}) => {
@@ -217,7 +224,9 @@ export const getProductDisplayPricing = (product = {}, selectedVariant = null) =
     getPositiveNumber(product?.originalPrice) ??
     getPositiveNumber(product?.mrp);
   const resolvedCompareAt = variantCompareAt ?? productCompareAt ?? null;
-  const compareAtPrice = voiceMaskMakerOverride
+  const compareAtPrice = voiceMaskMakerOverride === LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE
+    ? LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE.compareAtPrice
+    : voiceMaskMakerOverride
     ? Math.max(
         Number(voiceMaskMakerOverride.compareAtPrice || 0),
         Number(resolvedCompareAt || 0),
