@@ -43,6 +43,7 @@ const STATIC_ROUTES = [
   "/knowskintype",
   "/voice-mask-maker",
   "/nonvoice-mask-maker",
+  "/leafless-hair-dryer-landing",
   "/hair-dryer-guides",
   "/high-frequency-therapy-wand",
   "/hot-cold-blackhead-remover",
@@ -79,8 +80,16 @@ async function main() {
     // The catalogue is retained for crawlability, but React replaces this root
     // immediately on the client. Hiding the fallback prevents thousands of
     // links flashing on screen before the route UI renders.
-    const content = crawlLinks ? `<div id="root"><main id="prerendered-content" data-prerendered="catalogue-links" hidden aria-hidden="true">${crawlLinks}</main></div>` : '<div id="root"></div>';
-    await fs.writeFile(path.join(routeDir, "index.html"), templateHtml.replace(/<div id="root"><\/div>/i, content), "utf8");
+    const isHairDryerLanding = route === "/leafless-hair-dryer-landing";
+    const content = isHairDryerLanding
+      ? '<div id="root"><main id="prerendered-content" data-prerendered="hair-dryer-landing"><h1>Ilika Leafless Hair Dryer</h1><p>High-speed BLDC motor, ionic technology and intelligent temperature control for fast, smooth drying.</p><p>Price: ₹2,699 (MRP ₹5,999)</p><a href="/product/leafless-hair-dryer">Shop Ilika Hair Dryer</a></main></div>'
+      : crawlLinks ? `<div id="root"><main id="prerendered-content" data-prerendered="catalogue-links" hidden aria-hidden="true">${crawlLinks}</main></div>` : '<div id="root"></div>';
+    const pageHtml = isHairDryerLanding
+      ? templateHtml
+        .replace(/<title>[\s\S]*?<\/title>/i, '<title>Ilika Leafless Hair Dryer – 110,000 RPM BLDC Ionic Hair Dryer</title>')
+        .replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, '<link rel="canonical" href="https://ilika.in/product/leafless-hair-dryer" />')
+      : templateHtml;
+    await fs.writeFile(path.join(routeDir, "index.html"), pageHtml.replace(/<div id="root"><\/div>/i, content), "utf8");
     written += 1;
   }
 

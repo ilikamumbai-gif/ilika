@@ -62,6 +62,7 @@ const BlackseedHairOilLanding = lazy(() => import("../Landing/Blackseedhairoil")
 const HerbalHairOilLanding = lazy(() => import("../Landing/Herbalhairoil"));
 const VoiceMaskMakerLanding = lazy(() => import("../Landing/VoiceMaskMakerLanding"));
 const NonvoiceMaskMakerLanding = lazy(() => import("../Landing/NonvoiceMaskMakerLanding"));
+const HairDryerLanding = lazy(() => import("../Landing/HairDryerLanding"));
 const HighFrequencyTherapyWandLanding = lazy(() => import("../Landing/HighFrequencyTherapyWandLanding"));
 const HotColdBlackheadRemoverLanding = lazy(() => import("../Landing/HotColdBlackheadRemoverLanding"));
 const MaskCombo = lazy(() => import("../pages/MaskCombo"));
@@ -122,6 +123,7 @@ const SEO_MATCHER_ROUTES = [
   { path: "/voice-mask-maker" },
   { path: "/nonvoice-mask-maker" },
   { path: "/leafless-hair-dryer" },
+  { path: "/leafless-hair-dryer-landing" },
   { path: "/high-frequency-therapy-wand" },
   { path: "/hot-cold-blackhead-remover" },
   { path: "/order-success/:id" },
@@ -234,7 +236,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/herbal-hair-oil") return { title: "Herbal Hair Oil", description: "Explore Ilika Herbal Hair Growth Oil benefits, ingredients, and offers." };
   if (pathname === "/voice-mask-maker") return { title: "Voice Face Mask Maker", description: "Explore Ilika Voice Face Mask Maker Machine with Collagen Peptide." };
   if (pathname === "/nonvoice-mask-maker") return { title: "Non-Voice Face Mask Maker", description: "Explore Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide." };
-  if (pathname === "/leafless-hair-dryer") return { title: "Ilika Leafless Hair Dryer – 110,000 RPM BLDC Ionic Hair Dryer", description: "Shop Ilika High-Speed BLDC Leafless Hair Dryer with a 110,000 RPM motor, ionic technology, intelligent temperature control and lightweight design for fast, smooth drying.", keywords: ["Ilika leafless hair dryer", "110000 RPM BLDC hair dryer", "ionic hair dryer", "leafless hair dryer India"] };
+  if (pathname === "/leafless-hair-dryer" || pathname === "/leafless-hair-dryer-landing") return { title: "Ilika Leafless Hair Dryer – 110,000 RPM BLDC Ionic Hair Dryer", description: "Shop Ilika High-Speed BLDC Leafless Hair Dryer with a 110,000 RPM motor, ionic technology, intelligent temperature control and lightweight design for fast, smooth drying.", keywords: ["Ilika leafless hair dryer", "110000 RPM BLDC hair dryer", "ionic hair dryer", "leafless hair dryer India"] };
   if (pathname === "/high-frequency-therapy-wand") return { title: "Ilika High Frequency Therapy Wand | For Acne Treatment, Skin Rejuvenation, Hair Growth & Scalp Care", description: "Explore Ilika High Frequency Therapy Wand." };
   if (pathname === "/hot-cold-blackhead-remover") return { title: "Ilika Blackhead Remover - Hot & Cold | For Deep Pore Cleansing, Blackhead Removal & Skin Tightening", description: "Explore Ilika Blackhead Remover - Hot & Cold." };
   if (pathname.startsWith("/order-success/")) return { title: "Order Success", description: "Your Ilika order has been placed successfully." };
@@ -335,6 +337,7 @@ const RouteSeo = () => {
     title: pageTitle,
     description: seo.description,
     path: pathname,
+    canonical: pathname === "/leafless-hair-dryer-landing" ? `${SITE_URL}/product/leafless-hair-dryer` : undefined,
     robots: shouldNoindex ? "noindex, follow" : "index, follow",
     keywords: seo.keywords,
   });
@@ -442,6 +445,7 @@ const NavRoutes = () => {
         <Route path="/voice-mask-maker" element={renderLazy(VoiceMaskMakerLanding)} />
         <Route path="/nonvoice-mask-maker" element={renderLazy(NonvoiceMaskMakerLanding)} />
         <Route path="/leafless-hair-dryer" element={<Navigate to="/product/leafless-hair-dryer" replace />} />
+        <Route path="/leafless-hair-dryer-landing" element={renderLazy(HairDryerLanding)} />
         <Route path="/high-frequency-therapy-wand" element={renderLazy(HighFrequencyTherapyWandLanding)} />
         <Route path="/hot-cold-blackhead-remover" element={renderLazy(HotColdBlackheadRemoverLanding)} />
         <Route path="/order-success/:id" element={renderLazy(OrderSuccess)} />

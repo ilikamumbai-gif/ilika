@@ -731,7 +731,7 @@ export const PRIVATE_BLOGS = [
   },
 ];
 
-const hairDryerLandingPath = "/product/leafless-hair-dryer";
+const hairDryerLandingPath = "/leafless-hair-dryer-landing";
 const airwrapProductPath = "/product/airwrap-multi-styler-kit";
 const hairDryerBlogImagePool = [
   "/Images/HairdrayerCard.webp",
@@ -1828,7 +1828,7 @@ export const HAIR_DRYER_EMI_CITY_BLOGS = [
     {
       id: `hair-dryer-emi-city-${index + 1}-landing`,
       label: "Explore Hair Dryer Landing Page",
-      url: "/product/leafless-hair-dryer",
+      url: hairDryerLandingPath,
     },
   ],
   isPrivate: false,
