@@ -29,6 +29,8 @@ try {
   const page = await context.newPage();
   for (const { label, to } of links) {
     await page.goto(server.origin, { waitUntil: "domcontentloaded" });
+    const popupClose = page.getByRole("button", { name: "Close offer popup" });
+    if (await popupClose.isVisible().catch(() => false)) await popupClose.click();
     await page.locator(`footer a[href="${to}"]`).filter({ visible: true }).first().click({ noWaitAfter: true });
     await page.waitForURL(`${server.origin}${to}`, { waitUntil: "domcontentloaded", timeout: 10000 }).catch(async error => {
       console.error(`[footer] Expected ${to}; current URL ${page.url()}`);
