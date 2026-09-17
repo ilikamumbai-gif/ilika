@@ -14,7 +14,34 @@ routes.push("/hair-dryer-guides", "/leafless-hair-dryer-landing");
 const server = await startPreview({ template });
 let browser;
 try {
-  browser = await chromium.launch({ headless: true });
+  try {
+    browser = await chromium.launch({ headless: true });
+  } catch (error) {
+    // Vercel build images may not contain Playwright's browser binary. Keep
+    // deployment reliable with visible, crawlable route HTML; product/blog
+    // pages were already rendered by the API prerender steps.
+    const footer = '<footer><nav aria-label="Footer"><a href="/">Home</a> <a href="/products">Products</a> <a href="/blog">Blog</a> <a href="/contact">Contact</a> <a href="/privacy">Privacy Policy</a> <a href="/termsandcondition">Terms &amp; Conditions</a></nav></footer>';
+    for (const route of new Set(routes)) {
+      const title = route === "/" ? "Ilika India | Beauty, Skincare &amp; Grooming Tools" : `Ilika ${route.slice(1).replaceAll("/", " ").replaceAll("-", " ")}`;
+      const directory = path.join(distDir, route);
+      await fs.mkdir(directory, { recursive: true });
+      const content = `<div id="root"><main id="prerendered-content" data-prerendered="page"><h1>${title}</h1><p>Explore Ilika beauty, skincare, haircare and grooming products, guides and support.</p><p><a href="/products">Browse Ilika products</a> <a href="/blog">Read the Ilika blog</a></p></main>${footer}</div>`;
+      const canonical = `https://ilika.in${route === "/" ? "/" : route}`;
+      const pageHtml = template
+        .replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`)
+        .replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${canonical}" />`)
+        .replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, '<meta name="description" content="Explore Ilika beauty, skincare, haircare and grooming products, guides and support." />')
+        .replace(/<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${title}" />`)
+        .replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i, '<meta property="og:description" content="Explore Ilika beauty, skincare, haircare and grooming products, guides and support." />')
+        .replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${title}" />`)
+        .replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, '<meta name="twitter:description" content="Explore Ilika beauty, skincare, haircare and grooming products, guides and support." />')
+        .replace('<div id="root"></div>', content);
+      await fs.writeFile(path.join(directory, "index.html"), pageHtml);
+    }
+    console.warn(`[prerender] Chromium unavailable; wrote crawlable fallback HTML (${error.message})`);
+    await server.close();
+    process.exit(0);
+  }
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const apiCache = new Map();
   const failures = new Set();
