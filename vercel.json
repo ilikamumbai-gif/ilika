@@ -3,6 +3,16 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "redirects": [
+    {
+      "source": "/product/facial-kit/facial-mask-maker-machine",
+      "destination": "/product/voice-face-mask-maker",
+      "permanent": true
+    },
+    {
+      "source": "/product/facial-kit/facial-mask-maker-machine/",
+      "destination": "/product/voice-face-mask-maker",
+      "permanent": true
+    },
     { "source": "/combo", "destination": "/offers", "permanent": true },
     { "source": "/glow-therapy-combo", "destination": "/glow-therapy-comb", "permanent": true },
     { "source": "/product", "destination": "/products", "permanent": true },
