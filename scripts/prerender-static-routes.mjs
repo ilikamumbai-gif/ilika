@@ -11,7 +11,7 @@ const sitemap = await fs.readFile(path.join(distDir, "sitemap.xml"), "utf8");
 const routes = [...new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
   .map(([, url]) => new URL(url).pathname)
   .filter(route => !/^\/(product|blog)\//.test(route)))];
-routes.push("/hair-dryer-guides", "/leafless-hair-dryer-landing");
+routes.push("/hair-dryer-guides", "/leafless-hair-dryer-landing", "/admin", "/admin/login");
 const server = await startPreview({ template });
 let browser;
 try {
