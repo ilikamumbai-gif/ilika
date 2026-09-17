@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 
 import Dashboard from "../pages/Dashboard";
 import AnalyticsBoard from "../pages/Analytics/AnalyticsBoard";
@@ -123,6 +123,7 @@ const AdminRoutes = () => {
                         <Route path="support-tickets/:id" element={withPermission("warranty", <SupportTicketDetail />)} />
                         <Route path="warranty" element={withPermission("warranty", <WarrantyList />)} />
                         <Route path="warranty/:id" element={withPermission("warranty", <WarrantyDetail />)} />
+                        <Route path="*" element={<Navigate to="/admin" replace />} />
                         </Routes>
                       </ReviewProvider>
                     </CartEventProvider>

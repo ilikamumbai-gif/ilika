@@ -89,6 +89,12 @@
   { "source": "/admin", "destination": "/index.html" },
   { "source": "/admin/", "destination": "/index.html" },
   { "source": "/admin/:path*", "destination": "/index.html" },
+  { "source": "/admin/(.*)", "destination": "/index.html" },
+
+  { "source": "/product/:path*", "destination": "/index.html" },
+  { "source": "/blog/:path*", "destination": "/index.html" },
+  { "source": "/category/:path*", "destination": "/index.html" },
+  { "source": "/combo/:path*", "destination": "/index.html" },
 
   { "source": "/:path*", "destination": "/api/not-found?status=404" }
 ],
