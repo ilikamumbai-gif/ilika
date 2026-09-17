@@ -331,26 +331,26 @@ const normalizeExternalUrl = (value = "") => {
   return `https://${raw}`;
 };
 
-const getMarketplaceLinks = (product = {}, livePrices = {}) => {
+const getMarketplaceLinks = (product = {}, livePrices = {}, fallbackPrice = null) => {
   const source = product?.marketplaceLinks || product || {};
   return [
     {
       key: "amazon",
       label: "Amazon",
       url: normalizeExternalUrl(source?.amazon || source?.amazonLink || ""),
-      price: livePrices?.amazon ?? null,
+      price: livePrices?.amazon ?? fallbackPrice,
     },
     {
       key: "flipkart",
       label: "Flipkart",
       url: normalizeExternalUrl(source?.flipkart || source?.flipkartLink || ""),
-      price: livePrices?.flipkart ?? null,
+      price: livePrices?.flipkart ?? fallbackPrice,
     },
     {
       key: "meesho",
       label: "Meesho",
       url: normalizeExternalUrl(source?.meesho || source?.meeshoLink || ""),
-      price: livePrices?.meesho ?? null,
+      price: livePrices?.meesho ?? fallbackPrice,
     },
   ].filter((item) => item.url);
 };
@@ -4039,8 +4039,8 @@ const ProductDetail = () => {
   const detailCtaColors = useMemo(() => getDetailCtaColors(detailTheme), [detailTheme]);
   const marketplaceSourceLinks = useMemo(() => getMarketplaceLinks(product), [product]);
   const marketplaceLinks = useMemo(
-    () => getMarketplaceLinks(product, marketplaceLivePrices),
-    [product, marketplaceLivePrices]
+    () => getMarketplaceLinks(product, marketplaceLivePrices, price > 0 ? price : null),
+    [product, marketplaceLivePrices, price]
   );
 
   useEffect(() => {
