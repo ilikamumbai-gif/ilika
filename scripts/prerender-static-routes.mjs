@@ -38,6 +38,15 @@ try {
         .replace('<div id="root"></div>', content);
       await fs.writeFile(path.join(directory, "index.html"), pageHtml);
     }
+    // Product and article prerenders are generated before this script. Ensure
+    // they also have crawlable footer navigation in the fallback path.
+    for (const [, url] of sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)) {
+      const route = new URL(url).pathname;
+      if (!/^\/(product|blog)\//.test(route)) continue;
+      const file = path.join(distDir, route, "index.html");
+      const html = await fs.readFile(file, "utf8").catch(() => "");
+      if (html && !/<footer[\s>]/i.test(html)) await fs.writeFile(file, html.replace(/<\/main>/i, `</main>${footer}`));
+    }
     console.warn(`[prerender] Chromium unavailable; wrote crawlable fallback HTML (${error.message})`);
     await server.close();
     process.exit(0);
