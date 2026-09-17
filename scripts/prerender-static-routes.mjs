@@ -28,7 +28,7 @@ try {
       const description = isHomepage ? HOME_SEO.description : "Explore Ilika beauty, skincare, haircare and grooming products, guides and support.";
       const directory = path.join(distDir, route);
       await fs.mkdir(directory, { recursive: true });
-      const content = `<div id="root"><main id="prerendered-content" data-prerendered="page"><h1>${title}</h1><p>${description}</p><p><a href="/products">Browse Ilika products</a> <a href="/blog">Read the Ilika blog</a></p></main>${footer}</div>`;
+      const content = `<div id="root"><main id="prerendered-content" data-prerendered="page"><h1>${title}</h1><p>${description}</p><p><a href="/products">Browse Ilika products</a> <a href="/blog">Read the Ilika blog</a> <a href="/sitemap.html">View the HTML sitemap</a></p></main>${footer}</div>`;
       const canonical = `https://ilika.in${route === "/" ? "/" : route}`;
       const pageHtml = template
         .replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`)
