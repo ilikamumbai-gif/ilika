@@ -257,6 +257,8 @@ const extractMarketplacePriceFromHtml = (html = "", platform = "") => {
   const platformPatterns = {
     amazon: [
       /"priceToPay"\s*:\s*\{\s*"price"\s*:\s*([0-9]+(?:\.[0-9]+)?)/i,
+      /class="a-price-whole"[^>]*>\s*([0-9,]+)(?:<|<\/span>)/i,
+      /class="a-offscreen"[^>]*>\s*(?:₹|â‚¹|&#8377;)?\s*([0-9,]+(?:\.[0-9]+)?)/i,
       /"displayPrice"\s*:\s*"₹?\s*([0-9,]+(?:\.[0-9]+)?)"/i,
       /class="a-price-whole">\s*([0-9,]+)(?:<|<\/span>)/i,
       /itemprop="price"[^>]*content="([0-9]+(?:\.[0-9]+)?)"/i,

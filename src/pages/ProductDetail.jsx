@@ -4039,8 +4039,8 @@ const ProductDetail = () => {
   const detailCtaColors = useMemo(() => getDetailCtaColors(detailTheme), [detailTheme]);
   const marketplaceSourceLinks = useMemo(() => getMarketplaceLinks(product), [product]);
   const marketplaceLinks = useMemo(
-    () => getMarketplaceLinks(product, marketplaceLivePrices, price > 0 ? price : null),
-    [product, marketplaceLivePrices, price]
+    () => getMarketplaceLinks(product, marketplaceLivePrices),
+    [product, marketplaceLivePrices]
   );
 
   useEffect(() => {
