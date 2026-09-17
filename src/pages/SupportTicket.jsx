@@ -126,8 +126,8 @@ const SupportTicket = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { currentUser, userData } = useAuth();
-  const { products = [], fetchProducts } = useProducts();
-  const { categories = [], fetchCategories } = useCategories();
+  const { products = [] } = useProducts();
+  const { categories = [] } = useCategories();
 
   const [form, setForm] = useState(initialForm);
   const [attachmentFile, setAttachmentFile] = useState(null);
@@ -135,11 +135,6 @@ const SupportTicket = () => {
   const [pincodeLookupState, setPincodeLookupState] = useState("idle");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    fetchProducts?.();
-    fetchCategories?.();
-  }, [fetchProducts, fetchCategories]);
 
   useEffect(() => {
     const nextName = userData?.name || currentUser?.displayName || "";

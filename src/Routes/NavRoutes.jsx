@@ -7,6 +7,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import { AdminAuthProvider } from "../admin/context/AdminAuthContext";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
+import { HOME_SEO } from "../data/siteSeo";
 const SITE_URL = "https://ilika.in";
 
 const Home = lazy(() => import("../pages/Home"));
@@ -187,7 +188,7 @@ const UrlCanonicalizer = () => {
 
 const getRouteSeo = (pathname = "") => {
   const baseKeywords = ["Ilika", "skincare", "beauty products", "hair care", "grooming tools"];
-  if (pathname === "/") return { title: "Ilika - Elegant. Bright. You", description: "Elegant beauty, skincare, haircare, and grooming tools from Ilika." };
+  if (pathname === "/") return HOME_SEO;
   if (pathname === "/offer") return { title: "Offers", description: "Discover latest Ilika offers and beauty deals." };
   if (pathname === "/checkout") return { title: "Checkout", description: "Secure checkout for your Ilika order." };
   if (pathname === "/skin") return { title: "Skin Care", description: "Explore Ilika skin care products and routines." };

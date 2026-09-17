@@ -153,13 +153,15 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
 };
 
 const buildSeoDescription = (product = {}) =>
+  getProductSeoContent(product, getCanonicalProductSlug(product))?.description ||
   String(product?.seoDescription || "").trim() ||
   stripHtml(product?.shortInfo) ||
   stripHtml(product?.description) ||
   "Explore product details, benefits, pricing, and offers on Ilika.";
 
 const buildSeoTitle = (product = {}) =>
-  product?.name ? `${String(product.name).trim()} | Ilika` : "Product Details | Ilika";
+  getProductSeoContent(product, getCanonicalProductSlug(product))?.title ||
+  (product?.name ? `${String(product.name).trim()} | Ilika` : "Product Details | Ilika");
 
 const buildSeoImage = (product = {}) =>
   toAbsoluteUrl(

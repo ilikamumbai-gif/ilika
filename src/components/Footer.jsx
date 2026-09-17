@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   MapPin,
   Info,
@@ -35,6 +35,7 @@ const companyLinks = [
   { label: "Blog", to: "/blog", icon: BookOpen },
   { label: "Contact Us", to: "/contact", icon: Phone },
   { label: "Give Feedback", to: "/feedback", icon: MessageCircle },
+  { label: "Sitemap", to: "/sitemap.html", icon: BookOpen },
 ];
 
 const supportLinks = [
@@ -110,6 +111,7 @@ const associatedBrands = [
 const FooterLink = ({ to, icon: Icon, children, mobile = false }) => (
   <Link
     to={to}
+    reloadDocument={to.endsWith(".html")}
     className={`flex items-center gap-2 text-white transition hover:translate-x-1 hover:text-white ${
       mobile ? "text-[15px] leading-6" : "text-sm"
     }`}
@@ -120,7 +122,6 @@ const FooterLink = ({ to, icon: Icon, children, mobile = false }) => (
 );
 
 const Footer = () => {
-  const [openSection, setOpenSection] = useState("");
 
   const mobileSections = [
     {
@@ -251,14 +252,10 @@ const Footer = () => {
         <div className="mt-8 space-y-5 xl:hidden">
           <div className="border-t border-white/15">
             {mobileSections.map((section) => {
-              const isOpen = openSection === section.key;
-
               return (
-                <div key={section.key} className="border-b border-white/15">
-                  <button
-                    type="button"
-                    onClick={() => setOpenSection(isOpen ? "" : section.key)}
-                    className="flex w-full items-center justify-between gap-4 py-4 text-left"
+                <details key={section.key} name="footer-section" className="group border-b border-white/15">
+                  <summary
+                    className="flex w-full cursor-pointer list-none items-center justify-between gap-4 py-4 text-left"
                   >
                     <span
                       className="text-[14px] font-semibold uppercase tracking-[0.16em] text-white"
@@ -268,11 +265,11 @@ const Footer = () => {
                     </span>
                     <ChevronDown
                       size={18}
-                      className={`shrink-0 text-white transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                      className="shrink-0 text-white transition-transform duration-200 group-open:rotate-180"
                     />
-                  </button>
-                  {isOpen ? <div className="pb-3">{section.content}</div> : null}
-                </div>
+                  </summary>
+                  <div className="pb-3">{section.content}</div>
+                </details>
               );
             })}
           </div>

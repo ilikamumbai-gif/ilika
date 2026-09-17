@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { HOME_SEO } from "../src/data/siteSeo.js";
 
 const SITE_URL = "https://ilika.in";
 
@@ -24,10 +25,18 @@ async function verifyPage({ distDir, url, type }) {
   const description = decode(getMetaValue(html, "description"));
   const canonical = decode(getCanonical(html));
   if (!html.includes(`data-prerendered="${type}"`)) throw new Error(`Missing raw ${type} content: ${url}`);
+  if (/<main[^>]*(?:\shidden|aria-hidden="true")/i.test(html)) throw new Error(`Hidden page content: ${url}`);
+  if (html.includes('aria-label="Close offer popup"')) throw new Error(`Undismissable offer popup captured: ${url}`);
+  if (!/<h[1-3][\s>]/i.test(html) || !/<footer[\s>]/i.test(html)) throw new Error(`Missing headings/footer: ${url}`);
+  if (/noindex/i.test(getMetaValue(html, "robots"))) throw new Error(`Public page is noindex: ${url}`);
   if (canonicalTags.length !== 1) throw new Error(`Expected one canonical tag, found ${canonicalTags.length}: ${url}`);
   if (descriptionTags.length !== 1) throw new Error(`Expected one meta description, found ${descriptionTags.length}: ${url}`);
   if (!title || !description) throw new Error(`Missing title or description: ${url}`);
   if (canonical !== url) throw new Error(`Canonical is not self-referencing: ${url} -> ${canonical || "(missing)"}`);
+  for (const [attribute, key, expected] of [["property", "og:title", title], ["property", "og:description", description], ["name", "twitter:title", title], ["name", "twitter:description", description]]) {
+    const value = html.match(new RegExp(`<meta\\s+${attribute}="${key}"\\s+content="([^"]*)"`))?.[1] || "";
+    if (decode(value).trim() !== expected.trim()) throw new Error(`Incorrect ${key}: ${url}`);
+  }
   return { url, title, description };
 }
 
@@ -39,7 +48,7 @@ async function main() {
   if (new Set(urls).size !== urls.length) throw new Error("Duplicate URLs found in sitemap.xml.");
   const productUrls = urls.filter((url) => new URL(url).pathname.startsWith("/product/"));
   const blogUrls = urls.filter((url) => new URL(url).pathname.startsWith("/blog/"));
-  const categoryUrls = urls.filter((url) => new URL(url).pathname.startsWith("/category/"));
+  const otherUrls = urls.filter(url => !productUrls.includes(url) && !blogUrls.includes(url));
   if (!productUrls.length || !blogUrls.length) throw new Error("Sitemap must include both product and blog URLs.");
 
   const [products, blogs] = await Promise.all([
@@ -51,19 +60,21 @@ async function main() {
     if (new Set(pages.map((page) => page.description)).size !== pages.length) throw new Error(`Duplicate ${label} meta descriptions found.`);
   }
 
-  const crawlLinkFiles = [
-    path.join(distDir, "index.html"),
-    path.join(distDir, "blog", "index.html"),
-    ...categoryUrls.map((url) => path.join(distDir, new URL(url).pathname.replace(/^\/+/, ""), "index.html")),
-  ];
-  for (const filePath of crawlLinkFiles) {
-    const html = await readFile(filePath);
-    for (const url of [...productUrls, ...blogUrls]) {
-      const href = new URL(url).pathname;
-      if (!html.includes(`href="${href}"`)) throw new Error(`Missing crawlable link to ${href} in ${filePath}`);
-    }
+  const pages = await Promise.all(otherUrls.map(url => verifyPage({ distDir, url, type: "page" })));
+  const home = pages.find(page => page.url === `${SITE_URL}/`);
+  if (home?.title !== HOME_SEO.title || home?.description !== HOME_SEO.description) throw new Error("Homepage metadata does not match the approved copy.");
+  const htmlSitemap = await readFile(path.join(distDir, "sitemap.html"));
+  for (const url of urls) {
+    if (!htmlSitemap.includes(`href="${new URL(url).pathname}"`)) throw new Error(`Missing crawlable sitemap link: ${url}`);
   }
-  console.log(`[indexability] Verified ${products.length} product and ${blogs.length} blog pages with prerendered content, unique metadata, self canonicals, and crawlable index links.`);
+  const homepage = await readFile(path.join(distDir, "index.html"));
+  if (!homepage.includes('href="/sitemap.html"')) throw new Error("Homepage must link to the HTML sitemap.");
+  const robots = await readFile(path.join(distDir, "robots.txt"));
+  if (!robots.includes(`Sitemap: ${SITE_URL}/sitemap.xml`)) throw new Error("robots.txt is missing the sitemap.");
+  for (const [, disallow] of robots.matchAll(/^Disallow:\s*(\S+)/gm)) {
+    if (urls.some(url => new URL(url).pathname.startsWith(disallow))) throw new Error(`Public sitemap route blocked by robots.txt: ${disallow}`);
+  }
+  console.log(`[indexability] Verified ${urls.length} public pages: visible HTML, headings, footer, matching social metadata, self canonicals, and robots access.`);
 }
 
 main().catch((error) => { console.error(`[indexability] Failed: ${error.message}`); process.exit(1); });

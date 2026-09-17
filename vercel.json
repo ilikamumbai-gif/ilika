@@ -1,5 +1,11 @@
 {
+  "cleanUrls": true,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "redirects": [
+    { "source": "/combo", "destination": "/offers", "permanent": true },
+    { "source": "/glow-therapy-combo", "destination": "/glow-therapy-comb", "permanent": true },
+    { "source": "/product", "destination": "/products", "permanent": true },
     {
       "source": "/leafless-hair-dryer",
       "destination": "https://ilika.in/product/leafless-hair-dryer",

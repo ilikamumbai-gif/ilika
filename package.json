@@ -8,7 +8,8 @@
     "build": "npm run sitemap && vite build && npm run prerender:products && npm run prerender:catalog && npm run prerender:routes && npm run verify:indexability",
     "prerender:products": "node scripts/prerender-product-pages.mjs",
     "prerender:catalog": "node scripts/prerender-catalog-pages.mjs",
-    "prerender:routes": "node scripts/prerender-static-routes.mjs",
+    "prerender:routes": "playwright install chromium && node scripts/prerender-static-routes.mjs",
+    "verify:footer": "node scripts/verify-footer.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "verify:indexability": "node scripts/verify-indexability.mjs",
     "verify:hair-dryer": "node scripts/verify-hair-dryer.mjs",
@@ -45,6 +46,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "playwright": "^1.63.0",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.2.2",
     "vite": "^7.3.1"

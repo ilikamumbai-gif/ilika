@@ -96,8 +96,8 @@ const WarrantyRegistration = () => {
   const [searchParams] = useSearchParams();
   const API = import.meta.env.VITE_API_URL;
   const { currentUser, userData } = useAuth();
-  const { products = [], fetchProducts } = useProducts();
-  const { categories = [], fetchCategories } = useCategories();
+  const { products = [] } = useProducts();
+  const { categories = [] } = useCategories();
 
   const [form, setForm] = useState(initialForm);
   const [invoiceFile, setInvoiceFile] = useState(null);
@@ -105,11 +105,6 @@ const WarrantyRegistration = () => {
   const [pincodeLookupState, setPincodeLookupState] = useState("idle");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    fetchProducts?.();
-    fetchCategories?.();
-  }, [fetchProducts, fetchCategories]);
 
   useEffect(() => {
     const nextName = userData?.name || currentUser?.displayName || "";

@@ -50,6 +50,8 @@ const STATIC_URLS = [
   { loc: "/best-seller", priority: "0.9", changefreq: "daily" },
   { loc: "/offer", priority: "0.8", changefreq: "daily" },
   { loc: "/gift-store", priority: "0.8", changefreq: "weekly" },
+  ...["gifts-under-999", "gifts-under-1499", "gifts-under-2499", "gifts-2999-plus", "gifts-for-her", "gifts-for-him", "gifts-for-parents", "gifts-for-special-occasion"]
+    .map(slug => ({ loc: `/category/${slug}`, priority: "0.6", changefreq: "weekly" })),
   { loc: "/skin", priority: "0.8", changefreq: "weekly" },
   { loc: "/hair", priority: "0.8", changefreq: "weekly" },
   { loc: "/grooming", priority: "0.8", changefreq: "weekly" },
@@ -67,6 +69,7 @@ const STATIC_URLS = [
   { loc: "/hydration-glow-combo", priority: "0.8", changefreq: "weekly" },
   { loc: "/mask-combo", priority: "0.7", changefreq: "weekly" },
   { loc: "/blog", priority: "0.8", changefreq: "daily" },
+  { loc: "/hair-dryer-guides", priority: "0.7", changefreq: "weekly" },
   { loc: "/about", priority: "0.7", changefreq: "monthly" },
   { loc: "/about/why-ilika", priority: "0.6", changefreq: "monthly" },
   { loc: "/about/quality-promise", priority: "0.6", changefreq: "monthly" },

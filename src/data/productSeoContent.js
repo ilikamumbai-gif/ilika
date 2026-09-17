@@ -18,8 +18,8 @@ export const PRODUCT_SEO_CONTENT = [
     slugs: ["facial-mask-maker-machine", "voice-face-mask-maker"],
     names: ["ilika facial mask maker machine", "ilika voice face mask maker", "automatic voice version face mask maker machine"],
     topKeyword: "mask maker machine price India",
-    title: "ilika Facial Mask Maker Machine - DIY Natural Face Masks at Home",
-    description: "Make fresh, natural face masks at home with the ilika Facial Mask Maker Machine. Mix fruit, collagen & herbal masks in minutes. Buy online in India.",
+    title: "Face Mask Maker Machine | Fresh Masks at Home – Ilika",
+    description: "Make fresh, custom face masks at home in minutes with Ilika's Face Mask Maker. Mini salon experience, glowing skin, easy cleanup. Shop now.",
     keywords: keywordRows([
       ["facial mask maker machine", "Buyer", "High"],
       ["DIY face mask machine", "Buyer", "High"],
@@ -143,6 +143,15 @@ export const PRODUCT_SEO_CONTENT = [
       { question: "Is a BLDC hair dryer better than a normal hair dryer?", answer: "Yes, a BLDC hair dryer generally offers faster drying, lower noise, better frizz control, and less heat damage than a standard motor hair dryer, making it a better long-term choice for frequent styling." },
       { question: "Is the Ilika hair dryer good for travel?", answer: "Yes, its compact, leafless design makes it lightweight and easy to pack for travel while still delivering high-speed drying performance." },
     ],
+  },
+  {
+    canonicalSlug: "hydra-gel-moisturizer-v2",
+    slugs: ["hydra-gel-moisturizer-v2"],
+    names: [],
+    topKeyword: "hydra gel moisturizer 25g",
+    title: "Hydra Gel Moisturizer 25g | Hyaluronic Acid & Niacinamide – Ilika",
+    description: "Shop Ilika Hydra Gel Moisturizer 25g with hyaluronic acid and niacinamide for lightweight, oil-free hydration. Discover the compact everyday face moisturizer.",
+    keywords: keywordRows([["hydra gel moisturizer 25g", "Buyer", "High"]]),
   },
   {
     canonicalSlug: "hydra-gel-moisturizer",
@@ -323,8 +332,8 @@ export const PRODUCT_SEO_CONTENT = [
     slugs: ["lip-plumper-vacuum-device"],
     names: ["ilika lip plumper vacuum device", "ilika lip plumper", "lip plumper vacuum device", "lip plumper device"],
     topKeyword: "best lip plumper device India",
-    title: "ilika Lip Plumper Vacuum Device - Fuller Lips Instantly",
-    description: "Get fuller, defined lips in minutes with ilika's USB rechargeable Lip Plumper Vacuum Device. 3 suction modes, safe & easy to use at home.",
+    title: "Lip Plumper Vacuum Device | Fuller Lips at Home – Ilika",
+    description: "Get naturally fuller-looking lips at home with Ilika's Lip Plumper Vacuum Device. Safe, easy to use, salon-like results. Order now across India.",
     keywords: keywordRows([
       ["lip plumper device", "Buyer", "High"],
       ["lip plumper vacuum tool", "Buyer", "High"],
@@ -472,12 +481,14 @@ export const getProductSeoContent = (product = {}, routeSlug = "") => {
 
   const normalizedName = String(product?.name || "").toLowerCase().trim();
 
-  return PRODUCT_SEO_CONTENT.find((item) => {
-    const slugMatch = item.slugs.some((slug) => slugCandidates.includes(normalizeKey(slug)));
-    if (slugMatch) return true;
-
-    return item.names.some((name) => normalizedName.includes(String(name).toLowerCase()));
-  }) || null;
+  const slugMatch = PRODUCT_SEO_CONTENT.find(item =>
+    item.slugs.some(slug => slugCandidates.includes(normalizeKey(slug)))
+  );
+  if (slugMatch) return slugMatch;
+  // Prefer specific names so the non-voice mask maker cannot inherit voice copy.
+  return PRODUCT_SEO_CONTENT.flatMap(item => item.names.map(name => ({ item, name: name.toLowerCase() })))
+    .sort((a, b) => b.name.length - a.name.length)
+    .find(({ name }) => normalizedName.includes(name))?.item || null;
 };
 
 export const getCanonicalProductSlugAlias = (routeSlug = "") => {

@@ -1,5 +1,7 @@
 import React from "react";
 import OfferCard from "../components/OfferCard";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 const offers = [
   {
@@ -15,13 +17,15 @@ const offers = [
     description:
       "Use this coupon to get 15% OFF on the Ilika Voice Face Mask Maker Machine with Collagen Peptide.",
     code: "ilikaDIY",
-    link: "/product/ilika-automatic-voice-version-face-mask-maker-machine"
+    link: "/product/voice-face-mask-maker"
   }
 
 ];
 
 const Offers = () => {
   return (
+    <>
+    <Header />
     <section
       className="
         relative
@@ -39,6 +43,7 @@ const Offers = () => {
       <div className="absolute inset-0" />
 
       <div className="relative max-w-7xl mx-auto">
+        <h1 className="text-3xl font-semibold">Ilika Offers & Beauty Deals</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-8">
           {offers.map((offer, index) => (
             <OfferCard key={index} {...offer} />
@@ -47,8 +52,9 @@ const Offers = () => {
 
       </div>
     </section>
+    <Footer />
+    </>
   );
 };
 
 export default Offers;
-

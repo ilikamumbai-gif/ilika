@@ -148,7 +148,7 @@ function StarRating({ n }) {
 }
 
 const Blackseedhairoil = () => {
-  useSeo({ title: "Ilika | Black Seed Hair Growth Oil" });
+  useSeo({ title: "Ilika | Black Seed Hair Growth Oil", path: "/blackseed-hair-oil", description: "Discover Ilika Black Seed Hair Growth Oil, its ingredients and hair care routine. Shop online across India." });
   const navigate = useNavigate();
   const { activeProducts } = useProducts();
   const { addToCart } = useCart();

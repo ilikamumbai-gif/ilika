@@ -186,7 +186,7 @@ function StarRating({ n }) {
 }
 
 const Herbalhairoil = () => {
-  useSeo({ title: "Ilika | Herbal Hair Growth Oil — Anti-Dandruff & Root Strengthening" });
+  useSeo({ title: "Ilika | Herbal Hair Growth Oil — Anti-Dandruff & Root Strengthening", path: "/herbal-hair-oil", description: "Explore Ilika Herbal Hair Growth Oil benefits, ingredients, and offers." });
   const navigate = useNavigate();
   const { activeProducts } = useProducts();
   const { addToCart } = useCart();
