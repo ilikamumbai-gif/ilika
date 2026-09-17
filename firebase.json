@@ -5,6 +5,8 @@
   "hosting": {
     "public": "dist",
     "redirects": [
+      { "source": "/product/facial-mask-maker-machine", "destination": "/product/voice-face-mask-maker", "type": 301 },
+      { "source": "/product/facial-mask-maker-machine/", "destination": "/product/voice-face-mask-maker", "type": 301 },
       { "source": "/product/facial-kit/facial-mask-maker-machine", "destination": "/product/voice-face-mask-maker", "type": 301 },
       { "source": "/product/facial-kit/facial-mask-maker-machine/", "destination": "/product/voice-face-mask-maker", "type": 301 },
       { "source": "/leafless-hair-dryer", "destination": "https://ilika.in/product/leafless-hair-dryer", "type": 301 },

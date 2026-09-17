@@ -4,6 +4,16 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/product/facial-mask-maker-machine",
+      "destination": "/product/voice-face-mask-maker",
+      "permanent": true
+    },
+    {
+      "source": "/product/facial-mask-maker-machine/",
+      "destination": "/product/voice-face-mask-maker",
+      "permanent": true
+    },
+    {
       "source": "/product/facial-kit/facial-mask-maker-machine",
       "destination": "/product/voice-face-mask-maker",
       "permanent": true
