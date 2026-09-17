@@ -66,6 +66,8 @@
   { "source": "/signup", "destination": "/index.html" },
   { "source": "/user", "destination": "/index.html" },
   { "source": "/order-success/:id", "destination": "/index.html" },
+  { "source": "/admin", "destination": "/index.html" },
+  { "source": "/admin/", "destination": "/index.html" },
   { "source": "/admin/:path*", "destination": "/index.html" },
 
   { "source": "/:path*", "destination": "/api/not-found?status=404" }
