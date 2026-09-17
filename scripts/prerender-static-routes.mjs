@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { chromium } from "playwright";
 import { startPreview } from "./seo-preview.mjs";
+import { HOME_SEO } from "../src/data/siteSeo.js";
 
 // Capture the actual UI. Serve identical HTML to users and crawlers.
 const distDir = path.resolve("dist");
@@ -22,19 +23,21 @@ try {
     // pages were already rendered by the API prerender steps.
     const footer = '<footer><nav aria-label="Footer"><a href="/">Home</a> <a href="/products">Products</a> <a href="/blog">Blog</a> <a href="/contact">Contact</a> <a href="/privacy">Privacy Policy</a> <a href="/termsandcondition">Terms &amp; Conditions</a></nav></footer>';
     for (const route of new Set(routes)) {
-      const title = route === "/" ? "Ilika India | Beauty, Skincare &amp; Grooming Tools" : `Ilika ${route.slice(1).replaceAll("/", " ").replaceAll("-", " ")}`;
+      const isHomepage = route === "/";
+      const title = isHomepage ? HOME_SEO.title : `Ilika ${route.slice(1).replaceAll("/", " ").replaceAll("-", " ")}`;
+      const description = isHomepage ? HOME_SEO.description : "Explore Ilika beauty, skincare, haircare and grooming products, guides and support.";
       const directory = path.join(distDir, route);
       await fs.mkdir(directory, { recursive: true });
-      const content = `<div id="root"><main id="prerendered-content" data-prerendered="page"><h1>${title}</h1><p>Explore Ilika beauty, skincare, haircare and grooming products, guides and support.</p><p><a href="/products">Browse Ilika products</a> <a href="/blog">Read the Ilika blog</a></p></main>${footer}</div>`;
+      const content = `<div id="root"><main id="prerendered-content" data-prerendered="page"><h1>${title}</h1><p>${description}</p><p><a href="/products">Browse Ilika products</a> <a href="/blog">Read the Ilika blog</a></p></main>${footer}</div>`;
       const canonical = `https://ilika.in${route === "/" ? "/" : route}`;
       const pageHtml = template
         .replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`)
         .replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${canonical}" />`)
-        .replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, '<meta name="description" content="Explore Ilika beauty, skincare, haircare and grooming products, guides and support." />')
+        .replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, `<meta name="description" content="${description.replaceAll('"', '&quot;')}" />`)
         .replace(/<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${title}" />`)
-        .replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i, '<meta property="og:description" content="Explore Ilika beauty, skincare, haircare and grooming products, guides and support." />')
+        .replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${description.replaceAll('"', '&quot;')}" />`)
         .replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${title}" />`)
-        .replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, '<meta name="twitter:description" content="Explore Ilika beauty, skincare, haircare and grooming products, guides and support." />')
+        .replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${description.replaceAll('"', '&quot;')}" />`)
         .replace('<div id="root"></div>', content);
       await fs.writeFile(path.join(directory, "index.html"), pageHtml);
     }
