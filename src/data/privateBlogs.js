@@ -644,8 +644,8 @@ export const PRIVATE_BLOGS = [
     image: "/Images/MaskMakercard.webp",
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-best-ingredients-homemade-masks"),
-    isPrivate: true,
-    hideFromBlogListing: true,
+    isPrivate: false,
+    hideFromBlogListing: false,
     contentSections: [
       {
         id: "private-best-ingredients-section-1",
@@ -2200,6 +2200,9 @@ const READY_TO_PUBLISH_BLOGS = [
   },
 ];
 export const STATIC_BLOGS = [
+  // This article is retained in PRIVATE_BLOGS for its shared content source,
+  // but is explicitly published as a public, sitemap-eligible article.
+  ...PRIVATE_BLOGS.filter((blog) => !blog.isPrivate),
   CUSTOM_VOICE_MASK_GUIDE_BLOG,
   ...READY_TO_PUBLISH_BLOGS,
   ...HAIR_TOOL_COMPARISON_BLOGS,
@@ -2212,7 +2215,7 @@ export const STATIC_BLOGS = [
   ...MASK_MAKER_TOPIC_BLOGS,
 ];
 
-export const PRIVATE_BLOG_PATHS = PRIVATE_BLOGS.reduce((acc, blog) => {
+export const PRIVATE_BLOG_PATHS = PRIVATE_BLOGS.filter((blog) => blog.isPrivate).reduce((acc, blog) => {
   acc[blog.slug] = `/blog/private/${blog.slug}`;
   return acc;
 }, {});

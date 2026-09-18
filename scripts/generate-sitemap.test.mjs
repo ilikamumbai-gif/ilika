@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { buildBlogUrl } from "../src/utils/blogRoutes.js";
 import {
   HAIR_TOOL_COMPARISON_BLOGS,
+  PRIVATE_BLOGS,
   STATIC_BLOGS,
   VOICE_MASK_MAKER_LOCATION_BLOGS,
 } from "../src/data/privateBlogs.js";
@@ -19,6 +20,16 @@ test("buildBlogUrl keeps blog paths unique when slugs collide", () => {
 
   assert.equal(first, "/blog/same-blog");
   assert.equal(second, "/blog/same-blog-2");
+});
+
+test("the selected homemade-mask guide is public and sitemap eligible", () => {
+  const slug = "best-ingredients-for-homemade-face-masks-a-complete-guide-to-safe-diy-skincare-2026";
+  const blog = PRIVATE_BLOGS.find((entry) => entry.slug === slug);
+
+  assert.ok(blog);
+  assert.equal(blog.isPrivate, false);
+  assert.equal(buildBlogUrl(blog), `/blog/${slug}`);
+  assert.ok(STATIC_BLOGS.some((entry) => entry.slug === slug));
 });
 
 test("Voice Mask Maker location blog URLs are unique and included in static blogs", () => {

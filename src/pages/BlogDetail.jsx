@@ -179,7 +179,7 @@ const BlogDetail = () => {
   const privateBlog = useMemo(
     () =>
       PRIVATE_BLOGS.find(
-        (entry) => String(entry?.slug || "").trim().toLowerCase() === String(slug || "").trim().toLowerCase()
+        (entry) => entry?.isPrivate && String(entry?.slug || "").trim().toLowerCase() === String(slug || "").trim().toLowerCase()
       ) || null,
     [slug]
   );
