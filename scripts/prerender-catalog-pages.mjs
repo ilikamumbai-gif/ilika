@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { STATIC_BLOGS } from "../src/data/privateBlogs.js";
+import { PRIVATE_BLOGS, STATIC_BLOGS } from "../src/data/privateBlogs.js";
 import { buildBlogUrl } from "../src/utils/blogRoutes.js";
 
 const SITE_URL = "https://ilika.in";
@@ -61,12 +61,12 @@ async function fetchList(endpoint, key) {
   return list;
 }
 
-const replaceHead = (html, title, description, canonical, type) => {
+const replaceHead = (html, title, description, canonical, type, robots = "index, follow") => {
   let output = html;
   const replace = (pattern, value) => pattern.test(output) ? output.replace(pattern, value) : output;
   output = replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   output = replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, `<meta name="description" content="${escapeHtml(description)}" />`);
-  output = replace(/<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/i, `<meta name="robots" content="index, follow" />`);
+  output = replace(/<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/i, `<meta name="robots" content="${escapeHtml(robots)}" />`);
   output = replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${escapeHtml(canonical)}" />`);
   output = replace(/<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${escapeHtml(title)}" />`);
   output = replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${escapeHtml(description)}" />`);
@@ -117,7 +117,7 @@ const buildBlogPage = (blog, route, hairDryerProduct) => {
 
 async function writeRoute(template, distDir, route, content, metadata = {}) {
   const directory = path.join(distDir, route.replace(/^\/+/, ""));
-  let html = replaceHead(template, metadata.title || "Ilika", metadata.description || "", metadata.canonical || absoluteUrl(route), metadata.type || "website");
+  let html = replaceHead(template, metadata.title || "Ilika", metadata.description || "", metadata.canonical || absoluteUrl(route), metadata.type || "website", metadata.robots);
   html = injectRoot(html, content);
   if (metadata.schema) html = html.replace(/<\/head>/i, `<script type="application/ld+json">${metadata.schema}</script></head>`);
   await fs.mkdir(directory, { recursive: true });
@@ -151,6 +151,17 @@ async function main() {
       if (!blogByRoute.has(route)) blogByRoute.set(route, blog);
     });
   const blogs = Array.from(blogByRoute, ([route, blog]) => ({ route, blog }));
+  // Private articles must not be linked in the public index or sitemap, but
+  // they still need physical files. This lets direct links work on static
+  // hosts even when a SPA fallback rewrite is unavailable.
+  const privateBlogByRoute = new Map();
+  [...PRIVATE_BLOGS, ...apiBlogs]
+    .filter((blog) => blog?.title && blog?.isPrivate)
+    .forEach((blog) => {
+      const route = getBlogRoute(blog);
+      if (!privateBlogByRoute.has(route)) privateBlogByRoute.set(route, blog);
+    });
+  const privateBlogs = Array.from(privateBlogByRoute, ([route, blog]) => ({ route, blog }));
   const productLinks = publicProducts.map((product) => `<li><a href="/product/${escapeHtml(product.productUrl)}">${escapeHtml(product.name || product.productUrl)}</a></li>`).join("");
   const blogLinks = blogs.map(({ route, blog }) => `<li><a href="${escapeHtml(route)}">${escapeHtml(blog.title)}</a></li>`).join("");
   const crawlLinks = `<section aria-label="Product and blog catalogue"><h2>Products</h2><ul>${productLinks}</ul><h2>Articles</h2><ul>${blogLinks}</ul></section>`;
@@ -165,7 +176,11 @@ async function main() {
     const page = buildBlogPage(blog, route, hairDryerProduct);
     await writeRoute(template, distDir, route, page.content, { ...page, type: "article" });
   }
-  console.log(`[prerender] Wrote ${publicProducts.length} product links, ${blogs.length} blog pages, and ${categories.length} category pages.`);
+  for (const { route, blog } of privateBlogs) {
+    const page = buildBlogPage(blog, route);
+    await writeRoute(template, distDir, route, page.content, { ...page, type: "article", robots: "noindex, nofollow" });
+  }
+  console.log(`[prerender] Wrote ${publicProducts.length} product links, ${blogs.length} public blog pages, ${privateBlogs.length} private blog pages, and ${categories.length} category pages.`);
 }
 
 main().catch((error) => { console.error("[prerender] Failed:", error); process.exit(1); });
