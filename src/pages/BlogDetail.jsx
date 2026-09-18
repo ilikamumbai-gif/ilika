@@ -435,8 +435,22 @@ const BlogDetail = () => {
   const canonicalPath = isPrivateBlog
     ? PRIVATE_BLOG_PATHS[blogSlug] || `/blog/private/${blogSlug}`
     : `/blog/${blogSlug}`;
-  const blogSchema = blog
+  const faqSchema = Array.isArray(blog?.faqs) && blog.faqs.length
     ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: blog.faqs.map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: faq.answer,
+          },
+        })),
+      }
+    : null;
+  const blogSchema = blog
+    ? [{
         "@context": "https://schema.org",
         "@type": "Article",
         headline: blog.title,
@@ -462,7 +476,7 @@ const BlogDetail = () => {
         datePublished: blog?.createdAt || undefined,
         dateModified: blog?.updatedAt || blog?.createdAt || undefined,
         mainEntityOfPage: `https://ilika.in${canonicalPath}`,
-      }
+      }, faqSchema]
     : null;
 
   useSeo({
