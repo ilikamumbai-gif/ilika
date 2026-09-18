@@ -160,8 +160,11 @@ async function main() {
     .forEach((blog) => {
       const route = getBlogRoute(blog);
       if (!privateBlogByRoute.has(route)) privateBlogByRoute.set(route, blog);
-    });
+  });
   const privateBlogs = Array.from(privateBlogByRoute, ([route, blog]) => ({ route, blog }));
+  const legacyPrivateBlogs = privateBlogs
+    .map(({ blog }) => ({ route: `/blog/${blog.slug}`, blog }))
+    .filter(({ route }) => !blogByRoute.has(route));
   const productLinks = publicProducts.map((product) => `<li><a href="/product/${escapeHtml(product.productUrl)}">${escapeHtml(product.name || product.productUrl)}</a></li>`).join("");
   const blogLinks = blogs.map(({ route, blog }) => `<li><a href="${escapeHtml(route)}">${escapeHtml(blog.title)}</a></li>`).join("");
   const crawlLinks = `<section aria-label="Product and blog catalogue"><h2>Products</h2><ul>${productLinks}</ul><h2>Articles</h2><ul>${blogLinks}</ul></section>`;
@@ -180,7 +183,14 @@ async function main() {
     const page = buildBlogPage(blog, route);
     await writeRoute(template, distDir, route, page.content, { ...page, type: "article", robots: "noindex, nofollow" });
   }
-  console.log(`[prerender] Wrote ${publicProducts.length} product links, ${blogs.length} public blog pages, ${privateBlogs.length} private blog pages, and ${categories.length} category pages.`);
+  // Older private links omitted `/private/`. Keep a physical fallback for
+  // them so static hosts do not return 404; React redirects them to canonical.
+  for (const { route, blog } of legacyPrivateBlogs) {
+    const canonicalRoute = getBlogRoute(blog);
+    const page = buildBlogPage(blog, canonicalRoute);
+    await writeRoute(template, distDir, route, page.content, { ...page, type: "article", robots: "noindex, nofollow" });
+  }
+  console.log(`[prerender] Wrote ${publicProducts.length} product links, ${blogs.length} public blog pages, ${privateBlogs.length} private blog pages, ${legacyPrivateBlogs.length} legacy private blog fallbacks, and ${categories.length} category pages.`);
 }
 
 main().catch((error) => { console.error("[prerender] Failed:", error); process.exit(1); });

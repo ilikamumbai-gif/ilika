@@ -190,8 +190,9 @@ const BlogDetail = () => {
       ) || null,
     [slug]
   );
-  const isPrivateBlogRoute = location.pathname.startsWith("/blog/private/");
-  const isPrivateBlog = isPrivateBlogRoute && Boolean(privateBlog);
+  // Support legacy shared links such as /blog/<private-slug>. They are
+  // redirected to their private canonical URL once the article is resolved.
+  const isPrivateBlog = Boolean(privateBlog);
 
   const [comments, setComments] = useState([]);
   const [name, setName] = useState("");
@@ -211,7 +212,7 @@ const BlogDetail = () => {
         return;
       }
 
-      if (isPrivateBlogRoute) {
+      if (isPrivateBlog) {
         setBlog(privateBlog);
         setLoadingBlog(false);
         return;
@@ -275,7 +276,7 @@ const BlogDetail = () => {
     return () => {
       ignore = true;
     };
-  }, [API, isPrivateBlogRoute, locationBlog, privateBlog, slug, staticBlog]);
+  }, [API, isPrivateBlog, locationBlog, privateBlog, slug, staticBlog]);
 
   useEffect(() => {
     const node = commentsSectionRef.current;
