@@ -1774,6 +1774,7 @@ const DeferredSection = ({
 }) => {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
 
   useEffect(() => {
     if (isVisible) return;
@@ -1794,10 +1795,71 @@ const DeferredSection = ({
     return () => observer.disconnect();
   }, [isVisible, rootMargin]);
 
+  // Once the section has mounted its real content, flip the reveal class
+  // on the next frame so the fade/slide-up transition actually animates
+  // instead of starting in its "visible" state.
+  useEffect(() => {
+    if (!isVisible || isRevealed) return;
+    const raf = requestAnimationFrame(() => setIsRevealed(true));
+    return () => cancelAnimationFrame(raf);
+  }, [isVisible, isRevealed]);
+
   return (
-    <div ref={sectionRef} style={{ contentVisibility: "auto", containIntrinsicSize: `${minHeight}px` }}>
+    <div
+      ref={sectionRef}
+      className={`ilika-scroll-reveal ${isRevealed ? "ilika-scroll-reveal-visible" : ""}`}
+      style={{ contentVisibility: "auto", containIntrinsicSize: `${minHeight}px` }}
+    >
       {isVisible ? children : (placeholder || <ProductDetailSectionSkeleton minHeight={minHeight} />)}
     </div>
+  );
+};
+
+// Lightweight scroll-reveal wrapper for content that isn't already inside a
+// DeferredSection (e.g. sections that need to render immediately but should
+// still fade/slide up as the user scrolls to them).
+const RevealOnScroll = ({
+  children,
+  as: Tag = "div",
+  className = "",
+  rootMargin = "0px 0px -10% 0px",
+  delayMs = 0,
+  once = true,
+}) => {
+  const nodeRef = useRef(null);
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  useEffect(() => {
+    const node = nodeRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (delayMs > 0) {
+            setTimeout(() => setIsRevealed(true), delayMs);
+          } else {
+            setIsRevealed(true);
+          }
+          if (once) observer.disconnect();
+        } else if (!once) {
+          setIsRevealed(false);
+        }
+      },
+      { rootMargin, threshold: 0.1 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [rootMargin, delayMs, once]);
+
+  return (
+    <Tag
+      ref={nodeRef}
+      className={`ilika-scroll-reveal ${isRevealed ? "ilika-scroll-reveal-visible" : ""} ${className}`}
+    >
+      {children}
+    </Tag>
   );
 };
 
@@ -2287,7 +2349,7 @@ const ProductSeoContentSection = ({ content, theme }) => {
   if (!content) return null;
 
   return (
-    <section className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10 sm:mb-12">
+    <RevealOnScroll as="section" className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10 sm:mb-12">
       <div className="mb-5 flex flex-col gap-2 sm:mb-6">
         <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: theme.accent }}>
           Product comparison
@@ -2303,7 +2365,7 @@ const ProductSeoContentSection = ({ content, theme }) => {
         <SeoComparisonTable table={content.comparison} theme={theme} />
         <SeoComparisonTable table={content.brandComparison} theme={theme} />
       </div>
-    </section>
+    </RevealOnScroll>
   );
 };
 
@@ -2806,7 +2868,7 @@ const ProductDetail = () => {
   const [expandedDesc, setExpandedDesc] = useState(false);
   const [expandedInfo, setExpandedInfo] = useState(false);
   const [activeInfoTab, setActiveInfoTab] = useState("details");
-  const [mobileOpenInfoTab, setMobileOpenInfoTab] = useState(null);
+  const [mobileOpenInfoTab, setMobileOpenInfoTab] = useState("details");
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [activeHonestReview, setActiveHonestReview] = useState(null);
   const [couponCodeInput, setCouponCodeInput] = useState("");
@@ -3576,7 +3638,7 @@ const ProductDetail = () => {
     setExpandedDesc(false);
     setExpandedInfo(false);
     setActiveInfoTab("details");
-    setMobileOpenInfoTab(null);
+    setMobileOpenInfoTab("details");
   }, [productId]);
 
   useEffect(() => {
@@ -4262,7 +4324,6 @@ const ProductDetail = () => {
       { id: "details", label: "Description" },
       { id: "additional", label: "Additional Detail" },
       ...(product?.warranty === "import" ? [{ id: "warranty", label: "Warranty Terms" }] : []),
-      { id: "reviews", label: "Write Review" },
     ],
     [product?.warranty]
   );
@@ -4692,8 +4753,49 @@ const ProductDetail = () => {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
+        @keyframes ilikaBannerFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes ilikaBannerSlideIn {
+          from { opacity: 0; transform: translateY(32px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
         .ilika-card-in {
           animation: ilikaCardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        /* Generic fade + slide-up reveal, driven by IntersectionObserver
+           via DeferredSection / RevealOnScroll toggling the "-visible" class. */
+        .ilika-scroll-reveal {
+          opacity: 0;
+          transform: translateY(28px);
+          transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+          will-change: opacity, transform;
+        }
+        .ilika-scroll-reveal-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ilika-scroll-reveal {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+        }
+        /* Product banner images: fade + slide in as each banner scrolls
+           into view, staggered slightly per banner. */
+        .ilika-banner-in {
+          opacity: 0;
+          transform: translateY(36px);
+          animation: ilikaBannerSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ilika-banner-in {
+            opacity: 1;
+            transform: none;
+            animation: none;
+          }
         }
         .ilika-badge-pulse {
           animation: ilikaBadgePulse 2.2s ease-out infinite;
@@ -5519,7 +5621,7 @@ const ProductDetail = () => {
           <div>
 
         {productVideos.length > 0 && (
-          <section className="max-w-[90rem] mx-auto mb-12 px-3 sm:px-6 sm:mb-16">
+          <RevealOnScroll as="section" className="max-w-[90rem] mx-auto mb-12 px-3 sm:px-6 sm:mb-16">
             <div className="overflow-hidden rounded-[20px] border bg-white shadow-[0_12px_28px_rgba(69,39,34,0.05)] sm:rounded-[26px]" style={{ borderColor: detailTheme.borderSoft }}>
               <div className="border-b px-4 py-3 sm:px-5 sm:py-4" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
                 <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>Watch it in action</p>
@@ -5549,7 +5651,7 @@ const ProductDetail = () => {
                 )}
               </div>
             </div>
-          </section>
+          </RevealOnScroll>
         )}
 
         {/* BEFORE / AFTER */}
@@ -5601,107 +5703,73 @@ const ProductDetail = () => {
           />
         ) : null}
 
+        {/* DESCRIPTION + ADDITIONAL INFO */}
+
+          <section ref={detailsTabsRef} className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10">
+            <div className="hidden md:block overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
+              <div className="grid auto-cols-fr grid-flow-col border-b border-gray-100 bg-[#fcf7f7]">
+                {infoTabs.map((tab) => {
+                  const isActive = activeInfoTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveInfoTab(tab.id)}
+                      className="relative px-5 py-5 text-center text-sm font-semibold uppercase tracking-[0.03em] transition"
+                      style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
+                    >
+                      {tab.label}
+                      <span
+                        className={`absolute bottom-0 left-0 h-[3px] w-full origin-left transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0"}`}
+                        style={{ backgroundColor: detailTheme.accent }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="p-7 lg:p-8">
+                <div className="min-w-0">
+                  {renderInfoPanel(activeInfoTab)}
+                </div>
+              </div>
+            </div>
+
+            <div className="md:hidden space-y-3">
+              {infoTabs.map((tab) => {
+                const isActive = mobileOpenInfoTab === tab.id;
+
+                return (
+                  <div key={tab.id} className="overflow-hidden rounded-[22px] border border-gray-100 bg-white shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => setMobileOpenInfoTab(isActive ? null : tab.id)}
+                      className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                    >
+                      <span className="text-sm font-semibold uppercase tracking-[0.05em]" style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}>
+                        {tab.label}
+                      </span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ${isActive ? "rotate-180" : ""}`}
+                        style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
+                      />
+                    </button>
+
+                    {isActive ? (
+                      <div className="border-t border-gray-100 px-4 py-4">
+                        {renderInfoPanel(tab.id)}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
         <ProductSeoContentSection
           content={productSeoContent}
           theme={detailTheme}
         />
-
-        {/* INGREDIENTS SECTION */}
-        {hasIngredients && (
-          <DeferredSection
-            minHeight={420}
-            placeholder={
-              <div className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-6 py-6 sm:py-6" aria-hidden="true">
-                <div className="rounded-[20px] border border-[#f1e2df] bg-white p-4 sm:p-6">
-                  <div className="mb-7 flex justify-center">
-                    <SkeletonBlock className="h-10 w-56" />
-                  </div>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                      <SkeletonBlock key={index} className="aspect-square w-full rounded-[28px]" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            }
-          >
-            <section
-              className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-6 py-6 sm:py-6"
-              style={{
-
-                borderRadius: "20px",
-                border: detailTheme.isDefaultWhite
-                  ? "linear-gradient(135deg,#e91e8c 0%,#ff6b35 100%)"
-                  : detailTheme.benefitGradient,
-              }}
-            >
-              <div className="text-center mb-6 sm:mb-8 px-2">
-                <h2 className="text-3xl sm:text-5xl font-light tracking-tight" >
-                  Key Ingredients
-                </h2>
-              </div>
-
-              <div
-                className="relative px-1 sm:px-7 select-none"
-                onPointerDown={handleIngredientPointerDown}
-                onPointerMove={handleIngredientPointerMove}
-                onPointerUp={handleIngredientPointerEnd}
-                onPointerCancel={handleIngredientPointerEnd}
-                style={{
-                  touchAction: "pan-y",
-                  cursor: shouldLoopIngredients ? "grab" : "default",
-                }}
-              >
-                {shouldLoopIngredients && (
-                  <>
-                    <button
-                      onClick={() => scrollIngredientTrackByCards(-1)}
-                      className="absolute left-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/15 bg-white/90 text-black shadow-sm transition hover:bg-white sm:left-1 sm:flex"
-                      aria-label="Previous ingredient cards"
-                    >
-                      <ChevronLeft className="w-7 h-7" />
-                    </button>
-                    <button
-                      onClick={() => scrollIngredientTrackByCards(1)}
-                      className="absolute right-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/15 bg-white/90 text-black shadow-sm transition hover:bg-white sm:right-1 sm:flex"
-                      aria-label="Next ingredient cards"
-                    >
-                      <ChevronRight className="w-7 h-7" />
-                    </button>
-                  </>
-                )}
-
-                <div className="overflow-hidden rounded-[28px]">
-                  <div
-                    ref={ingredientTrackRef}
-                    onScroll={() => scheduleIngredientLoopNormalize(120)}
-                    className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-proximity pb-2 [&::-webkit-scrollbar]:hidden"
-                    style={{ scrollbarWidth: "none" }}
-                  >
-                    {(shouldLoopIngredients ? loopedIngredients : loopedIngredients.slice(0, ingredients.length)).map((item, idx) => (
-                      <div
-                        key={`ingredient-${item.key}`}
-                        className="relative rounded-[28px] overflow-hidden group snap-start shrink-0 basis-full sm:basis-[calc(50%-8px)] lg:basis-[calc(25%-18px)] bg-white"
-                        style={{ aspectRatio: "1 / 1" }}
-                      >
-                        <img
-                          loading={idx < 2 ? "eager" : "lazy"}
-                          src={item.src}
-                          alt={`Ingredient ${item.originalIndex + 1}`}
-                          width="600"
-                          height="600"
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          draggable={false}
-                        />
-
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </section>
-          </DeferredSection>
-        )}
 
         {whyLoveItItems.length > 0 && (
           <DeferredSection
@@ -5806,7 +5874,11 @@ const ProductDetail = () => {
           >
             <section className="w-full mx-auto px-4 sm:px-6 mb-12">
               {productBanners.filter(b => b?.url).map((banner, idx) => (
-                <div key={idx}>
+                <RevealOnScroll
+                  key={idx}
+                  delayMs={Math.min(idx, 4) * 90}
+                  rootMargin="0px 0px -12% 0px"
+                >
                   <img loading="lazy"
                     src={banner.url}
                     alt={banner.alt || `Product Banner ${idx + 1}`}
@@ -5814,12 +5886,184 @@ const ProductDetail = () => {
                     height="900"
                     className="w-full object-cover h-auto"
                   />
-                </div>
+                </RevealOnScroll>
               ))}
             </section>
           </DeferredSection>
         )}
 
+        {/* REVIEWS */}
+        <DeferredSection
+          minHeight={420}
+          placeholder={<ProductDetailSectionSkeleton minHeight={420} className="mb-12" />}
+        >
+          <section className="max-w-[90rem] mx-auto mb-10 px-4 sm:px-6">
+            <div className="mb-5">
+              <Heading heading="Write a Review" style={{ color: detailTheme.heading }} />
+            </div>
+            {renderInfoPanel("reviews")}
+          </section>
+          <div className="max-w-[90rem] mx-auto px-4 sm:px-6">
+            <HonestReviewsSection
+              items={honestReviews}
+              theme={detailTheme}
+              onOpenReview={setActiveHonestReview}
+            />
+          </div>
+          <div className="max-w-[90rem] mx-auto mb-10 px-4 sm:px-6">
+            <ProductReviewCarouselSection
+              reviews={productReviews}
+              theme={detailTheme}
+              productName={product?.name}
+              onWriteReview={() => setShowReviewModal(true)}
+            />
+          </div>
+        </DeferredSection>
+
+        {productFaqs.length > 0 && (
+          <DeferredSection
+            minHeight={300}
+            placeholder={<ProductDetailSectionSkeleton minHeight={300} className="mb-12" />}
+          >
+            <div className="max-w-[90rem] mx-auto mb-10 px-4 sm:px-6">
+              <ProductFaqSection faqs={productFaqs} theme={detailTheme} />
+            </div>
+          </DeferredSection>
+        )}
+
+          {hasInTheBox && (
+            <section className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-8">
+              <div className="mb-4 sm:mb-5">
+                <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }} />
+              </div>
+
+              <div className="grid grid-cols-3 gap-x-1 gap-y-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
+                {inTheBoxItems.map((item, index) => (
+                  <div
+                    key={item.id || index}
+                    className="ilika-card-in ilika-hover-lift flex min-w-0 flex-col items-center rounded-[18px] bg-white/70 px-1 py-1.5 text-center sm:w-[128px] sm:bg-transparent sm:px-0 sm:py-0"
+                    style={{ animationDelay: `${Math.min(index, 8) * 70}ms` }}
+                  >
+                    {item.image ? (
+                      <img
+                        loading={index < 2 ? "eager" : "lazy"}
+                        src={item.image}
+                        alt={item.title || `Box item ${index + 1}`}
+                        className="h-24 w-auto max-w-full rounded-[18px] object-contain sm:h-32"
+                      />
+                    ) : null}
+                    {item.title ? (
+                      <p className="mt-2 text-[11px] font-medium leading-4 sm:mt-3 sm:text-[13px] sm:leading-5" style={{ color: detailTheme.heading }}>
+                        {item.title}
+                      </p>
+                    ) : null}
+                    {item.subtitle ? (
+                      <p className="mt-1 text-[11px] leading-4 text-gray-500 sm:text-xs sm:leading-5">
+                        {item.subtitle}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+        {/* INGREDIENTS SECTION */}
+        {hasIngredients && (
+          <DeferredSection
+            minHeight={420}
+            placeholder={
+              <div className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-6 py-6 sm:py-6" aria-hidden="true">
+                <div className="rounded-[20px] border border-[#f1e2df] bg-white p-4 sm:p-6">
+                  <div className="mb-7 flex justify-center">
+                    <SkeletonBlock className="h-10 w-56" />
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <SkeletonBlock key={index} className="aspect-square w-full rounded-[28px]" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            }
+          >
+            <section
+              className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-6 py-6 sm:py-6"
+              style={{
+
+                borderRadius: "20px",
+                border: detailTheme.isDefaultWhite
+                  ? "linear-gradient(135deg,#e91e8c 0%,#ff6b35 100%)"
+                  : detailTheme.benefitGradient,
+              }}
+            >
+              <div className="text-center mb-6 sm:mb-8 px-2">
+                <h2 className="text-3xl sm:text-5xl font-light tracking-tight" >
+                  Key Ingredients
+                </h2>
+              </div>
+
+              <div
+                className="relative px-1 sm:px-7 select-none"
+                onPointerDown={handleIngredientPointerDown}
+                onPointerMove={handleIngredientPointerMove}
+                onPointerUp={handleIngredientPointerEnd}
+                onPointerCancel={handleIngredientPointerEnd}
+                style={{
+                  touchAction: "pan-y",
+                  cursor: shouldLoopIngredients ? "grab" : "default",
+                }}
+              >
+                {shouldLoopIngredients && (
+                  <>
+                    <button
+                      onClick={() => scrollIngredientTrackByCards(-1)}
+                      className="absolute left-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/15 bg-white/90 text-black shadow-sm transition hover:bg-white sm:left-1 sm:flex"
+                      aria-label="Previous ingredient cards"
+                    >
+                      <ChevronLeft className="w-7 h-7" />
+                    </button>
+                    <button
+                      onClick={() => scrollIngredientTrackByCards(1)}
+                      className="absolute right-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/15 bg-white/90 text-black shadow-sm transition hover:bg-white sm:right-1 sm:flex"
+                      aria-label="Next ingredient cards"
+                    >
+                      <ChevronRight className="w-7 h-7" />
+                    </button>
+                  </>
+                )}
+
+                <div className="overflow-hidden rounded-[28px]">
+                  <div
+                    ref={ingredientTrackRef}
+                    onScroll={() => scheduleIngredientLoopNormalize(120)}
+                    className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-proximity pb-2 [&::-webkit-scrollbar]:hidden"
+                    style={{ scrollbarWidth: "none" }}
+                  >
+                    {(shouldLoopIngredients ? loopedIngredients : loopedIngredients.slice(0, ingredients.length)).map((item, idx) => (
+                      <div
+                        key={`ingredient-${item.key}`}
+                        className="relative rounded-[28px] overflow-hidden group snap-start shrink-0 basis-full sm:basis-[calc(50%-8px)] lg:basis-[calc(25%-18px)] bg-white"
+                        style={{ aspectRatio: "1 / 1" }}
+                      >
+                        <img
+                          loading={idx < 2 ? "eager" : "lazy"}
+                          src={item.src}
+                          alt={`Ingredient ${item.originalIndex + 1}`}
+                          width="600"
+                          height="600"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          draggable={false}
+                        />
+
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          </DeferredSection>
+        )}
 
         {product.videos?.length > 0 && (
           <DeferredSection
@@ -5871,181 +6115,6 @@ const ProductDetail = () => {
           </DeferredSection>
         )}
 
-        <DeferredSection
-          minHeight={productFaqs.length > 0 ? 420 : 340}
-          placeholder={
-            <div className="max-w-[90rem] mx-auto mb-12 px-4 sm:px-6" aria-hidden="true">
-              <div className={`grid grid-cols-1 gap-6 ${productFaqs.length > 0 ? "xl:grid-cols-10" : ""}`}>
-                <div className={productFaqs.length > 0 ? "xl:col-span-7" : ""}>
-                  <div className="mb-6 space-y-3">
-                    <SkeletonBlock className="h-8 w-56" />
-                    <SkeletonBlock className="h-4 w-72" />
-                  </div>
-                  <div className="flex gap-4 overflow-hidden">
-                    {Array.from({ length: 3 }).map((_, index) => (
-                      <div key={index} className="w-full rounded-[24px] border border-[#f1e2df] bg-white p-4 sm:w-[48%] lg:w-[32%]">
-                        <div className="mb-4 flex items-center gap-3">
-                          <SkeletonBlock className="h-11 w-11 rounded-full" />
-                          <div className="flex-1 space-y-2">
-                            <SkeletonBlock className="h-4 w-28" />
-                            <SkeletonBlock className="h-3 w-20" />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <SkeletonBlock className="h-4 w-full" />
-                          <SkeletonBlock className="h-4 w-[88%]" />
-                          <SkeletonBlock className="h-4 w-[74%]" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {productFaqs.length > 0 ? (
-                  <div className="xl:col-span-3">
-                    <div className="mb-6 space-y-3">
-                      <SkeletonBlock className="h-8 w-40" />
-                      <SkeletonBlock className="h-4 w-full" />
-                    </div>
-                    <div className="space-y-3">
-                      {Array.from({ length: Math.min(productFaqs.length, 3) }).map((_, index) => (
-                        <div key={index} className="rounded-[24px] border border-[#f1e2df] bg-white px-5 py-5 sm:px-6">
-                          <SkeletonBlock className="h-5 w-[75%]" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          }
-        >
-          {hasInTheBox && (
-            <section className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-8">
-              <div className="mb-4 sm:mb-5">
-                <Heading heading="What's in the Box?" style={{ color: detailTheme.heading }} />
-              </div>
-
-              <div className="grid grid-cols-3 gap-x-1 gap-y-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
-                {inTheBoxItems.map((item, index) => (
-                  <div
-                    key={item.id || index}
-                    className="ilika-card-in ilika-hover-lift flex min-w-0 flex-col items-center rounded-[18px] bg-white/70 px-1 py-1.5 text-center sm:w-[128px] sm:bg-transparent sm:px-0 sm:py-0"
-                    style={{ animationDelay: `${Math.min(index, 8) * 70}ms` }}
-                  >
-                    {item.image ? (
-                      <img
-                        loading={index < 2 ? "eager" : "lazy"}
-                        src={item.image}
-                        alt={item.title || `Box item ${index + 1}`}
-                        className="h-24 w-auto max-w-full rounded-[18px] object-contain sm:h-32"
-                      />
-                    ) : null}
-                    {item.title ? (
-                      <p className="mt-2 text-[11px] font-medium leading-4 sm:mt-3 sm:text-[13px] sm:leading-5" style={{ color: detailTheme.heading }}>
-                        {item.title}
-                      </p>
-                    ) : null}
-                    {item.subtitle ? (
-                      <p className="mt-1 text-[11px] leading-4 text-gray-500 sm:text-xs sm:leading-5">
-                        {item.subtitle}
-                      </p>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* â•â•â•â• DESCRIPTION + ADDITIONAL INFO â•â•â•â• */}
-          <section ref={detailsTabsRef} className="max-w-[90rem] mx-auto px-4 sm:px-6 mb-10">
-            <div className="hidden md:block overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
-              <div className="grid auto-cols-fr grid-flow-col border-b border-gray-100 bg-[#fcf7f7]">
-                {infoTabs.map((tab) => {
-                  const isActive = activeInfoTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveInfoTab(tab.id)}
-                      className="relative px-5 py-5 text-center text-sm font-semibold uppercase tracking-[0.03em] transition"
-                      style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
-                    >
-                      {tab.label}
-                      <span
-                        className={`absolute bottom-0 left-0 h-[3px] w-full origin-left transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0"}`}
-                        style={{ backgroundColor: detailTheme.accent }}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="p-7 lg:p-8">
-                <div className="min-w-0">
-                  {renderInfoPanel(activeInfoTab)}
-                </div>
-              </div>
-            </div>
-
-            <div className="md:hidden space-y-3">
-              {infoTabs.map((tab) => {
-                const isActive = mobileOpenInfoTab === tab.id;
-
-                return (
-                  <div key={tab.id} className="overflow-hidden rounded-[22px] border border-gray-100 bg-white shadow-sm">
-                    <button
-                      type="button"
-                      onClick={() => setMobileOpenInfoTab(isActive ? null : tab.id)}
-                      className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
-                    >
-                      <span className="text-sm font-semibold uppercase tracking-[0.05em]" style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}>
-                        {tab.label}
-                      </span>
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform duration-200 ${isActive ? "rotate-180" : ""}`}
-                        style={{ color: isActive ? detailTheme.accent : detailTheme.heading }}
-                      />
-                    </button>
-
-                    {isActive ? (
-                      <div className="border-t border-gray-100 px-4 py-4">
-                        {renderInfoPanel(tab.id)}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
-          <div className="max-w-[90rem] mx-auto px-4 sm:px-6">
-            <HonestReviewsSection
-              items={honestReviews}
-              theme={detailTheme}
-              onOpenReview={setActiveHonestReview}
-            />
-          </div>
-
-          <div className={`max-w-[90rem] mx-auto mb-8 px-4 sm:px-6 ${productFaqs.length > 0 ? "grid grid-cols-1 gap-6 xl:grid-cols-10" : ""}`}>
-              <ProductReviewCarouselSection
-                reviews={productReviews}
-                theme={detailTheme}
-                productName={product?.name}
-                onWriteReview={() => setShowReviewModal(true)}
-                className={productFaqs.length > 0 ? "xl:col-span-7 xl:pr-5" : ""}
-              />
-
-              {productFaqs.length > 0 ? (
-                <div className="xl:col-span-3 xl:border-l xl:pl-5" style={{ borderColor: detailTheme.borderSoft }}>
-                  <ProductFaqSection
-                    faqs={productFaqs}
-                    theme={detailTheme}
-                  />
-                </div>
-              ) : null}
-          </div>
-        </DeferredSection>
 
         {/* â•â•â•â• RELATED PRODUCTS â•â•â•â• */}
         {relatedProducts.length > 0 && (

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Eye, Trash2, Search, SlidersHorizontal, Package } from "lucide-react";
+import { Eye, Trash2, Search, SlidersHorizontal, Package, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useOrders } from "../../context/OrderContext";
@@ -56,7 +56,7 @@ const FilterSelect = ({ value, onChange, children, icon }) => (
 
 const OrderList = () => {
   const navigate = useNavigate();
-  const { orders, loading, updateOrderStatus, deleteAllOrders, deleteOrder } = useOrders();
+  const { orders, loading, error, refetchOrders, updateOrderStatus, deleteAllOrders, deleteOrder } = useOrders();
   const { users } = useUsers();
 
   const [statusFilter, setStatusFilter] = useState("");
@@ -90,13 +90,29 @@ const OrderList = () => {
           <h1 className="text-xl font-bold text-gray-900">Orders</h1>
           <p className="text-sm text-gray-400 mt-0.5">{orders.length} total orders</p>
         </div>
+        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => refetchOrders()}
+          disabled={loading}
+          className="flex items-center gap-2 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+        >
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Refresh
+        </button>
         <button
           onClick={() => { if (window.confirm("Delete ALL orders? This cannot be undone.")) { deleteAllOrders(); logActivity("Deleted all orders"); } }}
           className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition"
         >
           <Trash2 size={14} /> Delete All
         </button>
+        </div>
       </div>
+
+      {error && (
+        <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {error} {orders.length > 0 && "Showing previously loaded orders."}
+        </div>
+      )}
 
       {/* Filters bar */}
       <div className="bg-white rounded-2xl p-4 mb-4 flex flex-wrap gap-3 items-center" style={{ border: "1px solid #EBEBEB" }}>
@@ -158,7 +174,7 @@ const OrderList = () => {
         ) : filteredOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-300">
             <Package size={40} className="mb-3" />
-            <p className="text-sm">No orders found</p>
+            <p className="text-sm">{error ? "Orders could not be loaded" : "No orders found"}</p>
           </div>
         ) : (
           <>

@@ -1,11 +1,13 @@
 import React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 const OrderContext = createContext(null);
 
 export const OrderProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const requestId = useRef(0);
 
   const API = import.meta.env.VITE_API_URL;
 
@@ -20,12 +22,15 @@ export const OrderProvider = ({ children }) => {
   };
 
   /* ================= FETCH ORDERS ================= */
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async ({ background = false } = {}) => {
+    const currentRequest = ++requestId.current;
     try {
-      setLoading(true);
+      if (!background) setLoading(true);
 
-      const res = await fetch(`${API}/api/orders`);
+      const res = await fetch(`${API}/api/orders`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`Unable to load orders (HTTP ${res.status}). Please retry.`);
       const data = await res.json();
+      if (!Array.isArray(data)) throw new Error("Invalid orders response. Please retry.");
 
       const formatted = data.map((o) => ({
         id: o.id,
@@ -60,18 +65,36 @@ export const OrderProvider = ({ children }) => {
         },
       }));
 
-      setOrders(formatted);
+      if (currentRequest === requestId.current) {
+        setOrders(formatted);
+        setError("");
+      }
 
     } catch (err) {
       console.error("Failed to fetch orders", err);
+      if (currentRequest === requestId.current) {
+        setError(err.message || "Unable to load orders. Please retry.");
+      }
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
-  };
+  }, [API]);
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+    const refreshVisibleOrders = () => {
+      if (document.visibilityState === "visible") fetchOrders({ background: true });
+    };
+    const interval = window.setInterval(refreshVisibleOrders, 30000);
+    window.addEventListener("focus", refreshVisibleOrders);
+    document.addEventListener("visibilitychange", refreshVisibleOrders);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refreshVisibleOrders);
+      document.removeEventListener("visibilitychange", refreshVisibleOrders);
+      requestId.current += 1;
+    };
+  }, [fetchOrders]);
 
   /* ================= UPDATE STATUS ================= */
   const updateOrderStatus = async (id, status) => {
@@ -160,6 +183,7 @@ export const OrderProvider = ({ children }) => {
       value={{
         orders,
         loading,
+        error,
         updateOrderStatus,
         getOrderById,
         refetchOrders: fetchOrders,
