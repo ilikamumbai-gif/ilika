@@ -18,6 +18,8 @@ After deploying:
 
 Search Console submission and live deployment are separate authenticated operations; a successful local build does not perform either operation or guarantee indexing/ranking changes.
 
+The `/blog` page must contain ordinary article anchors in its initial HTML. The catalog renderer creates the full public article index, and the Chromium-unavailable fallback preserves that file. When Chromium is available, it captures the React article list, which merges repository and API articles using the same public-article filter. `verify:indexability` fails if any sitemap article is missing from the initial blog-index HTML. New API articles enter the initial HTML on the next rebuild.
+
 ## September 2026 SEO review
 
 The home offer waits eight seconds, has a 48px mobile close target, and records that it was shown in sessionStorage before opening. Reloading or navigating within the same tab session does not show it again. If session storage is unavailable, the automatic offer stays suppressed.

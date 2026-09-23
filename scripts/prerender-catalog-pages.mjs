@@ -1,4 +1,4 @@
-import { getConsolidatedBlogPath } from "../src/data/blogConsolidation.js";
+import { getArticleLinkTitle, getPublicBlogs } from "../src/utils/publicBlogs.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { PRIVATE_BLOGS, STATIC_BLOGS } from "../src/data/privateBlogs.js";
@@ -144,14 +144,8 @@ async function main() {
     fetchList(getEndpoint(env, "blogs"), "blogs"),
   ]);
   const publicProducts = products.filter((product) => product?.isActive !== false && product?.productUrl);
-  const blogByRoute = new Map();
-  [...STATIC_BLOGS, ...apiBlogs]
-    .filter((blog) => blog?.title && !blog?.isPrivate && !getConsolidatedBlogPath(blog.slug))
-    .forEach((blog) => {
-      const route = getBlogRoute(blog);
-      if (!blogByRoute.has(route)) blogByRoute.set(route, blog);
-    });
-  const blogs = Array.from(blogByRoute, ([route, blog]) => ({ route, blog }));
+  const blogs = getPublicBlogs([...STATIC_BLOGS, ...apiBlogs]);
+  const blogByRoute = new Map(blogs.map(({ route, blog }) => [route, blog]));
   // Private articles must not be linked in the public index or sitemap, but
   // they still need physical files. This lets direct links work on static
   // hosts even when a SPA fallback rewrite is unavailable.
@@ -167,7 +161,7 @@ async function main() {
     .map(({ blog }) => ({ route: `/blog/${blog.slug}`, blog }))
     .filter(({ route }) => !blogByRoute.has(route));
   const productLinks = publicProducts.map((product) => `<li><a href="/product/${escapeHtml(product.productUrl)}">${escapeHtml(product.name || product.productUrl)}</a></li>`).join("");
-  const blogLinks = blogs.map(({ route, blog }) => `<li><a href="${escapeHtml(route)}">${escapeHtml(blog.title)}</a></li>`).join("");
+  const blogLinks = blogs.map(({ route, blog }) => `<li><a href="${escapeHtml(route)}">${escapeHtml(getArticleLinkTitle(blog.title))}</a></li>`).join("");
   const crawlLinks = `<section aria-label="Product and blog catalogue"><h2>Products</h2><ul>${productLinks}</ul><h2>Articles</h2><ul>${blogLinks}</ul></section>`;
   await fs.writeFile(path.join(distDir, "_crawl-links.html"), crawlLinks, "utf8");
   await writeRoute(template, distDir, "/blog", `<main id="prerendered-content" data-prerendered="blog-index"><h1>Ilika Blog</h1>${crawlLinks}</main>`, { title: "Ilika Blog | Skincare and Beauty Guides", description: "Browse Ilika skincare, beauty, haircare, and device guides.", canonical: `${SITE_URL}/blog` });

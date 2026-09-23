@@ -24,6 +24,9 @@ try {
     // pages were already rendered by the API prerender steps.
     const footer = '<footer><nav aria-label="Footer"><a href="/">Home</a> <a href="/products">Products</a> <a href="/blog">Blog</a> <a href="/contact">Contact</a> <a href="/privacy">Privacy Policy</a> <a href="/termsandcondition">Terms &amp; Conditions</a></nav></footer>';
     for (const route of new Set(routes)) {
+      // The catalog renderer already wrote the complete article index.
+      // Preserve it when Chromium is unavailable instead of replacing it.
+      if (route === "/blog") continue;
       const isHomepage = route === "/";
       const title = isHomepage ? HOME_SEO.title : `Ilika ${route.slice(1).replaceAll("/", " ").replaceAll("-", " ")}`;
       const description = isHomepage ? HOME_SEO.description : "Explore Ilika beauty, skincare, haircare and grooming products, guides and support.";
@@ -46,7 +49,7 @@ try {
     // they also have crawlable footer navigation in the fallback path.
     for (const [, url] of sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)) {
       const route = new URL(url).pathname;
-      if (!/^\/(product|blog)\//.test(route)) continue;
+      if (route !== "/blog" && !/^\/(product|blog)\//.test(route)) continue;
       const file = path.join(distDir, route, "index.html");
       const html = await fs.readFile(file, "utf8").catch(() => "");
       if (html && !/<footer[\s>]/i.test(html)) await fs.writeFile(file, html.replace(/<\/main>/i, `</main>${footer}`));

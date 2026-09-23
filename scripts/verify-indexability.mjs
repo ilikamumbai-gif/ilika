@@ -48,6 +48,16 @@ async function main() {
   if (new Set(urls).size !== urls.length) throw new Error("Duplicate URLs found in sitemap.xml.");
   const productUrls = urls.filter((url) => new URL(url).pathname.startsWith("/product/"));
   const blogUrls = urls.filter((url) => new URL(url).pathname.startsWith("/blog/"));
+  const blogIndex = await readFile(path.join(distDir, "blog", "index.html"));
+  const articleLinks = new Set(Array.from(blogIndex.matchAll(/<a\s[^>]*href="([^"]+)"/gi), ([, href]) => decode(href)));
+  for (const url of blogUrls) {
+    if (!articleLinks.has(new URL(url).pathname) && !articleLinks.has(url)) {
+      throw new Error(`Blog index initial HTML is missing article link: ${url}`);
+    }
+  }
+  if (Array.from(articleLinks).some(href => href.startsWith("/blog/private/"))) {
+    throw new Error("Blog index exposes private article links.");
+  }
   const otherUrls = urls.filter(url => !productUrls.includes(url) && !blogUrls.includes(url));
   if (!productUrls.length || !blogUrls.length) throw new Error("Sitemap must include both product and blog URLs.");
 
