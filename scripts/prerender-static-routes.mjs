@@ -7,6 +7,19 @@ import { HOME_SEO } from "../src/data/siteSeo.js";
 // Capture the actual UI. Serve identical HTML to users and crawlers.
 const distDir = path.resolve("dist");
 const template = await fs.readFile(path.join(distDir, "index.html"), "utf8");
+// Admin needs a real entry file on static hosts, but must never be rendered
+// with an authenticated session or included in the public sitemap.
+for (const adminPath of ["/admin", "/admin/login"]) {
+  const adminHtml = template
+    .replace(/<title>[\s\S]*?<\/title>/i, "<title>Ilika Admin</title>")
+    .replace(/<meta\s+name="robots"[^>]*>/gi, "")
+    .replace(/<link\s+rel="canonical"[^>]*>/gi, "")
+    .replace("</head>", `<meta name="robots" content="noindex, nofollow" /><link rel="canonical" href="https://ilika.in${adminPath}" /></head>`)
+    .replace('<div id="root"></div>', '<div id="root"><main><p role="status">Loading Ilika Admin…</p><noscript>Enable JavaScript to sign in to Ilika Admin.</noscript></main></div>');
+  const directory = path.join(distDir, adminPath);
+  await fs.mkdir(directory, { recursive: true });
+  await fs.writeFile(path.join(directory, "index.html"), adminHtml);
+}
 const sitemap = await fs.readFile(path.join(distDir, "sitemap.xml"), "utf8");
 const routes = [...new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
   .map(([, url]) => new URL(url).pathname)
