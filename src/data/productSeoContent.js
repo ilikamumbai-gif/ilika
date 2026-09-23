@@ -331,9 +331,23 @@ export const PRODUCT_SEO_CONTENT = [
     canonicalSlug: "lip-plumper-vacuum-device",
     slugs: ["lip-plumper-vacuum-device"],
     names: ["ilika lip plumper vacuum device", "ilika lip plumper", "lip plumper vacuum device", "lip plumper device"],
-    topKeyword: "best lip plumper device India",
-    title: "Lip Plumper Vacuum Device | Fuller Lips at Home – Ilika",
-    description: "Get naturally fuller-looking lips at home with Ilika's Lip Plumper Vacuum Device. Safe, easy to use, salon-like results. Order now across India.",
+    topKeyword: "lip plumper tool",
+    title: "Lip Plumper Tool | Rechargeable Vacuum Device | Ilika",
+    description: "Explore Ilika's rechargeable lip plumper tool with three suction levels. See current pricing, device features, usage instructions and delivery options in India.",
+    faqs: [
+      {
+        question: "What features does the Ilika lip plumper tool have?",
+        answer: "The Ilika lip plumper tool is a compact vacuum device with three adjustable suction levels, LED mode indicators and USB charging. Review the product details and included user manual before use.",
+      },
+      {
+        question: "What comes with the lip plumper device?",
+        answer: "The listed box contents are one electric lip plumper device, one USB charging cable and one user manual.",
+      },
+      {
+        question: "Where can I check the lip plumper price and delivery options?",
+        answer: "Check the current price and stock on this product page. Enter your delivery address at checkout to review the available shipping and payment options before placing your order.",
+      },
+    ],
     keywords: keywordRows([
       ["lip plumper device", "Buyer", "High"],
       ["lip plumper vacuum tool", "Buyer", "High"],

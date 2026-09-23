@@ -1,3 +1,4 @@
+import { getConsolidatedBlogPath } from "../src/data/blogConsolidation.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { PRIVATE_BLOGS, STATIC_BLOGS } from "../src/data/privateBlogs.js";
@@ -145,7 +146,7 @@ async function main() {
   const publicProducts = products.filter((product) => product?.isActive !== false && product?.productUrl);
   const blogByRoute = new Map();
   [...STATIC_BLOGS, ...apiBlogs]
-    .filter((blog) => blog?.title && !blog?.isPrivate)
+    .filter((blog) => blog?.title && !blog?.isPrivate && !getConsolidatedBlogPath(blog.slug))
     .forEach((blog) => {
       const route = getBlogRoute(blog);
       if (!blogByRoute.has(route)) blogByRoute.set(route, blog);

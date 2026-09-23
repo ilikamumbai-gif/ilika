@@ -1,3 +1,4 @@
+import { PRICING_DELIVERY_BLOGS } from "./pricingDeliveryBlogs.js";
 import { createSlug } from "../utils/slugify.js";
 
 const privateBlogTitle =
@@ -2206,10 +2207,7 @@ export const STATIC_BLOGS = [
   CUSTOM_VOICE_MASK_GUIDE_BLOG,
   ...READY_TO_PUBLISH_BLOGS,
   ...HAIR_TOOL_COMPARISON_BLOGS,
-  ...HAIR_DRYER_CITY_BLOGS,
-  ...HAIR_DRYER_EMI_CITY_BLOGS,
-  ...MASK_MAKER_CITY_BLOGS,
-  ...VOICE_MASK_MAKER_LOCATION_BLOGS,
+  ...PRICING_DELIVERY_BLOGS,
   HAIR_DRYER_GUIDE_BLOG,
   ...HAIR_DRYER_TOPIC_BLOGS,
   ...MASK_MAKER_TOPIC_BLOGS,

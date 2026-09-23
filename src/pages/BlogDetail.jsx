@@ -1,3 +1,4 @@
+import { getConsolidatedBlogPath } from "../data/blogConsolidation.js";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import MiniDivider from "../components/MiniDivider";
@@ -174,6 +175,10 @@ const BlogDetail = () => {
   const { state: locationBlog } = location;
   const { slug } = useParams();
   const navigate = useNavigate();
+  const consolidatedPath = getConsolidatedBlogPath(slug);
+  useEffect(() => {
+    if (consolidatedPath) navigate(consolidatedPath, { replace: true });
+  }, [consolidatedPath, navigate]);
   const API = import.meta.env.VITE_API_URL;
   const [blog, setBlog] = useState(locationBlog || null);
   const privateBlog = useMemo(

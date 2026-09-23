@@ -58,6 +58,11 @@ try {
     const url = new URL(request.url());
     if (request.method() !== "GET") return route.fulfill({ status: 204 });
     if (["image", "media", "font"].includes(request.resourceType())) return route.abort();
+    // The static preview does not run Vercel functions. Deliberately fail this
+    // optional analytics lookup to verify navigation survives its failure.
+    if (url.pathname === "/api/geo-location") {
+      return route.fulfill({ status: 503, contentType: "application/json", body: '{"error":"Location unavailable"}' });
+    }
     if (url.pathname.startsWith("/api/") && !/track|visitor|analytics|auth|cart|order/i.test(url.pathname)) {
       if (!apiCache.has(request.url())) apiCache.set(request.url(), fetch(request.url(), { signal: AbortSignal.timeout(60000) }).then(async response => {
         assert.ok(response.ok, `Public API failure: ${url.pathname}`);
@@ -76,7 +81,8 @@ try {
     await livePage.waitForLoadState("networkidle");
     await livePage.waitForFunction(expected => document.querySelector('link[rel="canonical"]')?.href === `https://ilika.in${expected}`, to);
     assert.doesNotMatch(await livePage.title(), /not found|404/i, label);
-    assert.ok((await livePage.locator("#root").innerText()).length > 200, label);
+    // Client-side route metadata can update before lazy page content resolves.
+    await livePage.waitForFunction(() => (document.querySelector("#root")?.innerText || "").length > 200);
     console.log(`[footer] React navigation passed: ${label}`);
   }
 } finally {

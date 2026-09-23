@@ -1,3 +1,4 @@
+import { PRICING_DELIVERY_BLOGS } from "../data/pricingDeliveryBlogs.js";
 import React, { useCallback, useMemo } from "react";
 import BlogCard from "../components/BlogCard";
 import Header from "../components/Header";
@@ -20,6 +21,7 @@ const Blog = () => {
     return getProductImage(product, fallback);
   }, [products]);
   const landingCards = useMemo(() => [
+    ...PRICING_DELIVERY_BLOGS.map((blog) => ({ ...blog, linkPath: `/blog/${blog.slug}` })),
     { id: "landing-hot-cold-blackhead-remover", title: "Explore Ilika Blackhead Remover - Hot & Cold", image: productImage((name) => (name.includes("blackhead remover") || name.includes("facial pore cleanser")) && name.includes("hot") && name.includes("cold"), "/Images/MaskMakercard.webp"), linkPath: "/hot-cold-blackhead-remover" },
     { id: "landing-high-frequency-therapy-wand", title: "Explore Ilika High Frequency Therapy Wand", image: productImage((name, url) => name.includes("high frequency therapy wand") || url === "ilika-high-frequency-therapy-wand", "/Images/MaskMakercard.webp"), linkPath: "/high-frequency-therapy-wand" },
     { id: "landing-leafless-hairdryer", title: "Explore Ilika High-Speed Leafless Hair Dryer", image: productImage((name) => name.includes("leafless hair dryer"), "/Images/HairdrayerCard.webp"), linkPath: "/leafless-hair-dryer-landing" },

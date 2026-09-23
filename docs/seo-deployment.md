@@ -17,3 +17,15 @@ After deploying:
 3. In the verified Google Search Console property, open Sitemaps and submit `https://ilika.in/sitemap.xml`. Use URL Inspection on the homepage and priority product pages, then request indexing.
 
 Search Console submission and live deployment are separate authenticated operations; a successful local build does not perform either operation or guarantee indexing/ranking changes.
+
+## September 2026 SEO review
+
+The home offer waits eight seconds, has a 48px mobile close target, and records that it was shown in sessionStorage before opening. Reloading or navigating within the same tab session does not show it again. If session storage is unavailable, the automatic offer stays suppressed.
+
+82 reviewed city articles (74 repository articles and eight API articles) are consolidated into `/blog/hair-dryer-pricing-delivery-india` and `/blog/face-mask-maker-pricing-delivery-india`. `src/data/blogConsolidation.js` records the exact retired slugs; `vercel.json` contains explicit HTTP 301 redirects, including trailing slash variants. The original source records remain available, but retired articles are excluded from public sitemap generation and prerendering. Do not republish these city variants. Add useful product-specific details to the two guides instead.
+
+Run `node --test scripts/generate-sitemap.test.mjs scripts/product-seo.test.mjs`, `npm run build`, and `node scripts/verify-seo-review.mjs`. The last check verifies the consolidated sitemap, guide content, lip plumper HTML, mobile popup delay, tap target and session suppression. On Windows environments that need the system certificate store, set `NODE_OPTIONS=--use-system-ca` for the build; do not disable TLS verification.
+
+The lip plumper title, description and visible FAQs now target “lip plumper tool”. After deployment, verify `/product/lip-plumper-vacuum-device` in Search Console URL Inspection: check the indexed status, Google-selected canonical and last crawl, run the live test, then request indexing if appropriate. HTTP 200, crawlable HTML and sitemap inclusion establish technical eligibility, not confirmed Google indexing or recovered rankings. Check query performance separately for ranking recovery.
+
+After deploying, request a retired URL such as `/blog/hair-dryer-price-drop-mumbai-400013` and confirm HTTP 301 with a Location header pointing directly to the hair dryer guide. Confirm both destination guides return 200. These redirects require the Vercel deployment; client-side navigation alone cannot issue HTTP 301.

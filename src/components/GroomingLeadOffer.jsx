@@ -7,7 +7,8 @@ import { useProducts } from "../admin/context/ProductContext";
 import { getProductSlug } from "../utils/slugify";
 
 const OFFER_STORAGE_KEY = "ilika.groomingOffer.unlocked";
-const OFFER_DISMISS_PREFIX = "ilika.groomingOffer.dismissed";
+const OFFER_SESSION_KEY = "ilika.groomingOffer.shown";
+let shownThisSession = false;
 const OFFER_NAME = "Grooming Appliances Special Offer";
 const OFFER_SOURCE = "grooming_appliance_offer_popup";
 const COUPON_VALUE = "₹500+";
@@ -33,16 +34,24 @@ const normalizeIndianMobile = (value = "") => {
 };
 
 const isValidIndianMobile = (value = "") => /^[6-9]\d{9}$/.test(value);
-const getDismissKey = (pageKey = "default") => `${OFFER_DISMISS_PREFIX}.${pageKey}`;
+const hasSeenOffer = () => {
+  if (shownThisSession) return true;
+  try { return window.sessionStorage.getItem(OFFER_SESSION_KEY) === "true"; }
+  catch { return true; } // Suppress automatic offers if persistence is unavailable.
+};
+const markOfferSeen = () => {
+  shownThisSession = true;
+  try { window.sessionStorage.setItem(OFFER_SESSION_KEY, "true"); } catch { /* Retain in-memory state. */ }
+};
 
 const readUnlockedState = () => {
   if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(OFFER_STORAGE_KEY) === "true";
+  try { return window.localStorage.getItem(OFFER_STORAGE_KEY) === "true"; } catch { return false; }
 };
 
 const markUnlockedState = () => {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(OFFER_STORAGE_KEY, "true");
+  try { window.localStorage.setItem(OFFER_STORAGE_KEY, "true"); } catch { /* Retain component state. */ }
 };
 
 const normalizeCouponCode = (value = "") => String(value || "").trim().toUpperCase();
@@ -84,7 +93,7 @@ const getAssignedCoupon = (product = {}) => {
 const GroomingLeadOffer = ({
   pageKey = "grooming",
   showPopup = true,
-  popupDelayMs = 1200,
+  popupDelayMs = 8000,
   requireInteraction = false,
 }) => {
   const location = useLocation();
@@ -129,14 +138,14 @@ const GroomingLeadOffer = ({
 
   useEffect(() => {
     if (!showPopup || isUnlocked || typeof window === "undefined") return undefined;
-    const dismissKey = getDismissKey(pageKey);
-    if (window.sessionStorage.getItem(dismissKey) === "true") return undefined;
+    if (hasSeenOffer()) return undefined;
 
     let timer = null;
     let idleId = null;
 
     const openPopup = () => {
-      if (hasOpenedRef.current) return;
+      if (hasOpenedRef.current || hasSeenOffer()) return;
+      markOfferSeen();
       hasOpenedRef.current = true;
       setIsPopupOpen(true);
     };
@@ -148,7 +157,7 @@ const GroomingLeadOffer = ({
           return;
         }
         openPopup();
-      }, popupDelayMs);
+      }, Math.max(5000, Number(popupDelayMs) || 8000));
     };
 
     if (!requireInteraction) {
@@ -195,7 +204,7 @@ const GroomingLeadOffer = ({
 
   const closeAll = () => {
     if (typeof window !== "undefined") {
-      window.sessionStorage.setItem(getDismissKey(pageKey), "true");
+      markOfferSeen();
     }
     setIsPopupOpen(false);
     setIsRevealOpen(false);
@@ -269,12 +278,12 @@ const GroomingLeadOffer = ({
     <>
       {isPopupOpen ? (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 px-4 py-6">
-          <div className="relative w-full max-w-md overflow-hidden rounded-[28px] border border-[#f1d4df] bg-white shadow-[0_32px_80px_rgba(0,0,0,0.28)]">
+          <div className="relative max-h-[calc(100dvh-3rem)] w-full max-w-md overflow-y-auto rounded-[28px] border border-[#f1d4df] bg-white shadow-[0_32px_80px_rgba(0,0,0,0.28)]">
             <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#111111_0%,#d15a8f_45%,#d7b46a_100%)]" />
             <button
               type="button"
               onClick={closeAll}
-              className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#f3dbe5] bg-white text-[#6b4256] transition hover:bg-[#fff6fa]"
+              className="absolute right-2 top-2 z-10 inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#f3dbe5] bg-white text-[#6b4256] transition hover:bg-[#fff6fa]"
               aria-label="Close offer popup"
             >
               <X size={18} />
@@ -344,12 +353,12 @@ const GroomingLeadOffer = ({
 
       {isRevealOpen ? (
         <div className="fixed inset-0 z-[75] flex items-center justify-center bg-black/70 px-4 py-6">
-          <div className="relative w-full max-w-lg overflow-hidden rounded-[28px] border border-[#f1d4df] bg-white shadow-[0_32px_80px_rgba(0,0,0,0.32)]">
+          <div className="relative max-h-[calc(100dvh-3rem)] w-full max-w-lg overflow-y-auto rounded-[28px] border border-[#f1d4df] bg-white shadow-[0_32px_80px_rgba(0,0,0,0.32)]">
             <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#111111_0%,#d15a8f_45%,#d7b46a_100%)]" />
             <button
               type="button"
               onClick={closeAll}
-              className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#f3dbe5] bg-white text-[#6b4256] transition hover:bg-[#fff6fa]"
+              className="absolute right-2 top-2 z-10 inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#f3dbe5] bg-white text-[#6b4256] transition hover:bg-[#fff6fa]"
               aria-label="Close revealed coupons popup"
             >
               <X size={18} />

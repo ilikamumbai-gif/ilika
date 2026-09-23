@@ -1,3 +1,4 @@
+import { getConsolidatedBlogPath } from "../src/data/blogConsolidation.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { getCanonicalProductSlugAlias } from "../src/data/productSeoContent.js";
@@ -439,7 +440,7 @@ async function main() {
       endpoints: blogsEndpoints,
       toUrls: (list) => {
         return list
-          .filter((b) => b?.title && !b?.isPrivate)
+          .filter((b) => b?.title && !b?.isPrivate && !getConsolidatedBlogPath(b.slug))
           .map((b) => {
             const loc = buildBlogUrl(b);
             return {

@@ -1,8 +1,11 @@
+import { getConsolidatedBlogPath } from "../data/blogConsolidation.js";
 import { createSlug } from "./slugify.js";
 
 export const buildBlogUrl = (blog, options = {}) => {
   const { usedPaths = new Set() } = options;
   const baseSlug = createSlug(blog?.slug || blog?.title || "") || String(blog?.id || "").trim();
+  const consolidatedPath = getConsolidatedBlogPath(baseSlug);
+  if (consolidatedPath) return consolidatedPath;
   const isPrivate = Boolean(blog?.isPrivate);
   const basePath = isPrivate ? `/blog/private/${baseSlug}` : `/blog/${baseSlug}`;
 

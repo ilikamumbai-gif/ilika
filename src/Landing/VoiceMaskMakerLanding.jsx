@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import { PRICING_DELIVERY_BLOGS } from "../data/pricingDeliveryBlogs.js";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -11,7 +12,6 @@ import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
 import {
   CUSTOM_VOICE_MASK_GUIDE_BLOG,
-  MASK_MAKER_CITY_BLOGS,
   MASK_MAKER_TOPIC_BLOGS,
   PRIVATE_BLOGS,
   PRIVATE_BLOG_PATHS,
@@ -395,7 +395,7 @@ const VoiceMaskMakerLanding = () => {
         ...blog,
         path: `/blog/${blog.slug}`,
       })),
-      ...MASK_MAKER_CITY_BLOGS.map((blog) => ({
+      ...PRICING_DELIVERY_BLOGS.filter((blog) => blog.slug.startsWith("face-mask-maker")).map((blog) => ({
         ...blog,
         path: `/blog/${blog.slug}`,
       })),

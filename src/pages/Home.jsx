@@ -975,7 +975,7 @@ const Home = () => {
           <Suspense fallback={null}>
             <GroomingLeadOffer
               pageKey="home-page"
-              popupDelayMs={1800}
+              popupDelayMs={8000}
             />
           </Suspense>
 
