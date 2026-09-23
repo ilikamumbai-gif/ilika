@@ -26,7 +26,7 @@ try {
     for (const route of new Set(routes)) {
       // The catalog renderer already wrote the complete article index.
       // Preserve it when Chromium is unavailable instead of replacing it.
-      if (route === "/blog") continue;
+      if (route === "/blog" || route === "/articles") continue;
       const isHomepage = route === "/";
       const title = isHomepage ? HOME_SEO.title : `Ilika ${route.slice(1).replaceAll("/", " ").replaceAll("-", " ")}`;
       const description = isHomepage ? HOME_SEO.description : "Explore Ilika beauty, skincare, haircare and grooming products, guides and support.";
@@ -49,7 +49,7 @@ try {
     // they also have crawlable footer navigation in the fallback path.
     for (const [, url] of sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)) {
       const route = new URL(url).pathname;
-      if (route !== "/blog" && !/^\/(product|blog)\//.test(route)) continue;
+      if (route !== "/blog" && route !== "/articles" && !/^\/(product|blog)\//.test(route)) continue;
       const file = path.join(distDir, route, "index.html");
       const html = await fs.readFile(file, "utf8").catch(() => "");
       if (html && !/<footer[\s>]/i.test(html)) await fs.writeFile(file, html.replace(/<\/main>/i, `</main>${footer}`));

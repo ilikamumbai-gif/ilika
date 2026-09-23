@@ -18,7 +18,7 @@ After deploying:
 
 Search Console submission and live deployment are separate authenticated operations; a successful local build does not perform either operation or guarantee indexing/ranking changes.
 
-The `/blog` page must contain ordinary article anchors in its initial HTML. The catalog renderer creates the full public article index, and the Chromium-unavailable fallback preserves that file. When Chromium is available, it captures the React article list, which merges repository and API articles using the same public-article filter. `verify:indexability` fails if any sitemap article is missing from the initial blog-index HTML. New API articles enter the initial HTML on the next rebuild.
+The `/blog` page links to the dedicated `/articles` directory in its initial HTML. The directory contains every public article link, with Ilika-prefixed link titles. The catalog renderer creates both pages, and the Chromium-unavailable fallback preserves them. When Chromium is available, it captures the React pages using the same public-article filter. `verify:indexability` fails if the blog-to-directory link or any directory-to-article link is missing from the initial HTML. New API articles enter the initial HTML on the next rebuild. Run `node scripts/verify-blog-index.mjs` to check this navigation with and without JavaScript.
 
 ## September 2026 SEO review
 

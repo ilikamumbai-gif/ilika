@@ -16,6 +16,7 @@ const Skin = lazy(() => import("../pages/Skin"));
 const Hair = lazy(() => import("../pages/Hair"));
 const Grooming = lazy(() => import("../pages/Grooming"));
 const Ctm = lazy(() => import("../pages/Ctm"));
+const Articles = lazy(() => import("../pages/Articles"));
 const Blog = lazy(() => import("../pages/Blog"));
 const UserDetail = lazy(() => import("../pages/UserDetail"));
 const BlogDetail = lazy(() => import("../pages/BlogDetail"));
@@ -93,6 +94,7 @@ const SEO_MATCHER_ROUTES = [
   { path: "/ctm" },
   { path: "/ctmkit" },
   { path: "/blog" },
+  { path: "/articles" },
   { path: "/hair-dryer-guides" },
   { path: "/shopall" },
   { path: "/user" },
@@ -208,6 +210,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/grooming/remover") return { title: "Hair Removal", description: "Hair removal tools from Ilika." };
   if (pathname === "/ctm") return { title: "Explore CTM", description: "Build your CTM skincare routine with Ilika." };
   if (pathname === "/ctmkit") return { title: "Create CTM Kit", description: "Customize your CTM kit with Ilika products." };
+  if (pathname === "/articles") return { title: "Ilika Articles | Beauty, Skincare and Haircare Guides", description: "Browse all Ilika articles, including skincare advice, haircare guides and beauty device tips." };
   if (pathname === "/blog") return { title: "Blog", description: "Beauty tips, guides, and updates from Ilika.", keywords: [...baseKeywords, "beauty blog", "skincare tips"] };
   if (pathname === "/hair-dryer-guides") return { title: "Hair Dryer Guides | Ilika", description: "Explore practical hair dryer buying guides, styling tutorials, hair-care tips and BLDC technology explainers from Ilika." };
   if (pathname.startsWith("/blog/private/")) return { title: "Private Blog", description: "Private Ilika blog article.", keywords: [...baseKeywords, "private blog article"] };
@@ -408,6 +411,7 @@ const NavRoutes = () => {
         <Route path="/ctm" element={renderLazy(Ctm)} />
         <Route path="/ctmkit" element={renderLazy(CreateCtm)} />
 
+        <Route path="/articles" element={renderLazy(Articles)} />
         <Route path="/blog" element={renderLazy(Blog)} />
         <Route path="/blog/private/:slug" element={renderLazy(BlogDetail)} />
         <Route path="/hair-dryer-guides" element={renderLazy(HairDryerGuides)} />

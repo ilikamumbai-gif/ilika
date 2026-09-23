@@ -69,6 +69,7 @@ const STATIC_URLS = [
   { loc: "/glow-therapy-comb", priority: "0.8", changefreq: "weekly" },
   { loc: "/hydration-glow-combo", priority: "0.8", changefreq: "weekly" },
   { loc: "/mask-combo", priority: "0.7", changefreq: "weekly" },
+  { loc: "/articles", priority: "0.8", changefreq: "daily" },
   { loc: "/blog", priority: "0.8", changefreq: "daily" },
   { loc: "/hair-dryer-guides", priority: "0.7", changefreq: "weekly" },
   { loc: "/about", priority: "0.7", changefreq: "monthly" },

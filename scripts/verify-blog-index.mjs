@@ -10,7 +10,9 @@ try {
   const expected = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
     .map(([, url]) => new URL(url).pathname).filter(route => route.startsWith("/blog/"));
   assert.ok(expected.length > 0);
-  const response = await fetch(`${origin}/blog`);
+  const journal = await (await fetch(`${origin}/blog`)).text();
+  assert.ok(journal.includes('href="/articles"'), "Blog page must link to the article directory");
+  const response = await fetch(`${origin}/articles`);
   assert.equal(response.status, 200);
   const html = await response.text();
   for (const route of expected) assert.ok(html.includes(`href="${route}"`), `Missing initial HTML link: ${route}`);
@@ -31,6 +33,9 @@ try {
     });
     const page = await context.newPage();
     await page.goto(`${origin}/blog`, { waitUntil: "networkidle" });
+    await page.getByRole("link", { name: "Browse all articles", exact: true }).click();
+    await page.waitForURL(`${origin}/articles`);
+    await page.waitForLoadState("networkidle");
     if (javaScriptEnabled) await page.locator('section[aria-labelledby="articles-heading"][aria-busy="false"]').waitFor();
     for (const route of expected) {
       const link = page.locator(`main a[href="${route}"]`).first();
