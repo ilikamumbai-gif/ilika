@@ -4487,6 +4487,7 @@ const ProductDetail = () => {
         priceCurrency: "INR",
         price: resolvedOfferPrice,
         priceValidUntil,
+        validFrom: merchant.validFrom,
         availability: getProductVariantAvailability(product, activeVariant)
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",

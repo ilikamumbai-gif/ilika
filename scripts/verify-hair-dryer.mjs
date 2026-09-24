@@ -15,6 +15,8 @@ assert.equal(product.offers.url, canonical);
 assert.equal(product.offers.price, "2699");
 assert.equal(product.offers.priceCurrency, "INR");
 assert.equal(product.offers.priceValidUntil, "2026-11-29");
+assert.equal(product.offers.validFrom, "2026-09-16");
+assert.ok(Date.parse(product.offers.validFrom) <= Date.parse(product.offers.priceValidUntil));
 assert.equal(product.offers.availability, "https://schema.org/InStock");
 assert.equal(product.offers.itemCondition, "https://schema.org/NewCondition");
 assert.ok(html.includes("₹2,699 (MRP ₹5,999)"));

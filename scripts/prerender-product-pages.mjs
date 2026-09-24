@@ -200,6 +200,7 @@ const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => 
       price: String(price),
       availability: !product?.isOutOfStock && getProductVariantAvailability(product) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       priceValidUntil: merchant.priceValidUntil,
+      validFrom: merchant.validFrom,
       url: canonicalUrl,
       itemCondition: "https://schema.org/NewCondition",
       shippingDetails: PRODUCT_SHIPPING_DETAILS,

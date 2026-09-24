@@ -12,6 +12,7 @@ import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
 import { HAIR_DRYER_TOPIC_BLOGS } from "../data/privateBlogs";
+import { getProductMerchantMetadata } from "../utils/productPricing";
 
 const PRODUCT_NAME = "Ilika High-Speed BLDC Leafless Hair Dryer";
 const PRODUCT_PATH = "/product/leafless-hair-dryer";
@@ -19,6 +20,7 @@ const PRODUCT_URL = `https://ilika.in${PRODUCT_PATH}`;
 const LANDING_PATH = "/leafless-hair-dryer-landing";
 const PRODUCT_IMAGE = "https://ilika.in/Images/HairdrayerCard.webp";
 const PRODUCT_PRICE = 2699;
+const PRODUCT_MERCHANT = getProductMerchantMetadata({ productUrl: "leafless-hair-dryer" });
 const PRODUCT_MRP = 5999;
 const PRODUCT_DESCRIPTION = "Shop Ilika High-Speed BLDC Leafless Hair Dryer with a 110,000 RPM motor, ionic technology, intelligent temperature control and lightweight design for fast, smooth drying.";
 
@@ -71,7 +73,7 @@ const HairDryerLanding = () => {
   const schema = {
     "@context": "https://schema.org", "@type": "Product", "@id": `${PRODUCT_URL}#product`, name: PRODUCT_NAME,
     image: [PRODUCT_IMAGE], description: PRODUCT_DESCRIPTION, brand: { "@type": "Brand", name: "Ilika" }, sku: "E60fJP3XooasvrUaVXAH", url: PRODUCT_URL,
-    offers: { "@type": "Offer", url: PRODUCT_URL, priceCurrency: "INR", price: String(PRODUCT_PRICE), priceValidUntil: "2026-11-29", availability: "https://schema.org/InStock", itemCondition: "https://schema.org/NewCondition" },
+    offers: { "@type": "Offer", url: PRODUCT_URL, priceCurrency: "INR", price: String(PRODUCT_PRICE), validFrom: PRODUCT_MERCHANT.validFrom, priceValidUntil: PRODUCT_MERCHANT.priceValidUntil, availability: "https://schema.org/InStock", itemCondition: "https://schema.org/NewCondition" },
   };
   const faqSchema = { "@context": "https://schema.org", "@type": "FAQPage", "@id": `https://ilika.in${LANDING_PATH}#faq`, mainEntity: faqs.map(([question, answer]) => ({ "@type": "Question", name: question, acceptedAnswer: { "@type": "Answer", text: answer } })) };
   useSeo({ title: "Ilika Leafless Hair Dryer – 110,000 RPM BLDC Ionic Hair Dryer", description: PRODUCT_DESCRIPTION, path: LANDING_PATH, canonical: PRODUCT_URL, image: PRODUCT_IMAGE, keywords: ["Ilika leafless hair dryer", "110000 RPM BLDC hair dryer", "ionic hair dryer", "leafless hair dryer India"] });

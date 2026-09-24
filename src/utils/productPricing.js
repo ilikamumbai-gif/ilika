@@ -39,6 +39,8 @@ const NONVOICE_MASK_MAKER_PRICE_OVERRIDE = {
 const LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE = {
   price: 2699,
   compareAtPrice: 5999,
+  // Start of the current offer metadata; keep stable across builds and visits.
+  validFrom: "2026-09-16",
   priceValidUntil: "2026-11-29",
   sku: "E60fJP3XooasvrUaVXAH",
   lookups: ["leafless-hair-dryer", "e60fjp3xooasvruavxah"],
@@ -47,7 +49,7 @@ const LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE = {
 
 export const getProductMerchantMetadata = (product = {}) => {
   const override = getProductPriceOverride(product);
-  return { sku: override?.sku, priceValidUntil: override?.priceValidUntil };
+  return { sku: override?.sku, validFrom: override?.validFrom, priceValidUntil: override?.priceValidUntil };
 };
 
 const getProductPriceOverride = (product = {}) => {

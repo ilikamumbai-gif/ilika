@@ -1,6 +1,7 @@
 import { getProductSlug } from "./slugify";
 import {
   getProductDisplayPricing,
+  getProductMerchantMetadata,
   getProductVariantAvailability,
 } from "./productPricing";
 
@@ -23,6 +24,7 @@ const buildProductOffer = (product = {}, productUrl = "") => {
     "@type": "Offer",
     priceCurrency: "INR",
     price: numericPrice.toFixed(2),
+    validFrom: getProductMerchantMetadata(product).validFrom,
     availability: getProductVariantAvailability(product)
       ? "https://schema.org/InStock"
       : "https://schema.org/OutOfStock",
