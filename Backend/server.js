@@ -8,6 +8,7 @@ import { admin, db } from "./firebaseAdmin.js";
 import { sendEmail, isEmailConfigured } from "./services/emailService.js";
 import { sendOrderEmailByType, triggerOrderEmailAutomation } from "./services/orderEmailTriggerService.js";
 import getOrderConfirmationEmail from "./emailTemplates/orderConfirmationEmail.js";
+import { getComboStockError } from "./services/comboStock.js";
 
 dotenv.config();
 const app = express();
@@ -3771,8 +3772,10 @@ app.post("/api/payments/verify", async (req, res) => {
       const resolvedProductId = resolveCheckoutProductId(item);
       const rawCartItemId = String(item?.id || "").trim() || null;
 
-      if (item.isCombo || item.items || item.comboItems) {
+      if (item.isCombo || item.items?.length || item.comboItems?.length) {
         const comboProducts = item.items || item.comboItems || [];
+        const stockError = await getComboStockError(db, comboProducts);
+        if (stockError) return res.status(400).json({ error: stockError });
         totalAmount += Number(item.price) * quantity;
         validatedItems.push({
           productId: resolvedProductId || rawCartItemId,
@@ -3985,8 +3988,10 @@ app.post("/api/orders", async (req, res) => {
       const resolvedProductId = resolveCheckoutProductId(item);
       const rawCartItemId = String(item?.id || "").trim() || null;
 
-      if (item.isCombo || item.items || item.comboItems) {
+      if (item.isCombo || item.items?.length || item.comboItems?.length) {
         const comboProducts = item.items || item.comboItems || [];
+        const stockError = await getComboStockError(db, comboProducts);
+        if (stockError) return res.status(400).json({ error: stockError });
         totalAmount += Number(item.price) * quantity;
         validatedItems.push({
           productId: resolvedProductId || rawCartItemId,

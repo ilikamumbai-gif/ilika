@@ -45,6 +45,10 @@ const ComboDetail = () => {
   }, [products]);
 
   const getProductById = (pid) => productsById.get(String(pid));
+  const componentIds = [...(combo?.productIds || []), ...(combo?.freeProductId ? [combo.freeProductId] : [])];
+  const comboProducts = componentIds.map(getProductById);
+  const comboAvailable = combo?.isActive !== false && comboProducts.length > 0 &&
+    comboProducts.every((product) => product && product.isActive !== false && product.inStock !== false);
 
   const images = useMemo(() => combo?.images || [], [combo?.images]);
   const MAX_VISIBLE_THUMBS = 6;
@@ -354,15 +358,21 @@ const ComboDetail = () => {
 
               <button
                 onClick={() =>
-                  addToCart({
+                  comboAvailable && addToCart({
                     ...combo,
                     id: `combo_${combo.id}`,
                     isCombo: true,
+                    comboItems: comboProducts.map((product) => ({
+                      id: product.id || product._id,
+                      name: product.name,
+                      image: product.images?.[0] || product.image || "",
+                    })),
                   })
                 }
-                className="py-3 rounded-xl bg-[#2b2a29] text-white"
+                disabled={!comboAvailable}
+                className="py-3 rounded-xl bg-[#2b2a29] text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add Combo To Cart
+                {comboAvailable ? "Add Combo To Cart" : "Out of Stock"}
               </button>
 
 

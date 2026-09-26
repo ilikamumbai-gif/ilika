@@ -104,6 +104,7 @@ const MaskDuoOffer = () => {
       .filter(
         (product) =>
           product.isActive !== false &&
+          product.inStock !== false &&
           isHydraFreeMask(product.name)
       )
       .sort((a, b) => {
@@ -131,6 +132,8 @@ const MaskDuoOffer = () => {
   );
 
   const savings = originalMRP > COMBO_PRICE ? originalMRP - COMBO_PRICE : 0;
+  const comboAvailable = maskProducts.length >= 2 &&
+    maskProducts.every((product) => product.inStock !== false) && getFreeMaskProducts().length > 0;
 
   const selectedHydraName = currentFreeMask ? formatHydraName(currentFreeMask.name) : HYDRA_COMBO_NAME;
 
@@ -188,7 +191,7 @@ const MaskDuoOffer = () => {
   }, [products]);
 
   const addComboToCart = () => {
-    if (loading || maskProducts.length < 2) return;
+    if (loading || !comboAvailable) return;
 
     setIsAdded(false);
     setLoading(true);
@@ -225,6 +228,7 @@ const MaskDuoOffer = () => {
           })),
           {
             id: `free-mask-${freeMask._id || freeMask.id || Date.now()}`,
+            productId: freeMask.id || freeMask._id,
             name: `${formatHydraName(freeMask.name)} (FREE)`,
             image: getImage(freeMask),
             isFree: true,
@@ -487,14 +491,14 @@ const MaskDuoOffer = () => {
             </div>
 
             <button
-              disabled={loading || maskProducts.length < 2}
+              disabled={loading || !comboAvailable}
               onClick={addComboToCart}
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold tracking-wide text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:text-base"
               style={{
                 background: "#2e2e2e",
               }}
             >
-              {loading ? (
+              {!comboAvailable ? "Out of Stock" : loading ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Adding...

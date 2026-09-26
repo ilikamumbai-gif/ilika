@@ -93,7 +93,7 @@ const ItemTile = ({ entry }) => {
 };
 
 const ComboCard = ({ offer, offerIndex, onAdd, isAdding }) => {
-  const missingProduct = offer.items.some((entry) => !entry.product);
+  const missingProduct = offer.items.some((entry) => !entry.product || entry.product.inStock === false);
 
   return (
     <article
@@ -143,18 +143,18 @@ const ComboCard = ({ offer, offerIndex, onAdd, isAdding }) => {
         <button
           type="button"
           onClick={() => onAdd(offer)}
-          disabled={isAdding}
+          disabled={isAdding || missingProduct}
           className="group relative w-full overflow-hidden rounded-xl border border-[#0e3b21] bg-gradient-to-r from-[#0f5130] via-[#1d7a45] to-[#28a055] px-6 py-3.5 text-base font-semibold tracking-wide text-white shadow-[0_10px_28px_rgba(18,95,54,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_34px_rgba(18,95,54,0.45)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-75 sm:w-auto"
         >
           <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-          <span className="relative z-[1]">{isAdding ? "Adding..." : "Add Combo"}</span>{" "}
+          <span className="relative z-[1]">{missingProduct ? "Out of Stock" : isAdding ? "Adding..." : "Add Combo"}</span>{" "}
           <span className="relative z-[1] inline-block transition-transform duration-300 group-hover:translate-x-1.5">&rarr;</span>
         </button>
       </div>
 
       {missingProduct && (
         <p className="px-6 pb-4 text-xs text-[#b45309]">
-          Product link missing in catalog. Checkout will still receive combo details.
+          This combo is unavailable because an included product is out of stock or unavailable.
         </p>
       )}
     </article>
@@ -220,7 +220,7 @@ const MaskCombo = () => {
   );
 
   const handleAddCombo = async (offer) => {
-    if (addingOfferId) return;
+    if (addingOfferId || offer.items.some((entry) => !entry.product || entry.product.inStock === false)) return;
     setAddingOfferId(offer.id);
 
     const comboItems = offer.items.map((entry, index) => {

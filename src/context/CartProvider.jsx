@@ -91,6 +91,7 @@ export const CartProvider = ({ children }) => {
     if (!freeMask) return null;
 
     return {
+      productId: freeMask.productId,
       name: stripFreeSuffix(freeMask.name || "Surprise Mask"),
       image:
         (Array.isArray(freeMask.image) ? freeMask.image[0] : freeMask.image) ||
@@ -164,6 +165,7 @@ export const CartProvider = ({ children }) => {
         ...paidMasks,
         {
           id: `free-mask-${createIdSuffix()}`,
+          productId: pickedFreeMask?.productId || pickedFreeMask?.id,
           name: `${pickedName} (FREE)`,
           image: pickedFreeMask?.image || "/placeholder.webp",
           isFree: true,

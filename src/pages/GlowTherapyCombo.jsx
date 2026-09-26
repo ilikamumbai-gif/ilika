@@ -94,6 +94,8 @@ const GlowTherapyCombo = () => {
   );
 
   const comboProducts = [maskMakerProduct, serumProduct].filter(Boolean);
+  const comboAvailable = comboProducts.length === 2 &&
+    comboProducts.every((product) => product.inStock !== false);
 
   const savings = MASK_MAKER_ORIGINAL_PRICE - COMBO_PRICE;
   const hyaluronicSerumProduct = comboProducts.find((product) =>
@@ -103,7 +105,7 @@ const GlowTherapyCombo = () => {
     hyaluronicSerumProduct?.price || hyaluronicSerumProduct?.mrp || 0;
 
   const handleAddCombo = () => {
-    if (isAdding) return;
+    if (isAdding || !comboAvailable) return;
     setIsAdded(false);
     setIsAdding(true);
 
@@ -116,7 +118,7 @@ const GlowTherapyCombo = () => {
       isCombo: true,
       image: getImage(comboProducts[0]),
       comboItems: comboProducts.map((product) => ({
-        id: product._id || product.id,
+        id: product.id || product._id,
         name: product.name,
         image: getImage(product),
       })),
@@ -418,14 +420,14 @@ const GlowTherapyCombo = () => {
 
                 <button
                   onClick={handleAddCombo}
-                  disabled={isAdding}
+                  disabled={isAdding || !comboAvailable}
                   className="mt-5 flex w-full items-center justify-center gap-3 rounded-xl py-3.5 text-sm font-semibold tracking-wide text-white transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
                   style={{
                     background: BUTTON_DARK,
                     color: "#ffffff",
                   }}
                 >
-                  {isAdding ? (
+                  {!comboAvailable ? "Out of Stock" : isAdding ? (
                     <>
                       <span className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
                       Adding...
