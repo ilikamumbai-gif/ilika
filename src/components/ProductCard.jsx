@@ -47,11 +47,13 @@ const ProductCard = ({
   const isTall = productImage?.includes("bottle") || productImage?.includes("tube");
   const productTag = String(product?.productTag || "").trim();
   const isLeaflessHairDryer = slug === "leafless-hair-dryer";
+  const isMaskMaker = /mask[\s-]*maker/i.test(`${product?.name || ""} ${slug}`);
   const assignedCoupon = product?.couponSnapshot || product?.coupon || null;
   const couponCode = String(assignedCoupon?.code || "").trim();
   const couponPercent = Number(assignedCoupon?.discountPercent || 0);
   const hasActiveCoupon =
     !isLeaflessHairDryer &&
+    !isMaskMaker &&
     assignedCoupon &&
     assignedCoupon?.isActive !== false &&
     assignedCoupon?.isVisible !== false &&

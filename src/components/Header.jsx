@@ -4,7 +4,6 @@ import { Menu, Search, Sparkles, X } from "lucide-react";
 import logo from "/Images/logo2.webp";
 import { useProducts } from "../admin/context/ProductContext";
 import OptimizedImage from "./OptimizedImage";
-import { MiniDividerStrip } from "./MiniDivider";
 import { getProductSlug } from "../utils/slugify";
 import { BEST_SELLER_PRODUCT_NAMES } from "../constants/bestSellerProducts";
 
@@ -13,7 +12,6 @@ const SearchBar = lazy(() =>
   import("./Nav").then((module) => ({ default: module.SearchBar }))
 );
 
-const MINI_DIVIDER_HEIGHT = 24;
 const DESKTOP_MAIN_HEADER_HEIGHT = 68;
 const DESKTOP_SUBHEADER_HEIGHT = 42;
 const MOBILE_MAIN_HEADER_HEIGHT = 72;
@@ -48,7 +46,6 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [headerLift, setHeaderLift] = useState(0);
   const { products = [] } = useProducts();
   const desktopSubheaderLinks = useMemo(() => {
     const productMap = new Map(
@@ -83,7 +80,7 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
     MOBILE_MAIN_HEADER_HEIGHT +
     (searchOpen ? MOBILE_SEARCH_PANEL_HEIGHT : 0);
   const desktopHeaderHeight = DESKTOP_MAIN_HEADER_HEIGHT + DESKTOP_SUBHEADER_HEIGHT;
-  const fixedTopOffset = Math.max(topOffset, MINI_DIVIDER_HEIGHT);
+  const fixedTopOffset = Math.max(topOffset, 0);
   const stackHeight = Math.max(mobileHeaderHeight, desktopHeaderHeight) + fixedTopOffset;
 
   useEffect(() => {
@@ -98,17 +95,6 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
     setSearchOpen(false);
   }, [location.pathname]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const nextLift = Math.min(window.scrollY || 0, MINI_DIVIDER_HEIGHT);
-      setHeaderLift(nextLift);
-    };
-
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <header className="w-full">
       <div
@@ -117,15 +103,7 @@ const Header = ({ forceWhiteBg = false, topOffset = 0 }) => {
           height: `${stackHeight}px`,
         }}
       >
-        <div
-          className="transition-transform duration-300 ease-out"
-          style={{
-            transform: `translateY(-${headerLift}px)`,
-            willChange: "transform",
-          }}
-        >
-          <MiniDividerStrip />
-
+        <div>
           <div
             className={`w-full border-b border-[#e7ddd7] bg-white ${
               forceWhiteBg ? "bg-white" : "bg-white"
