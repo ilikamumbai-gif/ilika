@@ -409,6 +409,10 @@ const MarketplaceButtons = ({ links = [], className = "" }) => {
 };
 
 const EMI_PLAN_MONTHS = [3, 6, 9];
+const formatEmiAmount = (amount) => amount.toLocaleString("en-IN", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 const EmiOfferCard = ({
   amount = 0,
@@ -430,7 +434,7 @@ const EmiOfferCard = ({
   const safeAmount = Math.max(0, Number(amount) || 0);
   const plans = EMI_PLAN_MONTHS.map((months) => ({
     months,
-    monthly: Math.ceil(safeAmount / months),
+    monthly: safeAmount / months,
   }));
   const primaryPlan = plans[0];
 
@@ -456,7 +460,7 @@ const EmiOfferCard = ({
             <p className="text-[14px] leading-tight text-[#2f3540] sm:text-[15px]">
               or{" "}
               <span className="font-bold" style={{ color: detailTheme.heading }}>
-                ₹{primaryPlan.monthly.toLocaleString("en-IN")}
+                ₹{formatEmiAmount(primaryPlan.monthly)}
               </span>
               <span className="font-semibold text-[#111827]">/month</span>{" "}
               <span className="text-[#2f3540]">({primaryPlan.months} months)</span>
@@ -502,7 +506,7 @@ const EmiOfferCard = ({
                   Razorpay EMI
                 </p>
                 <h3 className="mt-2 text-[27px] font-bold leading-none sm:text-[30px]" style={{ color: detailTheme.heading }}>
-                  Pay only ₹{primaryPlan.monthly.toLocaleString("en-IN")} now
+                  ₹{formatEmiAmount(primaryPlan.monthly)}/month for {primaryPlan.months} months
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-[#5f666d]">
                   Estimated installment options for your current product price of ₹{safeAmount.toLocaleString("en-IN")}.
@@ -534,10 +538,11 @@ const EmiOfferCard = ({
                           </div>
                         </div>
                         <p className="mt-3 text-[15px] font-bold leading-none" style={{ color: detailTheme.heading }}>
-                          ₹{plan.monthly.toLocaleString("en-IN")}
+                          ₹{formatEmiAmount(plan.monthly)}
                         </p>
+                        <p className="mt-1 text-[10px] text-[#5f666d]">per month</p>
                         <p className="mt-1 text-[11px] font-semibold text-[#111827]">
-                          {index === 0 ? "Pay Now" : `${plan.months} Months`}
+                          {plan.months} Months
                         </p>
                       </div>
                     );
