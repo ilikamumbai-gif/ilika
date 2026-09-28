@@ -12,7 +12,6 @@ import { useCart } from "../context/CartProvider";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CartDrawer from "../components/CartDrawer";
-import CollagenBogoOffer from "../components/CollagenBogoOffer";
 import Heading from "../components/Heading";
 import {
   getCartItemDisplayImage,
@@ -1465,7 +1464,6 @@ const Checkout = () => {
                   />
                   <div className="flex-1 text-sm">
                     <p className="font-medium">{item.name}</p>
-                    <CollagenBogoOffer product={item} quantity={item.quantity} applied />
                     <p className="text-gray-500">Qty: {item.quantity}</p>
                     {getCartItemVariantName(item) ? (
                       <p className="text-gray-500 text-xs mt-0.5">{getCartItemVariantName(item)}</p>

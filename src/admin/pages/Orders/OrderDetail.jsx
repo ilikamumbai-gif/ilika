@@ -17,7 +17,6 @@ import { formatOrderId, formatOrderRef } from "../../../utils/orderId";
 import { getCartItemDisplayPricing, getCartItemVariantName } from "../../../utils/productPricing";
 import { getOrderGiftWrapFee, getOrderItemDisplayQuantity, getOrderItemsSellingSubtotal, getOrderSellingTotal } from "../../../utils/orderPricing";
 import { findMatchedUser } from "../../Utils/customerConnections";
-import CollagenBogoOffer from "../../../components/CollagenBogoOffer";
 
 /* ─────────────────── HELPERS ─────────────────── */
 
@@ -408,7 +407,7 @@ const OrderDetail = () => {
             : "—";
           return [
             i + 1,
-            [item.name, item?.selectedAddOn?.label ? `Add-on: ${item.selectedAddOn.label}` : "", item.bogoOffer ? `Buy 1 Get 1: +${item.bogoOffer.freeQuantity} FREE packs (Rs 0)` : ""].filter(Boolean).join("\n"),
+            item?.selectedAddOn?.label ? `${item.name}\nAdd-on: ${item.selectedAddOn.label}` : item.name,
             itemMeta.hsnCode,
             qty,
             formatPrice(price),
@@ -767,7 +766,6 @@ const OrderDetail = () => {
                         />
                         <div className="min-w-0">
                           <p className="font-semibold text-gray-900 leading-snug">{item.name}</p>
-                          {item.bogoOffer && <CollagenBogoOffer savedOffer={item.bogoOffer} applied />}
                           {getCartItemVariantName(item) && (
                             <span className="inline-flex items-center gap-1 mt-1 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
                               <Tag size={10} /> {getCartItemVariantName(item)}

@@ -9,7 +9,6 @@ import { sendEmail, isEmailConfigured } from "./services/emailService.js";
 import { sendOrderEmailByType, triggerOrderEmailAutomation } from "./services/orderEmailTriggerService.js";
 import getOrderConfirmationEmail from "./emailTemplates/orderConfirmationEmail.js";
 import { getComboStockError } from "./services/comboStock.js";
-import { getCollagenPeptideOffer } from "./services/productOffers.js";
 
 dotenv.config();
 const app = express();
@@ -3820,7 +3819,6 @@ app.post("/api/payments/verify", async (req, res) => {
           baseProductId: resolvedProductId,
           cartItemId: rawCartItemId,
           name: item.name || productData.name,
-          bogoOffer: getCollagenPeptideOffer(productData, quantity),
           price: finalPrice,
           compareAtPrice: item.compareAtPrice || null,
           quantity,
@@ -4034,7 +4032,6 @@ app.post("/api/orders", async (req, res) => {
           baseProductId: resolvedProductId,
           cartItemId: rawCartItemId,
           name: item.name || productData.name,
-          bogoOffer: getCollagenPeptideOffer(productData, quantity),
           price: finalPrice,
           compareAtPrice: item.compareAtPrice || null,
           quantity,
