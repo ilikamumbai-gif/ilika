@@ -46,6 +46,7 @@ export const getOrderConfirmationEmail = ({
             <tr>
               <td style="padding:10px 12px;border-bottom:1px solid #efe7df;color:#2b211d;font-size:14px;">
                 <strong>${index + 1}. ${escapeHtml(item?.name || productName || "Ilika Product")}</strong>
+                ${item?.bogoOffer ? `<div style="margin-top:4px;color:#842323;font-size:12px;">Buy 1 Get 1 FREE: ${escapeHtml(item.bogoOffer.freeQuantity)} additional free packs (Rs 0)</div>` : ""}
                 ${item?.variantLabel ? `<div style="margin-top:4px;color:#7a675d;font-size:12px;">${escapeHtml(item.variantLabel)}</div>` : ""}
               </td>
               <td style="padding:10px 12px;border-bottom:1px solid #efe7df;color:#2b211d;font-size:14px;text-align:center;">${qty}</td>

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { X, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
+import CollagenBogoOffer from "./CollagenBogoOffer";
 import {
   getCartItemDisplayImage,
   getCartItemDisplayPricing,
@@ -117,6 +118,7 @@ const CartDrawer = () => {
 
                   <div className="flex-1">
                     <p className="font-medium">{item.name}</p>
+                    <CollagenBogoOffer product={item} quantity={item.quantity} applied />
 
                     {variantName && (
                       <p className="text-xs text-gray-500 mt-[2px]">

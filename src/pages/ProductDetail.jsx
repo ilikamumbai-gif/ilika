@@ -9,6 +9,7 @@ import MiniDivider from "../components/MiniDivider";
 import Heading from "../components/Heading";
 import OptimizedImage from "../components/OptimizedImage";
 import CartDrawer from "../components/CartDrawer";
+import CollagenBogoOffer from "../components/CollagenBogoOffer";
 import { useCart } from "../context/CartProvider";
 import { auth, storage } from "../firebase/firebaseConfig";
 import { useProducts } from "../admin/context/ProductContext";
@@ -5486,6 +5487,7 @@ const ProductDetail = () => {
                   )}
 
                   {freeGiftCard}
+                  <CollagenBogoOffer product={product} />
 
                   <div ref={atcButtonsRef} className="grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2">
                       <AnimatedCtaButton
@@ -5613,6 +5615,7 @@ const ProductDetail = () => {
               )}
 
               {freeGiftCard}
+              <CollagenBogoOffer product={product} />
 
               {marketplaceLinks.length > 0 && (
                 <div className="pt-2">
