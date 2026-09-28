@@ -17,11 +17,10 @@ import {
   getCartItemDisplayImage,
   getCartItemDisplayPricing,
   getCartItemVariantName,
-  isPrepaidOfferEligible,
 } from "../utils/productPricing";
+import { getPrepaidDiscount } from "../../Backend/services/prepaidDiscount.js";
 
 const PREFERRED_PAYMENT_METHOD_KEY = "ilika_preferred_payment_method";
-const PREPAID_ORDER_DISCOUNT = 100;
 
 // ─── OTP WIDGET - defined OUTSIDE Checkout so it never re-mounts on re-render ─
 // If defined inside the parent component, React treats it as a new component
@@ -708,16 +707,10 @@ const Checkout = () => {
   );
   const giftWrapFee = isGiftOrder && wantsGiftWrap ? GIFT_WRAP_FEE : 0;
   const total = parseFloat((subtotal + giftWrapFee).toFixed(2));
-  const prepaidEligibleTotal = useMemo(
-    () => checkoutItems.reduce(
-      (acc, item) => acc + (isPrepaidOfferEligible(item, item.price)
-        ? (Number(item.price) || 0) * (Number(item.quantity) || 1)
-        : 0),
-      0
-    ),
+  const availablePrepaidDiscount = useMemo(
+    () => getPrepaidDiscount(checkoutItems),
     [checkoutItems]
   );
-  const availablePrepaidDiscount = Math.min(PREPAID_ORDER_DISCOUNT, prepaidEligibleTotal);
   const prepaidPayableTotal = parseFloat((total - availablePrepaidDiscount).toFixed(2));
   const prepaidDiscountAmount = paymentMethod === "ONLINE"
     ? availablePrepaidDiscount
@@ -1126,7 +1119,7 @@ const Checkout = () => {
             clearCart();
           } catch (err) {
             console.error("Verification error:", err);
-            alert("Payment verification failed");
+            alert(`Your payment returned from Razorpay, but we could not confirm the order. ${err.message || "Please contact support."}\nPayment ID: ${response.razorpay_payment_id}\nPlease contact support with this ID before making another payment.`);
           } finally {
             setLoading(false);
           }

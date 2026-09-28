@@ -9,6 +9,7 @@ import { sendEmail, isEmailConfigured } from "./services/emailService.js";
 import { sendOrderEmailByType, triggerOrderEmailAutomation } from "./services/orderEmailTriggerService.js";
 import getOrderConfirmationEmail from "./emailTemplates/orderConfirmationEmail.js";
 import { getComboStockError } from "./services/comboStock.js";
+import { getPrepaidDiscount } from "./services/prepaidDiscount.js";
 
 dotenv.config();
 const app = express();
@@ -2408,13 +2409,6 @@ const calculateOrderPricing = (items = []) => {
   };
 };
 
-const PREPAID_OFFER_EXCLUDED_PRODUCT_PATTERN = /\b(?:mask\s*sheets?|sheet\s*masks?|toners?|shampoos?|serums?|cleansers?|face\s*washes?|moisturi[sz]ers?|sunscreens?|creams?|lotions?|scrubs?|conditioners?|body\s*washes?|soaps?)\b/i;
-const MINIMUM_PREPAID_OFFER_PRICE = 1500;
-
-const isPrepaidOfferEligibleProduct = (product = {}, price = product?.price) =>
-  !PREPAID_OFFER_EXCLUDED_PRODUCT_PATTERN.test(String(product?.name || "")) &&
-  Number(price || 0) >= MINIMUM_PREPAID_OFFER_PRICE;
-
 const normalizeIndianPhone = (phone = "") => {
   const digits = String(phone).replace(/\D/g, "");
   return digits.length >= 10 ? digits.slice(-10) : digits;
@@ -3764,7 +3758,6 @@ app.post("/api/payments/verify", async (req, res) => {
     }
 
     let totalAmount = 0;
-    let prepaidDiscountEligibleTotal = 0;
     const validatedItems = [];
 
     for (const item of orderData.items) {
@@ -3810,9 +3803,6 @@ app.post("/api/payments/verify", async (req, res) => {
         ? submittedPrice
         : (Number.isFinite(productPrice) ? productPrice : 0);
       totalAmount += finalPrice * quantity;
-      if (isPrepaidOfferEligibleProduct(productData, finalPrice)) {
-        prepaidDiscountEligibleTotal += finalPrice * quantity;
-      }
 
         validatedItems.push({
           productId: resolvedProductId,
@@ -3838,11 +3828,17 @@ app.post("/api/payments/verify", async (req, res) => {
     const pricing = calculateOrderPricing(validatedItems);
     const giftWrapFee = normalizedGiftOptions.wantsGiftWrap ? Number(normalizedGiftOptions.giftWrapFee || 0) : 0;
     const prepaidDiscountAmount = orderData?.paymentMethod === "ONLINE"
-      ? Math.min(100, Math.max(0, prepaidDiscountEligibleTotal))
+      ? getPrepaidDiscount(validatedItems)
       : 0;
     const payableTotal = Number((pricing.grandTotal + giftWrapFee - prepaidDiscountAmount).toFixed(2));
     const razorpayOrder = await razorpay.orders.fetch(razorpay_order_id);
     if (Number(razorpayOrder.amount) !== Math.round(payableTotal * 100)) {
+      console.error("PAYMENT ORDER AMOUNT MISMATCH:", {
+        razorpay_order_id,
+        razorpay_payment_id,
+        paidAmountPaise: Number(razorpayOrder.amount),
+        expectedAmountPaise: Math.round(payableTotal * 100),
+      });
       return res.status(400).json({ error: "Payment amount does not match the order total" });
     }
     const orderPayload = {
@@ -3901,6 +3897,7 @@ app.post("/api/payments/verify", async (req, res) => {
         },
       },
       razorpay_payment_id,
+      razorpay_order_id,
       paidAt: new Date(),
       createdAt: new Date(),
     };
