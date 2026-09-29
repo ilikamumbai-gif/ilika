@@ -96,6 +96,7 @@ const STATIC_URLS = [
   { loc: "/hot-cold-blackhead-remover", priority: "0.8", changefreq: "weekly" },
   { loc: "/blackseed-hair-oil", priority: "0.8", changefreq: "weekly" },
   { loc: "/herbal-hair-oil", priority: "0.8", changefreq: "weekly" },
+  { loc: "/product/ilika-portable-travel-manual-bidet", priority: "0.8", changefreq: "weekly" },
 ];
 
 const LLM_STATIC_URLS = [
