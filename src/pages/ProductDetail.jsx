@@ -5410,7 +5410,7 @@ const ProductDetail = () => {
                               </div>
                             </div>
                           ) : null}
-                          <div className="mt-3">
+                          {emiDisplayAmount > 2000 ? <div className="mt-3">
                             <EmiOfferCard
                               amount={emiDisplayAmount}
                               detailTheme={detailTheme}
@@ -5419,7 +5419,7 @@ const ProductDetail = () => {
                               disabled={isOutOfStock}
                               autoOpen
                             />
-                          </div>
+                          </div> : null}
                         </div>
 
                     </div>
@@ -6251,7 +6251,7 @@ const ProductDetail = () => {
                           </div>
                         </div>
                       ) : null}
-                      <div className="mt-3">
+                      {emiDisplayAmount > 2000 ? <div className="mt-3">
                         <EmiOfferCard
                           amount={emiDisplayAmount}
                           detailTheme={detailTheme}
@@ -6260,7 +6260,7 @@ const ProductDetail = () => {
                           disabled={isOutOfStock}
                           autoOpen
                         />
-                      </div>
+                      </div> : null}
                     </div>
 
                   </div>
