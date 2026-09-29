@@ -4382,11 +4382,11 @@ const ProductDetail = () => {
     ? productSeoContent?.title || `${product.name}${activeVariantName ? ` - ${activeVariantName}` : ""} | Ilika`
     : "Product Details | Ilika";
   const seoProductDescription =
+    String(product?.seoDescription || "").trim() ||
     productSeoContent?.description ||
     (activeVariantName
       ? `${String(product?.seoDescription || "").trim() || stripHtml(product?.shortInfo) || stripHtml(product?.description) || "Explore product details, benefits, pricing, and offers on Ilika."} Variant: ${activeVariantName}.`
       : "") ||
-    String(product?.seoDescription || "").trim() ||
     stripHtml(product?.shortInfo) ||
     stripHtml(product?.description) ||
     "Explore product details, benefits, pricing, and offers on Ilika.";
@@ -4403,12 +4403,13 @@ const ProductDetail = () => {
   );
   const canonicalPath = canonicalBasePath;
   const seoProductKeywords = useMemo(() => {
+    const explicitKeywords = String(product?.seoKeywords || "").trim();
+    if (explicitKeywords) {
+      return explicitKeywords.split(",").map((keyword) => keyword.trim()).filter(Boolean);
+    }
     if (productSeoContent?.keywords?.length) {
       return productSeoContent.keywords.map((item) => item.keyword);
     }
-
-    const explicitKeywords = String(product?.seoKeywords || "").trim();
-    if (explicitKeywords) return explicitKeywords;
 
     const categorySource = product?.seoCategory || product?.categoryName || product?.category || "";
     const fromCategories = Array.isArray(categorySource)
@@ -4424,7 +4425,7 @@ const ProductDetail = () => {
       product?.name || "",
       ...fromCategories,
     ].filter(Boolean);
-  }, [product?.name, product?.categoryName, productSeoContent]);
+  }, [product?.name, product?.categoryName, product?.seoKeywords, product?.seoCategory, product?.category, productSeoContent]);
   const productTagLabel = useMemo(
     () => String(product?.productTag || "").trim(),
     [product?.productTag]
