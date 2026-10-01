@@ -15,13 +15,7 @@ const offBanner = "/Images/Tonner.webp";
 const offerCardImage = "/Images/MaskMakercard.webp";
 
 const PRODUCT_NAMES = {
-  voiceMaskMaker:
-    "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
-  airwrap: "Ilika Airwrap Multi-Styler Kit | 5-in-1 Hair Styling Tool for Curling, Straightening, Volumizing & Drying",
   hairDryer: "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
-  herbalHairOil: "Ilika 10 Herbs Herbal Hair Growth Oil | For Hair Fall Control, Hair Growth & Strong Healthy Hair",
-  blackSeedHairOil:
-    "Ilika Black Seed Hair Oil | For Premature Grey Hair & Hair Fall Control | Nourishing Scalp Care",
 };
   
 const normalizeName = (value = "") =>
@@ -66,11 +60,7 @@ const Combos = () => {
     [products]
   );
 
-  const voiceMaskMaker = productMap.get(normalizeName(PRODUCT_NAMES.voiceMaskMaker));
-  const airwrap = productMap.get(normalizeName(PRODUCT_NAMES.airwrap));
   const hairDryer = productMap.get(normalizeName(PRODUCT_NAMES.hairDryer));
-  const herbalHairOil = productMap.get(normalizeName(PRODUCT_NAMES.herbalHairOil));
-  const blackSeedHairOil = productMap.get(normalizeName(PRODUCT_NAMES.blackSeedHairOil));
 
   const offerCards = [
     {
@@ -89,21 +79,6 @@ const Combos = () => {
     },
 
     {
-      category: "Beauty Tech",
-      title: "Ilika Voice Mask Maker Machine",
-      highlight: "15% OFF",
-      description: "Use coupon code ILIKA15 on the Voice Mask Maker Machine.",
-      link: voiceMaskMaker ? getProductLink(voiceMaskMaker) : "/voice-mask-maker",
-      image: "/Images/1.png",
-      background: "linear-gradient(135deg, #ffeec8 0%, #ffc874 52%, #fff3da 100%)",
-      overlay:
-        "linear-gradient(90deg, rgba(255,241,211,0.94) 0%, rgba(255,221,165,0.78) 40%, rgba(255,221,165,0.38) 72%, rgba(255,221,165,0.14) 100%)",
-      textColor: "#24150d",
-      badgeColor: "#8e4b11",
-      buttonVariant: "dark",
-    },
-
-    {
       category: "Appliances",
       title: "Ilika Leafless Hairdryer Deal",
       highlight: "15% OFF",
@@ -118,80 +93,6 @@ const Combos = () => {
       buttonVariant: "light",
     },
 
-    {
-      category: "Styling",
-      title: "Ilika 5 in 1 Air Wrap Offer",
-      highlight: "15% OFF",
-      description: "Use code ILIKA15 for special savings on the Airwrap multi-styler tool set.",
-      link: airwrap ? getProductLink(airwrap) : "/category/hairstyling",
-      image: "/Images/4.png",
-      background: "linear-gradient(135deg, #fff0e2 0%, #ffd3b0 52%, #fff8f1 100%)",
-      overlay:
-        "linear-gradient(90deg, rgba(255,244,233,0.94) 0%, rgba(255,220,189,0.78) 40%, rgba(255,220,189,0.35) 72%, rgba(255,220,189,0.14) 100%)",
-      textColor: "#261610",
-      badgeColor: "#c76d37",
-      buttonVariant: "dark",
-    },
-
-    {
-      category: "Combo",
-      title: "Glow Therapy Combo",
-      highlight: "Free Serum",
-      description: "Get the Nonvoice Mask Maker with Hyaluronic Serum at combo pricing.",
-      link: "/glow-therapy-comb",
-      image: "/Images/5.png",
-      background: "linear-gradient(135deg, #ffd7df 0%, #ffe9ef 55%, #fff8fa 100%)",
-      overlay:
-        "linear-gradient(90deg, rgba(255,235,241,0.94) 0%, rgba(255,220,231,0.78) 40%, rgba(255,220,231,0.36) 72%, rgba(255,220,231,0.14) 100%)",
-      textColor: "#2f171d",
-      badgeColor: "#c44269",
-      buttonVariant: "dark",
-    },
-
-    {
-      category: "Combo",
-      title: "Hydration + Glow Combo",
-      highlight: "Free Hydra Gel",
-      description: "Pick 2 premium masks and get Hydra Gel free in one bundle.",
-      link: "/hydration-glow-combo",
-      image: "/Images/8.png",
-      background: "linear-gradient(135deg, #f5dcff 0%, #e7c8ff 48%, #fbf3ff 100%)",
-      overlay:
-        "linear-gradient(90deg, rgba(248,236,255,0.94) 0%, rgba(234,212,252,0.78) 40%, rgba(234,212,252,0.35) 72%, rgba(234,212,252,0.14) 100%)",
-      textColor: "#281830",
-      badgeColor: "#9d5fbe",
-      buttonVariant: "light",
-    },
-
-    {
-      category: "Hair Care",
-      title: "Herbal Hair Oil Offer",
-      highlight: "Limited Deal",
-      description: "Discover root-strengthening care with Ilika Herbal Hair Oil.",
-      link: herbalHairOil ? getProductLink(herbalHairOil) : "/herbal-hair-oil",
-      image: "/Images/2.png",
-      background: "linear-gradient(135deg, #eef8df 0%, #d7efb0 50%, #f8fdef 100%)",
-      overlay:
-        "linear-gradient(90deg, rgba(243,250,232,0.94) 0%, rgba(223,241,185,0.78) 40%, rgba(223,241,185,0.34) 72%, rgba(223,241,185,0.14) 100%)",
-      textColor: "#182113",
-      badgeColor: "#5f8f35",
-      buttonVariant: "light",
-    },
-
-    {
-      category: "Hair Care",
-      title: "Blackseed Hair Oil Offer",
-      highlight: "Limited Deal",
-      description: "Boost stronger-looking hair with the Black Seed Hair Oil offer.",
-      link: blackSeedHairOil ? getProductLink(blackSeedHairOil) : "/blackseed-hair-oil",
-      image: "/Images/6.png",
-      background: "linear-gradient(135deg, #fff1d8 0%, #f2d18c 50%, #fff8eb 100%)",
-      overlay:
-        "linear-gradient(90deg, rgba(255,246,229,0.94) 0%, rgba(245,221,164,0.78) 40%, rgba(245,221,164,0.35) 72%, rgba(245,221,164,0.14) 100%)",
-      textColor: "#23190d",
-      badgeColor: "#b27b21",
-      buttonVariant: "dark",
-    },
   ];
   const offersSchema = {
     "@context": "https://schema.org",

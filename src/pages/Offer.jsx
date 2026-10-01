@@ -5,13 +5,6 @@ import Footer from "../components/Footer";
 
 const offers = [
   {
-    type: "deal",
-    title: "Mother’s Day Glow Therapy Combo",
-    description:
-      "Gift her radiant skin this Mother’s Day with the Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide + FREE Hyaluronic Acid Serum. Save ₹2000 + get extra serum value!",
-    link: "/offers"
-  },
-  {
     type: "coupon",
     title: "15% OFF on Ilika Voice Face Mask Maker Machine",
     description:
