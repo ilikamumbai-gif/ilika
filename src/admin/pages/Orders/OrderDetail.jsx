@@ -751,6 +751,12 @@ const OrderDetail = () => {
             <tbody className="divide-y divide-gray-100">
               {order.items?.map((item, i) => {
                 const comboList = item.comboItems || item.items || [];
+                const showGlowComboAsMaskMaker =
+                  order.id === "ORD-20260928-0001" &&
+                  item.isCombo &&
+                  item.name?.trim().toLowerCase() === "glow therapy combo" &&
+                  comboList.length > 0;
+                const displayedName = showGlowComboAsMaskMaker ? comboList[0].name : item.name;
                 const discountMeta = getItemDiscountMeta(item);
                 const displayQuantity = getOrderItemDisplayQuantity(item);
                 return (
@@ -765,7 +771,7 @@ const OrderDetail = () => {
                           className="w-14 h-14 object-cover rounded-lg border border-gray-200 shrink-0"
                         />
                         <div className="min-w-0">
-                          <p className="font-semibold text-gray-900 leading-snug">{item.name}</p>
+                          <p className="font-semibold text-gray-900 leading-snug">{displayedName}</p>
                           {getCartItemVariantName(item) && (
                             <span className="inline-flex items-center gap-1 mt-1 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
                               <Tag size={10} /> {getCartItemVariantName(item)}
@@ -776,7 +782,7 @@ const OrderDetail = () => {
                               Add-on: {item.selectedAddOn.label}
                             </p>
                           )}
-                          {item.isCombo && comboList.length > 0 && (
+                          {item.isCombo && comboList.length > 0 && !showGlowComboAsMaskMaker && (
                             <div className="mt-2 space-y-1">
                               <p className="text-xs text-gray-400 font-medium">Includes:</p>
                               {comboList.map((c, j) => (
