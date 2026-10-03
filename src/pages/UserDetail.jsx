@@ -667,15 +667,23 @@ const UserDetail = () => {
                                 <div className="mt-4 pt-4 border-t border-dashed border-gray-200">
                                   {/* Items list */}
                                   <div className="flex flex-col gap-2.5">
-                                    {(order.items || []).map((item, idx) => (
+                                    {(order.items || []).map((item, idx) => {
+                                      const comboItems = item.comboItems || item.items || [];
+                                      const showGlowComboAsMaskMaker =
+                                        order.id === "ORD-20260928-0001" &&
+                                        item.isCombo &&
+                                        item.name?.trim().toLowerCase() === "glow therapy combo" &&
+                                        comboItems.length > 0;
+                                      const displayedName = showGlowComboAsMaskMaker ? comboItems[0].name : item.name;
+                                      return (
                                       <div key={`${order.id}-${idx}`} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3">
                                         <img
                                           src={item.image || item.images?.[0] || ""}
-                                          alt={item.name || "Item"}
+                                          alt={displayedName || "Item"}
                                           className="w-14 h-14 rounded-lg border border-gray-100 object-cover bg-gray-50 flex-shrink-0"
                                         />
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-sm font-medium text-gray-800 truncate">{item.name || "Product"}</p>
+                                          <p className="text-sm font-medium text-gray-800 truncate">{displayedName || "Product"}</p>
                                           <p className="text-xs text-gray-400 mt-0.5">
                                             Qty {item.quantity || 1}{getCartItemVariantName(item) ? ` · ${getCartItemVariantName(item)}` : ""}
                                           </p>
@@ -692,7 +700,8 @@ const UserDetail = () => {
                                           ) : null}
                                         </div>
                                       </div>
-                                    ))}
+                                      );
+                                    })}
                                   </div>
 
                                   {/* Info tiles */}
