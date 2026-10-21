@@ -436,7 +436,10 @@ const EmiOfferCard = ({
     months,
     monthly: safeAmount / months,
   }));
-  const primaryPlan = plans[0];
+  const primaryPlan = plans.reduce((lowestMonthly, plan) =>
+    plan.monthly < lowestMonthly.monthly ? plan : lowestMonthly,
+    plans[0]
+  );
 
   if (!safeAmount || !primaryPlan) return null;
 
