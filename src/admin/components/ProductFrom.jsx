@@ -1179,7 +1179,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
       {/* VARIANT ROWS */}
       {form.variants?.map((variant, index) => (
         <div key={variant.id} className="border p-4 rounded space-y-3 bg-gray-50">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <input placeholder="Label (50ml / Small)" value={variant.label}
               onChange={e => { const u = [...form.variants]; u[index].label = e.target.value; setForm({ ...form, variants: u }); }}
               className="border p-2 rounded"
@@ -1192,13 +1192,13 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               onChange={e => { const u = [...form.variants]; u[index].mrp = e.target.value; setForm({ ...form, variants: u }); }}
               className="border p-2 rounded"
             />
+            <label className="flex min-h-10 items-center gap-2 rounded border bg-white px-3 text-sm font-medium">
+              <input type="checkbox" checked={variant.inStock !== false}
+                onChange={e => { const u = [...form.variants]; u[index].inStock = e.target.checked; setForm({ ...form, variants: u }); }}
+              />
+              In stock
+            </label>
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={variant.inStock !== false}
-              onChange={e => { const u = [...form.variants]; u[index].inStock = e.target.checked; setForm({ ...form, variants: u }); }}
-            />
-            In stock
-          </label>
           <div className="space-y-2">
             <label className="text-sm font-medium">Variant Images (Optional)</label>
             <input type="file" multiple accept="image/*"
