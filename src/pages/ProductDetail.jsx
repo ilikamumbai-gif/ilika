@@ -4204,15 +4204,18 @@ const ProductDetail = () => {
       <div className="flex flex-wrap gap-2">
         {product.variants.map((variant) => {
           const active = activeVariant?.id === variant.id;
+          const inStock = getProductVariantAvailability(product, variant);
           const swatchColor = getVariantSwatchColor(variant);
 
           return (
             <button
               key={variant.id}
-              onClick={() => handleVariantSelect(variant)}
-              aria-label={`Select ${variant.label}`}
-              title={variant.label}
-              className="w-9 h-9 rounded-lg border-2 transition hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+              onClick={() => inStock && handleVariantSelect(variant)}
+              disabled={!inStock}
+              aria-label={`${variant.label}${inStock ? "" : " (out of stock)"}`}
+              aria-pressed={active}
+              title={`${variant.label}${inStock ? "" : " — Out of stock"}`}
+              className={`relative w-9 h-9 rounded-lg border-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${inStock ? "hover:scale-105" : "cursor-not-allowed opacity-60"}`}
               style={
                 active
                   ? { backgroundColor: swatchColor, borderColor: detailTheme.price, boxShadow: `0 0 0 2px ${detailTheme.pageBg}` }
@@ -4220,6 +4223,7 @@ const ProductDetail = () => {
               }
             >
               <span className="sr-only">{variant.label}</span>
+              {!inStock && <span aria-hidden="true" className="absolute left-1/2 top-1/2 h-[2px] w-10 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded bg-red-600 shadow-[0_0_1px_white]" />}
             </button>
           );
         })}

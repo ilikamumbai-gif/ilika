@@ -730,7 +730,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             await uploadBytes(r, file);
             uploaded.push(await getDownloadURL(r));
           }
-          variantData.push({ id: v.id, label: v.label, price: Number(v.price), mrp: Number(v.mrp), images: uploaded });
+          variantData.push({ id: v.id, label: v.label, price: Number(v.price), mrp: Number(v.mrp), inStock: v.inStock !== false, images: uploaded });
         }
       }
 
@@ -1193,6 +1193,12 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
               className="border p-2 rounded"
             />
           </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={variant.inStock !== false}
+              onChange={e => { const u = [...form.variants]; u[index].inStock = e.target.checked; setForm({ ...form, variants: u }); }}
+            />
+            In stock
+          </label>
           <div className="space-y-2">
             <label className="text-sm font-medium">Variant Images (Optional)</label>
             <input type="file" multiple accept="image/*"
@@ -1233,7 +1239,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
           <div className="flex justify-between items-center">
             <h3 className="font-semibold text-lg">Variants</h3>
             <button type="button"
-              onClick={() => setForm(prev => ({ ...prev, variants: [...prev.variants, { id: crypto.randomUUID(), label: "", price: "", mrp: "", images: [] }] }))}
+              onClick={() => setForm(prev => ({ ...prev, variants: [...prev.variants, { id: crypto.randomUUID(), label: "", price: "", mrp: "", inStock: true, images: [] }] }))}
               className="bg-black text-white px-3 py-1 rounded"
             >Add Variant</button>
           </div>
