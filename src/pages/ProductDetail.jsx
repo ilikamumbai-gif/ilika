@@ -2972,7 +2972,7 @@ const ProductDetail = () => {
   // =====================================================
   // Notification - OUT OF STOCK
   // =====================================================
-  const handleNotifyMe = async () => {
+  const handleNotifyMe = async (variant = activeVariant) => {
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/notify`,
@@ -2984,6 +2984,8 @@ const ProductDetail = () => {
           body: JSON.stringify({
             productId: product.id || product._id,
             productName: product.name,
+            variantId: variant?.id || null,
+            variantName: variant?.label || null,
             userId: auth.currentUser?.uid || null,
             email: auth.currentUser?.email || null,
           }),
@@ -4210,12 +4212,11 @@ const ProductDetail = () => {
           return (
             <button
               key={variant.id}
-              onClick={() => inStock && handleVariantSelect(variant)}
-              disabled={!inStock}
+              onClick={() => handleVariantSelect(variant)}
               aria-label={`${variant.label}${inStock ? "" : " (out of stock)"}`}
               aria-pressed={active}
               title={`${variant.label}${inStock ? "" : " — Out of stock"}`}
-              className={`relative w-9 h-9 rounded-lg border-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${inStock ? "hover:scale-105" : "cursor-not-allowed opacity-60"}`}
+              className={`relative w-9 h-9 rounded-lg border-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${inStock ? "hover:scale-105" : "opacity-60 hover:opacity-80"}`}
               style={
                 active
                   ? { backgroundColor: swatchColor, borderColor: detailTheme.price, boxShadow: `0 0 0 2px ${detailTheme.pageBg}` }
@@ -4228,6 +4229,19 @@ const ProductDetail = () => {
           );
         })}
       </div>
+      {activeVariant && !getProductVariantAvailability(product, activeVariant) && (
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+          <span className="font-medium text-red-600">{activeVariant.label} — Out of stock</span>
+          <button
+            type="button"
+            onClick={() => handleNotifyMe(activeVariant)}
+            className="font-semibold underline underline-offset-2"
+            style={{ color: detailTheme.accent }}
+          >
+            Notify Me
+          </button>
+        </div>
+      )}
     </div>
   );
 
