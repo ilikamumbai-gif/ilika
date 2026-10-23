@@ -64,6 +64,9 @@ https://ilika.in/product/belgium-rose-soothing-toner
 https://ilika.in/product/hydra-gel-moisturizer-v2
 https://ilika.in/product/ipl-laser-hair-removal-device
 https://ilika.in/product/leafless-hair-dryer
+https://ilika.in/product/leafless-hair-dryer?variant=black
+https://ilika.in/product/leafless-hair-dryer?variant=white
+https://ilika.in/product/leafless-hair-dryer?variant=purple
 https://ilika.in/product/ilika-collagen-peptide-8-peptide-pack-for-facial-mask-maker-machine
 https://ilika.in/product/blooming-vine-calming-toner
 https://ilika.in/product/rose-quartz-beauty-gua-sha
@@ -76,6 +79,8 @@ https://ilika.in/product/blue-sodalite-roller-gua-sha
 https://ilika.in/product/egg-sonic-facial-brush
 https://ilika.in/product/keratin-repair-shampoo
 https://ilika.in/product/vibration-heating-facial-brush
+https://ilika.in/product/vibration-heating-facial-brush?variant=white
+https://ilika.in/product/vibration-heating-facial-brush?variant=pink
 https://ilika.in/product/tea-tree-avocado-toner
 https://ilika.in/product/clarifying-peeling-solution
 https://ilika.in/product/dazzling-glow-face-serum
@@ -91,11 +96,12 @@ https://ilika.in/product/kumkumadi-tailam-facial-oil
 https://ilika.in/product/hydrocolloid-acne-patches
 https://ilika.in/product/under-eye-serum
 https://ilika.in/product/airwrap-multi-styler-kit
+https://ilika.in/product/airwrap-multi-styler-kit?variant=macaron
 https://ilika.in/product/anti-scar-facial-oil
 https://ilika.in/product/alpha-arbutin-sheet-mask
 https://ilika.in/product/3color-led-therapy-face-mask
 https://ilika.in/product/rose-quartz-butterfly-gua-sha
-https://ilika.in/product/portable-travel-bidet
+https://ilika.in/product/ilika-portable-travel-manual-bidet
 https://ilika.in/product/foaming-face-wash
 https://ilika.in/product/collagen-firming-sheet-mask
 https://ilika.in/product/magic-crystal-hair-remover

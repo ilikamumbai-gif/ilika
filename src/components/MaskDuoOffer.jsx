@@ -254,6 +254,7 @@ const MaskDuoOffer = () => {
 
         <div className="flex justify-center">
           <Heading
+            level="h1"
             heading={
               <>
                 Hydration + <span style={{ color: "#c53f3f" }}>Glow Combo</span>

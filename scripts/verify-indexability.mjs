@@ -72,8 +72,27 @@ async function main() {
     Promise.all(blogUrls.map((url) => verifyPage({ distDir, url, type: "blog" }))),
   ]);
   for (const [label, pages] of [["product", products], ["blog", blogs]]) {
-    if (new Set(pages.map((page) => page.title)).size !== pages.length) throw new Error(`Duplicate ${label} title tags found.`);
-    if (new Set(pages.map((page) => page.description)).size !== pages.length) throw new Error(`Duplicate ${label} meta descriptions found.`);
+    // Product variant URLs share one prerendered pathname and therefore one
+    // title/description. Compare distinct pages, while still verifying every
+    // variant URL above for its canonical and social metadata.
+    const uniquePages = label === "product"
+      ? Array.from(new Map(pages.map((page) => [new URL(page.url).pathname, page])).values())
+      : pages;
+    const duplicateTitles = uniquePages.reduce((duplicates, page) => {
+      const matchingPages = duplicates.get(page.title) || [];
+      matchingPages.push(page.url);
+      duplicates.set(page.title, matchingPages);
+      return duplicates;
+    }, new Map());
+    const collisions = Array.from(duplicateTitles, ([title, matchingPages]) => ({ title, matchingPages }))
+      .filter(({ matchingPages }) => matchingPages.length > 1);
+    if (collisions.length) {
+      const details = collisions
+        .map(({ title, matchingPages }) => `"${title}": ${matchingPages.join(", ")}`)
+        .join("; ");
+      throw new Error(`Duplicate ${label} title tags found. ${details}`);
+    }
+    if (new Set(uniquePages.map((page) => page.description)).size !== uniquePages.length) throw new Error(`Duplicate ${label} meta descriptions found.`);
   }
 
   const pages = await Promise.all(otherUrls.map(url => verifyPage({ distDir, url, type: "page" })));
