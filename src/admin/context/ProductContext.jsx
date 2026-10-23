@@ -137,6 +137,30 @@ export const ProductProvider = ({ children }) => {
     });
 
     await fetchProducts();
+    if (payload?.product) {
+      const savedProduct = toCanonicalProduct(payload.product);
+      setProducts((current) => {
+        const ids = new Set(
+          [savedProduct.docId, savedProduct.id, savedProduct.legacyId, savedProduct.legacyUnderscoreId]
+            .map((value) => String(value || "").trim().toLowerCase())
+            .filter(Boolean)
+        );
+        const found = current.some((product) =>
+          [product?.docId, product?.id, product?.legacyId, product?.legacyUnderscoreId]
+            .some((value) => ids.has(String(value || "").trim().toLowerCase()))
+        );
+        const next = sortProductsInStockFirst(found
+          ? current.map((product) =>
+            [product?.docId, product?.id, product?.legacyId, product?.legacyUnderscoreId]
+              .some((value) => ids.has(String(value || "").trim().toLowerCase()))
+              ? savedProduct
+              : product
+          )
+          : [...current, savedProduct]);
+        writeSessionCache(PRODUCT_CACHE_KEY, next);
+        return next;
+      });
+    }
     return payload;
   };
 
@@ -192,13 +216,12 @@ export const ProductProvider = ({ children }) => {
       )
     );
 
-    for (const candidateId of normalizedIds) {
-      const existing = findProductInList(products, candidateId);
-      if (existing) return toCanonicalProduct(existing);
-    }
-
     if (!API_URL) {
       handleApiError("Products", new Error("VITE_API_URL is missing"));
+      for (const candidateId of normalizedIds) {
+        const existing = findProductInList(products, candidateId);
+        if (existing) return toCanonicalProduct(existing);
+      }
       return null;
     }
 
@@ -209,7 +232,31 @@ export const ProductProvider = ({ children }) => {
         if (!res.ok) throw new Error("Failed to fetch product");
 
         const data = await res.json().catch(() => null);
-        if (data) return toCanonicalProduct(data);
+        if (data) {
+          const latestProduct = toCanonicalProduct(data);
+          setProducts((current) => {
+            const latestIds = new Set(
+              [latestProduct.docId, latestProduct.id, latestProduct.legacyId, latestProduct.legacyUnderscoreId]
+                .map((value) => String(value || "").trim().toLowerCase())
+                .filter(Boolean)
+            );
+            const found = current.some((product) =>
+              [product?.docId, product?.id, product?.legacyId, product?.legacyUnderscoreId]
+                .some((value) => latestIds.has(String(value || "").trim().toLowerCase()))
+            );
+            const next = sortProductsInStockFirst(found
+              ? current.map((product) =>
+                [product?.docId, product?.id, product?.legacyId, product?.legacyUnderscoreId]
+                  .some((value) => latestIds.has(String(value || "").trim().toLowerCase()))
+                  ? latestProduct
+                  : product
+              )
+              : [...current, latestProduct]);
+            writeSessionCache(PRODUCT_CACHE_KEY, next);
+            return next;
+          });
+          return latestProduct;
+        }
       } catch (error) {
         handleApiError("Products", error);
       }
