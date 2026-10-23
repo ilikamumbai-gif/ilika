@@ -156,9 +156,9 @@ const Footer = () => {
             <span>customersupport.ilika@gmail.com</span>
           </a>
 
-          <a href="tel:+919120879879" className="flex items-start gap-3 transition hover:text-white">
+          <a href="tel:+919270114738" className="flex items-start gap-3 transition hover:text-white">
             <Phone size={16} className="mt-1 shrink-0" />
-            <span>Call: +91 91208 79879</span>
+            <span>Call: +91 92701 14738</span>
           </a>
 
           <a href="https://wa.me/919270114738" target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 transition hover:text-white">
@@ -342,9 +342,9 @@ const Footer = () => {
                 <span>customersupport.ilika@gmail.com</span>
               </a>
 
-              <a href="tel:+919120879879" className="flex items-center gap-2 transition hover:text-white">
+              <a href="tel:+919270114738" className="flex items-center gap-2 transition hover:text-white">
                 <Phone size={13} className="shrink-0" />
-                <span>Call: +91 91208 79879</span>
+                <span>Call: +91 92701 14738</span>
               </a>
 
               <a href="https://wa.me/919270114738" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition hover:text-white">

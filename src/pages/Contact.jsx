@@ -3,7 +3,7 @@ import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Heading from "../components/Heading";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 import CartDrawer from "../components/CartDrawer";
 
 const Contact = () => {
@@ -29,12 +29,18 @@ const Contact = () => {
           </p>
 
           {/* CONTACT INFO */}
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-            <div className="flex flex-col items-center gap-2 hover:scale-110 transition">
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+            <a href="tel:+919270114738" className="flex flex-col items-center gap-2 hover:scale-105 transition">
               <Phone />
               <p className="font-semibold heading-2-color">Phone</p>
               <p className="text-sm">+91 92701 14738</p>
-            </div>
+            </a>
+
+            <a href="https://wa.me/919270114738" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 hover:scale-105 transition">
+              <MessageCircle />
+              <p className="font-semibold heading-2-color">WhatsApp</p>
+              <p className="text-sm">+91 92701 14738</p>
+            </a>
 
             <div className="flex flex-col items-center gap-2 hover:scale-110 transition">
               <Mail />
