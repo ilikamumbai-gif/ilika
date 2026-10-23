@@ -10,32 +10,6 @@ const normalizeLookupValue = (value = "") =>
     .replace(/^\/+|\/+$/g, "")
     .replace(/^product\//, "");
 
-const VOICE_MASK_MAKER_PRICE_OVERRIDE = {
-  price: 4499,
-  compareAtPrice: 0,
-  lookups: [
-    "voice-face-mask-maker",
-    "ilika-voice-face-mask-maker-machine-with-collagen-peptide",
-    "ilika-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
-  ],
-  nameSnippets: [
-    "voice face mask maker",
-    "automatic voice version face mask maker machine",
-  ],
-};
-
-const NONVOICE_MASK_MAKER_PRICE_OVERRIDE = {
-  price: 3999,
-  compareAtPrice: 0,
-  lookups: [
-    "non-voice-face-mask-maker",
-    "facial-mask-maker-machine-none-voice",
-    "facial-mask-maker-machine-non-voice",
-    "ilika-non-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
-  ],
-  nameSnippets: ["non-voice face mask maker", "nonvoice mask maker machine"],
-};
-
 const LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE = {
   price: 2699,
   compareAtPrice: 5999,
@@ -71,23 +45,7 @@ const getProductPriceOverride = (product = {}) => {
 
   if (hairDryerLookupMatch || hairDryerNameMatch) return LEAFLESS_HAIR_DRYER_PRICE_OVERRIDE;
 
-  const nonVoiceLookupMatch = lookupValues.some((value) =>
-    NONVOICE_MASK_MAKER_PRICE_OVERRIDE.lookups.includes(value)
-  );
-  const nonVoiceNameMatch = NONVOICE_MASK_MAKER_PRICE_OVERRIDE.nameSnippets.some((snippet) =>
-    normalizedName.includes(normalizeLookupValue(snippet))
-  );
-
-  if (nonVoiceLookupMatch || nonVoiceNameMatch) return NONVOICE_MASK_MAKER_PRICE_OVERRIDE;
-
-  const voiceLookupMatch = lookupValues.some((value) =>
-    VOICE_MASK_MAKER_PRICE_OVERRIDE.lookups.includes(value)
-  );
-  const voiceNameMatch = VOICE_MASK_MAKER_PRICE_OVERRIDE.nameSnippets.some((snippet) =>
-    normalizedName.includes(normalizeLookupValue(snippet))
-  );
-
-  return voiceLookupMatch || voiceNameMatch ? VOICE_MASK_MAKER_PRICE_OVERRIDE : null;
+  return null;
 };
 
 const getPositiveNumber = (value) => {

@@ -1935,33 +1935,7 @@ const getMerchantProductPriceOverride = (product = {}) => {
     return { price: 2699, compareAtPrice: 0 };
   }
 
-  const nonVoiceLookups = [
-    "non-voice-face-mask-maker",
-    "facial-mask-maker-machine-none-voice",
-    "facial-mask-maker-machine-non-voice",
-    "ilika-non-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
-  ];
-  const nonVoiceNameSnippets = ["non-voice face mask maker", "nonvoice mask maker machine"];
-  const nonVoiceLookupMatch = lookupValues.some((value) => nonVoiceLookups.includes(value));
-  const nonVoiceNameMatch = nonVoiceNameSnippets.some((snippet) =>
-    normalizedName.includes(normalizeMerchantLookupValue(snippet))
-  );
-  if (nonVoiceLookupMatch || nonVoiceNameMatch) {
-    return { price: 3999, compareAtPrice: 0 };
-  }
-
-  const voiceLookups = [
-    "voice-face-mask-maker",
-    "ilika-voice-face-mask-maker-machine-with-collagen-peptide",
-    "ilika-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
-  ];
-  const voiceNameSnippets = ["voice face mask maker", "automatic voice version face mask maker machine"];
-  const voiceLookupMatch = lookupValues.some((value) => voiceLookups.includes(value));
-  const voiceNameMatch = voiceNameSnippets.some((snippet) =>
-    normalizedName.includes(normalizeMerchantLookupValue(snippet))
-  );
-
-  return voiceLookupMatch || voiceNameMatch ? { price: 4499, compareAtPrice: 0 } : null;
+  return null;
 };
 
 const getProductSellPrice = (product = {}, variant = null) => {
