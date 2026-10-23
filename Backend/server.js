@@ -1651,8 +1651,8 @@ const MERCHANT_CENTER_ACCOUNT_ID =
   "";
 const MERCHANT_CONTENT_LANGUAGE = process.env.GOOGLE_MERCHANT_CONTENT_LANGUAGE || "en";
 const MERCHANT_TARGET_COUNTRY = process.env.GOOGLE_MERCHANT_TARGET_COUNTRY || "IN";
+const MERCHANT_FEED_LABEL = process.env.GOOGLE_MERCHANT_FEED_LABEL || MERCHANT_TARGET_COUNTRY;
 const MERCHANT_CURRENCY = process.env.GOOGLE_MERCHANT_CURRENCY || "INR";
-const MERCHANT_CHANNEL = process.env.GOOGLE_MERCHANT_CHANNEL || "online";
 const MERCHANT_BRAND_DEFAULT = process.env.GOOGLE_MERCHANT_BRAND || "Ilika";
 const toBoolean = (value, fallback = true) => {
   if (typeof value === "boolean") return value;
@@ -1666,14 +1666,15 @@ const toBoolean = (value, fallback = true) => {
 const MERCHANT_SYNC_AUTO = toBoolean(process.env.GOOGLE_MERCHANT_SYNC_AUTO, true);
 const MERCHANT_CLIENT_EMAIL = process.env.GOOGLE_MERCHANT_CLIENT_EMAIL || "";
 const MERCHANT_PRIVATE_KEY = String(process.env.GOOGLE_MERCHANT_PRIVATE_KEY || "").replace(/\\n/g, "\n");
-let merchantContentClient = null;
+let merchantApiAuthClient = null;
+let merchantDataSourceNamePromise = null;
 
 const isMerchantConfigured = () => {
   return Boolean(MERCHANT_CENTER_ACCOUNT_ID && MERCHANT_CLIENT_EMAIL && MERCHANT_PRIVATE_KEY);
 };
 
-const getMerchantContentClient = () => {
-  if (merchantContentClient) return merchantContentClient;
+const getMerchantApiAuthClient = async () => {
+  if (merchantApiAuthClient) return merchantApiAuthClient;
   if (!isMerchantConfigured()) return null;
 
   const auth = new google.auth.GoogleAuth({
@@ -1684,12 +1685,51 @@ const getMerchantContentClient = () => {
     scopes: ["https://www.googleapis.com/auth/content"],
   });
 
-  merchantContentClient = google.content({
-    version: "v2.1",
-    auth,
-  });
+  merchantApiAuthClient = await auth.getClient();
+  return merchantApiAuthClient;
+};
 
-  return merchantContentClient;
+const getMerchantDataSourceName = async (authClient) => {
+  const configuredName = String(process.env.GOOGLE_MERCHANT_DATA_SOURCE_NAME || "").trim();
+  if (configuredName) return configuredName;
+
+  const configuredId = String(process.env.GOOGLE_MERCHANT_DATA_SOURCE_ID || "").trim();
+  if (configuredId) return `accounts/${MERCHANT_CENTER_ACCOUNT_ID}/dataSources/${configuredId}`;
+
+  if (!merchantDataSourceNamePromise) {
+    merchantDataSourceNamePromise = (async () => {
+      const apiSources = [];
+      let pageToken = "";
+      do {
+        const url = new URL(`https://merchantapi.googleapis.com/datasources/v1/accounts/${encodeURIComponent(MERCHANT_CENTER_ACCOUNT_ID)}/dataSources`);
+        url.searchParams.set("pageSize", "1000");
+        if (pageToken) url.searchParams.set("pageToken", pageToken);
+        const response = await authClient.request({ url: url.toString(), method: "GET" });
+        const dataSources = Array.isArray(response?.data?.dataSources) ? response.data.dataSources : [];
+        apiSources.push(...dataSources.filter((source) =>
+          source?.input === "API" && source?.primaryProductDataSource
+        ));
+        pageToken = String(response?.data?.nextPageToken || "");
+      } while (pageToken);
+
+      const matchingSources = apiSources.filter((source) => {
+        const primary = source?.primaryProductDataSource || {};
+        const languageMatches = !primary.contentLanguage || primary.contentLanguage === MERCHANT_CONTENT_LANGUAGE;
+        const labelMatches = !primary.feedLabel || primary.feedLabel === MERCHANT_FEED_LABEL;
+        return languageMatches && labelMatches;
+      });
+      if (matchingSources.length === 1) return String(matchingSources[0].name || "");
+      if (matchingSources.length > 1) {
+        throw new Error("Multiple Merchant API data sources match this feed. Set GOOGLE_MERCHANT_DATA_SOURCE_ID or GOOGLE_MERCHANT_DATA_SOURCE_NAME.");
+      }
+      return "";
+    })().catch((error) => {
+      merchantDataSourceNamePromise = null;
+      throw error;
+    });
+  }
+
+  return merchantDataSourceNamePromise;
 };
 
 const merchantSlugify = (value = "") =>
@@ -1861,8 +1901,11 @@ const getSiteBaseUrl = () =>
   normalizeMerchantSiteBaseUrl(process.env.FRONTEND_URL) ||
   "https://ilika.in";
 
-const getMerchantProductId = (offerId = "") =>
-  `${MERCHANT_CHANNEL}:${MERCHANT_CONTENT_LANGUAGE}:${MERCHANT_TARGET_COUNTRY}:${offerId}`;
+const getMerchantProductInputName = (offerId = "") => {
+  const inputId = `${MERCHANT_CONTENT_LANGUAGE}~${MERCHANT_FEED_LABEL}~${String(offerId || "").trim()}`;
+  const encodedInputId = Buffer.from(inputId).toString("base64url");
+  return `accounts/${MERCHANT_CENTER_ACCOUNT_ID}/productInputs/${encodedInputId}`;
+};
 
 const normalizeMerchantLookupValue = (value = "") =>
   String(value || "")
@@ -1921,9 +1964,12 @@ const getMerchantProductPriceOverride = (product = {}) => {
   return voiceLookupMatch || voiceNameMatch ? { price: 4499, compareAtPrice: 0 } : null;
 };
 
-const getProductSellPrice = (product = {}) => {
+const getProductSellPrice = (product = {}, variant = null) => {
   const priceOverride = getMerchantProductPriceOverride(product);
   if (priceOverride?.price) return priceOverride.price;
+
+  const variantPrice = Number(variant?.price);
+  if (variant && Number.isFinite(variantPrice) && variantPrice > 0) return variantPrice;
 
   if (product?.hasVariants && Array.isArray(product?.variants)) {
     const variantPrices = product.variants
@@ -1935,19 +1981,44 @@ const getProductSellPrice = (product = {}) => {
   return Number.isFinite(base) && base > 0 ? base : 0;
 };
 
-const mapProductToMerchantPayload = (product = {}) => {
+const getMerchantVariantOfferId = (productId = "", variant = {}) => {
+  const stableKey = crypto
+    .createHash("sha1")
+    .update(`${productId}:${variant?.id || variant?.label || "variant"}`)
+    .digest("hex")
+    .slice(0, 20);
+  return `${String(productId || "product").slice(0, 24)}-v-${stableKey}`;
+};
+
+const mapProductToMerchantPayload = (product = {}, variant = null) => {
   const name = String(product?.name || "").trim();
-  const offerId = String(product?.id || "").trim();
+  const offerId = variant
+    ? getMerchantVariantOfferId(product?.id, variant)
+    : String(product?.id || "").trim();
   if (!name || !offerId || product?.isActive === false) return null;
 
-  const priceValue = getProductSellPrice(product);
+  const priceValue = getProductSellPrice(product, variant);
   if (!priceValue) return null;
 
   const siteBaseUrl = getSiteBaseUrl();
   const slug = readMerchantProductUrl(product);
   if (!slug) return null;
-  const productUrl = normalizeAbsoluteUrl(`/product/${slug}`, siteBaseUrl);
-  const normalizedImages = getMerchantImageCandidates(product)
+  const variantQuery = variant
+    ? merchantSlugify(variant?.slug || variant?.variantSlug || variant?.urlSlug || variant?.label || variant?.id)
+    : "";
+  const productUrl = normalizeAbsoluteUrl(
+    `/product/${slug}${variantQuery ? `?variant=${encodeURIComponent(variantQuery)}` : ""}`,
+    siteBaseUrl
+  );
+  const variantImageCandidates = variant
+    ? [
+        ...(Array.isArray(variant?.images) ? variant.images : []),
+        product?.image,
+        product?.imageUrl,
+        ...(Array.isArray(product?.images) ? product.images : []),
+      ]
+    : getMerchantImageCandidates(product);
+  const normalizedImages = sanitizeMerchantImageCandidates(variantImageCandidates)
     .map((img) => normalizeAbsoluteUrl(img, siteBaseUrl))
     .filter((img) => isPublicHttpUrl(img));
   const imageLink = normalizedImages[0] || "";
@@ -1957,62 +2028,123 @@ const mapProductToMerchantPayload = (product = {}) => {
 
   const payload = {
     offerId,
-    title: name,
-    description: stripHtml(product?.shortInfo || product?.description || name),
-    link: productUrl,
-    imageLink: imageLink || undefined,
-    additionalImageLinks: additionalImageLinks.length ? additionalImageLinks : undefined,
     contentLanguage: MERCHANT_CONTENT_LANGUAGE,
-    targetCountry: MERCHANT_TARGET_COUNTRY,
-    channel: MERCHANT_CHANNEL,
-    availability: product?.inStock === false ? "out of stock" : "in stock",
-    condition: "new",
-    price: {
-      value: Number(priceValue).toFixed(2),
-      currency: MERCHANT_CURRENCY,
+    feedLabel: MERCHANT_FEED_LABEL,
+    productAttributes: {
+      title: variant?.label ? `${name} - ${String(variant.label).trim()}` : name,
+      description: stripHtml(product?.shortInfo || product?.description || name),
+      link: productUrl,
+      imageLink: imageLink || undefined,
+      additionalImageLinks: additionalImageLinks.length ? additionalImageLinks : undefined,
+      availability: (() => {
+      if (typeof variant?.inStock === "boolean") return variant.inStock ? "in stock" : "out of stock";
+      const stockValue = variant?.stock;
+      const stock = Number(stockValue);
+      if (variant && stockValue !== undefined && stockValue !== null && stockValue !== "" && Number.isFinite(stock)) {
+        return stock > 0 ? "in stock" : "out of stock";
+      }
+      return product?.inStock === false ? "out of stock" : "in stock";
+      })() === "in stock" ? "IN_STOCK" : "OUT_OF_STOCK",
+      condition: "NEW",
+      price: {
+        amountMicros: String(Math.round(Number(priceValue) * 1_000_000)),
+        currencyCode: MERCHANT_CURRENCY,
+      },
+      brand: String(product?.brand || MERCHANT_BRAND_DEFAULT).trim() || MERCHANT_BRAND_DEFAULT,
     },
-    brand: String(product?.brand || MERCHANT_BRAND_DEFAULT).trim() || MERCHANT_BRAND_DEFAULT,
   };
+
+  if (variant) {
+    payload.productAttributes.itemGroupId = String(product?.id || "").trim();
+    if (variant?.label) {
+      payload.productAttributes.color = String(variant.label).trim();
+      payload.productAttributes.variantOptions = [{ name: "Color", value: String(variant.label).trim() }];
+    }
+  }
 
   const gtin = String(product?.gtin || "").trim();
   const mpn = String(product?.mpn || "").trim();
-  if (gtin) payload.gtin = gtin;
-  if (mpn) payload.mpn = mpn;
-  if (!gtin && !mpn) payload.identifierExists = false;
+  if (gtin) payload.productAttributes.gtins = [gtin];
+  if (mpn) payload.productAttributes.mpn = mpn;
+  if (!gtin && !mpn) payload.productAttributes.identifierExists = false;
 
   return payload;
 };
 
 const upsertMerchantProduct = async (product = {}) => {
-  const content = getMerchantContentClient();
-  if (!content) {
+  const authClient = await getMerchantApiAuthClient();
+  if (!authClient) {
     return { status: "skipped", reason: "merchant_api_not_configured", offerId: product?.id || null };
   }
+  const dataSourceName = await getMerchantDataSourceName(authClient);
+  if (!dataSourceName) {
+    return { status: "skipped", reason: "merchant_api_data_source_not_configured", offerId: product?.id || null };
+  }
 
-  const payload = mapProductToMerchantPayload(product);
-  if (!payload) {
+  const variants = product?.hasVariants && Array.isArray(product?.variants)
+    ? product.variants.filter((variant) => variant && (variant.id || variant.label))
+    : [];
+  const desiredOfferIds = variants.map((variant) => getMerchantVariantOfferId(product?.id, variant));
+  const payloads = variants.length
+    ? variants.map((variant) => mapProductToMerchantPayload(product, variant)).filter(Boolean)
+    : [mapProductToMerchantPayload(product)].filter(Boolean);
+  if (!payloads.length) {
     return { status: "skipped", reason: "product_not_eligible", offerId: product?.id || null };
   }
 
-  await content.products.insert({
-    merchantId: MERCHANT_CENTER_ACCOUNT_ID,
-    requestBody: payload,
-  });
+  for (const payload of payloads) {
+    await authClient.request({
+      url: `https://merchantapi.googleapis.com/products/v1/accounts/${encodeURIComponent(MERCHANT_CENTER_ACCOUNT_ID)}/productInputs:insert?dataSource=${encodeURIComponent(dataSourceName)}`,
+      method: "POST",
+      data: payload,
+    });
+  }
 
-  return { status: "upserted", offerId: payload.offerId };
+  const previousVariantOfferIds = Array.isArray(product?.merchantVariantOfferIds)
+    ? product.merchantVariantOfferIds.map((offerId) => String(offerId || "").trim()).filter(Boolean)
+    : [];
+  const obsoleteOfferIds = previousVariantOfferIds.filter((offerId) => !desiredOfferIds.includes(offerId));
+  for (const offerId of [...obsoleteOfferIds, ...(variants.length ? [String(product?.id || "").trim()] : [])]) {
+    if (offerId) await deleteMerchantProduct(offerId);
+  }
+
+  return {
+    status: "upserted",
+    offerId: product?.id || null,
+    offerIds: payloads.map((payload) => payload.offerId),
+    variantOfferIds: desiredOfferIds,
+  };
+};
+
+const deleteMerchantListingsForProduct = async (product = {}) => {
+  const offerIds = new Set([
+    String(product?.id || "").trim(),
+    ...(Array.isArray(product?.merchantVariantOfferIds) ? product.merchantVariantOfferIds : []),
+  ].map((offerId) => String(offerId || "").trim()).filter(Boolean));
+  const results = [];
+  for (const offerId of offerIds) results.push(await deleteMerchantProduct(offerId));
+  return results;
 };
 
 const deleteMerchantProduct = async (offerId = "") => {
-  const content = getMerchantContentClient();
   const cleanOfferId = String(offerId || "").trim();
-  if (!content || !cleanOfferId) {
+  if (!cleanOfferId) {
     return { status: "skipped", reason: "merchant_api_not_configured_or_missing_offer_id", offerId: cleanOfferId || null };
   }
 
   try {
-    await content.products.delete({
-      merchantId: MERCHANT_CENTER_ACCOUNT_ID,
-      productId: getMerchantProductId(cleanOfferId),
+    const authClient = await getMerchantApiAuthClient();
+    if (!authClient) {
+      return { status: "skipped", reason: "merchant_api_not_configured", offerId: cleanOfferId };
+    }
+    const dataSourceName = await getMerchantDataSourceName(authClient);
+    if (!dataSourceName) {
+      return { status: "skipped", reason: "merchant_api_data_source_not_configured", offerId: cleanOfferId };
+    }
+    const productInputName = getMerchantProductInputName(cleanOfferId);
+    await authClient.request({
+      url: `https://merchantapi.googleapis.com/products/v1/${productInputName}?dataSource=${encodeURIComponent(dataSourceName)}`,
+      method: "DELETE",
     });
     return { status: "deleted", offerId: cleanOfferId };
   } catch (err) {
@@ -2052,7 +2184,17 @@ const syncMerchantProductById = async (productId = "") => {
     return deleteMerchantProduct(cleanId);
   }
 
-  return upsertMerchantProduct({ id: doc.id, ...doc.data() });
+  const product = { id: doc.id, ...doc.data() };
+  if (product.isActive === false) {
+    const deletions = await deleteMerchantListingsForProduct(product);
+    return { status: "deleted", offerId: cleanId, deletedListings: deletions.length };
+  }
+
+  const result = await upsertMerchantProduct(product);
+  if (result.status === "upserted") {
+    await ref.update({ merchantVariantOfferIds: result.variantOfferIds || [] });
+  }
+  return result;
 };
 
 const syncAllProductsToMerchant = async () => {
@@ -2062,10 +2204,15 @@ const syncAllProductsToMerchant = async () => {
     const product = { id: doc.id, ...doc.data() };
     try {
       if (product?.isActive === false) {
-        results.push(await deleteMerchantProduct(doc.id));
+        const deletions = await deleteMerchantListingsForProduct(product);
+        results.push({ status: "deleted", offerId: doc.id, deletedListings: deletions.length });
         continue;
       }
-      results.push(await upsertMerchantProduct(product));
+      const result = await upsertMerchantProduct(product);
+      if (result.status === "upserted") {
+        await doc.ref.update({ merchantVariantOfferIds: result.variantOfferIds || [] });
+      }
+      results.push(result);
     } catch (error) {
       const summary = getMerchantErrorSummary(error);
       console.error(`MERCHANT BULK SYNC ITEM FAILED (${doc.id}):`, summary);
@@ -3356,7 +3503,11 @@ app.delete("/api/products/:id", async (req, res) => {
     let merchantSync = { status: "disabled", reason: "auto_sync_disabled" };
     if (MERCHANT_SYNC_AUTO) {
       try {
-        merchantSync = await deleteMerchantProduct(req.params.id);
+        merchantSync = {
+          status: "deleted",
+          offerId: String(req.params.id || "").trim(),
+          deletedListings: (await deleteMerchantListingsForProduct({ id: productRef.id, ...deletedData })).length,
+        };
       } catch (err) {
         merchantSync = { status: "error", ...getMerchantErrorSummary(err) };
         console.error("MERCHANT AUTO SYNC (DELETE) FAILED:", merchantSync);
@@ -5795,8 +5946,9 @@ app.get("/api/merchant/sync-status", async (req, res) => {
     autoSyncEnabled: MERCHANT_SYNC_AUTO,
     merchantId: MERCHANT_CENTER_ACCOUNT_ID || null,
     targetCountry: MERCHANT_TARGET_COUNTRY,
+    feedLabel: MERCHANT_FEED_LABEL,
     contentLanguage: MERCHANT_CONTENT_LANGUAGE,
-    channel: MERCHANT_CHANNEL,
+    apiVersion: "Merchant API v1",
     currency: MERCHANT_CURRENCY,
   });
 });
@@ -5809,6 +5961,14 @@ app.post("/api/merchant/sync-products", async (req, res) => {
     if (!isMerchantConfigured()) {
       return res.status(400).json({
         error: "Merchant API is not configured. Set GOOGLE_MERCHANT_ID / GOOGLE_MERCHANT_CLIENT_EMAIL / GOOGLE_MERCHANT_PRIVATE_KEY.",
+      });
+    }
+
+    const authClient = await getMerchantApiAuthClient();
+    const dataSourceName = await getMerchantDataSourceName(authClient);
+    if (!dataSourceName) {
+      return res.status(400).json({
+        error: "No matching Merchant API primary data source was found. Set GOOGLE_MERCHANT_DATA_SOURCE_ID or GOOGLE_MERCHANT_DATA_SOURCE_NAME.",
       });
     }
 
@@ -5831,6 +5991,14 @@ app.post("/api/merchant/sync-products/:id", async (req, res) => {
     if (!isMerchantConfigured()) {
       return res.status(400).json({
         error: "Merchant API is not configured. Set GOOGLE_MERCHANT_ID / GOOGLE_MERCHANT_CLIENT_EMAIL / GOOGLE_MERCHANT_PRIVATE_KEY.",
+      });
+    }
+
+    const authClient = await getMerchantApiAuthClient();
+    const dataSourceName = await getMerchantDataSourceName(authClient);
+    if (!dataSourceName) {
+      return res.status(400).json({
+        error: "No matching Merchant API primary data source was found. Set GOOGLE_MERCHANT_DATA_SOURCE_ID or GOOGLE_MERCHANT_DATA_SOURCE_NAME.",
       });
     }
 

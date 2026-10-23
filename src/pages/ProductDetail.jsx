@@ -4399,18 +4399,19 @@ const ProductDetail = () => {
     () => getProductVariantName(product, activeVariant) || "",
     [product, activeVariant]
   );
+  const hasSelectedVariantUrl = Boolean(searchParams.get("variant"));
   const seoProductTitle = product?.name
-    ? productSeoContent?.title || `${product.name}${activeVariantName ? ` - ${activeVariantName}` : ""} | Ilika`
+    ? `${productSeoContent?.title || product.name}${hasSelectedVariantUrl && activeVariantName ? ` - ${activeVariantName}` : ""}`
     : "Product Details | Ilika";
-  const seoProductDescription =
+  const seoProductDescriptionBase =
     String(product?.seoDescription || "").trim() ||
     productSeoContent?.description ||
-    (activeVariantName
-      ? `${String(product?.seoDescription || "").trim() || stripHtml(product?.shortInfo) || stripHtml(product?.description) || "Explore product details, benefits, pricing, and offers on Ilika."} Variant: ${activeVariantName}.`
-      : "") ||
     stripHtml(product?.shortInfo) ||
     stripHtml(product?.description) ||
     "Explore product details, benefits, pricing, and offers on Ilika.";
+  const seoProductDescription = hasSelectedVariantUrl && activeVariantName
+    ? `${seoProductDescriptionBase} Available in ${activeVariantName}.`
+    : seoProductDescriptionBase;
   const seoProductImage =
     images?.[0] || product?.imageUrl || product?.image || "https://ilika.in/Images/logo2.webp";
   const canonicalBasePath = canonicalProductSlug
@@ -4422,7 +4423,10 @@ const ProductDetail = () => {
     () => getVariantQueryValue(activeVariant),
     [activeVariant]
   );
-  const canonicalPath = canonicalBasePath;
+  const canonicalPath = hasSelectedVariantUrl
+    && activeVariantQueryValue
+    ? `${canonicalBasePath}?variant=${encodeURIComponent(activeVariantQueryValue)}`
+    : canonicalBasePath;
   const seoProductKeywords = useMemo(() => {
     const explicitKeywords = String(product?.seoKeywords || "").trim();
     if (explicitKeywords) {
@@ -4497,14 +4501,17 @@ const ProductDetail = () => {
       "@id": `${productUrlAbsolute}#product`,
       url: productUrlAbsolute,
       mainEntityOfPage: productUrlAbsolute,
-      name: productDisplayTitle,
+      name: activeVariant?.label
+        ? `${productDisplayTitle} - ${activeVariant.label}`
+        : productDisplayTitle,
       description: seoProductDescription,
       image: images?.length ? images.map((item) => toAbsoluteUrl(item)).filter(Boolean) : [toAbsoluteUrl(seoProductImage)],
       brand: {
         "@type": "Brand",
         name: "ilika",
       },
-      sku: String(merchant.sku || product?.sku || product?.id || product?._id || canonicalProductSlug || "").trim() || undefined,
+      sku: String(activeVariant?.sku || (activeVariant?.id ? `${merchant.sku || product?.sku || product?.id || product?._id || canonicalProductSlug}_${activeVariant.id}` : merchant.sku || product?.sku || product?.id || product?._id || canonicalProductSlug) || "").trim() || undefined,
+      color: activeVariant?.label || undefined,
       // Every product — including the hair dryer — gets a fully-formed
       // Offer. price/priceCurrency/availability are always present so
       // Google never has a reason to discard this block.

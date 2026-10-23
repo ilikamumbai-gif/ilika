@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { getProductDisplayPricing, getProductDisplayImage, getProductMerchantMetadata, getProductVariantAvailability } from "../src/utils/productPricing.js";
+import { getProductDisplayPricing, getProductDisplayImage, getProductMerchantMetadata, getProductVariantAvailability, getVariantQueryValue } from "../src/utils/productPricing.js";
 import { buildProductReviewSchema, getProductReviews } from "../src/utils/productReviews.js";
 import { getCanonicalProductSlugAlias, getProductSeoContent } from "../src/data/productSeoContent.js";
 
@@ -134,6 +134,16 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
   const reviews = buildProductReviewSchema(getProductReviews(product));
   const details = String(product?.description || product?.shortInfo || "").trim();
   const category = escapeHtml(String(product?.categoryName || product?.category || "Beauty and personal care"));
+  const variants = Array.isArray(product?.variants) ? product.variants : [];
+  const variantLinks = variants
+    .map((variant) => {
+      const queryValue = getVariantQueryValue(variant);
+      const label = String(variant?.label || "").trim();
+      if (!queryValue || !label) return "";
+      return `<li><a href="${escapeHtml(canonicalUrl)}?variant=${encodeURIComponent(queryValue)}">${escapeHtml(name)} - ${escapeHtml(label)}</a></li>`;
+    })
+    .filter(Boolean)
+    .join("");
   const priceMarkup = price > 0 ? `<p><strong>Price:</strong> ₹${escapeHtml(price.toLocaleString("en-IN"))}${hasDiscount ? ` (MRP ₹${escapeHtml(compareAtPrice.toLocaleString("en-IN"))})` : ""}</p>` : "";
 
   return `<main id="prerendered-content" data-prerendered="product">
@@ -146,6 +156,7 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
     ${reviews.length ? `<section id="reviews"><h2>Customer reviews</h2>${reviews.map((review) => `<article><h3>${escapeHtml(review.author.name)}</h3><p>${review.reviewRating.ratingValue}/5${review.datePublished ? ` · <time datetime="${review.datePublished}">${review.datePublished}</time>` : ""}</p><p>${escapeHtml(review.reviewBody)}</p></article>`).join("")}</section>` : ""}
     <p><strong>Category:</strong> ${category}</p>
     ${details ? `<section><h2>Product details</h2>${details}</section>` : ""}
+    ${variantLinks ? `<section><h2>Available variants</h2><ul>${variantLinks}</ul></section>` : ""}
     ${faqs.length ? `<section id="faq"><h2>Frequently Asked Questions</h2>${faqs.map((faq) => `<div class="faq-item"><h3>${escapeHtml(faq.question)}</h3><p>${escapeHtml(faq.answer)}</p></div>`).join("")}</section>` : ""}
     <p><a href="${escapeHtml(canonicalUrl)}">View ${name}</a></p>
   </article>

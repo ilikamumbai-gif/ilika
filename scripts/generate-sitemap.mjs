@@ -2,6 +2,7 @@ import { getConsolidatedBlogPath } from "../src/data/blogConsolidation.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { getCanonicalProductSlugAlias } from "../src/data/productSeoContent.js";
+import { getVariantQueryValue } from "../src/utils/productPricing.js";
 import {
   STATIC_BLOGS,
 } from "../src/data/privateBlogs.js";
@@ -416,12 +417,23 @@ async function main() {
               );
               return [];
             }
-            return [{
+            const basePage = {
               loc: `/product/${productUrl}`,
               priority: "0.8",
               changefreq: "weekly",
               lastmod: toIsoDate(p.updatedAt || p.createdAt, today),
-            }];
+            };
+            const variantPages = Array.isArray(p?.variants)
+              ? p.variants
+                  .map((variant) => getVariantQueryValue(variant))
+                  .filter(Boolean)
+                  .map((variant) => ({
+                    ...basePage,
+                    loc: `${basePage.loc}?variant=${encodeURIComponent(variant)}`,
+                    priority: "0.7",
+                  }))
+              : [];
+            return [basePage, ...variantPages];
           }),
     }),
     fetchResource({

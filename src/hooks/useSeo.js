@@ -31,7 +31,9 @@ const buildCanonicalUrl = (canonical, path = "/") => {
   try {
     const parsed = new URL(trimmedValue, SITE_URL);
     parsed.hash = "";
+    const variant = parsed.searchParams.get("variant");
     parsed.search = "";
+    if (variant) parsed.searchParams.set("variant", variant);
 
     for (const key of Array.from(parsed.searchParams.keys())) {
       if (TRACKING_PARAM_NAMES.has(key)) {
@@ -39,7 +41,6 @@ const buildCanonicalUrl = (canonical, path = "/") => {
       }
     }
 
-    parsed.search = "";
     return parsed.toString();
   } catch {
     const normalizedPath = trimmedValue.split(/[?#]/)[0] || "/";

@@ -32,7 +32,11 @@ async function verifyPage({ distDir, url, type }) {
   if (canonicalTags.length !== 1) throw new Error(`Expected one canonical tag, found ${canonicalTags.length}: ${url}`);
   if (descriptionTags.length !== 1) throw new Error(`Expected one meta description, found ${descriptionTags.length}: ${url}`);
   if (!title || !description) throw new Error(`Missing title or description: ${url}`);
-  if (canonical !== url) throw new Error(`Canonical is not self-referencing: ${url} -> ${canonical || "(missing)"}`);
+  const expectedCanonical = new URL(url);
+  // Product variant URLs share the prerendered pathname HTML; the product
+  // page hydration sets the variant query as its self canonical.
+  expectedCanonical.search = "";
+  if (canonical !== expectedCanonical.toString()) throw new Error(`Incorrect prerendered canonical: ${url} -> ${canonical || "(missing)"}`);
   for (const [attribute, key, expected] of [["property", "og:title", title], ["property", "og:description", description], ["name", "twitter:title", title], ["name", "twitter:description", description]]) {
     const value = html.match(new RegExp(`<meta\\s+${attribute}="${key}"\\s+content="([^"]*)"`))?.[1] || "";
     if (decode(value).trim() !== expected.trim()) throw new Error(`Incorrect ${key}: ${url}`);
