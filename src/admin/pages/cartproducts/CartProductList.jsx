@@ -1,13 +1,24 @@
-import React, { useState } from "react";
-import { Eye, Search, ShoppingCart } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Bell, Eye, Search, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useCartEvents } from "../../context/CartEventContext";
+import { getApiUrl } from "../../../utils/api";
 
 const CartProductList = () => {
   const { events } = useCartEvents();
   const navigate   = useNavigate();
   const [search, setSearch] = useState("");
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    fetch(getApiUrl("/api/notify-requests"))
+      .then((response) => response.ok ? response.json() : [])
+      .then((data) => { if (active) setNotifications(Array.isArray(data) ? data : []); })
+      .catch(() => { if (active) setNotifications([]); });
+    return () => { active = false; };
+  }, []);
 
   const getEventCreatedAtMs = (event) => {
     const createdAt = event?.createdAt;
@@ -21,16 +32,32 @@ const CartProductList = () => {
     return Number.isNaN(parsed) ? 0 : parsed;
   };
 
-  // Group events by productId, count how many times each was added
+  // Combine cart activity and back-in-stock signups by product.
   const productMap = {};
   events.forEach(e => {
     if (!productMap[e.productId]) {
-      productMap[e.productId] = { ...e, count: 0, latestAt: getEventCreatedAtMs(e) };
+      productMap[e.productId] = { ...e, cartCount: 0, notifyCount: 0, latestAt: getEventCreatedAtMs(e) };
     }
-    productMap[e.productId].count++;
+    productMap[e.productId].cartCount++;
     productMap[e.productId].latestAt = Math.max(productMap[e.productId].latestAt, getEventCreatedAtMs(e));
   });
-  const products = Object.values(productMap).sort((a, b) => b.latestAt - a.latestAt || b.count - a.count);
+  notifications.forEach((notification) => {
+    const id = String(notification.productId || "");
+    if (!id) return;
+    if (!productMap[id]) {
+      productMap[id] = {
+        productId: id,
+        name: notification.productName || "Product",
+        price: "-",
+        cartCount: 0,
+        notifyCount: 0,
+        latestAt: getEventCreatedAtMs(notification),
+      };
+    }
+    productMap[id].notifyCount++;
+    productMap[id].latestAt = Math.max(productMap[id].latestAt, getEventCreatedAtMs(notification));
+  });
+  const products = Object.values(productMap).sort((a, b) => b.latestAt - a.latestAt || (b.cartCount + b.notifyCount) - (a.cartCount + a.notifyCount));
 
   const filtered = products.filter(p =>
     !search || p.name?.toLowerCase().includes(search.toLowerCase())
@@ -41,7 +68,7 @@ const CartProductList = () => {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Cart Interest</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{products.length} products added to carts · {events.length} total events</p>
+          <p className="text-sm text-gray-400 mt-0.5">{products.length} products · {events.length} cart events · {notifications.length} notify requests</p>
         </div>
       </div>
 
@@ -61,7 +88,7 @@ const CartProductList = () => {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-300">
             <ShoppingCart size={40} className="mb-3" />
-            <p className="text-sm">No cart activity yet</p>
+            <p className="text-sm">No product interest yet</p>
           </div>
         ) : (
           <>
@@ -70,7 +97,7 @@ const CartProductList = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F0F0F0" }}>
-                    {["#", "Product", "Price", "Added to Cart", "View"].map(h => (
+                    {["#", "Product", "Price", "Added to Cart", "Notify Me", "View"].map(h => (
                       <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "#888" }}>{h}</th>
                     ))}
                   </tr>
@@ -95,7 +122,12 @@ const CartProductList = () => {
                       <td className="px-5 py-4 font-bold text-gray-900">₹{p.price}</td>
                       <td className="px-5 py-4">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-pink-50 text-pink-700 border border-pink-200">
-                          <ShoppingCart size={11} /> {p.count}×
+                          <ShoppingCart size={11} /> {p.cartCount}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700">
+                          <Bell size={11} /> {p.notifyCount}
                         </span>
                       </td>
                       <td className="px-5 py-4">
@@ -125,7 +157,8 @@ const CartProductList = () => {
                     <p className="font-semibold text-gray-800 truncate">{p.name}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-sm font-bold text-gray-900">₹{p.price}</span>
-                      <span className="text-xs font-bold text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full">{p.count}× added</span>
+                      <span className="text-xs font-bold text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full">{p.cartCount} added</span>
+                      <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">{p.notifyCount} notify</span>
                     </div>
                   </div>
                   <button onClick={() => navigate(`/admin/cart-products/${p.productId}`)}

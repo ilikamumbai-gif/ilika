@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useCartEvents } from "../../context/CartEventContext";
@@ -10,6 +10,7 @@ import {
   getRecordDisplayName,
   getRecordDisplayPhone,
 } from "../../Utils/customerConnections";
+import { getApiUrl } from "../../../utils/api";
 
 const formatDate = (date) => {
   if (!date) return "-";
@@ -33,22 +34,42 @@ const CartProductDetailConnected = () => {
   const { events } = useCartEvents();
   const { users } = useUsers();
   const { orders } = useOrders();
+  const [notifications, setNotifications] = useState([]);
 
-  const filtered = events.filter(
+  useEffect(() => {
+    let active = true;
+    fetch(getApiUrl("/api/notify-requests"))
+      .then((response) => response.ok ? response.json() : [])
+      .then((data) => { if (active) setNotifications(Array.isArray(data) ? data : []); })
+      .catch(() => { if (active) setNotifications([]); });
+    return () => { active = false; };
+  }, []);
+
+  const cartEvents = events.filter(
     (event) => String(event.productId || "") === String(productId || "")
   );
+  const notifyEvents = notifications.filter(
+    (event) => String(event.productId || "") === String(productId || "")
+  );
+  const filtered = [
+    ...cartEvents.map((event) => ({ ...event, interestType: "Cart activity" })),
+    ...notifyEvents.map((event) => ({ ...event, interestType: "Back-in-stock signup" })),
+  ].sort((a, b) => {
+    const timestamp = (date) => date?._seconds ? date._seconds * 1000 : new Date(date || 0).getTime();
+    return timestamp(b.createdAt) - timestamp(a.createdAt);
+  });
 
   if (filtered.length === 0) {
     return (
       <AdminLayout>
         <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-10 text-center text-gray-400">
-          No cart activity found for this product.
+            No product interest found for this product.
         </div>
       </AdminLayout>
     );
   }
 
-  const product = filtered[0];
+  const product = cartEvents[0] || filtered[0];
 
   return (
     <AdminLayout>
@@ -72,6 +93,7 @@ const CartProductDetailConnected = () => {
             <p className="mt-1 font-bold text-gray-900">₹{product.price}</p>
             <p className="mt-2 text-sm text-gray-500">
               Total Events: <b>{filtered.length}</b>
+              <span className="ml-3 text-gray-500">Cart: {cartEvents.length} · Notify me: {notifyEvents.length}</span>
             </p>
           </div>
         </div>
@@ -81,6 +103,7 @@ const CartProductDetailConnected = () => {
             <thead className="border-b bg-gray-50">
               <tr>
                 <th className="p-3 text-left">Customer</th>
+                <th className="p-3 text-left">Interest</th>
                 <th className="p-3 text-left">Email</th>
                 <th className="p-3 text-left">Phone</th>
                 <th className="p-3 text-left">Latest Order</th>
@@ -96,7 +119,7 @@ const CartProductDetailConnected = () => {
                     if (matchedUser) {
                       return String(order.userId || "") === String(matchedUser.id || matchedUser.uid || "") || String(order.userEmail || "").toLowerCase() === String(matchedUser.email || "").toLowerCase();
                     }
-                    return String(order.userEmail || "").toLowerCase() === String(event.userEmail || "").toLowerCase();
+                    return String(order.userEmail || "").toLowerCase() === String(event.email || event.userEmail || "").toLowerCase();
                   })
                   .sort((a, b) => new Date(b.createdAt?._seconds ? b.createdAt._seconds * 1000 : b.createdAt || 0) - new Date(a.createdAt?._seconds ? a.createdAt._seconds * 1000 : a.createdAt || 0));
                 const latestOrder = matchedOrders[0] || null;
@@ -112,8 +135,14 @@ const CartProductDetailConnected = () => {
                         <span className="font-semibold text-gray-800">{getRecordDisplayName(event)}</span>
                       )}
                     </td>
+                    <td className="p-3">
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${event.interestType === "Back-in-stock signup" ? "bg-amber-50 text-amber-700" : "bg-pink-50 text-pink-700"}`}>
+                        {event.interestType}
+                      </span>
+                      {event.variantName && <p className="mt-1 text-xs text-gray-500">{event.variantName}</p>}
+                    </td>
                     <td className="p-3">{matchedUser?.email || getRecordDisplayEmail(event)}</td>
-                    <td className="p-3">{matchedUser?.phone || getRecordDisplayPhone(latestOrder) || "-"}</td>
+                    <td className="p-3">{matchedUser?.phone || event.phone || getRecordDisplayPhone(latestOrder) || "-"}</td>
                     <td className="p-3">
                       {latestOrder ? (
                         <button onClick={() => navigate(`/admin/orders/${latestOrder.id}`)} className="text-pink-600 hover:underline">
