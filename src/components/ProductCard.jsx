@@ -1,12 +1,11 @@
-import React from "react";
-import { auth } from "../firebase/firebaseConfig";
-import { toast } from "react-hot-toast";
+import React, { useState } from "react";
 import { FiBell } from "react-icons/fi";
 import { FiShoppingCart } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
 import { getProductSlug } from "../utils/slugify";
 import OptimizedImage from "./OptimizedImage";
+import NotifyMeModal from "./NotifyMeModal";
 import {
   buildCartProductSnapshot,
   getDefaultVariant,
@@ -25,6 +24,7 @@ const ProductCard = ({
   cartMetadata = null,
 }) => {
   const { addToCart } = useCart();
+  const [notifyOpen, setNotifyOpen] = useState(false);
   const slug = getProductSlug(product);
   const productId = product._id || product.id;
 
@@ -64,69 +64,12 @@ const ProductCard = ({
     ? `Extra ${couponPercent}% OFF with ${couponCode}`
     : "";
 
-  const showNotifyToast = (message, type = "success") => {
-    const styles = {
-      success: {
-        bg: "from-[#77fcc1] to-[#c1f7e2]",
-        border: "border-[#cce3d9]",
-        iconBg: "bg-[#2f6f57]/15",
-        iconColor: "text-[#2f6f57]",
-      },
-      error: {
-        bg: "from-[#fc7c7c] to-[#ffbaba]",
-        border: "border-[#f5caca]",
-        iconBg: "bg-[#b84a4a]/15",
-        iconColor: "text-[#b84a4a]",
-      },
-    };
-
-    const s = styles[type];
-
-    toast.dismiss();
-
-    toast.custom(() => (
-      <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl w-[300px]
-      bg-gradient-to-r ${s.bg}
-      shadow-xl border ${s.border}`}>
-        <div className={`w-10 h-10 flex items-center justify-center rounded-full
-        ${s.iconBg} ${s.iconColor}`}>
-          <FiBell size={18} />
-        </div>
-        <p className="text-sm font-semibold text-gray-800">{message}</p>
-      </div>
-    ));
-  };
-
-  const handleNotifyMe = async (currentProduct) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/notify`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            productId: currentProduct._id || currentProduct.id,
-            productName: currentProduct.name,
-            userId: auth.currentUser?.uid || null,
-            email: auth.currentUser?.email || null,
-          }),
-        }
-      );
-
-      if (!res.ok) throw new Error();
-      showNotifyToast("You'll be notified when it's back in stock!", "success");
-    } catch (err) {
-      console.error(err);
-      showNotifyToast("Failed to subscribe. Try again!", "error");
-    }
-  };
-
   const handleCartClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (!product.inStock) {
-      handleNotifyMe(product);
+      setNotifyOpen(true);
       return;
     }
 
@@ -244,6 +187,7 @@ const ProductCard = ({
 
         </article>
       </Link>
+      <NotifyMeModal isOpen={notifyOpen} onClose={() => setNotifyOpen(false)} product={product} variant={defaultVariant} />
     </div>
   );
 };

@@ -64,7 +64,8 @@ const NotificationDetailConnected = () => {
               <thead>
                 <tr className="border-b bg-gray-50">
                   <th className="px-4 py-3 text-left">Customer</th>
-                  <th className="px-4 py-3 text-left">Email</th>
+                  <th className="px-4 py-3 text-left">Contact</th>
+                  <th className="px-4 py-3 text-left">Variant</th>
                   <th className="px-4 py-3 text-left">Orders</th>
                   <th className="px-4 py-3 text-left">Date</th>
                 </tr>
@@ -90,7 +91,8 @@ const NotificationDetailConnected = () => {
                           <span className="font-medium text-gray-800">{entry.userId || "Guest"}</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">{matchedUser?.email || getRecordDisplayEmail(entry)}</td>
+                      <td className="px-4 py-3">{matchedUser?.email || entry.email || entry.phone || getRecordDisplayEmail(entry) || "-"}</td>
+                      <td className="px-4 py-3">{entry.variantName || "-"}</td>
                       <td className="px-4 py-3">{orderCount}</td>
                       <td className="px-4 py-3">{formatDate(entry.createdAt)}</td>
                     </tr>

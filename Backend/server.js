@@ -6302,17 +6302,29 @@ app.put("/api/admins/:id/permissions", async (req, res) => {
 /* ================== NOTIFY WHEN BACK ================== */
 app.post("/api/notify", async (req, res) => {
   try {
-    const { productId, productName, userId, email } = req.body;
+    const { productId, productName, userId, email, phone, variantId, variantName } = req.body;
 
     if (!productId) {
       return res.status(400).json({ error: "Product ID required" });
     }
 
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedPhone = String(phone || "").trim();
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
+    const phoneDigits = normalizedPhone.replace(/\D/g, "");
+    const validPhone = phoneDigits.length >= 10 && phoneDigits.length <= 15;
+    if (!validEmail && !validPhone) {
+      return res.status(400).json({ error: "A valid email or phone number is required" });
+    }
+
     const docRef = await db.collection("notifications").add({
-      productId,
-      productName: productName || "",
+      productId: String(productId),
+      productName: String(productName || "").slice(0, 250),
+      variantId: variantId ? String(variantId).slice(0, 120) : null,
+      variantName: variantName ? String(variantName).slice(0, 160) : null,
       userId: userId || null,
-      email: email || null,
+      email: validEmail ? normalizedEmail : null,
+      phone: validPhone ? normalizedPhone : null,
       status: "pending",
       createdAt: new Date(),
     });

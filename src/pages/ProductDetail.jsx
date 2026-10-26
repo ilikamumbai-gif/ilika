@@ -21,9 +21,9 @@ import {
   Wallet, Sun, Moon, Zap, Activity, Briefcase
 } from "lucide-react";
 import ProductCard from "../components/ProductCard";
+import NotifyMeModal from "../components/NotifyMeModal";
 import Lazy360ViewButton from "../components/product/Lazy360ViewButton";
 import { toast } from "react-hot-toast";
-import { FiBell } from "react-icons/fi";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 import { buildProductReviewSchema, getProductReviews } from "../utils/productReviews";
@@ -2859,6 +2859,7 @@ const ProductDetail = () => {
   const { addToCart, closeCart, cartItems } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
+  const [notifyModalOpen, setNotifyModalOpen] = useState(false);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -2926,84 +2927,7 @@ const ProductDetail = () => {
   );
 
 
-  // =======================================================
-  // Toast For Notification 
-  // =======================================================
-
-  const showNotifyToast = (message, type = "success") => {
-    const styles = {
-      success: {
-        bg: "from-[#77fcc1] to-[#c1f7e2]",
-        border: "border-[#cce3d9]",
-        iconBg: "bg-[#2f6f57]/15",
-        iconColor: "text-[#2f6f57]",
-      },
-      error: {
-        bg: "from-[#fc7c7c] to-[#ffbaba]",
-        border: "border-[#f5caca]",
-        iconBg: "bg-[#b84a4a]/15",
-        iconColor: "text-[#b84a4a]",
-      },
-    };
-
-    const s = styles[type];
-
-    toast.dismiss();
-
-    toast.custom(() => (
-      <div
-        className={`flex items-center gap-3 px-4 py-3 rounded-2xl w-[300px]
-      bg-gradient-to-r ${s.bg}
-      shadow-xl border ${s.border}`}
-      >
-        <div
-          className={`w-10 h-10 flex items-center justify-center rounded-full
-        ${s.iconBg} ${s.iconColor}`}
-        >
-          <FiBell size={18} />
-        </div>
-
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-gray-800">
-            {message}
-          </p>
-        </div>
-      </div>
-    ));
-  };
-
-  // =====================================================
-  // Notification - OUT OF STOCK
-  // =====================================================
-  const handleNotifyMe = async (variant = activeVariant) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/notify`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            productId: product.id || product._id,
-            productName: product.name,
-            variantId: variant?.id || null,
-            variantName: variant?.label || null,
-            userId: auth.currentUser?.uid || null,
-            email: auth.currentUser?.email || null,
-          }),
-        }
-      );
-
-      if (!res.ok) throw new Error();
-
-      showNotifyToast("Youâ€™ll be notified when it's back in stock!", "success");
-
-    } catch (err) {
-      console.error(err);
-      showNotifyToast("Failed to subscribe. Try again!", "error");
-    }
-  };
+  const handleNotifyMe = () => setNotifyModalOpen(true);
 
 
 
@@ -6336,6 +6260,7 @@ const ProductDetail = () => {
         <div id="footer-trigger" />
         <Footer />
       </div>
+      <NotifyMeModal isOpen={notifyModalOpen} onClose={() => setNotifyModalOpen(false)} product={product} variant={activeVariant} />
     </>
   );
 };
