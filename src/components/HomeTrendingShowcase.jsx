@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { useProducts } from "../admin/context/ProductContext";
 import HomeProductCard from "./HomeProductCard";
+import { getProductSlug } from "../utils/slugify";
 
 const HomeTrendingShowcase = ({
   categoryId,
   priorityNames = [],
+  prioritySlugs = [],
   limit = 3,
   modelImage = "/Homepage/homepagetrending.png",
   viewAllTo = "/newarrival",
@@ -26,18 +28,19 @@ const HomeTrendingShowcase = ({
       );
     }
 
-    if (priorityNames.length > 0) {
-      const priorityItems = priorityNames
-        .map((name) => filteredProducts.find((item) => item.name === name))
-        .filter(Boolean);
+    if (prioritySlugs.length > 0 || priorityNames.length > 0) {
+      const priorityItems = [...new Set([
+        ...prioritySlugs.map((slug) => filteredProducts.find((item) => getProductSlug(item) === slug)),
+        ...priorityNames.map((name) => filteredProducts.find((item) => item.name === name)),
+      ].filter(Boolean))];
       const restItems = filteredProducts.filter(
-        (item) => !priorityNames.includes(item.name)
+        (item) => !priorityItems.includes(item)
       );
       filteredProducts = [...priorityItems, ...restItems];
     }
 
     return filteredProducts.slice(0, limit);
-  }, [categoryId, limit, priorityNames, products]);
+  }, [categoryId, limit, priorityNames, prioritySlugs, products]);
 
   const visibleDesktopProducts = featuredProducts.slice(0, Math.min(3, featuredProducts.length || 0));
 

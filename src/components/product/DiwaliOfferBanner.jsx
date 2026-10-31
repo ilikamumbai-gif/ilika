@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Gift, Sparkles } from "lucide-react";
 import "./DiwaliOfferBanner.css";
 
@@ -16,6 +16,15 @@ const BannerCracker = ({ index }) => (
 
 export default function DiwaliOfferBanner({ isNonVoiceMaskMaker }) {
   const bannerRef = useRef(null);
+  const [celebration, setCelebration] = useState(0);
+  useEffect(() => {
+    const celebrate = () => {
+      if (bannerRef.current?.dataset.visible !== "true" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      setCelebration((current) => current + 1);
+    };
+    document.addEventListener("ilika:purchase-celebration", celebrate);
+    return () => document.removeEventListener("ilika:purchase-celebration", celebrate);
+  }, []);
   useEffect(() => {
     const banner = bannerRef.current;
     if (!banner) return undefined;
@@ -38,8 +47,8 @@ export default function DiwaliOfferBanner({ isNonVoiceMaskMaker }) {
         </span>
         <span className="h-px flex-1 bg-[#e8cf9b]" />
       </div>
-      <div className={`diwali-offer-gift relative flex min-h-[108px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border px-3 py-4 shadow-sm sm:gap-4 sm:px-4 ${isNonVoiceMaskMaker ? "border-[#55a9c1] bg-gradient-to-br from-[#197d9b] to-[#36a6bd]" : "border-[#4a9a73] bg-gradient-to-br from-[#23845c] to-[#43aa77]"}`}>
-        <span className="diwali-offer-icon relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 bg-white/15 text-[#ffe7ae] sm:h-12 sm:w-12"><Gift size={21} /></span>
+      <div className="diwali-offer-gift relative flex min-h-[108px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#d5ad6c] bg-[linear-gradient(120deg,#451125_0%,#74223d_55%,#8c3650_100%)] px-3 py-4 shadow-sm sm:gap-4 sm:px-4">
+        <span className="diwali-offer-icon relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#e5c28b]/40 bg-[#f6dbaa]/10 text-[#ffe7ae] sm:h-12 sm:w-12"><Gift size={21} /></span>
         <div className="relative z-10 min-w-0 flex-1">
           <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#ffe7ae] sm:text-[10px]">Your Diwali gift</p>
           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -50,7 +59,7 @@ export default function DiwaliOfferBanner({ isNonVoiceMaskMaker }) {
         </div>
         <div className="diwali-banner-decoration relative z-10 h-24 w-14 shrink-0 sm:w-28" aria-hidden="true">
           {[0, 1, 2].map((index) => <BannerCracker key={index} index={index} />)}
-        <svg viewBox="0 0 72 86" className="absolute bottom-0 right-0 h-16 w-12 sm:right-4 sm:h-20 sm:w-16" fill="none" aria-hidden="true">
+        <svg viewBox="0 0 72 86" className="diwali-diya absolute bottom-0 right-0 h-16 w-12 sm:right-4 sm:h-20 sm:w-16" fill="none" aria-hidden="true">
           <path d="M36 5c-1 12-14 17-14 30a14 14 0 0 0 28 0C50 22 40 17 36 5Z" fill="#f8c65b" />
           <path d="M36 24c-1 7-7 10-7 16a7 7 0 0 0 14 0c0-6-5-10-7-16Z" fill="#fff1bb" />
           <ellipse cx="36" cy="57" rx="29" ry="7" fill="#ffe5a0" />
@@ -60,6 +69,7 @@ export default function DiwaliOfferBanner({ isNonVoiceMaskMaker }) {
         </svg>
         </div>
         <span className="diwali-offer-light" aria-hidden="true" />
+        {celebration > 0 && <span key={celebration} className="diwali-purchase-sheen" aria-hidden="true" onAnimationEnd={() => setCelebration(0)} />}
       </div>
     </div>
   );

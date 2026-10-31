@@ -258,8 +258,11 @@ const NonvoiceMaskMakerLanding = () => {
 
           <div className="mask-maker-hero-media relative mx-auto flex w-full max-w-[470px] items-center justify-center">
             <div className="absolute left-1/2 top-1/2 h-[290px] w-[290px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(184,113,97,0.16)] bg-[rgba(184,113,97,0.08)] sm:h-[360px] sm:w-[360px] lg:h-[430px] lg:w-[430px]" />
-            <div className="relative z-[3] aspect-square w-full max-w-[470px] overflow-hidden rounded-[18px] border border-[#d6a445] bg-white shadow-[0_14px_30px_rgba(125,80,66,0.14)]">
+            <div className="relative z-[3] aspect-[5/7] w-full max-w-[470px] overflow-hidden rounded-[18px] border border-[#d6a445] bg-white shadow-[0_14px_30px_rgba(125,80,66,0.14)] sm:aspect-square">
+              <picture className="block h-full w-full">
+                <source media="(max-width: 639px)" srcSet="/Homepage/nonvoice-mask-maker-mobile.webp" width={1060} height={1484} />
               <OptimizedImage priority src="/ProductBanners/nonvoice-mask-maker-diwali.webp" alt="Ilika Non-Voice Mask Maker Diwali Dhamaka offer: 25 g Hydra Gel free, 1 year warranty, free delivery, COD and secure payment" width={1254} height={1254} sizes="(max-width: 639px) 92vw, 470px" className="h-full w-full object-contain object-center" />
+              </picture>
             </div>
           </div>
         </div>

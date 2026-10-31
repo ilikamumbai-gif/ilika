@@ -9,21 +9,21 @@ import { getProductSlug } from "../utils/slugify";
 const OFFER_STORAGE_KEY = "ilika.groomingOffer.unlocked";
 const OFFER_SESSION_KEY = "ilika.groomingOffer.shown";
 let shownThisSession = false;
-const OFFER_NAME = "Grooming Appliances Special Offer";
+const OFFER_NAME = "Mask Maker Special Offers";
 const OFFER_SOURCE = "grooming_appliance_offer_popup";
-const COUPON_VALUE = "₹500+";
+const COUPON_VALUE = "Mask maker offers";
 
-const GROOMING_KEYWORDS = [
-  "ipl",
-  "laser hair removal",
-  "leafless hair dryer",
-  "bldc hair dryer",
-  "beauty bubble",
-  "blackhead remover",
-  "facial cleansing brush",
-  "mask maker machine",
-  "voice version face mask maker",
-  "high frequency therapy wand",
+const MASK_MAKER_OFFERS = [
+  {
+    slug: "voice-face-mask-maker",
+    name: "Voice Mask Maker",
+    gift: "8 collagen peptide tablets FREE",
+  },
+  {
+    slug: "non-voice-face-mask-maker",
+    name: "Non-Voice Mask Maker",
+    gift: "25 g Hydra Gel FREE",
+  },
 ];
 
 const normalizeIndianMobile = (value = "") => {
@@ -56,19 +56,17 @@ const markUnlockedState = () => {
 
 const normalizeCouponCode = (value = "") => String(value || "").trim().toUpperCase();
 
-const isGroomingProduct = (product = {}) => {
+const isMaskMakerProduct = (product = {}) => {
   const haystack = [
     product?.name,
     product?.productUrl,
     product?.slug,
-    product?.shortDescription,
-    product?.description,
   ]
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
 
-  return GROOMING_KEYWORDS.some((keyword) => haystack.includes(keyword));
+  return !haystack.includes("collagen") && /mask[\s-]*maker/.test(haystack);
 };
 
 const getAssignedCoupon = (product = {}) => {
@@ -117,7 +115,7 @@ const GroomingLeadOffer = ({
 
   const revealedCoupons = useMemo(() => {
     return activeProducts
-      .filter((product) => product?.isActive !== false && isGroomingProduct(product))
+      .filter((product) => product?.isActive !== false && isMaskMakerProduct(product))
       .map((product) => {
         const coupon = getAssignedCoupon(product);
         if (!coupon) return null;
@@ -258,8 +256,8 @@ const GroomingLeadOffer = ({
       setIsUnlocked(true);
       setSubmitMessage(
         payload?.duplicate
-          ? "Your ₹500+ coupon is already unlocked. The available offers are revealed below."
-          : "Your ₹500+ coupon is unlocked. The available offers are revealed below."
+          ? "Your mask maker offers are already unlocked. Available coupons are revealed below."
+          : "Your mask maker offers are unlocked. Available coupons are revealed below."
       );
       setMobileNumber(normalizedMobile);
 
@@ -292,15 +290,32 @@ const GroomingLeadOffer = ({
             <div className="px-6 pb-7 pt-7 sm:px-7">
               <div className="inline-flex items-center gap-2 rounded-full bg-[#fff1f6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b24074]">
                 <Gift size={14} />
-                Exclusive Offer
+                Mask Maker Offers
               </div>
 
               <h2 className="mt-4 text-[28px] font-semibold leading-tight text-[#111111]">
-                Unlock ₹500+ OFF on Premium Grooming Appliances
+                Exclusive Offers on Face Mask Makers
               </h2>
               <p className="mt-3 text-sm leading-6 text-[#5f5660]">
-                Enter your mobile number to reveal your exclusive discount and receive the coupon.
+                Enjoy a free gift with your mask maker. Enter your mobile number to reveal available coupon discounts.
               </p>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {MASK_MAKER_OFFERS.map((offer) => (
+                  <Link
+                    key={offer.slug}
+                    to={`/product/${offer.slug}`}
+                    onClick={closeAll}
+                    className="rounded-2xl border border-[#f0d7e1] bg-[#fff9fb] p-3 transition hover:bg-[#fff1f6]"
+                  >
+                    <p className="text-sm font-semibold text-[#111111]">{offer.name}</p>
+                    <p className="mt-1 text-sm font-semibold text-[#b24074]">{offer.gift}</p>
+                    <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#6b4256]">
+                      Shop offer <ExternalLink size={12} />
+                    </span>
+                  </Link>
+                ))}
+              </div>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                 <div>
@@ -371,7 +386,7 @@ const GroomingLeadOffer = ({
               </div>
 
               <h3 className="mt-4 text-2xl font-semibold leading-tight text-[#111111]">
-                Your exclusive coupon codes
+                Your mask maker coupon codes
               </h3>
               <p className="mt-2 text-sm leading-6 text-[#5f5660]">
                 Copy a coupon code below and open the product page. Hidden coupons work at checkout, and visible coupons also appear on their product pages.
@@ -420,7 +435,7 @@ const GroomingLeadOffer = ({
                   </div>
                 )) : (
                   <div className="rounded-2xl border border-[#f0d7e1] bg-[#fff9fb] p-4 text-sm text-[#5f5660]">
-                    No grooming coupons are assigned right now. Once you assign coupons to grooming products in admin, they will appear here.
+                    No additional mask maker coupons are available right now. Shop the mask makers to enjoy their free gift offers.
                   </div>
                 )}
               </div>

@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { X, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
+import DiwaliOfferBanner from "./product/DiwaliOfferBanner";
 import {
   getCartItemDisplayImage,
   getCartItemDisplayPricing,
@@ -12,6 +13,16 @@ import {
 const PREFERRED_PAYMENT_METHOD_KEY = "ilika_preferred_payment_method";
 
 const formatInr = (value = 0) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
+
+const getMaskMakerModel = (item) => {
+  if (item?.isCombo) return null;
+  const identifiers = [item?.productUrl, item?.slug, item?.name].filter(Boolean).join(" ").toLowerCase();
+  const productSlugs = [item?.productUrl, item?.slug].filter(Boolean);
+  if (productSlugs.some((slug) => slug === "non-voice-face-mask-maker")) return "non-voice";
+  if (productSlugs.some((slug) => slug === "voice-face-mask-maker")) return "voice";
+  if (/^\s*(?:ilika\s+)?collagen/i.test(item?.name || "") || /refill|tablet/.test(identifiers) || !/mask[\s-]*maker/.test(identifiers)) return null;
+  return /non[\s-]*voice/.test(identifiers) ? "non-voice" : "voice";
+};
 
 const CartDrawer = () => {
   const {
@@ -39,6 +50,13 @@ const CartDrawer = () => {
     0
   );
   const prepaidDiscount = Math.min(100, Math.max(0, prepaidEligibleTotal));
+  const maskMakerModels = [...new Set(cartItems.map(getMaskMakerModel).filter(Boolean))];
+  useEffect(() => {
+    if (!isCartOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [isCartOpen]);
   if (!isCartOpen) return null;
 
   const goToCheckout = (preferredPaymentMethod = "") => {
@@ -57,8 +75,8 @@ const CartDrawer = () => {
         onClick={closeCart}
       />
 
-      <div className="fixed top-0 right-0 h-full w-[90%] sm:w-[420px] bg-white text-neutral-900 z-50 shadow-xl flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b">
+      <div role="dialog" aria-modal="true" aria-label="Shopping cart" className="fixed top-0 right-0 h-dvh w-full max-w-[420px] bg-white text-neutral-900 z-50 shadow-xl flex flex-col">
+        <div className="flex shrink-0 items-center justify-between p-4 border-b">
           <h3 className="text-lg font-semibold">
             My Bag ({cartItems.length})
           </h3>
@@ -66,13 +84,13 @@ const CartDrawer = () => {
             type="button"
             onClick={closeCart}
             aria-label="Close shopping cart"
-            className="inline-flex items-center justify-center"
+            className="inline-flex h-11 w-11 items-center justify-center"
           >
             <X aria-hidden="true" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 space-y-4">
           {cartItems.length === 0 ? (
             <div className="text-center mt-10 space-y-3">
               <p className="text-gray-500">Your bag is empty</p>
@@ -92,18 +110,25 @@ const CartDrawer = () => {
               const itemImage = getCartItemDisplayImage(item);
               const itemPricing = getCartItemDisplayPricing(item);
               const variantName = getCartItemVariantName(item);
+              const maskMakerModel = getMaskMakerModel(item);
+              const includedGiftLabel = maskMakerModel
+                ? maskMakerModel === "non-voice" ? "25 g Hydra Gel FREE" : "8 collagen peptide tablets FREE"
+                : item.includedContents?.label;
 
               return (
-                <div key={item.id} className="flex gap-4 border-b pb-4">
+                <div key={item.id} className="flex gap-2 sm:gap-4 border-b pb-4">
                   <img
                     loading="lazy"
                     src={itemImage}
                     alt={item.name}
-                    className="w-16 h-16 object-contain rounded border bg-white"
+                    width={64}
+                    height={64}
+                    decoding="async"
+                    className="w-14 h-14 shrink-0 object-contain rounded border bg-white sm:w-16 sm:h-16"
                   />
 
-                  <div className="flex-1">
-                    <p className="font-medium">{item.name}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="break-words text-sm font-medium sm:text-base">{item.name}</p>
 
                     {variantName && (
                       <p className="text-xs text-gray-500 mt-[2px]">
@@ -113,6 +138,16 @@ const CartDrawer = () => {
                     {item.selectedAddOn?.label && (
                       <p className="text-xs text-emerald-700 mt-[2px]">
                         Add-on: {item.selectedAddOn.label}
+                      </p>
+                    )}
+                    {item.packContents?.label && (
+                      <p className="mt-[2px] text-xs font-medium text-emerald-700">
+                        Pack contents: {item.packContents.label}
+                      </p>
+                    )}
+                    {includedGiftLabel && (
+                      <p className="mt-[2px] text-xs font-semibold text-emerald-700">
+                        Included free: {includedGiftLabel}
                       </p>
                     )}
 
@@ -179,8 +214,10 @@ const CartDrawer = () => {
 
                     <div className="flex items-center gap-3 mt-2">
                       <button
+                        type="button"
+                        aria-label={`Decrease quantity of ${item.name}`}
                         onClick={() => decrementQty(item.id)}
-                        className="w-7 h-7 border rounded flex items-center justify-center"
+                        className="w-11 h-11 border rounded flex items-center justify-center"
                       >
                         <Minus size={14} />
                       </button>
@@ -190,24 +227,29 @@ const CartDrawer = () => {
                       </span>
 
                       <button
+                        type="button"
+                        aria-label={`Increase quantity of ${item.name}`}
                         onClick={() => incrementQty(item.id)}
-                        className="w-7 h-7 border rounded flex items-center justify-center"
+                        className="w-11 h-11 border rounded flex items-center justify-center"
                       >
                         <Plus size={14} />
                       </button>
                     </div>
                   </div>
 
-                  <p className="font-medium">
+                  <p className="shrink-0 text-sm font-medium sm:text-base">
                     {itemPricing.price * item.quantity}
                   </p>
                 </div>
               );
             })
           )}
+          {maskMakerModels.map((model) => (
+            <DiwaliOfferBanner key={model} isNonVoiceMaskMaker={model === "non-voice"} />
+          ))}
         </div>
 
-        <div className="p-4 border-t space-y-3">
+        <div className="shrink-0 p-3 sm:p-4 border-t space-y-3" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Subtotal</span>

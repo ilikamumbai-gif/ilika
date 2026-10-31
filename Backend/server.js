@@ -10,6 +10,7 @@ import { sendOrderEmailByType, triggerOrderEmailAutomation } from "./services/or
 import getOrderConfirmationEmail from "./emailTemplates/orderConfirmationEmail.js";
 import { getComboStockError } from "./services/comboStock.js";
 import { getPrepaidDiscount } from "./services/prepaidDiscount.js";
+import { createPreorderHandler } from "./services/preorderRequests.js";
 
 dotenv.config();
 const app = express();
@@ -6300,6 +6301,29 @@ app.put("/api/admins/:id/permissions", async (req, res) => {
 
 // =============================== NOtifictain  ================================
 /* ================== NOTIFY WHEN BACK ================== */
+app.post("/api/preorders", createPreorderHandler(db));
+
+app.get("/api/preorders", async (req, res) => {
+  try {
+    if (!await getRequesterAdmin(req)) return res.status(401).json({ error: "Unauthorized" });
+    const snapshot = await db.collection("preorders").orderBy("createdAt", "desc").get();
+    return res.json(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  } catch {
+    return res.status(500).json({ error: "Could not load pre-order requests." });
+  }
+});
+
+app.get("/api/preorders/:productId", async (req, res) => {
+  try {
+    if (!await getRequesterAdmin(req)) return res.status(401).json({ error: "Unauthorized" });
+    const snapshot = await db.collection("preorders").where("productId", "==", req.params.productId).get();
+    const users = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return res.json({ productId: req.params.productId, productName: users[0]?.productName || "", users, count: users.length });
+  } catch {
+    return res.status(500).json({ error: "Could not load pre-order requests." });
+  }
+});
+
 app.post("/api/notify", async (req, res) => {
   try {
     const { productId, productName, userId, email, phone, variantId, variantName } = req.body;

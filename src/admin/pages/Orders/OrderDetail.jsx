@@ -407,7 +407,9 @@ const OrderDetail = () => {
             : "—";
           return [
             i + 1,
-            item?.selectedAddOn?.label ? `${item.name}\nAdd-on: ${item.selectedAddOn.label}` : item.name,
+            [item?.selectedAddOn?.label ? `Add-on: ${item.selectedAddOn.label}` : "", item?.includedContents?.label ? `Included free: ${item.includedContents.label}` : ""].filter(Boolean).length
+              ? `${item.name}\n${[item?.selectedAddOn?.label ? `Add-on: ${item.selectedAddOn.label}` : "", item?.includedContents?.label ? `Included free: ${item.includedContents.label}` : ""].filter(Boolean).join("\n")}`
+              : item.name,
             itemMeta.hsnCode,
             qty,
             formatPrice(price),
@@ -781,6 +783,9 @@ const OrderDetail = () => {
                             <p className="text-xs text-emerald-700 mt-1">
                               Add-on: {item.selectedAddOn.label}
                             </p>
+                          )}
+                          {item.includedContents?.label && (
+                            <p className="mt-1 text-xs font-semibold text-emerald-700">Included free: {item.includedContents.label}</p>
                           )}
                           {item.isCombo && comboList.length > 0 && !showGlowComboAsMaskMaker && (
                             <div className="mt-2 space-y-1">

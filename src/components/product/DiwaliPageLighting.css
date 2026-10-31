@@ -1,0 +1,40 @@
+.diwali-page-lighting { position: fixed; inset: 0; z-index: 150; overflow: hidden; pointer-events: none; }
+.diwali-page-lighting * { pointer-events: none; }
+.diwali-edge-light { position: absolute; width: 85px; height: 45vh; max-height: 360px; background: radial-gradient(ellipse at left, rgb(239 177 49 / 32%), transparent 75%); animation: diwali-light-breathe 5s ease-in-out infinite; }
+.diwali-edge-light::before { content: ""; position: absolute; left: 2px; top: 48%; width: 4px; height: 24px; border-radius: 50%; background: #ffe4a0; box-shadow: 0 0 10px 4px #edbb5380, 0 0 28px 10px #edbb5333; }
+.diwali-edge-light-left { left: 0; top: 12%; }
+.diwali-edge-light-right { right: 0; bottom: 12%; transform: rotate(180deg); animation-delay: -3.5s; }
+.diwali-golden-cracker { position: absolute; width: 0; height: 0; }
+.diwali-purchase-cracker > .diwali-golden-spark { height: 11px; animation-name: diwali-purchase-pop; }
+.diwali-purchase-halo { position: absolute; left: -20px; top: -20px; width: 40px; height: 40px; border: 1px solid #e6bc6e; border-radius: 50%; animation: diwali-purchase-halo 800ms ease-out both; }
+@keyframes diwali-purchase-pop { from { opacity: 0; transform: rotate(var(--spark-angle)) translateY(-8px) scaleY(.4); } 25% { opacity: 1; } to { opacity: 0; transform: rotate(var(--spark-angle)) translateY(-66px) scaleY(.25); } }
+@keyframes diwali-purchase-halo { from { opacity: .8; transform: scale(.3); } to { opacity: 0; transform: scale(2.7); } }
+.diwali-hover-cracker { animation: diwali-hover-cracker-fade 800ms linear both; }
+@keyframes diwali-hover-cracker-fade { 0%, 90% { opacity: 1; } 100% { opacity: 0; } }
+.diwali-golden-spark { position: absolute; left: -1px; top: -4px; width: 2px; height: 8px; border-radius: 50%; background: linear-gradient(#fff7d6, #e9ac2c); box-shadow: 0 0 4px #edbd58; animation: diwali-golden-pop 750ms ease-out both; }
+@keyframes diwali-golden-pop {
+  from { opacity: 0; transform: rotate(var(--spark-angle)) translateY(-5px) scaleY(.4); }
+  25% { opacity: 1; }
+  to { opacity: 0; transform: rotate(var(--spark-angle)) translateY(-42px) scaleY(.3); }
+}
+.diwali-tap-light { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgb(255 229 153 / 65%), rgb(232 170 42 / 30%) 35%, transparent 70%); animation: diwali-tap-glow 1.1s ease-out both; }
+.diwali-button-light { position: absolute; box-sizing: border-box; overflow: hidden; border: 1px solid rgb(235 182 65 / 85%); animation: diwali-button-glow 1.1s ease-out both; }
+.diwali-button-light-active { animation-duration: 1.3s; }
+.diwali-button-shimmer { position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgb(255 240 195 / 45%) 50%, transparent 70%); transform: translateX(-100%); animation: diwali-light-sweep 1s ease-in-out both; }
+.diwali-button-light-active .diwali-button-shimmer { background: linear-gradient(110deg, transparent 30%, rgb(255 226 157 / 55%) 50%, transparent 70%); }
+@keyframes diwali-light-breathe { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+@keyframes diwali-light-sweep { to { transform: translateX(100%); } }
+@keyframes diwali-tap-glow {
+  from { opacity: 0; transform: scale(.4); }
+  30% { opacity: 1; }
+  to { opacity: 0; transform: scale(1.2); }
+}
+@keyframes diwali-button-glow {
+  from { opacity: 0; box-shadow: 0 0 0 transparent; }
+  25%, 55% { opacity: 1; box-shadow: 0 0 18px rgb(231 181 70 / 45%); }
+  to { opacity: 0; box-shadow: 0 0 0 transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .diwali-edge-light { animation: none; opacity: .7; }
+  .diwali-tap-light, .diwali-button-light, .diwali-golden-cracker { display: none; }
+}

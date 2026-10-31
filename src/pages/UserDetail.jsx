@@ -690,6 +690,9 @@ const UserDetail = () => {
                                           {item.selectedAddOn?.label ? (
                                             <p className="text-xs text-emerald-700 mt-0.5">Add-on: {item.selectedAddOn.label}</p>
                                           ) : null}
+                                          {item.includedContents?.label ? (
+                                            <p className="text-xs font-semibold text-emerald-700 mt-0.5">Included free: {item.includedContents.label}</p>
+                                          ) : null}
                                         </div>
                                         <div className="ml-auto flex-shrink-0 text-right">
                                           <p className="text-sm font-bold text-gray-800">{formatCurrency(getCartItemDisplayPricing(item).price)}</p>

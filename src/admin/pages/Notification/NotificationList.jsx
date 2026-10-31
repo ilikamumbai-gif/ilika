@@ -3,20 +3,27 @@ import { Eye, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { getApiUrl } from "../../../utils/api";
+import { useAdminAuth } from "../../context/AdminAuthContext";
 
 const NotificationList = () => {
+  const { getAdminAuthHeaders } = useAdminAuth();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch(getApiUrl("/api/notify"));
-      if (!res.ok) throw new Error("Failed to fetch notifications");
-      const data = await res.json();
-
-      // fallback safety
-      setNotifications(Array.isArray(data) ? data : []);
+      const [data, preorders] = await Promise.all([
+        fetch(getApiUrl("/api/notify")).then((res) => res.ok ? res.json() : []),
+        fetch(getApiUrl("/api/preorders"), { headers: getAdminAuthHeaders() }).then((res) => res.ok ? res.json() : []),
+      ]);
+      const grouped = new Map((Array.isArray(data) ? data : []).map((item) => [item.productId, { ...item }]));
+      for (const request of Array.isArray(preorders) ? preorders : []) {
+        const entry = grouped.get(request.productId) || { productId: request.productId, productName: request.productName, count: 0 };
+        entry.count += 1;
+        grouped.set(request.productId, entry);
+      }
+      setNotifications([...grouped.values()]);
     } catch (err) {
       console.error(err);
       setNotifications([]);

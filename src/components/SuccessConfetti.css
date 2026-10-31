@@ -1,0 +1,30 @@
+.preorder-success-confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  overflow: hidden;
+  pointer-events: none;
+  animation: preorder-confetti-finish 2.2s linear both;
+}
+.preorder-confetti-piece {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 7px;
+  height: 11px;
+  pointer-events: none;
+  animation: preorder-confetti-fall 1.8s cubic-bezier(.16,.55,.36,1) both;
+}
+@keyframes preorder-confetti-fall {
+  from { opacity: 0; transform: translate(0, 0) rotate(0) scale(.2); }
+  10% { opacity: 1; }
+  40% { opacity: 1; transform: translate(var(--confetti-x), var(--confetti-rise)) rotate(180deg) scale(1); }
+  to { opacity: 0; transform: translate(var(--confetti-end-x), 65vh) rotate(var(--confetti-spin)) scale(.6); }
+}
+@keyframes preorder-confetti-finish {
+  0%, 90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preorder-success-confetti { display: none; animation: none; }
+}

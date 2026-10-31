@@ -1,12 +1,18 @@
 .diwali-offer { container-type: inline-size; transition: box-shadow 300ms ease, border-color 300ms ease; }
-.diwali-offer .diwali-banner-cracker, .diwali-offer .diwali-offer-light { animation-play-state: paused; }
-.diwali-offer[data-visible="true"] .diwali-banner-cracker, .diwali-offer[data-visible="true"] .diwali-offer-light { animation-play-state: running; }
+.diwali-offer .diwali-banner-cracker, .diwali-offer .diwali-offer-light, .diwali-offer .diwali-diya > path:first-child { animation-play-state: paused; }
+.diwali-offer[data-visible="true"] .diwali-banner-cracker, .diwali-offer[data-visible="true"] .diwali-offer-light, .diwali-offer[data-visible="true"] .diwali-diya > path:first-child { animation-play-state: running; }
 @container (max-width: 300px) {
   .diwali-offer-badge { font-size: 8px; letter-spacing: .04em; gap: 4px; padding-inline: 7px; }
   .diwali-offer-icon { display: none; }
   .diwali-banner-decoration { width: 42px; }
 }
 .diwali-offer:hover { border-color: #ddb568; box-shadow: 0 4px 18px rgb(201 150 54 / 12%); }
+.diwali-offer-gift { box-shadow: inset 0 1px 0 rgb(255 230 180 / 18%), 0 5px 14px rgb(69 17 37 / 14%); }
+.diwali-offer-gift::before { content: ""; position: absolute; inset: 5px; border: 1px solid rgb(235 201 147 / 18%); border-radius: 11px; pointer-events: none; }
+.diwali-diya > path:first-child { transform-origin: 36px 50px; animation: diwali-flame-flicker 2.8s ease-in-out infinite; }
+.diwali-purchase-sheen { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 35%, rgb(255 227 166 / 25%) 50%, transparent 65%); animation: diwali-purchase-sheen 900ms ease-out both; }
+@keyframes diwali-flame-flicker { 0%, 100% { opacity: .9; transform: scaleY(1); } 50% { opacity: 1; transform: scaleY(.94) scaleX(1.04); } }
+@keyframes diwali-purchase-sheen { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 .diwali-banner-decoration { pointer-events: none; }
 .diwali-banner-cracker { position: absolute; width: 40px; height: 40px; animation: diwali-banner-cracker-pop 3.8s ease-out infinite backwards; }
 .diwali-banner-cracker-0 { left: -8px; top: -10px; }

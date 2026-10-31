@@ -23,6 +23,7 @@ import {
 import ProductCard from "../components/ProductCard";
 import NotifyMeModal from "../components/NotifyMeModal";
 import Lazy360ViewButton from "../components/product/Lazy360ViewButton";
+import DiwaliOfferBanner from "../components/product/DiwaliOfferBanner";
 import { toast } from "react-hot-toast";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
@@ -42,6 +43,7 @@ import {
   slugifyVariantValue,
 } from "../utils/productPricing";
 
+const PreOrderModal = React.lazy(() => import("../components/PreOrderModal"));
 const DEFAULT_DETAIL_BG = "#FFFFFF";
 const BLDC_HAIR_DRYER_GALLERY_VIDEO = {
   url: "/HonestReview/instagram-reel-youtube-short.mp4",
@@ -64,9 +66,10 @@ const NONVOICE_MASK_MAKER_PRODUCT_SLUG = "non-voice-face-mask-maker";
 const COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG = "ilika-collagen-peptide-8-peptide-pack-for-facial-mask-maker-machine";
 const COLLAGEN_ADDON_OPTIONS = [
   { id: "pack0", count: 0, label: "No extra collagen Peptide pack", tablets: 0, price: 0 },
-  { id: "pack1", count: 1, label: "1 Collagen Peptide Pack (16 no.s)", tablets: 16, price: 799 },
-  { id: "pack2", count: 2, label: "2 Collagen Peptide Packs (32 no.s)", tablets: 32, price: 1499 },
-  { id: "pack3", count: 3, label: "3 Collagen Peptide Packs (48 no.s)", tablets: 48, price: 2299 },
+  { id: "pack1", count: 1, label: "1 Collagen Peptide Pack (8 tablets)", tablets: 8, price: 199 },
+  { id: "pack2", count: 2, label: "2 Collagen Peptide Packs (16 tablets)", tablets: 16, price: 399 },
+  { id: "pack3", count: 3, label: "3 Collagen Peptide Packs (24 tablets)", tablets: 24, price: 599 },
+  { id: "pack4", count: 4, label: "4 Collagen Peptide Packs (32 tablets)", tablets: 32, price: 799 },
 ];
 
 const PRODUCT_RETURN_POLICY = {
@@ -621,7 +624,7 @@ const DeliveryTrustGrid = ({ items = [] }) => {
   if (!items.length) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
+    <div className="grid grid-cols-2 gap-2 sm:gap-3">
       <style>{`
         @keyframes trustRowIn {
           from { opacity: 0; transform: translateY(8px); }
@@ -633,29 +636,29 @@ const DeliveryTrustGrid = ({ items = [] }) => {
         return (
           <div
             key={item.title || index}
-            className="group rounded-[16px] bg-[#faf5ec] px-4 py-3.5 opacity-0 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#f6efe0] hover:shadow-[0_8px_20px_rgba(69,39,34,0.08)]"
+            className={`group rounded-xl bg-[#faf5ec] px-2.5 py-2 sm:rounded-[16px] sm:px-4 sm:py-3.5 ${items.length % 2 !== 0 && index === items.length - 1 ? "col-span-2 sm:col-span-1" : ""} transition-[background-color,transform] duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#f6efe0]`}
             style={{
               animation: "trustRowIn 0.45s ease-out forwards",
               animationDelay: `${index * 70}ms`,
             }}
           >
-            <div className="flex items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#f1e6d3] text-[#8a6d3b] transition-transform duration-200 ease-out group-hover:scale-110">
-                {ItemIcon ? <ItemIcon className="h-4.5 w-4.5" strokeWidth={1.8} /> : null}
+            <div className="flex items-start gap-2 sm:gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#f1e6d3] text-[#8a6d3b] sm:h-9 sm:w-9 sm:rounded-[10px]">
+                {ItemIcon ? <ItemIcon className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" strokeWidth={1.8} /> : null}
               </span>
               <div className="min-w-0">
-                <p className="text-[13px] font-semibold leading-[1.3] text-gray-900 sm:text-sm">
+                <p className="text-[11px] font-semibold leading-[1.3] text-gray-900 sm:text-sm">
                   {item.title}
                 </p>
                 {item.subtitle && (
-                  <p className="mt-0.5 text-[12px] leading-[1.3] text-gray-500 sm:text-[13px]">
+                  <p className="mt-0.5 text-[10px] leading-[1.3] text-gray-500 sm:text-[13px]">
                     {item.subtitle}
                   </p>
                 )}
                 {item.to && (
                   <Link
                     to={item.to}
-                    className="mt-1.5 inline-block text-[12px] font-semibold text-gray-900 underline-offset-2 hover:underline sm:text-[13px]"
+                    className="inline-flex min-h-8 items-center text-[10px] font-semibold text-gray-900 underline-offset-2 hover:underline sm:mt-1 sm:text-[13px]"
                   >
                     Read more
                   </Link>
@@ -921,7 +924,7 @@ const formatIngredientTitle = (src = "", index = 0) => {
   }
 };
 
-const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe, theme }) => {
+const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe, canPreorder = false, onPreorder, theme }) => {
   const ctaColors = getDetailCtaColors(theme);
   const mediaItems = useMemo(() => {
     const imageItems = (Array.isArray(images) ? images : []).map((src, index) => ({
@@ -1157,24 +1160,25 @@ const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex =
 
             {/* ATC button */}
             <button
-              onClick={isOutOfStock ? onNotifyMe : onAddToCart}
-              className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition ${isOutOfStock ? "opacity-90" : "hover:opacity-90"
+              onClick={isOutOfStock && !canPreorder ? onNotifyMe : onAddToCart}
+              disabled={canPreorder}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${isOutOfStock ? "opacity-90" : "hover:opacity-90"
                 }`}
               style={ctaColors.addToCart}
             >
-              {isOutOfStock ? "Notify Me" : "Add to Cart"}
+              {isOutOfStock && !canPreorder ? "Notify Me" : "Add to Cart"}
             </button>
 
             {/* Buy Now */}
             <button
-              onClick={() => { onBuyNow(); onClose(); }}
-              disabled={isOutOfStock}
+              onClick={() => { if (canPreorder) onPreorder(); else onBuyNow(); onClose(); }}
+              disabled={isOutOfStock && !canPreorder}
               className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl text-sm font-semibold transition
-                ${isOutOfStock ? "bg-gray-100 text-gray-400 cursor-not-allowed border" : "hover:opacity-90"}`}
-              style={isOutOfStock ? undefined : ctaColors.buyNow}
+                ${isOutOfStock && !canPreorder ? "bg-gray-100 text-gray-400 cursor-not-allowed border" : "hover:opacity-90"}`}
+              style={isOutOfStock && !canPreorder ? undefined : ctaColors.buyNow}
             >
               <Lock className="w-3.5 h-3.5" />
-              Buy Now
+              {canPreorder ? "Pre-order" : "Buy Now"}
             </button>
 
             {/* Warranty note */}
@@ -2676,7 +2680,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STICKY FLOATING ATC BAR
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme, warrantyRegistrationUrl, thumbnailImage }) => {
+const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme, warrantyRegistrationUrl, thumbnailImage, canPreorder = false, onPreorder }) => {
   const ctaColors = getDetailCtaColors(theme);
   return (
     <div
@@ -2753,24 +2757,24 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
                 {isAdding
                   ? "Adding..."
                   : isOutOfStock
-                    ? "Out of Stock"
+                    ? canPreorder ? "Add to Cart" : "Out of Stock"
                     : "Add to Cart"}
               </span>
             </button>
 
             {/* BUY NOW */}
             <button
-              onClick={onBuyNow}
-              disabled={isOutOfStock || isBuying}
+              onClick={canPreorder ? onPreorder : onBuyNow}
+              disabled={(isOutOfStock && !canPreorder) || isBuying}
               className={`flex flex-1 sm:flex-none items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-[14px] sm:rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap
-    ${isOutOfStock || isBuying
+    ${(isOutOfStock && !canPreorder) || isBuying
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "shadow-sm"}`}
-              style={isOutOfStock || isBuying ? undefined : ctaColors.buyNow}
+              style={(isOutOfStock && !canPreorder) || isBuying ? undefined : ctaColors.buyNow}
             >
               <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
               <span>
-                {isBuying ? "Processing..." : "Buy Now"}
+                {isBuying ? "Processing..." : canPreorder ? "Pre-order" : "Buy Now"}
               </span>
             </button>
           </div>
@@ -2860,6 +2864,9 @@ const ProductDetail = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
+  const [preorderOpen, setPreorderOpen] = useState(false);
+  const openPreorder = useCallback(() => setPreorderOpen(true), []);
+  const closePreorder = useCallback(() => setPreorderOpen(false), []);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -2887,6 +2894,11 @@ const ProductDetail = () => {
   const [marketplaceLivePrices, setMarketplaceLivePrices] = useState({});
   const [selectedPackId, setSelectedPackId] = useState("");
   const [collagenAddonCount, setCollagenAddonCount] = useState(0);
+  const isCollagenPeptidePackProduct = useMemo(
+    () => [product?.productUrl, product?.slug, product?.name, productUrl]
+      .some((value) => createSlug(String(value || "")) === COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG),
+    [product?.productUrl, product?.slug, product?.name, productUrl]
+  );
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(() => {
     if (typeof window === "undefined") return "ONLINE";
     return sessionStorage.getItem(PREFERRED_PAYMENT_METHOD_KEY) === "COD" ? "COD" : "ONLINE";
@@ -2927,7 +2939,7 @@ const ProductDetail = () => {
   );
 
 
-  const handleNotifyMe = () => setNotifyModalOpen(true);
+  const handleNotifyMe = () => eligibleForCollagenAddon ? openPreorder() : setNotifyModalOpen(true);
 
 
 
@@ -3263,7 +3275,10 @@ const ProductDetail = () => {
     : Number(activeDisplayPricing.price || 0);
   const mrp = Number(activeDisplayPricing.compareAtPrice || 0);
   const packOptions = useMemo(() => {
-    const raw = Array.isArray(product?.packOptions) ? product.packOptions : [];
+    const configuredPacks = Array.isArray(product?.packOptions) ? product.packOptions : [];
+    const raw = isCollagenPeptidePackProduct && !configuredPacks.length
+      ? COLLAGEN_ADDON_OPTIONS.filter((option) => option.count > 0)
+      : configuredPacks;
     return raw
       .map((item, index) => ({
         id: String(item?.id || `pack-${index + 1}`),
@@ -3273,7 +3288,8 @@ const ProductDetail = () => {
         mrp: Number(item?.mrp || 0),
       }))
       .filter((item) => item.label && Number.isFinite(item.price) && item.price > 0);
-  }, [product?.packOptions]);
+  }, [isCollagenPeptidePackProduct, product?.packOptions]);
+  const requestedCollagenPackCount = Number(searchParams.get("packs") || 0);
   const selectedPack = useMemo(() => {
     if (!packOptions.length) return null;
     return packOptions.find((item) => item.id === selectedPackId) || null;
@@ -3426,12 +3442,25 @@ const ProductDetail = () => {
     ? Number(((couponDiscountAmount / packBasePrice) * 100).toFixed(2))
     : 0;
   const eligibleForCollagenAddon = useMemo(() => {
+    if (isCollagenPeptidePackProduct) return false;
+
     const name = String(product?.name || "").toLowerCase();
-    if (!name.includes("mask maker machine")) return false;
-    const isVoiceModel = name.includes("automatic voice version face mask maker machine");
-    const isNonVoiceModel = name.includes("nonvoice mask maker machine") && name.includes("collagen peptide");
-    return isVoiceModel || isNonVoiceModel;
-  }, [product?.name]);
+    const slugs = [product?.productUrl, product?.slug, productUrl].map((value) => createSlug(String(value || "")));
+    const isVoiceModel = slugs.some((slug) => slug === VOICE_MASK_MAKER_PRODUCT_SLUG || slug.includes("voice-face-mask-maker"))
+      || (name.includes("voice face mask maker machine") && !/non[\s-]*voice/.test(name));
+    const isNonVoiceModel = slugs.some((slug) => slug === NONVOICE_MASK_MAKER_PRODUCT_SLUG || slug.includes("non-voice-face-mask-maker"))
+      || /non[\s-]*voice/.test(name);
+    return isVoiceModel || isNonVoiceModel || /mask[\s-]*maker.*machine/i.test(name);
+  }, [isCollagenPeptidePackProduct, product?.name, product?.productUrl, product?.slug, productUrl]);
+  const isNonVoiceMaskMaker = useMemo(() => {
+    const name = String(product?.name || "").toLowerCase();
+    const slugs = [product?.productUrl, product?.slug, productUrl].map((value) => createSlug(String(value || "")));
+    return slugs.some((slug) => slug === NONVOICE_MASK_MAKER_PRODUCT_SLUG || slug.includes("non-voice-face-mask-maker"))
+      || /non[\s-]*voice/.test(name);
+  }, [product?.name, product?.productUrl, product?.slug, productUrl]);
+  const includedMaskMakerGift = isNonVoiceMaskMaker
+    ? { label: "25 g Hydra Gel FREE", name: "25 g Hydra Gel" }
+    : { label: "8 collagen peptide tablets FREE", name: "8 collagen peptide tablets" };
   const selectedCollagenAddon = useMemo(() => {
     return COLLAGEN_ADDON_OPTIONS.find((opt) => opt.count === collagenAddonCount) || COLLAGEN_ADDON_OPTIONS[0];
   }, [collagenAddonCount]);
@@ -3559,6 +3588,7 @@ const ProductDetail = () => {
     : `${productId}${packCartSuffix}${addonCartSuffix}`;
   const isInCart = cartItems.some(i => i.id === cartId);
   const isOutOfStock = !getProductVariantAvailability(product, activeVariant);
+  const canPreorder = isOutOfStock && eligibleForCollagenAddon;
 
   useEffect(() => {
     ingredientDragStateRef.current.isDragging = false;
@@ -3622,6 +3652,12 @@ const ProductDetail = () => {
     const stillValid = packOptions.some((item) => item.id === selectedPackId);
     if (!stillValid) setSelectedPackId(packOptions[0].id);
   }, [productId, packOptions, selectedPackId]);
+
+  useEffect(() => {
+    if (!isCollagenPeptidePackProduct) return;
+    const requestedPack = packOptions.find((pack) => pack.count === requestedCollagenPackCount);
+    if (requestedPack) setSelectedPackId(requestedPack.id);
+  }, [isCollagenPeptidePackProduct, packOptions, requestedCollagenPackCount]);
 
   const handleApplyCoupon = useCallback(() => {
     applyCouponCode(couponCodeInput);
@@ -3687,6 +3723,12 @@ const ProductDetail = () => {
                 price: selectedCollagenAddon.price,
               }
               : null,
+          packContents: isCollagenPeptidePackProduct
+            ? { label: "8 tablets per pack", tabletsPerPack: 8 }
+            : null,
+          includedContents: eligibleForCollagenAddon
+            ? { label: includedMaskMakerGift.label, name: includedMaskMakerGift.name, tablets: isNonVoiceMaskMaker ? 0 : 8, price: 0 }
+            : null,
           originalPrice: appliedCoupon ? Number(packBasePrice + addonPrice) : null,
           discountApplied: appliedCoupon
             ? {
@@ -3701,6 +3743,9 @@ const ProductDetail = () => {
 
       await addToCart(cartItem);
 
+      if (eligibleForCollagenAddon) {
+        toast.success(`Added to cart · ${includedMaskMakerGift.label}`);
+      }
       trackAddToCart(productId, product?.name, price, 1);
       return true;
     } finally {
@@ -3721,6 +3766,9 @@ const ProductDetail = () => {
     couponDiscountAmount,
     addToCart,
     eligibleForCollagenAddon,
+    isCollagenPeptidePackProduct,
+    includedMaskMakerGift,
+    isNonVoiceMaskMaker,
     selectedCollagenAddon,
     selectedPack,
     selectedPaymentMethod]);
@@ -4165,7 +4213,7 @@ const ProductDetail = () => {
             className="font-semibold underline underline-offset-2"
             style={{ color: detailTheme.accent }}
           >
-            Notify Me
+            {eligibleForCollagenAddon ? "Pre-order" : "Notify Me"}
           </button>
         </div>
       )}
@@ -4213,7 +4261,7 @@ const ProductDetail = () => {
       ...savedDetails,
       "Ingredients: Carrageenan, PEG-5M, Tartaric Acid, Glucomannan, Sodium Carbonate, Maltodextrin, Sodium Bicarbonate, and Potassium Chloride.",
       "Designed for use with facial mask maker machines to create fresh DIY collagen masks with fruits or vegetables.",
-      "Use one tablet per mask.",
+      "Each collagen peptide pack contains 8 tablets. Use one tablet per mask.",
     ];
   }, [product?.additionalInfo, product?.name, product?.productUrl, product?.slug, productUrl]);
 
@@ -4564,6 +4612,16 @@ const ProductDetail = () => {
               ))}
             </ul>
           </div>
+          {isCollagenPeptidePackProduct && (
+            <div className="mt-5 rounded-2xl border p-4" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
+              <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>Made for Ilika Face Mask Makers</p>
+              <p className="mt-1 text-sm text-gray-600">Each pack contains 8 collagen peptide tablets, with one tablet for each mask.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link to={`/product/${VOICE_MASK_MAKER_PRODUCT_SLUG}`} className="rounded-full border bg-white px-3 py-2 text-xs font-semibold hover:underline" style={{ borderColor: detailTheme.borderSoft, color: detailTheme.accent }}>Shop Voice Mask Maker</Link>
+                <Link to={`/product/${NONVOICE_MASK_MAKER_PRODUCT_SLUG}`} className="rounded-full border bg-white px-3 py-2 text-xs font-semibold hover:underline" style={{ borderColor: detailTheme.borderSoft, color: detailTheme.accent }}>Shop Non-Voice Mask Maker</Link>
+              </div>
+            </div>
+          )}
           {additionalInfoArray.length > 4 && (
             <button
               onClick={() => setExpandedInfo(!expandedInfo)}
@@ -4814,6 +4872,8 @@ const ProductDetail = () => {
           isAdding={isAdding}
           isBuying={isBuying}
           onNotifyMe={handleNotifyMe}
+          canPreorder={canPreorder}
+          onPreorder={openPreorder}
           theme={detailTheme}
         />
       )}
@@ -4829,6 +4889,8 @@ const ProductDetail = () => {
         isInCart={isInCart}
         onAddToCart={handleAddToCart}
         onBuyNow={handleBuyNow}
+        canPreorder={canPreorder}
+        onPreorder={openPreorder}
         isAdding={isAdding}
         isBuying={isBuying}
         visible={showStickyBar}
@@ -5168,6 +5230,10 @@ const ProductDetail = () => {
                 </div>
               ) : null}
 
+              {eligibleForCollagenAddon && (
+                <DiwaliOfferBanner isNonVoiceMaskMaker={isNonVoiceMaskMaker} />
+              )}
+
               {product.hasVariants && <div>{renderVariantSelector()}</div>}
 
               <DeliveryTrustGrid items={trustGridItems} />
@@ -5228,67 +5294,82 @@ const ProductDetail = () => {
               )}
 
               {eligibleForCollagenAddon && (
-                <div className="rounded-[18px] border p-3 sm:rounded-2xl" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
-                  <p className="mb-2 text-sm font-semibold" style={{ color: detailTheme.heading }}>
-                    Add Extra Collagen Peptide Packs
-                  </p>
-                  <div className="rounded-xl border border-gray-200 bg-white p-2 sm:p-3">
-                    <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-4">
-                      <div className="h-[72px] w-full overflow-hidden rounded-xl bg-[#f8f6f5] sm:h-[84px] sm:min-w-[96px] sm:w-[96px]">
-                        <img
-                          loading="lazy"
-                          src="/Images/Peptide.jpeg"
-                          alt="Collagen peptide pack"
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1 space-y-2">
-                        <div className="flex min-h-9 items-center justify-center rounded-lg bg-[#f7f4f4] px-2 py-1.5">
-                          <p className="text-center text-base font-semibold leading-tight text-[#2B2A29] sm:text-xl">
-                            Collagen Peptide Pack
-                          </p>
-                        </div>
-                        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-                          <div className="inline-flex min-h-9 items-center rounded-lg px-3 py-1.5 font-semibold leading-snug text-[#2B2A29]">
-                            <span className="text-sm">
-                              {collagenAddonCount > 0
-                                ? selectedCollagenAddon.label
-                                : "No extra pack (Included)"}
-                            </span>
-                          </div>
-                          <div className="inline-flex w-full justify-between overflow-hidden rounded-lg border border-gray-200 self-start sm:w-auto sm:self-auto">
-                            <button
-                              type="button"
-                              onClick={() => setCollagenAddonCount((prev) => Math.max(0, Number(prev || 0) - 1))}
-                              className="h-9 w-10 border-r border-gray-300 text-base font-semibold leading-none text-[#111827] transition hover:bg-white/70 sm:h-8 sm:w-8"
-                              aria-label="Decrease peptide pack count"
-                            >
-                              -
-                            </button>
-                            <span className="inline-flex h-9 min-w-[34px] flex-1 items-center justify-center border-r border-gray-300 text-sm font-semibold text-[#111827] sm:h-8 sm:flex-none">
-                              {collagenAddonCount}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setCollagenAddonCount((prev) => Math.min(3, Number(prev || 0) + 1))}
-                              className="h-9 w-10 text-base font-semibold leading-none text-[#111827] transition hover:bg-white/70 sm:h-8 sm:w-8"
-                              aria-label="Increase peptide pack count"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                        <p className="text-sm font-medium text-[#3F4E63]">
-                          {selectedCollagenAddon.price > 0 ? `Add-on price: +₹${selectedCollagenAddon.price}` : "Included with product"}
-                        </p>
-                      </div>
+                <section className="overflow-hidden rounded-2xl border border-[#eadfda] bg-white shadow-[0_8px_24px_rgba(76,48,40,0.05)]">
+                  <div className="flex items-center justify-between gap-2 bg-[#fbf7f5] px-3 py-2 sm:px-5 sm:py-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-[#332521] sm:text-base">
+                        <Link to={`/product/${COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG}`} className="rounded-sm underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a6423e]">Add collagen refills</Link>
+                      </h3>
+                      <p className="mt-0.5 text-[11px] text-[#82736e] sm:text-xs">Choose a pack size · 8 tablets per pack</p>
                     </div>
+                    <span className="shrink-0 rounded-full border border-[#e6d9d4] bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#79645e]">Optional</span>
                   </div>
-                </div>
+
+                  <div className="p-2.5 sm:p-4">
+                    <Link to={`/product/${COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG}`} className="mb-2 flex items-center gap-2 rounded-xl transition hover:bg-[#fbf7f5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a6423e] sm:mb-4 sm:gap-3">
+                      <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-[#faf6f4] sm:h-16 sm:w-16 sm:rounded-xl">
+                        <img loading="lazy" decoding="async" width={64} height={64} src="/Images/Peptide.jpeg" alt="Collagen peptide tablets" className="h-full w-full object-contain" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-[#332521] sm:text-sm">Collagen Peptide Pack</p>
+                        <p className="text-[10px] leading-4 text-[#82736e] sm:mt-1 sm:text-xs sm:leading-5">One tablet makes one mask.</p>
+                      </div>
+                    </Link>
+
+                    <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+                      {COLLAGEN_ADDON_OPTIONS.filter((option) => option.count > 0).map((option) => {
+                        const isSelected = collagenAddonCount === option.count;
+                        return (
+                          <Link
+                            key={option.id}
+                            to={`/product/${COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG}?packs=${option.count}`}
+                            className={`min-w-0 rounded-lg border px-1.5 py-2 text-left transition sm:rounded-xl sm:px-3 sm:py-3 ${isSelected ? "border-[#a6423e] bg-[#fff4f1] shadow-[0_4px_12px_rgba(166,66,62,0.10)]" : "border-[#ece5e1] bg-white hover:border-[#d6aaa0] hover:bg-[#fffbfa]"}`}
+                          >
+                            <span className="block text-[11px] font-semibold text-[#55433d] sm:text-xs">{option.count} pack{option.count === 1 ? "" : "s"}</span>
+                            <span className="mt-0.5 block text-[10px] text-[#8b7b75] sm:mt-1 sm:text-[11px]">{option.tablets} tablets</span>
+                            <span className={`mt-1.5 block text-base font-bold leading-none sm:mt-2 sm:text-lg ${isSelected ? "text-[#a6423e]" : "text-[#302522]"}`}>₹{option.price}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+
+                    {collagenAddonCount > 0 ? <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#f0e9e6] pt-3">
+                      <p className="text-xs font-medium text-[#675650]">
+                        {collagenAddonCount > 0 ? `${selectedCollagenAddon.tablets} tablets selected` : "No extra pack selected"}
+                      </p>
+                      <div className="flex items-center gap-3">
+                        {collagenAddonCount > 0 && <button type="button" onClick={() => setCollagenAddonCount(0)} className="text-xs font-semibold text-[#9b5b4f] underline underline-offset-2">Remove</button>}
+                        <p className="text-sm font-bold text-[#332521]">{collagenAddonCount > 0 ? `Add ₹${selectedCollagenAddon.price}` : "₹0 extra"}</p>
+                      </div>
+                    </div> : <p className="mt-2 text-[10px] text-[#82736e] sm:text-xs">Tap a pack to shop collagen refills.</p>}
+                  </div>
+                </section>
               )}
 
               {/* Mobile purchase card */}
               <div className="h-fit lg:col-span-2 xl:hidden">
+                <div ref={atcButtonsRef} className="mb-3 grid grid-cols-2 gap-2 sm:gap-3" data-mobile-purchase-actions>
+                  <AnimatedCtaButton
+                    onClick={canPreorder ? openPreorder : handleBuyNow}
+                    disabled={isOutOfStock && !canPreorder}
+                    loading={isBuying}
+                    icon={canPreorder ? Package : Lock}
+                    label={canPreorder ? "Pre-order" : "Buy Now"}
+                    disabledLabel="Out of Stock"
+                    colors={detailCtaColors.buyNow}
+                    className="text-xs sm:text-sm"
+                  />
+                  <AnimatedCtaButton
+                    onClick={isOutOfStock && !canPreorder ? handleNotifyMe : handleAddToCart}
+                    disabled={canPreorder}
+                    loading={isAdding}
+                    loadingLabel="Adding..."
+                    icon={isOutOfStock && !canPreorder ? undefined : ShoppingCart}
+                    label={isOutOfStock && !canPreorder ? "Notify Me" : "Add To Cart"}
+                    colors={detailCtaColors.addToCart}
+                    className="text-xs sm:text-sm"
+                  />
+                </div>
               <div
                 className="ilika-card-in rounded-[20px] border bg-white p-3.5 shadow-[0_14px_32px_rgba(69,39,34,0.06)] sm:rounded-[24px] sm:p-5 sm:shadow-[0_18px_40px_rgba(69,39,34,0.06)] xl:sticky xl:top-[164px]"
                 style={{ borderColor: detailTheme.borderSoft }}
@@ -5440,28 +5521,8 @@ const ProductDetail = () => {
 
                   {freeGiftCard}
 
-                  <div ref={atcButtonsRef} className="grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2">
-                      <AnimatedCtaButton
-                        onClick={handleBuyNow}
-                        disabled={isOutOfStock}
-                        loading={isBuying}
-                        icon={Lock}
-                        label="Buy Now"
-                        disabledLabel="Out of Stock"
-                        colors={detailCtaColors.buyNow}
-                      />
-
-                      <AnimatedCtaButton
-                        onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
-                        disabled={false}
-                        loading={isAdding}
-                        loadingLabel="Adding..."
-                        icon={isOutOfStock ? undefined : ShoppingCart}
-                        label={isOutOfStock ? "Notify Me" : "Add To Cart"}
-                        colors={detailCtaColors.addToCart}
-                      />
-
-                      <div className="min-[420px]:col-span-2">
+                  <div>
+                      <div>
                         <OptimizedImage
                           src={PRODUCT_DETAIL_PAYMENT_METHOD_IMAGE}
                           alt="Available payment methods"
@@ -6221,23 +6282,23 @@ const ProductDetail = () => {
 
                 <div className="flex flex-col gap-2.5">
                   <AnimatedCtaButton
-                    onClick={handleBuyNow}
-                    disabled={isOutOfStock}
+                    onClick={canPreorder ? openPreorder : handleBuyNow}
+                    disabled={isOutOfStock && !canPreorder}
                     loading={isBuying}
-                    icon={Lock}
-                    label="Buy Now"
+                    icon={canPreorder ? Package : Lock}
+                    label={canPreorder ? "Pre-order" : "Buy Now"}
                     disabledLabel="Out of Stock"
                     colors={detailCtaColors.buyNow}
                     size="lg"
                   />
 
                   <AnimatedCtaButton
-                    onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
-                    disabled={false}
+                    onClick={isOutOfStock && !canPreorder ? handleNotifyMe : handleAddToCart}
+                    disabled={canPreorder}
                     loading={isAdding}
                     loadingLabel="Adding..."
-                    icon={isOutOfStock ? undefined : ShoppingCart}
-                    label={isOutOfStock ? "Notify Me" : "Add To Cart"}
+                    icon={isOutOfStock && !canPreorder ? undefined : ShoppingCart}
+                    label={isOutOfStock && !canPreorder ? "Notify Me" : "Add To Cart"}
                     colors={detailCtaColors.addToCart}
                     size="lg"
                   />
@@ -6261,6 +6322,9 @@ const ProductDetail = () => {
         <Footer />
       </div>
       <NotifyMeModal isOpen={notifyModalOpen} onClose={() => setNotifyModalOpen(false)} product={product} variant={activeVariant} />
+      {preorderOpen && <React.Suspense fallback={null}>
+        <PreOrderModal isOpen={preorderOpen} onClose={closePreorder} product={product} variant={activeVariant} />
+      </React.Suspense>}
     </>
   );
 };

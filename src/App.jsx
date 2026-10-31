@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useMemo } from "react";
+import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -17,9 +17,26 @@ import { captureTrafficSource } from "./utils/tracking";
 
 const EnquiryButton = lazy(() => import("./components/EnquiryButton"));
 const ScrollToTopButton = lazy(() => import("./components/ScrollToTopButton"));
+const DiwaliPageLighting = lazy(() => import("./components/product/DiwaliPageLighting"));
 
 const AppContent = () => {
   const { pathname } = useLocation();
+  const [effectsReady, setEffectsReady] = useState(false);
+
+  useEffect(() => {
+    let idleId;
+    const timer = window.setTimeout(() => {
+      if ("requestIdleCallback" in window) {
+        idleId = window.requestIdleCallback(() => setEffectsReady(true), { timeout: 1500 });
+      } else {
+        setEffectsReady(true);
+      }
+    }, 500);
+    return () => {
+      window.clearTimeout(timer);
+      if (idleId !== undefined) window.cancelIdleCallback?.(idleId);
+    };
+  }, []);
 
   const isAdminRoute = useMemo(() => pathname.startsWith("/admin"), [pathname]);
   const hideCartToast = useMemo(
@@ -112,6 +129,9 @@ const AppContent = () => {
                 <BannerProvider>
                   <NavRoutes />
 
+                  <Suspense fallback={null}>
+                    {effectsReady && <DiwaliPageLighting />}
+                  </Suspense>
                   <Suspense fallback={null}>
                     <EnquiryButton />
                     <ScrollToTopButton />

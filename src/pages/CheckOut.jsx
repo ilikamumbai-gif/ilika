@@ -1011,6 +1011,7 @@ const Checkout = () => {
           originalPrice: item.originalPrice || null,
           discountApplied: item.discountApplied || null,
           selectedAddOn: item.selectedAddOn || null,
+          includedContents: item.includedContents || null,
           isCombo: item.isCombo || false,
           comboItems: item.comboItems || item.items || [],
         };
@@ -1463,6 +1464,12 @@ const Checkout = () => {
                     ) : null}
                     {item.selectedAddOn?.label ? (
                       <p className="text-emerald-700 text-xs mt-0.5">Add-on: {item.selectedAddOn.label}</p>
+                    ) : null}
+                    {item.packContents?.label ? (
+                      <p className="text-emerald-700 text-xs mt-0.5">Pack contents: {item.packContents.label}</p>
+                    ) : null}
+                    {item.includedContents?.label ? (
+                      <p className="text-emerald-700 text-xs mt-0.5 font-semibold">Included free: {item.includedContents.label}</p>
                     ) : null}
                   </div>
                   <div className="font-medium text-sm">

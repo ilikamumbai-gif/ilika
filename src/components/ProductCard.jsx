@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
 import { FiShoppingCart } from "react-icons/fi";
 import { Link } from "react-router-dom";
@@ -48,6 +49,10 @@ const ProductCard = ({
   const productTag = String(product?.productTag || "").trim();
   const isLeaflessHairDryer = slug === "leafless-hair-dryer";
   const isMaskMaker = /mask[\s-]*maker/i.test(`${product?.name || ""} ${slug}`);
+  const isNonVoiceMaskMaker = /non[\s-]*voice/i.test(`${product?.name || ""} ${slug}`);
+  const includedMaskMakerGift = isNonVoiceMaskMaker
+    ? { label: "25 g Hydra Gel FREE", name: "25 g Hydra Gel", tablets: 0 }
+    : { label: "8 collagen peptide tablets FREE", name: "8 collagen peptide tablets", tablets: 8 };
   const assignedCoupon = product?.couponSnapshot || product?.coupon || null;
   const couponCode = String(assignedCoupon?.code || "").trim();
   const couponPercent = Number(assignedCoupon?.discountPercent || 0);
@@ -64,7 +69,7 @@ const ProductCard = ({
     ? `Extra ${couponPercent}% OFF with ${couponCode}`
     : "";
 
-  const handleCartClick = (e) => {
+  const handleCartClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -78,10 +83,12 @@ const ProductCard = ({
       cartId,
       extra: {
         ...(cartMetadata || {}),
+        ...(isMaskMaker ? { includedContents: { ...includedMaskMakerGift, price: 0 } } : {}),
       },
     });
 
-    addToCart(item);
+    await addToCart(item);
+    if (isMaskMaker) toast.success(`Added to cart · ${includedMaskMakerGift.label}`);
   };
 
   return (

@@ -31,6 +31,9 @@ const NotifyMeModal = ({ isOpen, onClose, product, variant = null }) => {
 
   if (!isOpen || !product || typeof document === "undefined") return null;
 
+  const isMaskMaker = /mask[\s-]*maker/i.test(`${product.name || ""} ${product.productUrl || product.slug || ""}`);
+  const isNonVoiceMaskMaker = /non[\s-]*voice/i.test(`${product.name || ""} ${product.productUrl || product.slug || ""}`);
+
   const submit = async (event) => {
     event.preventDefault();
     const value = contact.trim();
@@ -74,6 +77,9 @@ const NotifyMeModal = ({ isOpen, onClose, product, variant = null }) => {
         <button type="button" onClick={onClose} aria-label="Close" className="absolute right-4 top-4 rounded-full p-2 text-[#786c67] transition hover:bg-[#f5eeeb]"><X size={19} /></button>
         <div className="px-7 pb-7 pt-9 sm:px-9 sm:pb-9">
           <div className="mb-5 grid h-14 w-14 place-items-center rounded-2xl bg-[#f8e9e2] text-[#a74c43]"><Bell size={25} /></div>
+          {isMaskMaker && <div className={`mb-5 rounded-xl px-3 py-2.5 text-xs font-semibold leading-5 ${isNonVoiceMaskMaker ? "bg-sky-50 text-sky-800" : "bg-emerald-50 text-emerald-800"}`}>
+            {isNonVoiceMaskMaker ? "A 25 g Hydra Gel is included free with this non-voice mask maker." : "8 collagen peptide tablets are included free with this mask maker."}
+          </div>}
           {submitted ? (
             <div className="py-3">
               <div className="mb-4 grid h-11 w-11 place-items-center rounded-full bg-emerald-100 text-emerald-700"><Check size={22} /></div>

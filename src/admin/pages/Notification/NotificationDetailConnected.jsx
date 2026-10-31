@@ -8,6 +8,7 @@ import {
   getRecordDisplayEmail,
 } from "../../Utils/customerConnections";
 import { getApiUrl } from "../../../utils/api";
+import { useAdminAuth } from "../../context/AdminAuthContext";
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -17,6 +18,7 @@ const formatDate = (value) => {
 
 const NotificationDetailConnected = () => {
   const { productId } = useParams();
+  const { admin, getAdminAuthHeaders } = useAdminAuth();
   const navigate = useNavigate();
   const { users } = useUsers();
   const { orders } = useOrders();
@@ -26,9 +28,12 @@ const NotificationDetailConnected = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(getApiUrl(`/api/notify/${productId}`));
-        const payload = await res.json();
-        setData(payload && Array.isArray(payload.users) ? payload : { productName: "", count: 0, users: [] });
+        const [notifications, preorders] = await Promise.all([
+          fetch(getApiUrl(`/api/notify/${productId}`)).then((res) => res.ok ? res.json() : null),
+          fetch(getApiUrl(`/api/preorders/${productId}`), { headers: getAdminAuthHeaders() }).then((res) => res.ok ? res.json() : null),
+        ]);
+        const users = [...(notifications?.users || []), ...(preorders?.users || [])];
+        setData({ productName: notifications?.productName || preorders?.productName || "", count: users.length, users });
       } catch (error) {
         console.error(error);
         setData({ productName: "", count: 0, users: [] });
@@ -38,7 +43,7 @@ const NotificationDetailConnected = () => {
     };
 
     if (productId) fetchData();
-  }, [productId]);
+  }, [productId, admin?.id]);
 
   if (loading) {
     return <AdminLayout>Loading...</AdminLayout>;
@@ -56,7 +61,7 @@ const NotificationDetailConnected = () => {
           <p className="text-sm text-gray-500">{data.count || 0} users requested notification</p>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border">
+        <div className="overflow-x-auto rounded-2xl border">
           {data.users.length === 0 ? (
             <div className="p-6 text-center text-gray-400">No users found</div>
           ) : (
@@ -85,13 +90,18 @@ const NotificationDetailConnected = () => {
                       <td className="px-4 py-3">
                         {matchedUser ? (
                           <button onClick={() => navigate(`/admin/users/${matchedUser.id}`)} className="font-semibold text-pink-600 hover:underline">
-                            {matchedUser.name || "Registered User"}
+                            {entry.name || matchedUser.name || "Registered User"}
                           </button>
                         ) : (
-                          <span className="font-medium text-gray-800">{entry.userId || "Guest"}</span>
+                          <span className="font-medium text-gray-800">{entry.name || entry.userId || "Guest"}</span>
                         )}
+                        {entry.requestType === "preorder" && <span className="mt-1 block text-xs font-semibold text-amber-700">Pre-order request</span>}
                       </td>
-                      <td className="px-4 py-3">{matchedUser?.email || entry.email || entry.phone || getRecordDisplayEmail(entry) || "-"}</td>
+                      <td className="px-4 py-3">
+                        <p>{entry.phone || matchedUser?.email || entry.email || getRecordDisplayEmail(entry) || "-"}</p>
+                        {entry.phone && entry.email && <p className="mt-1 break-all text-xs text-gray-500">{entry.email}</p>}
+                        {entry.address && <p className="mt-1 max-w-xs whitespace-pre-wrap break-words text-xs text-gray-500">{entry.address}</p>}
+                      </td>
                       <td className="px-4 py-3">{entry.variantName || "-"}</td>
                       <td className="px-4 py-3">{orderCount}</td>
                       <td className="px-4 py-3">{formatDate(entry.createdAt)}</td>

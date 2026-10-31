@@ -39,8 +39,6 @@ const end2BannerDesktop = "/Homepage/homepagemaskcombo2banner.png";
 const end2BannerMobile = "/Homepage/homepagemaskcombo2bannermobile.png";
 const end3BannerDesktop = "/Homepage/homepagemaskcombo3banner.png";
 const end3BannerMobile = "/Homepage/homepagemaskcombo3bannermobile.png";
-const maskBannerDesktop = "/Homepage/homepagemaksmakerofferbanner.jpg";
-const maskBannerMobile = "/Homepage/homepagemaksmakerofferbannermobile.png";
 const homePageCtmBannerDesktop = "/Homepage/homepagebannerctm.jpg";
 const homePageCtmBannerMobile = "/Homepage/homepagebannerctmmobile.png";
 const homeFeatureVideoUrl = "https://youtu.be/lEGWrDPXNpE";
@@ -927,16 +925,52 @@ const Home = () => {
             bannerKey="home-top"
             slides={[
               {
+                desktopSrc: "/Homepage/diwali-mask-makers-shop-hero.webp",
+                mobileSrc: "/Homepage/diwali-mask-makers-mobile.webp",
+                linkUrl: "/product/voice-face-mask-maker",
+                alt: "Diwali Dhamaka offers on Ilika voice and non-voice mask makers",
+                imageFit: "contain",
+                aspectRatio: "1774 / 887",
+                mobileAspectRatio: "1060 / 1484",
+                mobileWidth: 1060,
+                mobileHeight: 1484,
+                width: 1774,
+                height: 887,
+                hotspots: [
+                  { href: "/product/voice-face-mask-maker", label: "Shop voice mask maker", left: "36%", top: "32%", width: "27%", height: "54%", mobilePosition: { left: "16%", top: "75%", width: "31%", height: "7%" } },
+                  { href: "/product/non-voice-face-mask-maker", label: "Shop non-voice mask maker", left: "64%", top: "32%", width: "28%", height: "54%", mobilePosition: { left: "56%", top: "75%", width: "31%", height: "7%" } },
+                ],
+              },
+              {
+                desktopSrc: "/Homepage/nonvoice-mask-maker-desktop.webp",
+                mobileSrc: "/Homepage/nonvoice-mask-maker-mobile.webp",
+                linkUrl: "/product/non-voice-face-mask-maker",
+                alt: "Non-voice mask maker Diwali offer with Hydra Gel face moisturizer free",
+                imageFit: "contain",
+                aspectRatio: "1774 / 887",
+                mobileAspectRatio: "1060 / 1484",
+                width: 1774,
+                height: 887,
+                mobileWidth: 1060,
+                mobileHeight: 1484,
+              }, {
+                desktopSrc: "/Homepage/voice-mask-maker-desktop.webp",
+                mobileSrc: "/Homepage/voice-mask-maker-mobile.webp",
+                linkUrl: "/product/voice-face-mask-maker",
+                alt: "Voice mask maker Diwali offer with 8 collagen peptide tablets free",
+                imageFit: "contain",
+                aspectRatio: "1774 / 887",
+                mobileAspectRatio: "1060 / 1484",
+                width: 1774,
+                height: 887,
+                mobileWidth: 1060,
+                mobileHeight: 1484,
+              },
+              {
                 desktopSrc: homeTopHairBannerDesktop,
                 mobileSrc: homeTopHairBannerMobile,
                 linkUrl: hairBannerProductLink,
                 alt: "Hair Dryer Banner",
-              },
-              {
-                desktopSrc: maskBannerDesktop,
-                mobileSrc: maskBannerMobile,
-                linkUrl: "/product/voice-face-mask-maker",
-                alt: "Voice Mask Maker Banner",
               },
               {
                 desktopSrc: endBannerDesktop,
@@ -970,6 +1004,8 @@ const Home = () => {
             priority
             preserveFullImage
             mergeWithMatchedBanners
+            pinFirstSlide
+            pinnedSlideCount={3}
           />
 
           <Suspense fallback={null}>
@@ -1033,6 +1069,7 @@ const Home = () => {
                   <HomeTrendingShowcase
                     heading="Your Best Sellers, Trending Now"
                     subheading="Trending beauty tools curated for you"
+                    prioritySlugs={["voice-face-mask-maker", "non-voice-face-mask-maker"]}
                     priorityNames={[
                       "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
                       "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",
@@ -1061,6 +1098,7 @@ const Home = () => {
                   <HomeTrendingShowcase
                     heading="Your Best Sellers, Trending Now"
                     subheading="Trending beauty tools curated for you"
+                    prioritySlugs={["voice-face-mask-maker", "non-voice-face-mask-maker"]}
                     priorityNames={[
                       "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin",
                       "Ilika High-Speed BLDC Hair Dryer | Fast Drying Professional Hair Dryer with Ionic Technology & Temperature Control",

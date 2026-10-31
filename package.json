@@ -15,6 +15,7 @@
     "verify:hair-dryer": "node scripts/verify-hair-dryer.mjs",
     "verify:mask-maker-blogs": "node scripts/verify-mask-maker-blogs.mjs",
     "verify:mask-maker-mobile": "node scripts/verify-mask-maker-mobile.mjs",
+    "verify:preorders": "node scripts/verify-preorders.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

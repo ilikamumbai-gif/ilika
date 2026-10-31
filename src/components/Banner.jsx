@@ -32,6 +32,8 @@ const Banner = ({
   slides = [],
   preserveFullImage = false,
   mergeWithMatchedBanners = false,
+  pinFirstSlide = false,
+  pinnedSlideCount = 0,
   standardSize = true,
 }) => {
   const bannerCtx = useOptionalBanners();
@@ -53,11 +55,14 @@ const Banner = ({
   );
   const activeSlides = useMemo(() => {
     if (mergeWithMatchedBanners && matchedBanners.length && normalizedSlides.length) {
+      const count = Math.min(normalizedSlides.length, Math.max(pinnedSlideCount, pinFirstSlide ? 1 : 0));
+      if (count > 0) return [...normalizedSlides.slice(0, count), ...matchedBanners, ...normalizedSlides.slice(count)];
       return [...matchedBanners, ...normalizedSlides];
     }
     return normalizedSlides.length > 0 ? normalizedSlides : matchedBanners;
-  }, [matchedBanners, mergeWithMatchedBanners, normalizedSlides]);
+  }, [matchedBanners, mergeWithMatchedBanners, normalizedSlides, pinFirstSlide, pinnedSlideCount]);
   const hasMultiple = activeSlides.length > 1;
+  const activeSlide = activeSlides[activeIndex];
   const aspectRatio = `${width} / ${height}`;
   const shouldUseNaturalHeight = !standardSize && (preserveFullImage || imageFit === "contain");
 
@@ -110,9 +115,9 @@ const Banner = ({
   return (
     <section
       className={`relative w-full overflow-hidden ${
-        standardSize ? "aspect-[5/7] sm:aspect-[12/5]" : ""
+        activeSlide?.aspectRatio ? "aspect-[var(--banner-mobile-aspect)] sm:aspect-[var(--banner-aspect)]" : standardSize ? "aspect-[5/7] sm:aspect-[12/5]" : ""
       } ${className}`}
-      style={!standardSize && !shouldUseNaturalHeight ? { aspectRatio } : undefined}
+      style={activeSlide?.aspectRatio ? { "--banner-aspect": activeSlide.aspectRatio, "--banner-mobile-aspect": activeSlide.mobileAspectRatio || activeSlide.aspectRatio } : !standardSize && !shouldUseNaturalHeight ? { aspectRatio } : undefined}
     >
       <div
         className={`flex h-full transition-transform duration-500 ease-in-out ${
@@ -126,10 +131,11 @@ const Banner = ({
           const resolvedLink = slide?.linkUrl || linkUrl || "";
           const isExternalLink = /^https?:\/\//i.test(resolvedLink) || resolvedLink.startsWith("//");
           const resolvedAlt = slide?.alt || alt || "Banner";
+          const resolvedImageFit = slide?.imageFit || imageFit;
 
           const content = shouldRenderSlide(index) ? (
             <picture className="block w-full h-full">
-              <source media="(max-width: 639px)" srcSet={mobileImageSrc} />
+              <source media="(max-width: 639px)" srcSet={mobileImageSrc} width={slide?.mobileWidth} height={slide?.mobileHeight} />
               <OptimizedImage
                 priority={priority && index === activeIndex}
                 fetchPriority={priority && index === activeIndex ? "high" : "low"}
@@ -141,12 +147,12 @@ const Banner = ({
         preserveFullImage ? "object-contain" : "object-cover"
       }`
     : `block w-full h-full ${
-        imageFit === "contain" ? "object-contain" : "object-cover"
+        resolvedImageFit === "contain" ? "object-contain" : "object-cover"
       }`
 }
                 sizes="100vw"
-                width={width}
-                height={height}
+                width={slide?.width || width}
+                height={slide?.height || height}
               />
             </picture>
           ) : (
@@ -158,7 +164,21 @@ const Banner = ({
 
           return (
             <div key={`${resolvedAlt}-${index}`} className="h-full w-full shrink-0 grow-0 basis-full">
-              {resolvedLink ? (
+              {slide.hotspots?.length ? (
+                <div className="relative h-full">
+                  {content}
+                  {slide.hotspots.map(({ href, label, mobilePosition, ...position }) => (
+                    <React.Fragment key={href}>
+                    <Link to={href} aria-label={label}
+                      className="absolute z-10 hidden rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#801f1f] sm:block"
+                      style={{ ...position, minWidth: 44, minHeight: 44 }} />
+                    <Link to={href} aria-label={label}
+                      className="absolute z-10 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#801f1f] sm:hidden"
+                      style={{ ...(mobilePosition || position), minWidth: 44, minHeight: 44 }} />
+                    </React.Fragment>
+                  ))}
+                </div>
+              ) : resolvedLink ? (
                 isExternalLink ? (
                   <a href={resolvedLink} aria-label={resolvedAlt || "Banner link"} className="block h-full">
                     {content}
