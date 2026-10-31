@@ -1,0 +1,28 @@
+@media (max-width: 639px) {
+  .mask-maker-landing > section { padding: 32px 16px; }
+  .mask-maker-landing > .mask-maker-hero { padding-top: 16px; padding-bottom: 24px; }
+  .mask-maker-hero > div { gap: 20px; }
+  .mask-maker-hero-copy, .mask-maker-hero-media { min-width: 0; }
+  .mask-maker-hero-media { order: -1; }
+  .mask-maker-hero-copy h1 { font-size: clamp(30px, 8.5vw, 44px); line-height: 1.12; }
+  .mask-maker-hero-copy > p { font-size: 13px; line-height: 1.65; }
+  .mask-maker-landing > section h2 { margin-bottom: 24px; font-size: clamp(25px, 7vw, 32px); }
+  .mask-maker-landing [data-mask-maker-cta] { width: 100%; min-width: 0; min-height: 58px; height: auto; padding: 16px 12px; font-size: 14px; letter-spacing: .01em; }
+  .mask-maker-landing [data-mask-maker-cta]:has(> span.absolute) { min-height: 70px; padding-bottom: 26px; }
+  .mask-maker-landing [data-mask-maker-cta] > span.relative { min-width: 0; white-space: normal; text-align: center; }
+  .mask-maker-landing [data-mask-maker-cta] svg { flex-shrink: 0; }
+  .mask-maker-landing [data-mask-maker-cta] > span.absolute { right: auto; left: 50%; bottom: 6px; transform: translateX(-50%); white-space: nowrap; font-size: 8px; }
+  .mask-maker-landing > .mask-maker-trust { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 14px 16px; }
+  .mask-maker-trust > div { min-width: 0; gap: 6px; font-size: 11px; line-height: 1.4; }
+  .mask-maker-trust > div > span { flex-shrink: 0; }
+  .mask-maker-trust > div:last-child:nth-child(odd) { grid-column: 1 / -1; justify-content: center; }
+  .mask-maker-landing #features > .grid { gap: 12px; }
+  .mask-maker-landing #features > .grid > div { padding: 18px 16px; }
+  .mask-maker-landing #features > .grid > div > div { margin-bottom: 12px; width: 40px; height: 40px; }
+  .mask-maker-landing #features p { font-size: 13px; line-height: 1.65; }
+  .mask-maker-landing > section:last-of-type [data-mask-maker-cta],
+  .mask-maker-landing > section:last-of-type a { display: flex; justify-content: center; align-items: center; width: 100%; margin-left: 0; padding: 14px 16px; font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mask-maker-landing > section [class*="animation:offerPop"] { animation: none; }
+}

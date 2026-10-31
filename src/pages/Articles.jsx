@@ -7,8 +7,11 @@ import Header from "../components/Header";
 import MiniDivider from "../components/MiniDivider";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import { useProducts } from "../admin/context/ProductContext";
+import { isMaskMakerBlog, refreshMaskMakerBlog } from "../utils/maskMakerBlogOffers";
 
 const Articles = () => {
+  const { products = [] } = useProducts();
   const [apiBlogs, setApiBlogs] = useState([]);
   const [loadingArticles, setLoadingArticles] = useState(true);
   useEffect(() => {
@@ -27,7 +30,7 @@ const Articles = () => {
       });
     return () => controller.abort();
   }, []);
-  const articles = useMemo(() => getPublicBlogs([...STATIC_BLOGS, ...apiBlogs]), [apiBlogs]);
+  const articles = useMemo(() => getPublicBlogs([...STATIC_BLOGS, ...apiBlogs].map((blog) => refreshMaskMakerBlog(blog, products))), [apiBlogs, products]);
 
   return <>
     <MiniDivider />
@@ -44,6 +47,7 @@ const Articles = () => {
               <li key={route}>
                 <Link to={route} className="block rounded-lg border border-[#ececec] p-4 text-sm leading-6 text-[#801f1f] underline underline-offset-4 hover:bg-[#faf8f5]">
                   {getArticleLinkTitle(blog.title)}
+                  {isMaskMakerBlog(blog) && <span className="mt-2 block text-xs font-semibold text-[#765018]">Diwali: 8 peptide tablets FREE with voice model · 25 g Hydra Gel FREE with non-voice</span>}
                 </Link>
               </li>
             ))}

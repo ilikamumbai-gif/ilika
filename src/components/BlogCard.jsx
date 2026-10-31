@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { createSlug } from "../utils/slugify";
 import OptimizedImage from "./OptimizedImage";
+import { useProducts } from "../admin/context/ProductContext";
+import { isMaskMakerBlog, refreshMaskMakerBlog } from "../utils/maskMakerBlogOffers";
 
 const BlogCard = ({
-  blog,
+  blog: sourceBlog,
   prioritizeImage = false,
   hideDate = false,
   ctaLabel = "Read Article",
@@ -13,6 +15,8 @@ const BlogCard = ({
   squareImage = false,
   compact = false,
 }) => {
+  const { products = [] } = useProducts();
+  const blog = useMemo(() => refreshMaskMakerBlog(sourceBlog, products), [sourceBlog, products]);
   const blogPath = linkPath || `/blog/${blog?.slug || createSlug(blog?.title || "") || blog?.id}`;
   const visibleTitle = blog?.displayTitle || blog?.title;
   const formattedDate = blog?.createdAt
@@ -65,6 +69,11 @@ const BlogCard = ({
           <h3 className={`${compact ? "text-lg sm:text-[20px]" : "text-[22px] sm:text-[24px]"} line-clamp-2 font-semibold leading-[1.18] text-[#0f2f17]`}>
             {visibleTitle}
           </h3>
+          {isMaskMakerBlog(blog) && (
+            <p className="rounded-lg bg-[#fff0c9] px-2.5 py-2 text-[11px] font-semibold leading-5 text-[#765018]">
+              Diwali gifts: Voice—8 peptide tablets FREE · Non-voice—25 g Hydra Gel FREE
+            </p>
+          )}
 
           {/* {!compact && teaser && (
             <p className="line-clamp-2 text-[15px] leading-6 text-[#59705f]">

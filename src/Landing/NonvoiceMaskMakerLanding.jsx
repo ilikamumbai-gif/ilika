@@ -1,13 +1,18 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./MaskMakerLanding.css";
+import { lazy, Suspense, useCallback } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
 import CartDrawer from "../components/CartDrawer";
 import EmiAvailableNotice from "../components/EmiAvailableNotice";
+import DiwaliOfferBanner from "../components/product/DiwaliOfferBanner";
+import OptimizedImage from "../components/OptimizedImage";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
+import { buildCartProductSnapshot, getDefaultVariant, getProductVariantAvailability, getProductVariantStock } from "../utils/productPricing";
 import {
   Touchpad,
   Leaf,
@@ -16,11 +21,14 @@ import {
   HandHeart,
   Gift,
   ShoppingCart,
+  Bell,
   Star,
   ShieldCheck,
   Truck,
   Lightbulb,
 } from "lucide-react";
+
+const NotifyMeModal = lazy(() => import("../components/NotifyMeModal"));
 
 const features = [
   {
@@ -35,8 +43,8 @@ const features = [
   },
   {
     icon: Gem,
-    title: "Collagen Peptide Boost",
-    desc: "Includes collagen peptide packs for anti-ageing and deep nourishment. Firmer, plumper, younger-looking skin with every use.",
+    title: "Your Free Diwali Gift",
+    desc: "Diwali special: 25 g Hydra Gel included FREE with your non-voice mask maker. A festive treat for your skincare routine.",
   },
   {
     icon: HandHeart,
@@ -81,6 +89,8 @@ const reviews = [
 
 const NonvoiceMaskMakerLanding = () => {
   const [secs, setSecs] = useState(23 * 60 + 47);
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const closeNotify = useCallback(() => setNotifyOpen(false), []);
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { products = [], loading } = useProducts();
@@ -109,11 +119,17 @@ const NonvoiceMaskMakerLanding = () => {
       .trim()
       .toLowerCase();
 
-    return nameSlug === targetSlug || rawSlug === targetSlug;
+    return nameSlug === targetSlug || rawSlug === targetSlug || rawSlug === "non-voice-face-mask-maker";
   });
 }, [products]);
 
-  const defaultVariant = targetProduct?.variants?.find((v) => v?.isDefault) || targetProduct?.variants?.[0];
+  const defaultVariant = getDefaultVariant(targetProduct || {});
+  const isProductAvailable = Boolean(targetProduct?.inStock) && getProductVariantAvailability(targetProduct, defaultVariant);
+  const liveStock = targetProduct ? getProductVariantStock(targetProduct, defaultVariant) : null;
+  const stockLabel = !targetProduct ? "Checking availability..."
+    : !isProductAvailable ? "Pre-order"
+      : liveStock !== null ? `${liveStock} pieces in stock` : "In stock";
+  const PurchaseIcon = isProductAvailable ? ShoppingCart : Bell;
   const productName = targetProduct?.name || "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin";
   const rawProductPrice = defaultVariant?.price ?? targetProduct?.price;
   const rawProductMrp = defaultVariant?.mrp ?? targetProduct?.mrp;
@@ -126,6 +142,9 @@ const NonvoiceMaskMakerLanding = () => {
       : Number(rawProductMrp);
   const hasLivePrice = Number.isFinite(productPrice) && productPrice > 0;
   const hasLiveMrp = Number.isFinite(productMrp) && productMrp > 0;
+  const purchaseLabel = isProductAvailable
+    ? `Buy Now - ${hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}`
+    : targetProduct ? "Notify Me" : "Loading...";
   const productImage =
     defaultVariant?.images?.[0] ||
     targetProduct?.images?.[0] ||
@@ -133,31 +152,41 @@ const NonvoiceMaskMakerLanding = () => {
     "https://ilika.in/cdn/shop/products/mask-maker-machine.jpg";
 
   const productSlug = getProductSlug(targetProduct);
-  const productPath = `/product/${productSlug}`;
+  const productPath = `/product/${productSlug || "non-voice-face-mask-maker"}`;
   const effectiveSavings =
     hasLivePrice && hasLiveMrp ? Math.max(productMrp - productPrice, 0) : 0;
 
   const handleBuyNow = async () => {
-    if (!targetProduct || !hasLivePrice) {
+    if (targetProduct && !isProductAvailable) {
+      setNotifyOpen(true);
+      return;
+    }
+    if (!targetProduct || !isProductAvailable || !hasLivePrice) {
       return;
     }
 
-    const cartPayload = {
-      id: String(targetProduct?.id || targetProduct?._id || productSlug),
-      name: productName,
-      price: productPrice,
-      originalPrice: hasLiveMrp ? productMrp : productPrice,
-      image: productImage,
-      images: [productImage],
-      discountApplied: null,
-    };
+    const cartPayload = buildCartProductSnapshot(targetProduct, {
+      variant: defaultVariant,
+      selectedPrice: productPrice,
+      selectedCompareAtPrice: hasLiveMrp ? productMrp : productPrice,
+      selectedImage: productImage,
+      extra: {
+        includedContents: {
+          label: "25 g Hydra Gel FREE",
+          name: "25 g Hydra Gel",
+          tablets: 0,
+          price: 0,
+        },
+        discountApplied: null,
+      },
+    });
 
     await addToCart(cartPayload);
     navigate("/checkout");
   };
 
   return (
-    <div className="bg-[#FFF8F5] text-[#3A2A27] [font-family:'DM_Sans',sans-serif]">
+    <div className="mask-maker-landing bg-[#FFF8F5] text-[#3A2A27] [font-family:'DM_Sans',sans-serif]">
       <MiniDivider />
       <Header />
 
@@ -165,9 +194,9 @@ const NonvoiceMaskMakerLanding = () => {
         .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 900px; }
       `}</style>
 
-      <section className="bg-[#FFFCFA] px-[4%] py-4 sm:py-5 lg:px-[6%] lg:py-6">
+      <section className="mask-maker-hero bg-[#FFFCFA] px-[4%] py-4 sm:py-5 lg:px-[6%] lg:py-6">
         <div className="mx-auto grid min-h-0 w-full max-w-[1240px] grid-cols-1 gap-6 lg:min-h-[calc(100dvh-150px)] lg:grid-cols-[1.45fr_0.95fr] lg:items-center lg:gap-10">
-          <div className="flex w-full flex-col">
+          <div className="mask-maker-hero-copy flex w-full flex-col">
             <div className="mb-4 inline-flex w-fit items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#B87161]">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#B87161]" /> Trusted by 10,000+ Skincare Lovers
             </div>
@@ -183,7 +212,11 @@ const NonvoiceMaskMakerLanding = () => {
               Stop spending ₹800 per salon visit. The {productName} turns fresh fruits + collagen into a custom spa mask - right in your kitchen, every day. No voice prompts, just a clean touch screen that keeps things simple and elegant.
             </p>
 
-            <div className="mb-4 flex items-end gap-2.5 sm:gap-3">
+            <div className="mb-4 w-full max-w-[760px]">
+              <DiwaliOfferBanner isNonVoiceMaskMaker />
+            </div>
+
+            <div className="mb-4 flex flex-wrap items-end gap-2.5 sm:gap-3">
               <span className="[font-family:'Playfair_Display',serif] text-[44px] font-bold leading-none sm:text-[52px]">
                 {hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}
               </span>
@@ -201,13 +234,13 @@ const NonvoiceMaskMakerLanding = () => {
 
             <EmiAvailableNotice className="mb-4 w-full max-w-[760px]" />
 
-            <button type="button" onClick={handleBuyNow} disabled={!targetProduct || !hasLivePrice} className="group relative mb-3 inline-flex h-[74px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-5 py-4 text-[16px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] disabled:cursor-not-allowed disabled:opacity-60 sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[18px] sm:tracking-[0.03em]">
+            <button type="button" onClick={handleBuyNow} data-mask-maker-cta disabled={!targetProduct || (isProductAvailable && !hasLivePrice)} className="group relative mb-3 inline-flex h-[74px] w-full max-w-[760px] items-center justify-center overflow-hidden rounded-[12px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-5 py-4 text-[16px] font-bold tracking-[0.02em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] disabled:cursor-not-allowed disabled:opacity-60 sm:h-[90px] sm:rounded-[14px] sm:px-[52px] sm:py-5 sm:text-[18px] sm:tracking-[0.03em]">
               <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
               <span className="relative z-[1] inline-flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5" />
-                Buy Now - {hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}
+                <PurchaseIcon className="h-5 w-5" />
+                {purchaseLabel}
               </span>
-              <span className="absolute bottom-1.5 right-2 rounded-full bg-[rgba(255,255,255,0.2)] px-1.5 py-[2px] text-[9px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)] sm:right-3 sm:px-2 sm:text-[10px]">LIMITED STOCK</span>
+              <span className="absolute bottom-1.5 right-2 rounded-full bg-[rgba(255,255,255,0.2)] px-1.5 py-[2px] text-[9px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)] sm:right-3 sm:px-2 sm:text-[10px]">{isProductAvailable ? "DIWALI OFFER" : "RESTOCK ALERT"}</span>
             </button>
 
             <div className="mb-3 flex w-full max-w-[760px] flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -216,22 +249,23 @@ const NonvoiceMaskMakerLanding = () => {
 
             <div className="mt-1 flex items-center gap-2.5 text-[12px] text-[rgba(126,102,96,0.9)]">
               <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#C6A06D]" />
-              <span>Offer ends in <span className="font-semibold text-[#9E5C4F]">{countdown}</span> · Only 12 units left</span>
+              <span>Diwali offer ends in <span className="font-semibold text-[#9E5C4F]">{countdown}</span> · 25 g Hydra Gel FREE</span>
             </div>
+            <p className="mt-2 text-xs font-semibold text-[#8F5A4E]" role="status">{stockLabel}</p>
 
             {(!targetProduct || !hasLivePrice) && <p className="mt-2 text-[12px] text-[#8F5A4E]">{loading ? "Loading live product details..." : "Live product price unavailable right now."}</p>}
           </div>
 
-          <div className="relative mx-auto flex w-full max-w-[470px] items-center justify-center">
+          <div className="mask-maker-hero-media relative mx-auto flex w-full max-w-[470px] items-center justify-center">
             <div className="absolute left-1/2 top-1/2 h-[290px] w-[290px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(184,113,97,0.16)] bg-[rgba(184,113,97,0.08)] sm:h-[360px] sm:w-[360px] lg:h-[430px] lg:w-[430px]" />
-            <div className="relative z-[3] aspect-[4/4] w-full max-w-[360px] border-4 border-white bg-white p-2 shadow-[0_14px_30px_rgba(125,80,66,0.14)] sm:max-w-[470px] sm:p-3">
-              <img src={productImage} alt={productName} className="h-full w-full bg-[#F7F7F7] object-contain object-center" onError={(e) => { e.currentTarget.src = "https://placehold.co/460x520/251610/C8705A?text=Ilika+Mask+Maker"; }} />
+            <div className="relative z-[3] aspect-square w-full max-w-[470px] overflow-hidden rounded-[18px] border border-[#d6a445] bg-white shadow-[0_14px_30px_rgba(125,80,66,0.14)]">
+              <OptimizedImage priority src="/ProductBanners/nonvoice-mask-maker-diwali.webp" alt="Ilika Non-Voice Mask Maker Diwali Dhamaka offer: 25 g Hydra Gel free, 1 year warranty, free delivery, COD and secure payment" width={1254} height={1254} sizes="(max-width: 639px) 92vw, 470px" className="h-full w-full object-contain object-center" />
             </div>
           </div>
         </div>
       </section>
 
-      <div className="flex flex-wrap justify-center gap-6 border-y border-[rgba(184,113,97,0.28)] bg-[linear-gradient(120deg,_#2F1F1C_0%,_#472E2A_100%)] px-[8%] py-5 lg:gap-12">
+      <div className="mask-maker-trust flex flex-wrap justify-center gap-6 border-y border-[rgba(184,113,97,0.28)] bg-[linear-gradient(120deg,_#2F1F1C_0%,_#472E2A_100%)] px-[8%] py-5 lg:gap-12">
         {[
           { icon: Star, label: "4.0 Verified Reviews" },
           { icon: Touchpad, label: "Intuitive Touch Screen" },
@@ -252,7 +286,7 @@ const NonvoiceMaskMakerLanding = () => {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">{features.map((f) => (<div key={f.title} className="rounded-[20px] border border-[#EBDDD4] bg-[#FFFDFC] px-7 py-9 transition hover:-translate-y-1 hover:shadow-[0_14px_40px_rgba(184,113,97,0.14)]"><div className="mb-5 grid h-[52px] w-[52px] place-content-center rounded-[14px] bg-[#F6E7DE] text-[26px]"><f.icon className="mx-auto h-6.5 w-6.5 text-[#9E5C4F]" /></div><h3 className="mb-2.5 text-[17px] font-semibold">{f.title}</h3><p className="text-[14px] font-light leading-[1.65] text-[#7E6660]">{f.desc}</p></div>))}</div>
 
-        <div className="mx-auto mt-12 w-full max-w-[760px]"><button type="button" onClick={handleBuyNow} disabled={!targetProduct || !hasLivePrice} className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] disabled:cursor-not-allowed disabled:opacity-60"><span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" /><span className="relative z-[1] inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - {hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}</span><span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">LIMITED STOCK</span></button></div>
+        <div className="mx-auto mt-12 w-full max-w-[760px]"><button type="button" onClick={handleBuyNow} data-mask-maker-cta disabled={!targetProduct || (isProductAvailable && !hasLivePrice)} className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] disabled:cursor-not-allowed disabled:opacity-60"><span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" /><span className="relative z-[1] inline-flex items-center gap-2"><PurchaseIcon className="h-5 w-5" />{purchaseLabel}</span><span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">{isProductAvailable ? "DIWALI OFFER" : "RESTOCK ALERT"}</span></button></div>
       </section>
 
       <section className="cv-auto bg-[linear-gradient(180deg,_#F8EDE5_0%,_#F0DCCE_100%)] px-[8%] py-20">
@@ -265,7 +299,7 @@ const NonvoiceMaskMakerLanding = () => {
       <section className="cv-auto bg-[linear-gradient(180deg,_#FFFDFB_0%,_#F9EFE7_100%)] px-[8%] py-20">
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-[60px]"><div><h3 className="mb-5 [font-family:'Playfair_Display',serif] text-[34px] font-bold leading-[1.2]">Made with<br />Real Ingredients</h3><p className="mb-7 text-[15px] font-light leading-[1.7] text-[#7E6660]">Unlike store-bought masks packed with chemicals, you control exactly what goes on your skin. Use what's in your fridge - and your skin will thank you.</p><div className="flex flex-wrap gap-2.5">{["Orange", "Kiwi", "Strawberry", "Lemon", "Milk", "Honey", "Avocado", "Collagen"].map((tag) => (<span key={tag} className="rounded-full border border-[#EBCFC2] bg-[#F6E7DE] px-[18px] py-2 text-[13px] font-medium text-[#9E5C4F]">{tag}</span>))}</div></div><div className="rounded-[28px] bg-[#F6E7DE] px-10 py-12"><div className="mb-4 rounded-2xl border border-[#EBCFC2] bg-[#FFFDFC] p-6"><p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#B87161]"><Star className="h-3.5 w-3.5" /> Included</p><h4 className="mb-1.5 text-[15px] font-semibold">Collagen Peptide Pack</h4><p className="text-[13px] font-light text-[#7E6660]">Clinically formulated to boost skin elasticity, reduce fine lines and restore that youthful firmness. Just add one scoop to your mask mix.</p></div><div className="rounded-2xl border border-[#EBCFC2] bg-[#FFFDFC] p-6"><p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#B87161]"><Lightbulb className="h-3.5 w-3.5" /> Pro Tip</p><h4 className="mb-1.5 text-[15px] font-semibold">Vitamin C Brightening Mask</h4><p className="text-[13px] font-light text-[#7E6660]">Orange + lemon + a pinch of turmeric → instant glow mask. The machine blends it to the perfect consistency for your skin type.</p></div></div></div>
 
-        <div className="mx-auto mt-12 w-full max-w-[760px]"><button type="button" onClick={handleBuyNow} disabled={!targetProduct || !hasLivePrice} className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] disabled:cursor-not-allowed disabled:opacity-60"><span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" /><span className="relative z-[1] inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - {hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}</span><span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">LIMITED STOCK</span></button></div>
+        <div className="mx-auto mt-12 w-full max-w-[760px]"><button type="button" onClick={handleBuyNow} data-mask-maker-cta disabled={!targetProduct || (isProductAvailable && !hasLivePrice)} className="group relative inline-flex h-[90px] w-full items-center justify-center overflow-hidden rounded-[14px] border border-[#8A4D40] bg-[linear-gradient(135deg,_#E36A4F_0%,_#C9553F_45%,_#B34838_100%)] px-[52px] py-5 text-[18px] font-bold tracking-[0.03em] text-white shadow-[0_14px_30px_rgba(179,72,56,0.35)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(179,72,56,0.45)] disabled:cursor-not-allowed disabled:opacity-60"><span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" /><span className="relative z-[1] inline-flex items-center gap-2"><PurchaseIcon className="h-5 w-5" />{purchaseLabel}</span><span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">{isProductAvailable ? "DIWALI OFFER" : "RESTOCK ALERT"}</span></button></div>
       </section>
 
       <section className="cv-auto bg-[linear-gradient(180deg,_#FFFFFF_0%,_#FFF5EE_100%)] px-[8%] py-20">
@@ -280,12 +314,17 @@ const NonvoiceMaskMakerLanding = () => {
         <div className="absolute -bottom-[80px] -left-[40px] h-[240px] w-[240px] rounded-full bg-[rgba(255,255,255,0.06)]" />
 
         <h2 className="relative z-[1] mb-4 text-center [font-family:'Playfair_Display',serif] text-[clamp(28px,3vw,42px)] font-bold leading-[1.2] text-white">Ready to Glow<br /><em className="text-[rgba(255,255,255,0.75)]">Every Single Day?</em></h2>
-        <p className="relative z-[1] mb-9 text-[16px] font-light text-[rgba(255,255,255,0.88)]">Inclusive of all taxes · Fast delivery across India</p>
+        <p className="relative z-[1] mb-9 text-[16px] font-light text-[rgba(255,255,255,0.88)]">Diwali special: 25 g Hydra Gel FREE with your non-voice mask maker.<br />Inclusive of all taxes · Fast delivery across India</p>
 
-        <div className="relative z-[1]"><button type="button" onClick={handleBuyNow} disabled={!targetProduct || !hasLivePrice} className="mb-3 inline-block rounded-full bg-[#FFF7F2] px-12 py-[18px] text-[16px] font-semibold text-[#9E5C4F] transition hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] disabled:cursor-not-allowed disabled:opacity-60"><span className="inline-flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Buy Now - {hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}</span></button><a href={productPath} className="mb-3 ml-2 inline-block rounded-full border-2 border-[rgba(255,255,255,0.7)] px-9 py-4 text-[16px] font-medium text-white transition hover:bg-[rgba(255,255,255,0.12)]">Learn More ↗</a></div>
+        <div className="relative z-[1]"><button type="button" onClick={handleBuyNow} data-mask-maker-cta disabled={!targetProduct || (isProductAvailable && !hasLivePrice)} className="mb-3 inline-block rounded-full bg-[#FFF7F2] px-12 py-[18px] text-[16px] font-semibold text-[#9E5C4F] transition hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] disabled:cursor-not-allowed disabled:opacity-60"><span className="inline-flex items-center gap-2"><PurchaseIcon className="h-5 w-5" />{purchaseLabel}</span></button><a href={productPath} className="mb-3 ml-2 inline-block rounded-full border-2 border-[rgba(255,255,255,0.7)] px-9 py-4 text-[16px] font-medium text-white transition hover:bg-[rgba(255,255,255,0.12)]">Learn More ↗</a></div>
       </section>
 
       <CartDrawer />
+      {notifyOpen && targetProduct && (
+        <Suspense fallback={null}>
+          <NotifyMeModal isOpen={notifyOpen} onClose={closeNotify} product={targetProduct} variant={defaultVariant} />
+        </Suspense>
+      )}
       <Footer />
     </div>
   );

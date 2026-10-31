@@ -13,6 +13,8 @@ import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 import { buildCartProductSnapshot, getDefaultVariant } from "../utils/productPricing";
 import { PRIVATE_BLOG_PATHS, PRIVATE_BLOGS, STATIC_BLOGS } from "../data/privateBlogs";
+import { getMaskMakerBlogOffers, isMaskMakerBlog, refreshMaskMakerBlog } from "../utils/maskMakerBlogOffers";
+import BlogMaskMakerOffers from "../components/BlogMaskMakerOffers";
 
 const removeInlineImagesFromHtml = (html = "") =>
   String(html || "").replace(/<img[^>]*>/gi, "");
@@ -67,9 +69,11 @@ const normalizeLookupValue = (value = "") =>
 
 const LANDING_ROUTE_PRODUCT_MATCHERS = {
   "/voice-mask-maker": [
+    "voice-face-mask-maker",
     "ilika-voice-face-mask-maker-machine-with-collagen-peptide",
   ],
   "/nonvoice-mask-maker": [
+    "non-voice-face-mask-maker",
     "ilika-non-voice-face-mask-maker-machine-with-collagen-peptide-diy-fresh-fruit-facial-mask-machine-for-glowing-skin",
   ],
   "/leafless-hair-dryer": [
@@ -180,7 +184,9 @@ const BlogDetail = () => {
     if (consolidatedPath) navigate(consolidatedPath, { replace: true });
   }, [consolidatedPath, navigate]);
   const API = import.meta.env.VITE_API_URL;
-  const [blog, setBlog] = useState(locationBlog || null);
+  const [rawBlog, setBlog] = useState(locationBlog || null);
+  const blog = useMemo(() => refreshMaskMakerBlog(rawBlog, products), [rawBlog, products]);
+  const maskMakerOffers = useMemo(() => getMaskMakerBlogOffers(products), [products]);
   const privateBlog = useMemo(
     () =>
       PRIVATE_BLOGS.find(
@@ -409,9 +415,13 @@ const BlogDetail = () => {
 
     const productId = linkedProduct._id || linkedProduct.id;
     const defaultVariant = getDefaultVariant(linkedProduct);
+    const maskMakerOffer = maskMakerOffers.find((offer) => offer.slug === getProductSlug(linkedProduct));
     const cartItem = buildCartProductSnapshot(linkedProduct, {
       variant: defaultVariant,
       cartId: defaultVariant ? `${productId}_${defaultVariant.id}` : productId,
+      extra: maskMakerOffer ? {
+        includedContents: { label: maskMakerOffer.gift, name: maskMakerOffer.gift.replace(/ FREE$/, ""), tablets: maskMakerOffer.tablets, price: 0 },
+      } : {},
     });
 
     addToCart(cartItem);
@@ -613,6 +623,7 @@ const BlogDetail = () => {
               ) : null}
             </div>
 
+            {isMaskMakerBlog(blog) && <BlogMaskMakerOffers offers={maskMakerOffers} />}
             {contentSections.map((section, index) => renderSectionBlock(section, index))}
 
             {isHairDryerBlog ? (

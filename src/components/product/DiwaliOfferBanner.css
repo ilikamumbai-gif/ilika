@@ -1,0 +1,25 @@
+.diwali-offer { container-type: inline-size; transition: box-shadow 300ms ease, border-color 300ms ease; }
+.diwali-offer .diwali-banner-cracker, .diwali-offer .diwali-offer-light { animation-play-state: paused; }
+.diwali-offer[data-visible="true"] .diwali-banner-cracker, .diwali-offer[data-visible="true"] .diwali-offer-light { animation-play-state: running; }
+@container (max-width: 300px) {
+  .diwali-offer-badge { font-size: 8px; letter-spacing: .04em; gap: 4px; padding-inline: 7px; }
+  .diwali-offer-icon { display: none; }
+  .diwali-banner-decoration { width: 42px; }
+}
+.diwali-offer:hover { border-color: #ddb568; box-shadow: 0 4px 18px rgb(201 150 54 / 12%); }
+.diwali-banner-decoration { pointer-events: none; }
+.diwali-banner-cracker { position: absolute; width: 40px; height: 40px; animation: diwali-banner-cracker-pop 3.8s ease-out infinite backwards; }
+.diwali-banner-cracker-0 { left: -8px; top: -10px; }
+.diwali-banner-cracker-1 { right: -10px; top: 12px; width: 30px; height: 30px; animation-delay: 1.2s; }
+.diwali-banner-cracker-2 { left: -10px; bottom: 5px; width: 26px; height: 26px; animation-delay: 2.4s; }
+@keyframes diwali-banner-cracker-pop {
+  0% { opacity: .1; transform: scale(.25) rotate(-8deg); }
+  20% { opacity: 1; }
+  65%, 100% { opacity: 0; transform: scale(1.1) rotate(8deg); }
+}
+.diwali-offer-light { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 90% 50%, rgb(255 222 143 / 22%), transparent 65%); animation: diwali-light-breathe 6s ease-in-out infinite; }
+
+@keyframes diwali-light-breathe { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .diwali-offer, .diwali-offer * { animation: none !important; transition: none !important; }
+}

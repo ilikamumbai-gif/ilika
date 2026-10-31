@@ -1,4 +1,5 @@
 import { getArticleLinkTitle, getPublicBlogs } from "../src/utils/publicBlogs.js";
+import { refreshMaskMakerBlog } from "../src/utils/maskMakerBlogOffers.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { PRIVATE_BLOGS, STATIC_BLOGS } from "../src/data/privateBlogs.js";
@@ -106,7 +107,7 @@ const buildBlogPage = (blog, route, hairDryerProduct) => {
   const title = blog.metaTitle || `${blog.title} | Ilika Blog`;
   const description = blog.metaDescription || blog.excerpt || stripHtml(getBlogBody(blog)) || "Read this Ilika article.";
   const canonical = absoluteUrl(route);
-  const body = getBlogBody(blog);
+  const body = `${blog.maskMakerOfferHtml || ""}${getBlogBody(blog)}`;
   const hairDryerArticle = isHairDryerBlog(blog);
   const galleryImages = hairDryerArticle ? (getProductImages(hairDryerProduct).length ? getProductImages(hairDryerProduct) : [HAIR_DRYER_IMAGE_FALLBACK]) : [];
   const heroImage = hairDryerArticle ? galleryImages[0] : blog.image;
@@ -144,13 +145,14 @@ async function main() {
     fetchList(getEndpoint(env, "blogs"), "blogs"),
   ]);
   const publicProducts = products.filter((product) => product?.isActive !== false && product?.productUrl);
-  const blogs = getPublicBlogs([...STATIC_BLOGS, ...apiBlogs]);
+  const blogs = getPublicBlogs([...STATIC_BLOGS, ...apiBlogs].map((blog) => refreshMaskMakerBlog(blog, products)));
   const blogByRoute = new Map(blogs.map(({ route, blog }) => [route, blog]));
   // Private articles must not be linked in the public index or sitemap, but
   // they still need physical files. This lets direct links work on static
   // hosts even when a SPA fallback rewrite is unavailable.
   const privateBlogByRoute = new Map();
   [...PRIVATE_BLOGS, ...apiBlogs]
+    .map((blog) => refreshMaskMakerBlog(blog, products))
     .filter((blog) => blog?.title && blog?.isPrivate)
     .forEach((blog) => {
       const route = getBlogRoute(blog);
