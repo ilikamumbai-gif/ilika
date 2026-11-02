@@ -1,4 +1,5 @@
-﻿import { getMaskMakerOffer } from "../utils/maskMakerOffer.js";
+import MaskMakerGuidePopup from "../components/MaskMakerGuidePopup";
+import { getMaskMakerOffer } from "../utils/maskMakerOffer.js";
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -4891,6 +4892,7 @@ const ProductDetail = () => {
       />
 
       <div className="primary-bg-color" style={{ backgroundColor: detailTheme.pageBg }}>
+        {(isVoiceMaskMakerProduct || isNonVoiceMaskMakerProduct) && <MaskMakerGuidePopup key={productUrl} />}
         <Header />
         <CartDrawer />
 

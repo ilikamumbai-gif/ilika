@@ -1,3 +1,4 @@
+import MaskMakerGuidePopup from "../components/MaskMakerGuidePopup";
 import { PRICING_DELIVERY_BLOGS } from "../data/pricingDeliveryBlogs.js";
 import "./MaskMakerLanding.css";
 import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
@@ -485,7 +486,7 @@ const VoiceMaskMakerLanding = () => {
   return (
     <div className="mask-maker-landing bg-[#202020] text-[#FAF6F3] [font-family:'DM_Sans',sans-serif]">
       <MiniDivider />
-      <Header forceWhiteBg />
+      <Header forceWhiteBg /><MaskMakerGuidePopup />
 
       <style>{`
         @keyframes offerPop {

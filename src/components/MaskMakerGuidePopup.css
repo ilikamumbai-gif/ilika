@@ -1,0 +1,8 @@
+.mask-guide-popup { position:fixed; z-index:45; top:120px; right:20px; width:330px; max-width:calc(100vw - 28px); padding:22px; border:1px solid #dfbd91; border-radius:14px; background:linear-gradient(140deg,#fffbf3,#f9e8dc); color:#54203c; box-shadow:0 12px 40px #54203c26; font-family:'DM Sans',Arial,sans-serif; }
+.mask-guide-popup-close { position:absolute; top:5px; right:5px; display:grid; place-items:center; width:36px; height:36px; border:0; background:transparent; border-radius:50%; color:#795449; cursor:pointer; }
+.mask-guide-popup-kicker { display:flex; align-items:center; gap:6px; padding-right:12px; color:#985d32; font-size:9px; letter-spacing:.08em; }
+.mask-guide-popup h2 { margin:12px 0 9px; font-family:Georgia,serif; font-weight:400; font-size:24px; line-height:1.2; }
+.mask-guide-popup p { margin:0 0 14px; font-size:12px; line-height:1.65; color:#795f53; }
+.mask-guide-popup a { display:flex; justify-content:space-between; align-items:center; gap:8px; min-height:44px; padding:10px 13px; border-radius:7px; background:#60213e; color:#fff5e5; font-size:12px; text-decoration:none; }
+.mask-guide-popup :is(a,button):focus-visible { outline:3px solid #c89136; outline-offset:3px; }
+@media(max-width:600px) { .mask-guide-popup { top:100px; right:14px; width:290px; padding:18px; }.mask-guide-popup h2 { font-size:22px; } }

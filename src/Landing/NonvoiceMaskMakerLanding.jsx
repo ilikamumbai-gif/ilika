@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import MaskMakerGuidePopup from "../components/MaskMakerGuidePopup";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./MaskMakerLanding.css";
 import { lazy, Suspense, useCallback } from "react";
@@ -187,7 +188,7 @@ const NonvoiceMaskMakerLanding = () => {
   return (
     <div className="mask-maker-landing bg-[#FFF8F5] text-[#3A2A27] [font-family:'DM_Sans',sans-serif]">
       <MiniDivider />
-      <Header />
+      <Header /><MaskMakerGuidePopup />
 
       <style>{`
         .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 900px; }
