@@ -35,13 +35,13 @@ test("the selected homemade-mask guide is public and sitemap eligible", () => {
   assert.ok(STATIC_BLOGS.some((entry) => entry.slug === slug));
 });
 
-test("Voice Mask Maker location blog URLs are unique and consolidated", () => {
+test("Voice Mask Maker location blogs keep distinct published URLs", () => {
   const locationPaths = VOICE_MASK_MAKER_LOCATION_BLOGS.map((blog) => `/blog/${blog.slug}`);
   const staticPaths = getPublicBlogs(STATIC_BLOGS).map(({ route }) => route);
 
   assert.equal(locationPaths.length, 8);
   assert.equal(new Set(locationPaths).size, locationPaths.length);
-  locationPaths.forEach((path) => assert.ok(!staticPaths.includes(path), `${path} must be consolidated`));
+  locationPaths.forEach((path) => assert.ok(staticPaths.includes(path), `${path} must have its own page`));
   assert.equal(new Set(staticPaths).size, staticPaths.length);
 });
 
@@ -63,7 +63,7 @@ test("Hair dryer comparison blogs are public, use varied images, and are sitemap
 test("every retired city article has a direct 301 to a public guide and canonical internal links", () => {
   const config = JSON.parse(fs.readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
   const paths = new Set(getPublicBlogs(STATIC_BLOGS).map(({ route }) => route));
-  assert.equal(Object.keys(BLOG_REDIRECTS).length, 82);
+  assert.equal(Object.keys(BLOG_REDIRECTS).length, 61);
   for (const [slug, destination] of Object.entries(BLOG_REDIRECTS)) {
     assert.ok(!paths.has("/blog/" + slug));
     assert.ok(paths.has(destination));

@@ -5,7 +5,7 @@ import path from "node:path";
 import http from "node:http";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { PRIVATE_BLOGS } from "../src/data/privateBlogs.js";
+import { PRIVATE_BLOGS, MASK_MAKER_CITY_BLOGS, VOICE_MASK_MAKER_LOCATION_BLOGS } from "../src/data/privateBlogs.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const run = (script, cwd, env) => new Promise((resolve, reject) => {
@@ -17,7 +17,7 @@ const run = (script, cwd, env) => new Promise((resolve, reject) => {
   child.on("close", (code) => code === 0 ? resolve() : reject(new Error(output)));
 });
 
-test("sitemap and generated HTML publish all 14 guides with indexable canonical URLs", async () => {
+test("sitemap and generated HTML publish 14 guides and 21 distinct location articles", async () => {
   const server = http.createServer((request, response) => {
     response.setHeader("Content-Type", "application/json");
     response.end(JSON.stringify(request.url === "/api/blogs"
@@ -57,6 +57,23 @@ test("sitemap and generated HTML publish all 14 guides with indexable canonical 
       const legacy = await fs.readFile(path.join(cwd, "dist", "blog", guide.slug, "index.html"), "utf8");
       assert.match(legacy, /<meta name="robots" content="noindex, nofollow"/);
       assert(legacy.includes(`<link rel="canonical" href="${url}"`));
+    }
+    const locations = [...MASK_MAKER_CITY_BLOGS, ...VOICE_MASK_MAKER_LOCATION_BLOGS];
+    assert.equal(locations.length, 21);
+    assert.equal(new Set(locations.map((blog) => blog.content)).size, 21, "Location articles retain different original content");
+    for (const blog of locations) {
+      const route = `/blog/${blog.slug}`;
+      const url = `https://ilika.in${route}`;
+      assert.equal(sitemap.split(`<loc>${url}</loc>`).length - 1, 1, `Location sitemap entry: ${route}`);
+      assert(directory.includes(`href="${route}"`), `Location directory link: ${route}`);
+      const html = await fs.readFile(path.join(cwd, "dist", route, "index.html"), "utf8");
+      assert.match(html, /<meta name="robots" content="index, follow"/);
+      assert(html.includes(`<link rel="canonical" href="${url}"`), `Location self canonical: ${route}`);
+      const firstParagraph = blog.content.match(/<p>([\s\S]*?)<\/p>/)?.[1];
+      const originalText = firstParagraph.split("{{maskMaker.")[0];
+      assert(html.includes(originalText), `Preserved location content: ${route}`);
+      assert(!html.includes("{{maskMaker."), `Resolved live prices: ${route}`);
+      assert(html.includes("8 collagen peptide tablets FREE"), `Location offer: ${route}`);
     }
     assert(!sitemap.includes("unpublished-private"));
     assert(!directory.includes("unpublished-private"));

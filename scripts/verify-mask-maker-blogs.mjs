@@ -38,10 +38,9 @@ for (const blog of scopedBlogs) {
   assert(refreshed.maskMakerOfferHtml.includes(">Order now</a>"), `Purchase link: ${blog.slug}`);
   assert(!/pre[\s-]*order|\{\{maskMaker\./i.test(JSON.stringify(refreshed)), `No preorder or unresolved prices: ${blog.slug}`);
   if (!pincodeBlogs.includes(blog)) continue;
-  const target = `/blog/${destination.slug}`;
-  assert.equal(getConsolidatedBlogPath(blog.slug), target, `Browser redirect: ${blog.slug}`);
+  assert.equal(getConsolidatedBlogPath(blog.slug), null, `Individual location route: ${blog.slug}`);
   for (const suffix of ["", "/"]) {
-    assert(hosting.redirects.some((entry) => entry.source === `/blog/${blog.slug}${suffix}` && entry.destination === target && entry.statusCode === 301), `Hosting redirect: ${blog.slug}${suffix}`);
+    assert(!hosting.redirects.some((entry) => entry.source === `/blog/${blog.slug}${suffix}`), `No hosting redirect: ${blog.slug}${suffix}`);
   }
 }
 const parlour = related.find((blog) => blog.slug === "best-face-mask-maker-for-parlour-home");
@@ -84,4 +83,4 @@ const updated = refreshMaskMakerBlog(mixed, [{...products[0], variants: [{id:"wh
 assert(updated.content.includes("₹5,299"));
 const unrelated = { title:"Hair dryer price", content:"Hair dryer costs Rs. 3,999." };
 assert.equal(refreshMaskMakerBlog(unrelated, products), unrelated);
-console.log(`Passed: 14 private blogs and their shared offer destination; ${related.length - scopedBlogs.length} unchanged public blog offers; all ${pincodeBlogs.length} pincode URLs and hosting/browser redirects; destination offers; parlour pricing and gifts; metadata, FAQs, live price updates and missing-product fallback.`);
+console.log(`Passed: 14 private blogs; ${related.length - scopedBlogs.length} unchanged public blog offers; all ${pincodeBlogs.length} individual pincode URLs with no consolidation redirects; parlour pricing and gifts; metadata, FAQs, live price updates and missing-product fallback.`);
