@@ -63,6 +63,7 @@ const KnowSkinType = lazy(() => import("../pages/KnowSkinType"));
 const BlackseedHairOilLanding = lazy(() => import("../Landing/Blackseedhairoil"));
 const HerbalHairOilLanding = lazy(() => import("../Landing/Herbalhairoil"));
 const VoiceMaskMakerLanding = lazy(() => import("../Landing/VoiceMaskMakerLanding"));
+const FreshMaskLanding = lazy(() => import("../Landing/FreshMaskLanding"));
 const NonvoiceMaskMakerLanding = lazy(() => import("../Landing/NonvoiceMaskMakerLanding"));
 const HairDryerLanding = lazy(() => import("../Landing/HairDryerLanding"));
 const HighFrequencyTherapyWandLanding = lazy(() => import("../Landing/HighFrequencyTherapyWandLanding"));
@@ -124,6 +125,7 @@ const SEO_MATCHER_ROUTES = [
   { path: "/blackseed-hair-oil" },
   { path: "/herbal-hair-oil" },
   { path: "/voice-mask-maker" },
+  { path: "/voice-mask-maker-at-home" },
   { path: "/nonvoice-mask-maker" },
   { path: "/leafless-hair-dryer" },
   { path: "/leafless-hair-dryer-landing" },
@@ -239,6 +241,7 @@ const getRouteSeo = (pathname = "") => {
   if (pathname === "/knowskintype") return { title: "Know Your Skin Type", description: "Get personalized skincare recommendations from Ilika." };
   if (pathname === "/herbal-hair-oil") return { title: "Herbal Hair Oil", description: "Explore Ilika Herbal Hair Growth Oil benefits, ingredients, and offers." };
   if (pathname === "/voice-mask-maker") return { title: "Voice Face Mask Maker", description: "Explore Ilika Voice Face Mask Maker Machine with Collagen Peptide." };
+  if (pathname === "/voice-mask-maker-at-home") return { title: "Fresh Face Masks at Home", description: "Follow the Ilika Voice Face Mask Maker evening ritual, from fresh ingredients to your own homemade mask. Shop the current live price and offer." };
   if (pathname === "/nonvoice-mask-maker") return { title: "Non-Voice Face Mask Maker", description: "Explore Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide." };
   if (pathname === "/leafless-hair-dryer" || pathname === "/leafless-hair-dryer-landing") return { title: "Ilika Leafless Hair Dryer – 110,000 RPM BLDC Ionic Hair Dryer", description: "Shop Ilika High-Speed BLDC Leafless Hair Dryer with a 110,000 RPM motor, ionic technology, intelligent temperature control and lightweight design for fast, smooth drying.", keywords: ["Ilika leafless hair dryer", "110000 RPM BLDC hair dryer", "ionic hair dryer", "leafless hair dryer India"] };
   if (pathname === "/high-frequency-therapy-wand") return { title: "Ilika High Frequency Therapy Wand | For Acne Treatment, Skin Rejuvenation, Hair Growth & Scalp Care", description: "Explore Ilika High Frequency Therapy Wand." };
@@ -448,6 +451,7 @@ const NavRoutes = () => {
         <Route path="/blackseed-hair-oil" element={renderLazy(BlackseedHairOilLanding)} />
         <Route path="/herbal-hair-oil" element={renderLazy(HerbalHairOilLanding)} />
         <Route path="/voice-mask-maker" element={renderLazy(VoiceMaskMakerLanding)} />
+        <Route path="/voice-mask-maker-at-home" element={renderLazy(FreshMaskLanding)} />
         <Route path="/nonvoice-mask-maker" element={renderLazy(NonvoiceMaskMakerLanding)} />
         <Route path="/leafless-hair-dryer" element={<Navigate to="/product/leafless-hair-dryer" replace />} />
         <Route path="/leafless-hair-dryer-landing" element={renderLazy(HairDryerLanding)} />
