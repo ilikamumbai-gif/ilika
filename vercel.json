@@ -3,6 +3,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "redirects": [
+    {"source":"/voice-mask-maker-at-home","destination":"/blog/voice-mask-maker-at-home","statusCode":301},
+    {"source":"/voice-mask-maker-at-home/","destination":"/blog/voice-mask-maker-at-home","statusCode":301},
     {"source":"/product/portable-travel-bidet","destination":"/product/ilika-portable-travel-manual-bidet","statusCode":301},
     {"source":"/product/portable-travel-bidet/","destination":"/product/ilika-portable-travel-manual-bidet","statusCode":301},
     {"source":"/blog/hair-dryer-virar-401303","destination":"/blog/hair-dryer-pricing-delivery-india","statusCode":301},

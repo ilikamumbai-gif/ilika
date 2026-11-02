@@ -12,7 +12,7 @@ import DiwaliOfferBanner from "../components/product/DiwaliOfferBanner";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
-import { buildCartProductSnapshot, getDefaultVariant, getProductVariantAvailability, getProductVariantStock } from "../utils/productPricing";
+import { buildCartProductSnapshot, getDefaultVariant, getProductDisplayPricing, getProductVariantAvailability } from "../utils/productPricing";
 import {
   CUSTOM_VOICE_MASK_GUIDE_BLOG,
   MASK_MAKER_TOPIC_BLOGS,
@@ -330,15 +330,14 @@ const VoiceMaskMakerLanding = () => {
   }, [products]);
 
   const defaultVariant = getDefaultVariant(targetProduct || {});
-  const isProductAvailable = Boolean(targetProduct?.inStock) && getProductVariantAvailability(targetProduct, defaultVariant);
-  const liveStock = targetProduct ? getProductVariantStock(targetProduct, defaultVariant) : null;
+  const isProductAvailable = Boolean(targetProduct) && getProductVariantAvailability(targetProduct, defaultVariant);
   const stockLabel = !targetProduct
     ? "Checking availability..."
-    : !isProductAvailable ? "Pre-order"
-      : liveStock !== null ? `${liveStock} pieces in stock` : "In stock";
+    : isProductAvailable ? "Back in stock — Order now" : "Out of stock";
   const productName = targetProduct?.name || "Ilika Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin";
-  const rawProductPrice = defaultVariant?.price ?? targetProduct?.price;
-  const rawProductMrp = defaultVariant?.mrp ?? targetProduct?.mrp;
+  const livePricing = getProductDisplayPricing(targetProduct || {}, defaultVariant);
+  const rawProductPrice = targetProduct ? livePricing.price : null;
+  const rawProductMrp = targetProduct ? livePricing.compareAtPrice : null;
   const productPrice = rawProductPrice === undefined || rawProductPrice === null || rawProductPrice === ""
     ? null
     : Number(rawProductPrice);
@@ -541,7 +540,7 @@ const VoiceMaskMakerLanding = () => {
               <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
               <span className="relative z-[1] inline-flex items-center gap-2">
                 {isProductAvailable ? <ShoppingCart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-                {isProductAvailable ? `Buy Now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
+                {isProductAvailable ? `Order now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
               </span>
               <span className="absolute bottom-1.5 right-2 rounded-full bg-[rgba(255,255,255,0.2)] px-1.5 py-[2px] text-[9px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)] sm:right-3 sm:px-2 sm:text-[10px]">
                 {isProductAvailable ? "DIWALI OFFER" : "RESTOCK ALERT"}
@@ -634,7 +633,7 @@ const VoiceMaskMakerLanding = () => {
             <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
             <span className="relative z-[1] inline-flex items-center gap-2">
               {isProductAvailable ? <ShoppingCart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-              {isProductAvailable ? `Buy Now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
+              {isProductAvailable ? `Order now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
             </span>
             <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">
               LIMITED STOCK
@@ -696,7 +695,7 @@ const VoiceMaskMakerLanding = () => {
             <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
             <span className="relative z-[1] inline-flex items-center gap-2">
               {isProductAvailable ? <ShoppingCart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-              {isProductAvailable ? `Buy Now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
+              {isProductAvailable ? `Order now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
             </span>
             <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">
               LIMITED STOCK
@@ -810,7 +809,7 @@ const VoiceMaskMakerLanding = () => {
             <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
             <span className="relative z-[1] inline-flex items-center gap-2">
               {isProductAvailable ? <ShoppingCart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-              {isProductAvailable ? `Buy Now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
+              {isProductAvailable ? `Order now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
             </span>
             <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">
               LIMITED STOCK
@@ -879,7 +878,7 @@ const VoiceMaskMakerLanding = () => {
             <span className="pointer-events-none absolute inset-y-0 left-[-28%] w-[32%] -skew-x-12 bg-[rgba(255,255,255,0.28)] blur-[1px] transition-transform duration-700 group-hover:translate-x-[420%]" />
             <span className="relative z-[1] inline-flex items-center gap-2">
               {isProductAvailable ? <ShoppingCart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-              {isProductAvailable ? `Buy Now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
+              {isProductAvailable ? `Order now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
             </span>
             <span className="absolute bottom-1.5 right-3 rounded-full bg-[rgba(255,255,255,0.2)] px-2 py-[2px] text-[10px] font-semibold tracking-[0.08em] text-[rgba(255,255,255,0.95)]">
               LIMITED STOCK
@@ -1018,7 +1017,7 @@ const VoiceMaskMakerLanding = () => {
           >
             <span className="inline-flex items-center gap-2">
               {isProductAvailable ? <ShoppingCart className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-              {isProductAvailable ? `Buy Now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
+              {isProductAvailable ? `Order now - ${priceLabel}` : targetProduct ? "Notify Me" : "Loading..."}
             </span>
           </button>
           <a

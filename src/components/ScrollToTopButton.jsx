@@ -23,6 +23,7 @@ const ScrollToTopButton = () => {
   return (
     <button
       onClick={scrollToTop}
+      aria-label="Scroll to top"
       style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
       className={`
         fixed left-3 z-[999]

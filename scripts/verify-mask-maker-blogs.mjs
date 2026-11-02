@@ -22,7 +22,7 @@ const destination = related.find((blog) => blog.slug === "face-mask-maker-pricin
 assert(destination, "The destination for pincode blogs must exist");
 const scopedBlogs = related.filter(usesRestockBlogOffer);
 assert.equal(scopedBlogs.filter((blog) => blog.isPrivate).length, 14);
-assert.equal(scopedBlogs.length, 36, "Only 14 private blogs, 21 pincode entries and their shared destination receive restock changes");
+assert.equal(scopedBlogs.length, 38, "14 private blogs, 21 pincode entries, the pricing guide and two new mask-maker stories receive restock changes");
 for (const blog of related.filter((blog) => !usesRestockBlogOffer(blog))) {
   const refreshed = refreshMaskMakerBlog(blog, restockedProducts);
   assert(!refreshed.maskMakerOfferHtml.includes("<th>Availability</th>"), `Unchanged public offer table: ${blog.slug}`);

@@ -5,6 +5,8 @@ import path from "node:path";
 import { PRIVATE_BLOGS, STATIC_BLOGS } from "../src/data/privateBlogs.js";
 import { buildBlogUrl } from "../src/utils/blogRoutes.js";
 import { getBlogRobots, isBlogIndexable } from "../src/utils/blogIndexing.js";
+import { FRESH_MASK_BLOG } from "../src/data/freshMaskBlog.js";
+import { FRUIT_MASK_BLOG } from "../src/data/fruitMaskBlog.js";
 
 const SITE_URL = "https://ilika.in";
 const HAIR_DRYER_PRODUCT_PATH = "/product/leafless-hair-dryer";
@@ -99,7 +101,7 @@ const getProductImages = (product = {}) => {
 };
 const getBlogBody = (blog) => {
   if (Array.isArray(blog?.contentSections) && blog.contentSections.length) {
-    return blog.contentSections.map((section) => `${section?.image ? `<img src="${escapeHtml(section.image)}" alt="${escapeHtml(blog.title)}" />` : ""}${section?.content || ""}`).join("\n");
+    return blog.contentSections.map((section) => `${blog.renderSectionTitles && section.title ? `<h2>${escapeHtml(section.title)}</h2>` : ""}${section?.image ? `<img src="${escapeHtml(section.image)}" alt="${escapeHtml(section.imageAlt || blog.title)}" />` : ""}${section?.content || ""}`).join("\n");
   }
   return String(blog?.content || blog?.description || blog?.excerpt || "");
 };
@@ -108,7 +110,7 @@ const buildBlogPage = (blog, route, hairDryerProduct) => {
   const title = blog.metaTitle || `${blog.title} | Ilika Blog`;
   const description = blog.metaDescription || blog.excerpt || stripHtml(getBlogBody(blog)) || "Read this Ilika article.";
   const canonical = absoluteUrl(route);
-  const body = `${blog.maskMakerOfferHtml || ""}${getBlogBody(blog)}`;
+  const body = `${blog.inlineMaskMakerOffers ? "" : blog.maskMakerOfferHtml || ""}${getBlogBody(blog)}`;
   const hairDryerArticle = isHairDryerBlog(blog);
   const galleryImages = hairDryerArticle ? (getProductImages(hairDryerProduct).length ? getProductImages(hairDryerProduct) : [HAIR_DRYER_IMAGE_FALLBACK]) : [];
   const heroImage = hairDryerArticle ? galleryImages[0] : blog.image;
@@ -169,7 +171,8 @@ async function main() {
   // Directory routes are public pages; retain their specific kind separately.
   // The no-Chromium fallback preserves this HTML and the validator expects "page".
   await writeRoute(template, distDir, "/articles", `<main id="prerendered-content" data-prerendered="page" data-page-kind="article-index"><a href="/blog">Back to Ilika Journal</a><h1>Ilika Articles</h1><p>Explore our complete collection of beauty, skincare and haircare articles.</p><h2>All articles</h2><ul>${blogLinks}</ul></main>`, { title: "Ilika Articles | Beauty, Skincare and Haircare Guides", description: "Browse all Ilika articles, including skincare advice, haircare guides and beauty device tips.", canonical: `${SITE_URL}/articles` });
-  await writeRoute(template, distDir, "/blog", `<main id="prerendered-content" data-prerendered="page" data-page-kind="blog-index"><h1>Ilika Journal</h1><p>Explore Ilika beauty, skincare and haircare guides.</p><h2>Ilika Articles</h2><p><a href="/articles">Browse all articles</a></p><h2>Featured guides</h2><ul><li><a href="/blog/hair-dryer-pricing-delivery-india">Ilika Hair Dryer: Pricing and Delivery in India</a></li><li><a href="/blog/face-mask-maker-pricing-delivery-india">Ilika Face Mask Makers: Pricing and Delivery in India</a></li></ul><p><a href="/hair-dryer-guides">Hair dryer guides</a></p></main>`,  { title: "Ilika Blog | Skincare and Beauty Guides", description: "Browse Ilika skincare, beauty, haircare, and device guides.", canonical: `${SITE_URL}/blog` });
+  const latestStory = `<section aria-label="Latest stories"><h2>Fresh ideas for your skincare ritual.</h2>${[FRUIT_MASK_BLOG, FRESH_MASK_BLOG].map((blog) => `<a href="${getBlogRoute(blog)}"><img src="${blog.image}" alt="${escapeHtml(blog.title)}" style="max-width:360px;height:auto" /><h3>${escapeHtml(blog.title)}</h3><p>Read the story</p></a>`).join("")}</section>`;
+  await writeRoute(template, distDir, "/blog", `<main id="prerendered-content" data-prerendered="page" data-page-kind="blog-index"><h1>Ilika Journal</h1><p>Explore Ilika beauty, skincare and haircare guides.</p>${latestStory}<h2>Ilika Articles</h2><p><a href="/articles">Browse all articles</a></p><h2>Featured guides</h2><ul><li><a href="/blog/hair-dryer-pricing-delivery-india">Ilika Hair Dryer: Pricing and Delivery in India</a></li><li><a href="/blog/face-mask-maker-pricing-delivery-india">Ilika Face Mask Makers: Pricing and Delivery in India</a></li></ul><p><a href="/hair-dryer-guides">Hair dryer guides</a></p></main>`,  { title: "Ilika Blog | Skincare and Beauty Guides", description: "Browse Ilika skincare, beauty, haircare, and device guides.", canonical: `${SITE_URL}/blog` });
   for (const category of categories.filter((category) => category?.isActive !== false && (category?.slug || category?.name))) {
     const route = `/category/${slugify(category.slug || category.name)}`;
     await writeRoute(template, distDir, route, `<main id="prerendered-content" data-prerendered="category"><h1>${escapeHtml(category.name || category.slug)}</h1>${crawlLinks}</main>`, { title: `${category.name || category.slug} | Ilika`, description: `Shop ${category.name || category.slug} products from Ilika.`, canonical: absoluteUrl(route) });

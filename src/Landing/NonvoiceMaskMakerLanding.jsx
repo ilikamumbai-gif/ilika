@@ -12,7 +12,7 @@ import OptimizedImage from "../components/OptimizedImage";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
 import { useCart } from "../context/CartProvider";
-import { buildCartProductSnapshot, getDefaultVariant, getProductVariantAvailability, getProductVariantStock } from "../utils/productPricing";
+import { buildCartProductSnapshot, getDefaultVariant, getProductDisplayPricing, getProductVariantAvailability } from "../utils/productPricing";
 import {
   Touchpad,
   Leaf,
@@ -124,15 +124,14 @@ const NonvoiceMaskMakerLanding = () => {
 }, [products]);
 
   const defaultVariant = getDefaultVariant(targetProduct || {});
-  const isProductAvailable = Boolean(targetProduct?.inStock) && getProductVariantAvailability(targetProduct, defaultVariant);
-  const liveStock = targetProduct ? getProductVariantStock(targetProduct, defaultVariant) : null;
+  const isProductAvailable = Boolean(targetProduct) && getProductVariantAvailability(targetProduct, defaultVariant);
   const stockLabel = !targetProduct ? "Checking availability..."
-    : !isProductAvailable ? "Pre-order"
-      : liveStock !== null ? `${liveStock} pieces in stock` : "In stock";
+    : isProductAvailable ? "Back in stock — Order now" : "Out of stock";
   const PurchaseIcon = isProductAvailable ? ShoppingCart : Bell;
   const productName = targetProduct?.name || "Ilika Non-Voice Face Mask Maker Machine with Collagen Peptide | DIY Fresh Fruit Facial Mask Machine for Glowing Skin";
-  const rawProductPrice = defaultVariant?.price ?? targetProduct?.price;
-  const rawProductMrp = defaultVariant?.mrp ?? targetProduct?.mrp;
+  const livePricing = getProductDisplayPricing(targetProduct || {}, defaultVariant);
+  const rawProductPrice = targetProduct ? livePricing.price : null;
+  const rawProductMrp = targetProduct ? livePricing.compareAtPrice : null;
   const productPrice = rawProductPrice === undefined || rawProductPrice === null || rawProductPrice === ""
     ? null
     : Number(rawProductPrice);
@@ -143,7 +142,7 @@ const NonvoiceMaskMakerLanding = () => {
   const hasLivePrice = Number.isFinite(productPrice) && productPrice > 0;
   const hasLiveMrp = Number.isFinite(productMrp) && productMrp > 0;
   const purchaseLabel = isProductAvailable
-    ? `Buy Now - ${hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}`
+    ? `Order now - ${hasLivePrice ? `₹${productPrice.toLocaleString("en-IN")}` : "Loading price..."}`
     : targetProduct ? "Notify Me" : "Loading...";
   const productImage =
     defaultVariant?.images?.[0] ||

@@ -6,6 +6,8 @@ import http from "node:http";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { PRIVATE_BLOGS, MASK_MAKER_CITY_BLOGS, VOICE_MASK_MAKER_LOCATION_BLOGS } from "../src/data/privateBlogs.js";
+import { FRESH_MASK_BLOG } from "../src/data/freshMaskBlog.js";
+import { FRUIT_MASK_BLOG } from "../src/data/fruitMaskBlog.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const run = (script, cwd, env) => new Promise((resolve, reject) => {
@@ -43,6 +45,29 @@ test("sitemap and generated HTML publish 14 guides and 21 distinct location arti
     await run("scripts/prerender-catalog-pages.mjs", cwd, env);
     const sitemap = await fs.readFile(path.join(cwd, "public", "sitemap.xml"), "utf8");
     const directory = await fs.readFile(path.join(cwd, "dist", "articles", "index.html"), "utf8");
+    const storyPath = `/blog/${FRESH_MASK_BLOG.slug}`;
+    assert(sitemap.includes(`<loc>https://ilika.in${storyPath}</loc>`));
+    assert(!sitemap.includes("<loc>https://ilika.in/voice-mask-maker-at-home</loc>"));
+    assert(directory.includes(`href="${storyPath}"`));
+    const journal = await fs.readFile(path.join(cwd, "dist", "blog", "index.html"), "utf8");
+    assert(journal.includes(`href="${storyPath}"`), "The new story must be visible on /blog without JavaScript");
+    const story = await fs.readFile(path.join(cwd, "dist", storyPath, "index.html"), "utf8");
+    assert(story.includes(`<link rel="canonical" href="https://ilika.in${storyPath}"`));
+    assert.deepEqual([...story.matchAll(/src="\/MaskMakerStory\/(\d+)-[^" ]+"/g)].map((match) => Number(match[1])), [7, 6, 5, 4, 3, 2, 1]);
+    const fruitPath = `/blog/${FRUIT_MASK_BLOG.slug}`;
+    assert(sitemap.includes(`<loc>https://ilika.in${fruitPath}</loc>`));
+    assert(directory.includes(`href="${fruitPath}"`) && journal.includes(`href="${fruitPath}"`));
+    const fruitStory = await fs.readFile(path.join(cwd, "dist", fruitPath, "index.html"), "utf8");
+    assert(fruitStory.includes(`<link rel="canonical" href="https://ilika.in${fruitPath}"`));
+    assert(!fruitStory.includes("{{maskMaker."));
+    const modelHeading = fruitStory.indexOf("<h2>Available in Two Variants</h2>");
+    assert(modelHeading > fruitStory.indexOf("<h2>A Few Simple Tips</h2>"));
+    const models = fruitStory.slice(modelHeading, fruitStory.indexOf("<h2>Ready to Try Something New?</h2>"));
+    assert(models.includes("href='/product/voice-face-mask-maker'"));
+    assert(models.includes("href='/product/non-voice-face-mask-maker'"));
+    assert(models.includes("32 collagen peptide tablets included + 8 extra tablets FREE"));
+    assert(models.includes("25 g Hydra Gel FREE"));
+    assert(fruitStory.includes("<h2>Your Questions, Answered</h2>"));
     const guides = PRIVATE_BLOGS.filter((blog) => blog.isPrivate);
     assert.equal(guides.length, 14);
     for (const guide of guides) {

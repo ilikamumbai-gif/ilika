@@ -1,3 +1,4 @@
+import { getMaskMakerOffer } from "../utils/maskMakerOffer.js";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { FiBell } from "react-icons/fi";
@@ -12,6 +13,7 @@ import {
   getDefaultVariant,
   getProductDisplayImage,
   getProductDisplayPricing,
+  getProductVariantAvailability,
   isPrepaidOfferEligible,
 } from "../utils/productPricing";
 
@@ -31,6 +33,8 @@ const ProductCard = ({
 
   const defaultVariant = getDefaultVariant(product);
   const { price: displayPrice, compareAtPrice: displayMrp } = getProductDisplayPricing(product, defaultVariant);
+  const isAvailable = getProductVariantAvailability(product, defaultVariant);
+  const maskMakerOffer = getMaskMakerOffer(product);
   const prepaidPrice = Math.max(0, Number(displayPrice || 0) - 100);
 
   const cartId = defaultVariant
@@ -40,19 +44,14 @@ const ProductCard = ({
   const productImage = getProductDisplayImage(product, defaultVariant);
 
   const calculatedDiscount =
-    product.discount ||
-    (displayMrp
+    (displayMrp > displayPrice
       ? Math.round(((displayMrp - displayPrice) / displayMrp) * 100)
       : null);
 
   const isTall = productImage?.includes("bottle") || productImage?.includes("tube");
   const productTag = String(product?.productTag || "").trim();
   const isLeaflessHairDryer = slug === "leafless-hair-dryer";
-  const isMaskMaker = /mask[\s-]*maker/i.test(`${product?.name || ""} ${slug}`);
-  const isNonVoiceMaskMaker = /non[\s-]*voice/i.test(`${product?.name || ""} ${slug}`);
-  const includedMaskMakerGift = isNonVoiceMaskMaker
-    ? { label: "25 g Hydra Gel FREE", name: "25 g Hydra Gel", tablets: 0 }
-    : { label: "8 collagen peptide tablets FREE", name: "8 collagen peptide tablets", tablets: 8 };
+  const isMaskMaker = Boolean(maskMakerOffer);
   const assignedCoupon = product?.couponSnapshot || product?.coupon || null;
   const couponCode = String(assignedCoupon?.code || "").trim();
   const couponPercent = Number(assignedCoupon?.discountPercent || 0);
@@ -73,7 +72,7 @@ const ProductCard = ({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!product.inStock) {
+    if (!isAvailable) {
       setNotifyOpen(true);
       return;
     }
@@ -83,7 +82,7 @@ const ProductCard = ({
       cartId,
       extra: {
         ...(cartMetadata || {}),
-        ...(isMaskMaker ? { includedContents: { ...includedMaskMakerGift, price: 0 } } : {}),
+        ...(isMaskMaker ? { includedContents: maskMakerOffer } : {}),
       },
     });
 
@@ -98,14 +97,14 @@ const ProductCard = ({
 
           {/* -- Image area -- */}
           <div className="relative aspect-square overflow-hidden bg-white">
-            {!product.inStock && (
+            {!isAvailable && (
               <span className="absolute right-2 top-2 z-20 inline-flex items-center justify-center bg-[rgb(43,42,41)] px-2 py-1 text-[9px] font-bold text-white shadow-sm sm:right-3 sm:top-3 sm:text-[10px]">
                 Out Of Stock
               </span>
             )}
             {productTag && (
               <span
-                className={`absolute ${product.inStock ? "right-2 top-2 sm:right-3 sm:top-3" : "right-2 top-8 sm:right-3 sm:top-10"} z-20 inline-flex max-w-[55%] items-center justify-center truncate px-2 py-1 text-[9px] font-bold text-white shadow-sm sm:text-[10px] ${buttonBg}`}
+                className={`absolute ${isAvailable ? "right-2 top-2 sm:right-3 sm:top-3" : "right-2 top-8 sm:right-3 sm:top-10"} z-20 inline-flex max-w-[55%] items-center justify-center truncate px-2 py-1 text-[9px] font-bold text-white shadow-sm sm:text-[10px] ${buttonBg}`}
                 title={productTag}
               >
                 {productTag}
@@ -157,6 +156,12 @@ const ProductCard = ({
               {product.name}
             </h4>
 
+            {maskMakerOffer && (
+              <div className="mb-2 text-[10px] font-semibold sm:text-xs">
+                {isAvailable && <p className="text-[#1d6a4a]">Back in stock — Order now</p>}
+                <p className="mt-1 text-[#765018]">{maskMakerOffer.label}</p>
+              </div>
+            )}
             <div className="flex flex-col gap-2.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
               <div className="flex min-w-0 items-end gap-2 sm:gap-3">
                 <span className="text-[15px] font-bold leading-none tracking-[-0.02em] text-[#1a1a1a] sm:text-[22px]">
@@ -172,11 +177,11 @@ const ProductCard = ({
               <button
                 type="button"
                 onClick={handleCartClick}
-                aria-label={product.inStock ? "Add to cart" : "Notify me"}
-                className={`inline-flex h-8 w-full shrink-0 items-center justify-center gap-1.5 border border-[#2f2f2f] px-3 text-[10px] font-semibold uppercase tracking-[0.04em] transition-all duration-150 hover:scale-105 active:scale-95 sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-[11px] ${product.inStock ? `${buttonBg} ${buttonText}` : "bg-[rgb(43,42,41)] text-white hover:opacity-95"}`}
+                aria-label={isAvailable ? maskMakerOffer ? "Order now" : "Add to cart" : "Notify me"}
+                className={`inline-flex h-8 w-full shrink-0 items-center justify-center gap-1.5 border border-[#2f2f2f] px-3 text-[10px] font-semibold uppercase tracking-[0.04em] transition-all duration-150 hover:scale-105 active:scale-95 sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-[11px] ${isAvailable ? `${buttonBg} ${buttonText}` : "bg-[rgb(43,42,41)] text-white hover:opacity-95"}`}
               >
-                {product.inStock ? (
-                  <span>Add +</span>
+                {isAvailable ? (
+                  <span>{maskMakerOffer ? "Order now" : "Add +"}</span>
                 ) : (
                   <>
                     <FiBell className="text-[13px] sm:text-[18px]" />

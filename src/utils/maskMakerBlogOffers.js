@@ -33,7 +33,7 @@ export const isMaskMakerBlog = (blog) => {
 // Pincode URLs share this existing destination. Keep the restock update scoped
 // to those URLs, their destination and the private mask-maker articles.
 export const usesRestockBlogOffer = (blog) => isMaskMakerBlog(blog) && (
-  blog.isPrivate === true || /\b\d{6}\b/.test(blog.slug || "") || blog.slug === "face-mask-maker-pricing-delivery-india"
+  blog.isPrivate === true || /\b\d{6}\b/.test(blog.slug || "") || ["face-mask-maker-pricing-delivery-india", "voice-mask-maker-at-home", "diy-fruit-sheet-masks-at-home"].includes(blog.slug)
 );
 
 const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);

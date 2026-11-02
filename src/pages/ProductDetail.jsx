@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+﻿import { getMaskMakerOffer } from "../utils/maskMakerOffer.js";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { trackViewContent, trackAddToCart } from "../utils/pixel";
@@ -43,7 +44,6 @@ import {
   slugifyVariantValue,
 } from "../utils/productPricing";
 
-const PreOrderModal = React.lazy(() => import("../components/PreOrderModal"));
 const DEFAULT_DETAIL_BG = "#FFFFFF";
 const BLDC_HAIR_DRYER_GALLERY_VIDEO = {
   url: "/HonestReview/instagram-reel-youtube-short.mp4",
@@ -924,7 +924,7 @@ const formatIngredientTitle = (src = "", index = 0) => {
   }
 };
 
-const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe, canPreorder = false, onPreorder, theme }) => {
+const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex = 0, onClose, product, price, mrp, discount, onAddToCart, onBuyNow, isOutOfStock, onNotifyMe, theme }) => {
   const ctaColors = getDetailCtaColors(theme);
   const mediaItems = useMemo(() => {
     const imageItems = (Array.isArray(images) ? images : []).map((src, index) => ({
@@ -1160,25 +1160,24 @@ const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex =
 
             {/* ATC button */}
             <button
-              onClick={isOutOfStock && !canPreorder ? onNotifyMe : onAddToCart}
-              disabled={canPreorder}
+              onClick={isOutOfStock ? onNotifyMe : onAddToCart}
               className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${isOutOfStock ? "opacity-90" : "hover:opacity-90"
                 }`}
               style={ctaColors.addToCart}
             >
-              {isOutOfStock && !canPreorder ? "Notify Me" : "Add to Cart"}
+              {isOutOfStock ? "Notify Me" : "Add to Cart"}
             </button>
 
             {/* Buy Now */}
             <button
-              onClick={() => { if (canPreorder) onPreorder(); else onBuyNow(); onClose(); }}
-              disabled={isOutOfStock && !canPreorder}
+              onClick={() => { onBuyNow(); onClose(); }}
+              disabled={isOutOfStock}
               className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl text-sm font-semibold transition
-                ${isOutOfStock && !canPreorder ? "bg-gray-100 text-gray-400 cursor-not-allowed border" : "hover:opacity-90"}`}
-              style={isOutOfStock && !canPreorder ? undefined : ctaColors.buyNow}
+                ${isOutOfStock ? "bg-gray-100 text-gray-400 cursor-not-allowed border" : "hover:opacity-90"}`}
+              style={isOutOfStock ? undefined : ctaColors.buyNow}
             >
               <Lock className="w-3.5 h-3.5" />
-              {canPreorder ? "Pre-order" : "Buy Now"}
+              {getMaskMakerOffer(product) ? "Order now" : "Buy Now"}
             </button>
 
             {/* Warranty note */}
@@ -2680,7 +2679,7 @@ const ReviewModal = ({ product, onClose, onReviewAdded, theme }) => {
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STICKY FLOATING ATC BAR
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme, warrantyRegistrationUrl, thumbnailImage, canPreorder = false, onPreorder }) => {
+const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, onAddToCart, onBuyNow, isAdding, isBuying, visible, footerHeight, theme, warrantyRegistrationUrl, thumbnailImage }) => {
   const ctaColors = getDetailCtaColors(theme);
   return (
     <div
@@ -2757,24 +2756,24 @@ const StickyATCBar = ({ product, price, mrp, discount, isOutOfStock, isInCart, o
                 {isAdding
                   ? "Adding..."
                   : isOutOfStock
-                    ? canPreorder ? "Add to Cart" : "Out of Stock"
+                    ? "Out of Stock"
                     : "Add to Cart"}
               </span>
             </button>
 
             {/* BUY NOW */}
             <button
-              onClick={canPreorder ? onPreorder : onBuyNow}
-              disabled={(isOutOfStock && !canPreorder) || isBuying}
+              onClick={onBuyNow}
+              disabled={isOutOfStock || isBuying}
               className={`flex flex-1 sm:flex-none items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-[14px] sm:rounded-2xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap
-    ${(isOutOfStock && !canPreorder) || isBuying
+    ${isOutOfStock || isBuying
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "shadow-sm"}`}
-              style={(isOutOfStock && !canPreorder) || isBuying ? undefined : ctaColors.buyNow}
+              style={isOutOfStock || isBuying ? undefined : ctaColors.buyNow}
             >
               <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
               <span>
-                {isBuying ? "Processing..." : canPreorder ? "Pre-order" : "Buy Now"}
+                {isBuying ? "Processing..." : getMaskMakerOffer(product) ? "Order now" : "Buy Now"}
               </span>
             </button>
           </div>
@@ -2864,9 +2863,6 @@ const ProductDetail = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
-  const [preorderOpen, setPreorderOpen] = useState(false);
-  const openPreorder = useCallback(() => setPreorderOpen(true), []);
-  const closePreorder = useCallback(() => setPreorderOpen(false), []);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -2939,7 +2935,7 @@ const ProductDetail = () => {
   );
 
 
-  const handleNotifyMe = () => eligibleForCollagenAddon ? openPreorder() : setNotifyModalOpen(true);
+  const handleNotifyMe = () => setNotifyModalOpen(true);
 
 
 
@@ -3588,7 +3584,6 @@ const ProductDetail = () => {
     : `${productId}${packCartSuffix}${addonCartSuffix}`;
   const isInCart = cartItems.some(i => i.id === cartId);
   const isOutOfStock = !getProductVariantAvailability(product, activeVariant);
-  const canPreorder = isOutOfStock && eligibleForCollagenAddon;
 
   useEffect(() => {
     ingredientDragStateRef.current.isDragging = false;
@@ -4213,7 +4208,7 @@ const ProductDetail = () => {
             className="font-semibold underline underline-offset-2"
             style={{ color: detailTheme.accent }}
           >
-            {eligibleForCollagenAddon ? "Pre-order" : "Notify Me"}
+            Notify Me
           </button>
         </div>
       )}
@@ -4872,8 +4867,6 @@ const ProductDetail = () => {
           isAdding={isAdding}
           isBuying={isBuying}
           onNotifyMe={handleNotifyMe}
-          canPreorder={canPreorder}
-          onPreorder={openPreorder}
           theme={detailTheme}
         />
       )}
@@ -4889,8 +4882,6 @@ const ProductDetail = () => {
         isInCart={isInCart}
         onAddToCart={handleAddToCart}
         onBuyNow={handleBuyNow}
-        canPreorder={canPreorder}
-        onPreorder={openPreorder}
         isAdding={isAdding}
         isBuying={isBuying}
         visible={showStickyBar}
@@ -5231,7 +5222,10 @@ const ProductDetail = () => {
               ) : null}
 
               {eligibleForCollagenAddon && (
-                <DiwaliOfferBanner isNonVoiceMaskMaker={isNonVoiceMaskMaker} />
+                <>
+                  {!isOutOfStock && <p className="mb-2 text-sm font-semibold text-[#1d6a4a]" role="status">Back in stock — Order now</p>}
+                  <DiwaliOfferBanner isNonVoiceMaskMaker={isNonVoiceMaskMaker} />
+                </>
               )}
 
               {product.hasVariants && <div>{renderVariantSelector()}</div>}
@@ -5350,22 +5344,21 @@ const ProductDetail = () => {
               <div className="h-fit lg:col-span-2 xl:hidden">
                 <div ref={atcButtonsRef} className="mb-3 grid grid-cols-2 gap-2 sm:gap-3" data-mobile-purchase-actions>
                   <AnimatedCtaButton
-                    onClick={canPreorder ? openPreorder : handleBuyNow}
-                    disabled={isOutOfStock && !canPreorder}
+                    onClick={handleBuyNow}
+                    disabled={isOutOfStock}
                     loading={isBuying}
-                    icon={canPreorder ? Package : Lock}
-                    label={canPreorder ? "Pre-order" : "Buy Now"}
+                    icon={Lock}
+                    label={getMaskMakerOffer(product) ? "Order now" : "Buy Now"}
                     disabledLabel="Out of Stock"
                     colors={detailCtaColors.buyNow}
                     className="text-xs sm:text-sm"
                   />
                   <AnimatedCtaButton
-                    onClick={isOutOfStock && !canPreorder ? handleNotifyMe : handleAddToCart}
-                    disabled={canPreorder}
+                    onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
                     loading={isAdding}
                     loadingLabel="Adding..."
-                    icon={isOutOfStock && !canPreorder ? undefined : ShoppingCart}
-                    label={isOutOfStock && !canPreorder ? "Notify Me" : "Add To Cart"}
+                    icon={isOutOfStock ? undefined : ShoppingCart}
+                    label={isOutOfStock ? "Notify Me" : "Add To Cart"}
                     colors={detailCtaColors.addToCart}
                     className="text-xs sm:text-sm"
                   />
@@ -6282,23 +6275,22 @@ const ProductDetail = () => {
 
                 <div className="flex flex-col gap-2.5">
                   <AnimatedCtaButton
-                    onClick={canPreorder ? openPreorder : handleBuyNow}
-                    disabled={isOutOfStock && !canPreorder}
+                    onClick={handleBuyNow}
+                    disabled={isOutOfStock}
                     loading={isBuying}
-                    icon={canPreorder ? Package : Lock}
-                    label={canPreorder ? "Pre-order" : "Buy Now"}
+                    icon={Lock}
+                    label={getMaskMakerOffer(product) ? "Order now" : "Buy Now"}
                     disabledLabel="Out of Stock"
                     colors={detailCtaColors.buyNow}
                     size="lg"
                   />
 
                   <AnimatedCtaButton
-                    onClick={isOutOfStock && !canPreorder ? handleNotifyMe : handleAddToCart}
-                    disabled={canPreorder}
+                    onClick={isOutOfStock ? handleNotifyMe : handleAddToCart}
                     loading={isAdding}
                     loadingLabel="Adding..."
-                    icon={isOutOfStock && !canPreorder ? undefined : ShoppingCart}
-                    label={isOutOfStock && !canPreorder ? "Notify Me" : "Add To Cart"}
+                    icon={isOutOfStock ? undefined : ShoppingCart}
+                    label={isOutOfStock ? "Notify Me" : "Add To Cart"}
                     colors={detailCtaColors.addToCart}
                     size="lg"
                   />
@@ -6322,9 +6314,6 @@ const ProductDetail = () => {
         <Footer />
       </div>
       <NotifyMeModal isOpen={notifyModalOpen} onClose={() => setNotifyModalOpen(false)} product={product} variant={activeVariant} />
-      {preorderOpen && <React.Suspense fallback={null}>
-        <PreOrderModal isOpen={preorderOpen} onClose={closePreorder} product={product} variant={activeVariant} />
-      </React.Suspense>}
     </>
   );
 };

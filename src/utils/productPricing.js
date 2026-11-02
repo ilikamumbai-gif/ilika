@@ -1,4 +1,7 @@
+import { getMaskMakerOffer } from "./maskMakerOffer.js";
+
 const normalizeNumber = (value) => {
+  if (value === null || value === undefined || value === "") return null;
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : null;
 };
@@ -270,6 +273,7 @@ export const buildCartProductSnapshot = (product = {}, options = {}) => {
   const sku = getProductVariantSku(product, activeVariant);
   const stock = getProductVariantStock(product, activeVariant);
   const inStock = getProductVariantAvailability(product, activeVariant);
+  const maskMakerOffer = getMaskMakerOffer(product);
 
   return {
     ...product,
@@ -284,6 +288,7 @@ export const buildCartProductSnapshot = (product = {}, options = {}) => {
     image,
     stock,
     inStock,
+    ...(maskMakerOffer ? { includedContents: maskMakerOffer } : {}),
     ...extra,
   };
 };

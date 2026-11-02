@@ -1,0 +1,59 @@
+.fruit-mask-guide { background:#fff9f1; color:#4a1639; font-family:'DM Sans',Arial,sans-serif; }
+.fruit-mask-guide main { overflow:clip; }
+.fruit-mask-guide :is(h1,h2,p,figure) { margin:0; }
+.fruit-mask-guide :is(h1,h2) { font-family:'Playfair Display',Georgia,serif; font-weight:500; letter-spacing:-.035em; }
+.fruit-guide-heading { text-align:center; padding:48px 24px 38px; background:radial-gradient(ellipse at top,#f9e4cc,transparent 70%); }
+.fruit-guide-heading nav { display:flex; justify-content:center; flex-wrap:wrap; gap:9px; font-size:11px; color:#9a7c6d; margin-bottom:27px; }
+.fruit-guide-heading nav a { color:inherit; text-decoration:underline; text-underline-offset:3px; }
+.fruit-guide-kicker { display:flex; align-items:center; justify-content:center; gap:8px; font-size:9px; letter-spacing:.15em; font-weight:600; color:#a46c43; line-height:1.7; }
+.fruit-guide-heading h1 { font-size:clamp(35px,5.1vw,68px); line-height:1.1; margin:21px auto 24px; max-width:900px; }
+.fruit-guide-heading h1 em { color:#a44b67; }
+.fruit-guide-heading h1>span,.fruit-guide-heading h1>em { display:block; }
+.fruit-guide-heading h1>em { margin-top:8px; }
+@media(max-width:700px) {
+  .fruit-mask-guide .fruit-guide-heading { text-align:left; padding:24px 22px 30px; background:linear-gradient(145deg,#fff9f1 15%,#fbeade); border-bottom:1px solid #ecd8c5; margin-bottom:20px; }
+  .fruit-mask-guide .fruit-guide-heading nav { justify-content:flex-start; margin-bottom:24px; color:#806557; }
+  .fruit-guide-heading>.fruit-guide-kicker { justify-content:flex-start; font-size:8px; letter-spacing:.1em; color:#925133; }
+  .fruit-guide-heading>.fruit-guide-kicker svg { flex-shrink:0; color:#b47836; }
+  .fruit-mask-guide .fruit-guide-heading h1 { font-size:clamp(31px,7.6vw,45px); line-height:1.14; letter-spacing:-.035em; margin:16px 0 18px; max-width:520px; text-wrap:balance; }
+  .fruit-guide-heading h1>em { font-size:.88em; margin-top:10px; color:#a34760; }
+  .fruit-guide-heading .fruit-guide-intro { margin:0!important; max-width:430px; font-size:14px; line-height:1.75; color:#795f53; }
+  .fruit-guide-heading .fruit-guide-author { justify-content:flex-start; align-items:center; margin:20px 0; padding-top:16px; border-top:1px solid #ddc4ad; font-size:11px; color:#806353; gap:8px; }
+  .fruit-guide-heading .fruit-guide-jump { border-radius:9px; background:#60213e; border-color:#60213e; color:#fff5e5; font-size:11px; padding:12px 14px; gap:8px; }
+  .fruit-guide-jump svg { flex-shrink:0; }
+}
+.fruit-guide-intro { max-width:570px; margin:auto!important; font-size:15px; line-height:1.85; color:#947769; }
+.fruit-guide-author { display:flex; justify-content:center; flex-wrap:wrap; gap:9px; margin:24px 0 17px; font-size:11px; color:#9c8172; }
+.fruit-guide-jump { display:inline-flex; align-items:center; justify-content:center; gap:11px; border:1px solid #dec3a2; border-radius:30px; padding:13px 18px; min-height:48px; color:#7a4a3c; font-size:12px; text-decoration:none; background:#fff4e1; }
+.fruit-guide-hero { max-width:1100px; margin:0 auto!important; padding:0 24px; }
+.fruit-mask-guide figure img { display:block; width:100%; height:auto; border-radius:16px; }
+.fruit-mask-guide figcaption { color:#aa8b7b; font-size:10px; line-height:1.7; padding:12px 4px; text-align:center; }
+.fruit-guide-article-body { max-width:1000px; padding:15px 24px 70px; margin:auto; }
+.fruit-guide-section { margin-top:46px; scroll-margin-top:120px; }
+.fruit-guide-section h2,.fruit-guide-models h2,.fruit-guide-faq h2 { font-size:clamp(28px,3.3vw,43px); line-height:1.2; margin-bottom:23px; }
+.fruit-guide-copy { font-size:15px; line-height:1.95; color:#806b60; }
+.fruit-guide-copy p+p { margin-top:17px; }
+.fruit-guide-copy :is(ul,ol) { padding-left:23px; margin:18px 0; }
+.fruit-guide-copy li { padding-left:5px; margin-bottom:13px; }
+.fruit-guide-copy strong { color:#643448; font-weight:600; }
+.fruit-guide-section figure { margin-top:25px; }
+.fruit-guide-fruits figure { max-width:650px; margin-left:auto; margin-right:auto; }
+.fruit-guide-models { scroll-margin-top:120px; margin:55px -18px 0; padding:35px 22px; background:linear-gradient(145deg,#f8e6e5,#fff2d8); border:1px solid #ecd7bc; border-radius:20px; }
+.fruit-guide-models>.fruit-guide-kicker { justify-content:flex-start; }
+.fruit-guide-models h2 { margin-top:14px; }
+.fruit-guide-models h2 em { color:#a64f67; }
+.fruit-guide-models>p:not(.fruit-guide-kicker) { max-width:680px; color:#8b6c60; font-size:14px; line-height:1.9; }
+.fruit-guide-ad-link { display:block; }
+.fruit-guide-faq { margin-top:55px; padding-top:35px; border-top:1px solid #e5d7c8; }
+.fruit-guide-faq>.fruit-guide-kicker { justify-content:flex-start; margin-bottom:15px; }
+.fruit-guide-faq details { margin-bottom:10px; border:1px solid #e7dace; border-radius:10px; padding:0 19px; background:#fffdf8; }
+.fruit-guide-faq summary { display:flex; align-items:center; justify-content:space-between; gap:15px; min-height:58px; padding:16px 0; cursor:pointer; list-style:none; font-size:14px; line-height:1.6; }
+.fruit-guide-faq summary::-webkit-details-marker { display:none; }
+.fruit-guide-faq summary>span { font-size:21px; color:#ac7f87; }
+.fruit-guide-faq details[open] summary>span { transform:rotate(45deg); }
+.fruit-guide-faq details p { color:#886e64; font-size:14px; line-height:1.9; padding-bottom:20px; }
+.fruit-guide-final { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:20px; padding:26px; margin-top:37px; border-radius:12px; background:#4a1639; color:#fff4df; }
+.fruit-guide-final>span { display:flex; align-items:center; gap:10px; font-family:Georgia,serif; font-size:18px; line-height:1.5; }
+.fruit-guide-final a { display:inline-flex; align-items:center; gap:12px; min-height:46px; padding:12px 17px; border-radius:6px; font-size:12px; text-decoration:none; background:#f3cd86; color:#5b2842; }
+.fruit-mask-guide a:focus-visible,.fruit-mask-guide summary:focus-visible { outline:3px solid #cc9442; outline-offset:4px; }
+@media(max-width:700px) { .fruit-guide-heading { padding:30px 19px; }.fruit-guide-kicker { font-size:8px; }.fruit-guide-heading h1 { font-size:clamp(33px,7.5vw,47px); }.fruit-guide-intro { font-size:14px; }.fruit-guide-hero { padding:0 15px; }.fruit-guide-article-body { padding:0 19px 42px; }.fruit-guide-copy { font-size:15px; line-height:1.85; }.fruit-guide-section { margin-top:32px; }.fruit-guide-models { margin-left:-4px; margin-right:-4px; padding:25px 13px; }.fruit-guide-models h2 { font-size:32px; }.fruit-mask-guide figure img { border-radius:10px; }.fruit-guide-faq summary { font-size:14px; }.fruit-guide-final { padding:23px 18px; }.fruit-guide-final a { width:100%; justify-content:center; }.fruit-guide-jump { font-size:11px; }.fruit-guide-heading nav { font-size:11px; } }

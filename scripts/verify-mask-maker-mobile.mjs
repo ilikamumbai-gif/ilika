@@ -41,10 +41,14 @@ try{
    try { await page.locator('.mask-maker-hero').waitFor({timeout:5000}); } catch(error) { console.log(JSON.stringify({model,width,errors,body:await page.locator('body').innerText()})); throw error; }
    const image=await page.locator('.mask-maker-hero-media img').boundingBox();
    const title=await page.locator('h1').boundingBox();
-   assert(image.width<=width && Math.abs(image.width-image.height)<2);
+   const expectedHeight = image.width * (model === 'nonvoice' && width < 640 ? 7 / 5 : 1);
+   assert(image.width<=width && Math.abs(expectedHeight-image.height)<2, `Artwork size ${model}/${width}: ${JSON.stringify(image)}`);
    if(width<640) assert(image.y<title.y,`Artwork order at ${model}/${width}`);
    if(width>=1024) assert(title.x<image.x,`Desktop columns at ${model}/${width}`);
    const buttons=page.locator('[data-mask-maker-cta]');
+   assert((await page.locator('body').innerText()).includes('Back in stock — Order now'));
+   assert(!/pre[\s-]*order/i.test(await page.locator('body').innerText()));
+   assert((await buttons.first().innerText()).includes(`Order now - ₹${model === 'voice' ? '5,499' : '3,499'}`));
    for(let index=0;index<await buttons.count();index++){
     const button=buttons.nth(index);await button.scrollIntoViewIfNeeded();
     const box=await button.boundingBox();
@@ -54,6 +58,7 @@ try{
    }
    await buttons.first().tap();
    const payload=await page.evaluate(()=>window.cartPayload);
+   assert.equal(payload.price,model==='voice'?5499:3499);
    assert.equal(payload.includedContents.label,model==='voice'?'8 collagen peptide tablets FREE':'25 g Hydra Gel FREE');
    assert.equal(payload.includedContents.price,0);
    assert.deepEqual(errors,[]);

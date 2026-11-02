@@ -1,0 +1,42 @@
+export const FRUIT_MASK_FAQS = [
+  ["What is the Ilika Mask Maker?", "It helps you prepare a fresh, gel-like facial mask at home using compatible juice, purified water and a collagen peptide tablet. Follow the preparation quantities and instructions supplied with your model."],
+  ["Which fruits can I use?", "The guide features papaya, cucumber, apple and watermelon. Use ingredients and prepared juices compatible with the machine, wash ingredients before preparation, and patch test any new ingredient before applying a mask."],
+  ["What is the difference between the Voice and Non-Voice versions?", "The Voice version gives spoken step-by-step prompts. The Non-Voice version is operated without spoken guidance. Both product cards below link to their individual product pages so you can compare the current specifications, price and included contents."],
+  ["What are the current offers for the two models?", "The Voice model includes 32 collagen peptide tablets, plus 8 extra tablets FREE for Diwali — 40 tablets total. The Non-Voice model’s Diwali gift is 25 g Hydra Gel FREE. Each model has its own current store price and availability, shown in its product card."],
+  ["Is it suitable for every skin type?", "Ingredient choice should suit your skin. Start with compatible ingredients you already know, patch test new ingredients, and follow the product instructions. Homemade masks are not automatically suitable for everyone."],
+  ["How often can I use a fruit mask?", "Follow the product’s usage guidance and choose a routine that suits your skin and ingredients. There is no single frequency that fits everyone; avoid continuing with ingredients that cause irritation."],
+  ["Can I make a mask ahead of time?", "Make your mask shortly before use and apply it once it has cooled and set, as directed in the manual. Prepare only what you need and clean the machine and tray after use."],
+  ["How do I buy one?", "Choose the Voice or Non-Voice product card in the two-variants section. Open that model’s product page to check live pricing, stock, included contents, delivery and payment options before ordering. If a model is sold out, use the product page’s Notify Me option."],
+];
+
+export const FRUIT_MASK_BLOG = {
+  id: "diy-fruit-sheet-masks-at-home",
+  slug: "diy-fruit-sheet-masks-at-home",
+  title: "Stop Buying Sheet Masks Every Time! Make Fresh Fruit Masks at Home",
+  metaTitle: "DIY Fruit Sheet Masks at Home | Ilika Mask Maker Guide",
+  metaDescription: "Make fresh fruit masks at home. Explore ingredients, compare the Voice and Non-Voice Ilika Mask Makers, and see each model’s current price and Diwali gift.",
+  excerpt: "Fresh fruit, a mask you made yourself and a few calm minutes. Discover the routine, then choose your Voice or Non-Voice Ilika Mask Maker with its own Diwali offer.",
+  author: "Ilika Team",
+  createdAt: "2026-11-02T00:00:00.000Z",
+  isPrivate: false,
+  hideFromBlogListing: false,
+  inlineMaskMakerOffers: true,
+  renderSectionTitles: true,
+  image: "/FruitMaskGuide/fruit-mask-spa.webp",
+  imageAlt: "A fresh-mask spa moment at home with fruit and an Ilika Mask Maker",
+  faqs: FRUIT_MASK_FAQS.map(([question, answer]) => ({ question, answer })),
+  contentSections: [
+    { id: "fruit-mask-intro", type: "content-full", content: "<p>If your bathroom shelf is full of half-used packets and you keep buying ready-made sheet masks, this guide is for you. The Ilika Mask Maker gives you another way to enjoy a little self-care: prepare a fresh fruit mask at home.</p><p>Fresh fruit, a mask you made yourself and a few calm minutes.</p>" },
+    { id: "ready-made-comparison", type: "content-image", title: "Why Buy Ready-Made Every Time?", image: "/FruitMaskGuide/mask-maker-comparison.webp", imageAlt: "Ready-made sheet masks compared with making fresh fruit masks at home", width: 1651, height: 953, content: "<p>Ready-made sheet masks are convenient, but each purchase gives you a fixed formula and a single-use mask. Making your own gives you more choice over compatible ingredients and the combinations you prepare.</p><p>You choose what to make, prepare it fresh, and turn a routine step into a small ritual.</p>" },
+    { id: "what-is-a-mask-maker", type: "content-image", title: "What Is the Ilika Mask Maker?", image: "/FruitMaskGuide/what-is-a-mask-maker.webp", imageAlt: "An illustrated introduction to the Ilika fruit mask maker machine", width: 1672, height: 941, content: "<p>The Ilika Mask Maker lets you prepare DIY fruit masks at home using compatible prepared ingredients such as papaya, cucumber, apple or watermelon juice, together with water and a collagen peptide tablet.</p><p>Follow the machine’s manual for ingredients, quantities and preparation. Instead of reaching for a packet, you make a fresh mask yourself.</p>" },
+    { id: "why-make-it-fresh", type: "content-full", title: "Why Choose the Ilika Mask Maker?", content: "<ul><li><strong>Fresh preparation:</strong> Make a mask shortly before you use it.</li><li><strong>Your choice of ingredients:</strong> Start with compatible ingredients you enjoy.</li><li><strong>A routine at home:</strong> Make time for a quiet skincare moment without another shopping trip.</li><li><strong>A personal experience:</strong> Choose your own compatible combinations rather than one fixed formula.</li></ul>" },
+    { id: "fruits-to-try", type: "image-content", title: "Your Favourite Fruits, Your Skincare Routine", image: "/FruitMaskGuide/fruits-to-try.webp", imageAlt: "Papaya, cucumber, apple and watermelon as fruit-mask ingredient ideas", width: 1254, height: 1254, content: "<p>Start simply, then try a compatible combination once you know how the individual ingredients suit you.</p><ul><li><strong>Papaya and watermelon:</strong> An idea for a weekend self-care session.</li><li><strong>Cucumber and apple:</strong> A combination to consider for your evening routine.</li><li><strong>Cucumber on its own:</strong> A simple starting point.</li><li><strong>Your own mix:</strong> Follow the product manual and patch test new ingredients.</li></ul>" },
+    { id: "fresh-mask-tips", type: "content-full", title: "A Few Simple Tips", content: "<ol><li>Use fresh ingredients and wash them well before preparing compatible juice.</li><li>Make only what you need, shortly before you use it.</li><li>Patch test a new ingredient, especially if your skin is sensitive.</li><li>Follow the manual’s quantities, then clean the machine and tray after use.</li><li>Set aside a calm moment so your routine feels like a treat.</li></ol>" },
+    {
+      id: "two-mask-maker-variants", type: "mask-maker-variants", title: "Available in Two Variants",
+      content: "<p>Choose the version that suits your routine. Each model has its own product page, current price and Diwali offer.</p><h3>Ilika Voice Mask Maker</h3><p>Spoken, step-by-step guidance. Current price: {{maskMaker.voice.price}}.</p><p>32 collagen peptide tablets included + 8 extra tablets FREE — 40 tablets total.</p><p><a href='/product/voice-face-mask-maker'>View Ilika Voice Mask Maker and offer</a></p><h3>Ilika Non-Voice Mask Maker</h3><p>Manual operation without spoken prompts. Current price: {{maskMaker.nonvoice.price}}.</p><p>Diwali gift: 25 g Hydra Gel FREE.</p><p><a href='/product/non-voice-face-mask-maker'>View Ilika Non-Voice Mask Maker and offer</a></p>",
+    },
+    { id: "ready-for-a-fresh-routine", type: "content-image", title: "Ready to Try Something New?", image: "/FruitMaskGuide/fruit-mask-beauty-ad.png", imageAlt: "Ilika Mask Maker with fruit and a fresh facial mask, inviting you to discover the machine", width: 1586, height: 992, content: "<p>Bring a little variety to your routine with fresh ingredients, your own compatible combinations, and a few quiet minutes at home.</p><p>Compare the two versions above, then open your chosen product page to review the current price and offer.</p>" },
+    { id: "fruit-guide-faq", type: "faq", title: "Your Questions, Answered", content: FRUIT_MASK_FAQS.map(([question, answer]) => `<h3>${question}</h3><p>${answer}</p>`).join("") },
+  ],
+};
