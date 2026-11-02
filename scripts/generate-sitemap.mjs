@@ -7,6 +7,7 @@ import {
   STATIC_BLOGS,
 } from "../src/data/privateBlogs.js";
 import { buildBlogUrl } from "../src/utils/blogRoutes.js";
+import { isBlogIndexable } from "../src/utils/blogIndexing.js";
 
 const readEnvFile = async (filePath) => {
   try {
@@ -454,7 +455,7 @@ async function main() {
       endpoints: blogsEndpoints,
       toUrls: (list) => {
         return list
-          .filter((b) => b?.title && !b?.isPrivate && !getConsolidatedBlogPath(b.slug))
+          .filter((b) => b?.title && isBlogIndexable(b) && !getConsolidatedBlogPath(b.slug))
           .map((b) => {
             const loc = buildBlogUrl(b);
             return {
@@ -473,7 +474,7 @@ async function main() {
     lastmod: today.toISOString().slice(0, 10),
   }));
   const staticBlogUrls = staticBlogCollections
-    .filter((blog) => !blog?.isPrivate)
+    .filter(isBlogIndexable)
     .map((blog) => {
       const loc = buildBlogUrl(blog);
       return {

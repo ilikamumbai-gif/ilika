@@ -1,6 +1,7 @@
 import { buildBlogUrl } from "./blogRoutes.js";
 import { getConsolidatedBlogPath } from "../data/blogConsolidation.js";
 import { createSlug } from "./slugify.js";
+import { isBlogIndexable } from "./blogIndexing.js";
 
 export const getArticleLinkTitle = (title = "") => {
   const text = String(title).trim();
@@ -10,7 +11,7 @@ export const getArticleLinkTitle = (title = "") => {
 export const getPublicBlogs = (blogs = []) => {
   const byRoute = new Map();
   for (const blog of blogs) {
-    if (!blog?.title || blog.isPrivate) continue;
+    if (!blog?.title || !isBlogIndexable(blog)) continue;
     const slug = createSlug(blog.slug || blog.title);
     if (getConsolidatedBlogPath(slug)) continue;
     const route = buildBlogUrl(blog);

@@ -42,7 +42,9 @@ try {
       assert.ok(await link.isVisible(), `Invisible article (${javaScriptEnabled ? "JS" : "no JS"}): ${route}`);
       assert.match((await link.innerText()).trim(), /^Ilika\b/, `Missing Ilika prefix: ${route}`);
     }
-    assert.equal(await page.locator('main a[href^="/blog/private/"]').count(), 0);
+    for (const href of await page.locator('main a[href^="/blog/private/"]').evaluateAll(links => links.map(link => link.getAttribute('href')))) {
+      assert(expected.includes(href), `Private article must be opted into the sitemap: ${href}`);
+    }
     await page.locator(`main a[href="${expected[0]}"]`).first().click();
     await page.waitForURL(`${origin}${expected[0]}`);
     assert.ok(await page.locator("h1").count());

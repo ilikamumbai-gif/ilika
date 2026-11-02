@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { PRIVATE_BLOGS, STATIC_BLOGS } from "../src/data/privateBlogs.js";
 import { buildBlogUrl } from "../src/utils/blogRoutes.js";
+import { getBlogRobots, isBlogIndexable } from "../src/utils/blogIndexing.js";
 
 const SITE_URL = "https://ilika.in";
 const HAIR_DRYER_PRODUCT_PATH = "/product/leafless-hair-dryer";
@@ -147,9 +148,8 @@ async function main() {
   const publicProducts = products.filter((product) => product?.isActive !== false && product?.productUrl);
   const blogs = getPublicBlogs([...STATIC_BLOGS, ...apiBlogs].map((blog) => refreshMaskMakerBlog(blog, products)));
   const blogByRoute = new Map(blogs.map(({ route, blog }) => [route, blog]));
-  // Private articles must not be linked in the public index or sitemap, but
-  // they still need physical files. This lets direct links work on static
-  // hosts even when a SPA fallback rewrite is unavailable.
+  // Retain physical files and legacy aliases for the private URL namespace.
+  // Guides opted into indexing are also included in the article directory.
   const privateBlogByRoute = new Map();
   [...PRIVATE_BLOGS, ...apiBlogs]
     .map((blog) => refreshMaskMakerBlog(blog, products))
@@ -179,9 +179,9 @@ async function main() {
     const page = buildBlogPage(blog, route, hairDryerProduct);
     await writeRoute(template, distDir, route, page.content, { ...page, type: "article" });
   }
-  for (const { route, blog } of privateBlogs) {
+  for (const { route, blog } of privateBlogs.filter(({ blog }) => !isBlogIndexable(blog))) {
     const page = buildBlogPage(blog, route);
-    await writeRoute(template, distDir, route, page.content, { ...page, type: "article", robots: "noindex, nofollow" });
+    await writeRoute(template, distDir, route, page.content, { ...page, type: "article", robots: getBlogRobots(blog) });
   }
   // Older private links omitted `/private/`. Keep a physical fallback for
   // them so static hosts do not return 404; React redirects them to canonical.

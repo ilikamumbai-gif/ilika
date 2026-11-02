@@ -70,6 +70,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-mask-machine-vs-sheet-mask"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -118,6 +119,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-homemade-face-mask-recipes"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -166,6 +168,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-glowing-skin-face-masks"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -214,6 +217,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-home-facial-guide"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -262,6 +266,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-collagen-face-mask-guide"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -310,6 +315,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-face-mask-before-after-shower"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -358,6 +364,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-aloe-vera-for-face"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -406,6 +413,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-vitamin-c-for-face"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -454,6 +462,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-how-often-face-mask"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -502,6 +511,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-best-face-mask-machine-india"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -550,6 +560,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-machine-vs-sheet-masks"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -598,6 +609,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-clean-face-mask-machine"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -694,6 +706,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-diy-face-mask-machine-buying-guide"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     contentSections: [
       {
@@ -742,6 +755,7 @@ export const PRIVATE_BLOGS = [
     internalLink: voiceMaskMakerPath,
     internalLinks: buildVoiceMaskMakerLinks("private-best-face-mask-maker-parlour-home"),
     isPrivate: true,
+    allowIndexing: true,
     hideFromBlogListing: true,
     faqs: [
       { question: "Is the Ilika Voice Face Mask Maker back in stock?", answer: "Yes. Check the product page for the current availability and price." },
@@ -2201,9 +2215,8 @@ const READY_TO_PUBLISH_BLOGS = [
   },
 ];
 export const STATIC_BLOGS = [
-  // This article is retained in PRIVATE_BLOGS for its shared content source,
-  // but is explicitly published as a public, sitemap-eligible article.
-  ...PRIVATE_BLOGS.filter((blog) => !blog.isPrivate),
+  // Published guides retain their established URLs, including /blog/private/.
+  ...PRIVATE_BLOGS.filter((blog) => !blog.isPrivate || blog.allowIndexing === true),
   CUSTOM_VOICE_MASK_GUIDE_BLOG,
   ...READY_TO_PUBLISH_BLOGS,
   ...HAIR_TOOL_COMPARISON_BLOGS,

@@ -1,6 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { HOME_SEO } from "../src/data/siteSeo.js";
+import { PRIVATE_BLOGS } from "../src/data/privateBlogs.js";
+import { isBlogIndexable } from "../src/utils/blogIndexing.js";
+import { buildBlogUrl } from "../src/utils/blogRoutes.js";
 
 const SITE_URL = "https://ilika.in";
 
@@ -61,8 +64,9 @@ async function main() {
       throw new Error(`Article directory initial HTML is missing article link: ${url}`);
     }
   }
-  if (Array.from(articleLinks).some(href => href.startsWith("/blog/private/"))) {
-    throw new Error("Article directory exposes private article links.");
+  const indexablePrivateRoutes = new Set(PRIVATE_BLOGS.filter(isBlogIndexable).map((blog) => buildBlogUrl(blog)));
+  if (Array.from(articleLinks).some(href => href.startsWith("/blog/private/") && !indexablePrivateRoutes.has(href))) {
+    throw new Error("Article directory exposes a private article without indexing permission.");
   }
   const otherUrls = urls.filter(url => !productUrls.includes(url) && !blogUrls.includes(url));
   if (!productUrls.length || !blogUrls.length) throw new Error("Sitemap must include both product and blog URLs.");

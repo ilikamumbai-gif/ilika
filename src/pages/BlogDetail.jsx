@@ -15,6 +15,7 @@ import { buildCartProductSnapshot, getDefaultVariant } from "../utils/productPri
 import { PRIVATE_BLOG_PATHS, PRIVATE_BLOGS, STATIC_BLOGS } from "../data/privateBlogs";
 import { getMaskMakerBlogOffers, isMaskMakerBlog, refreshMaskMakerBlog, usesRestockBlogOffer } from "../utils/maskMakerBlogOffers";
 import BlogMaskMakerOffers from "../components/BlogMaskMakerOffers";
+import { getBlogRobots } from "../utils/blogIndexing.js";
 
 const removeInlineImagesFromHtml = (html = "") =>
   String(html || "").replace(/<img[^>]*>/gi, "");
@@ -502,7 +503,7 @@ const BlogDetail = () => {
     canonical: canonicalPath,
     image: seoImage,
     type: "article",
-    robots: blog ? (isPrivateBlog ? "noindex, nofollow" : "index, follow") : "noindex, follow",
+    robots: blog ? getBlogRobots(blog) : "noindex, follow",
     keywords: seoKeywords,
   });
 
