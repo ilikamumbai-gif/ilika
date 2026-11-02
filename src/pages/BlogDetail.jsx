@@ -13,7 +13,7 @@ import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 import { buildCartProductSnapshot, getDefaultVariant } from "../utils/productPricing";
 import { PRIVATE_BLOG_PATHS, PRIVATE_BLOGS, STATIC_BLOGS } from "../data/privateBlogs";
-import { getMaskMakerBlogOffers, isMaskMakerBlog, refreshMaskMakerBlog } from "../utils/maskMakerBlogOffers";
+import { getMaskMakerBlogOffers, isMaskMakerBlog, refreshMaskMakerBlog, usesRestockBlogOffer } from "../utils/maskMakerBlogOffers";
 import BlogMaskMakerOffers from "../components/BlogMaskMakerOffers";
 
 const removeInlineImagesFromHtml = (html = "") =>
@@ -186,7 +186,7 @@ const BlogDetail = () => {
   const API = import.meta.env.VITE_API_URL;
   const [rawBlog, setBlog] = useState(locationBlog || null);
   const blog = useMemo(() => refreshMaskMakerBlog(rawBlog, products), [rawBlog, products]);
-  const maskMakerOffers = useMemo(() => getMaskMakerBlogOffers(products), [products]);
+  const maskMakerOffers = useMemo(() => getMaskMakerBlogOffers(products, { restock: usesRestockBlogOffer(rawBlog) }), [products, rawBlog]);
   const privateBlog = useMemo(
     () =>
       PRIVATE_BLOGS.find(
@@ -623,7 +623,7 @@ const BlogDetail = () => {
               ) : null}
             </div>
 
-            {isMaskMakerBlog(blog) && <BlogMaskMakerOffers offers={maskMakerOffers} />}
+            {isMaskMakerBlog(blog) && <BlogMaskMakerOffers offers={maskMakerOffers} restock={usesRestockBlogOffer(blog)} />}
             {contentSections.map((section, index) => renderSectionBlock(section, index))}
 
             {isHairDryerBlog ? (

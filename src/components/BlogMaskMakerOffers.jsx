@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export default function BlogMaskMakerOffers({ offers }) {
+export default function BlogMaskMakerOffers({ offers, restock = false }) {
   const maxPrice = Math.max(1, ...offers.map((offer) => offer.price || 0));
   return (
     <section className="rounded-2xl border border-[#eed9ad] bg-[#fffbf1] p-4 sm:p-6" aria-labelledby="blog-diwali-title">
@@ -16,8 +16,8 @@ export default function BlogMaskMakerOffers({ offers }) {
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#f3eee3]" aria-hidden="true">
               <div className="h-full rounded-full bg-[#b88c3d]" style={{ width: `${offer.price ? offer.price / maxPrice * 100 : 0}%` }} />
             </div>
-            <p className="mt-2 text-xs text-[#786c60]">{offer.available === false ? "Pre-order · check availability" : offer.available ? "In stock" : "Check product availability"}</p>
-            <Link to={offer.href} className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-[#765018] underline underline-offset-4">View product &amp; offer →</Link>
+            <p className="mt-2 text-xs text-[#786c60]">{offer.available === false ? restock ? "Out of stock" : "Pre-order · check availability" : offer.available ? restock ? "Back in stock — Order now" : "In stock" : "Check product availability"}</p>
+            <Link to={offer.href} className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-[#765018] underline underline-offset-4">{restock && offer.available ? "Order now →" : "View product & offer →"}</Link>
           </div>
         ))}
       </div>
