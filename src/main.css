@@ -45,6 +45,15 @@ body,
   color: #1c371c;
 }
 
+/* Keep the mask maker purchase controls beside the offer on phone screens. */
+@media (max-width: 639px) {
+  [data-mask-maker-info] > * { order: 4; }
+  [data-mask-maker-info] > [data-product-heading] { order: 0; }
+  [data-mask-maker-info] > [data-product-reviews] { order: 1; }
+  [data-mask-maker-info] > [data-mask-maker-gift] { order: 2; }
+  [data-mask-maker-info] > [data-product-purchase] { order: 3; }
+}
+
 /* Hide scrollbar */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

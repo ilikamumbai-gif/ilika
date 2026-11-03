@@ -5112,8 +5112,8 @@ const ProductDetail = () => {
             </div>
 
             {/* Product info */}
-            <div className="flex h-fit flex-col gap-3.5 sm:gap-5 xl:pr-4">
-              <div>
+            <div className="flex h-fit flex-col gap-3.5 sm:gap-5 xl:pr-4" data-mask-maker-info={eligibleForCollagenAddon || undefined}>
+              <div data-product-heading>
                 {productTagLabel && (
                   <span
                     className="mb-3 inline-flex max-w-full items-center justify-center rounded-[10px] px-3 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] shadow-[0_10px_24px_rgba(69,39,34,0.12)] sm:rounded-[12px] sm:px-3.5 sm:text-[11px] sm:tracking-[0.08em]"
@@ -5134,7 +5134,7 @@ const ProductDetail = () => {
               </div>
 
               {publicReviewCount > 0 ? (
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3" data-product-reviews>
                   <div className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: detailTheme.ratingBg, color: getContrastText(detailTheme.ratingBg) }}>
                     <Star className="h-3 w-3 fill-white" />
                     <span>{publicAverageRating.toFixed(1)}</span>
@@ -5146,10 +5146,10 @@ const ProductDetail = () => {
               ) : null}
 
               {eligibleForCollagenAddon && (
-                <>
+                <div className="flex flex-col gap-3.5 sm:contents" data-mask-maker-gift>
                   {!isOutOfStock && <p className="mb-2 text-sm font-semibold text-[#1d6a4a]" role="status">Back in stock — Order now</p>}
                   <DiwaliOfferBanner isNonVoiceMaskMaker={isNonVoiceMaskMaker} />
-                </>
+                </div>
               )}
 
               {product.hasVariants && <div>{renderVariantSelector()}</div>}
@@ -5265,7 +5265,7 @@ const ProductDetail = () => {
               )}
 
               {/* Mobile purchase card */}
-              <div className="h-fit lg:col-span-2 xl:hidden">
+              <div className="h-fit lg:col-span-2 xl:hidden" data-product-purchase>
                 <div ref={atcButtonsRef} className="mb-3 grid grid-cols-2 gap-2 sm:gap-3" data-mobile-purchase-actions>
                   <AnimatedCtaButton
                     onClick={handleBuyNow}
