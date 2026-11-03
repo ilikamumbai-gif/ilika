@@ -188,7 +188,7 @@ const NonvoiceMaskMakerLanding = () => {
   return (
     <div className="mask-maker-landing bg-[#FFF8F5] text-[#3A2A27] [font-family:'DM_Sans',sans-serif]">
       <MiniDivider />
-      <Header /><MaskMakerGuidePopup />
+      <Header /><MaskMakerGuidePopup currentModel="nonvoice" />
 
       <style>{`
         .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 900px; }

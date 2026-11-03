@@ -20,34 +20,34 @@ import {
   PRIVATE_BLOGS,
   PRIVATE_BLOG_PATHS,
 } from "../data/privateBlogs";
-import voiceVersionMaskMakerImage from "./assets/voicevesion mask maker.jpeg";
-import voiceMaskMakerMainImage from "./assets/voicemaskmaker/machine.jpg";
-import voiceMaskMakerBeakerImage from "./assets/voicemaskmaker/Beaker.jpg";
-import voiceMaskMakerTrayImage from "./assets/voicemaskmaker/tray.jpg";
-import voiceMaskMakerCordImage from "./assets/voicemaskmaker/Cord.jpg";
-import voiceMaskMakerManualImage from "./assets/voicemaskmaker/manual.jpg";
-import voiceMaskMakerCleaningBrushImage from "./assets/voicemaskmaker/Cleaning Brush.jpg";
-import voiceMaskMakerCollagenPeptideImage from "./assets/voicemaskmaker/collegen petpide.jpeg";
-import voiceMaskMakerSpatulaImage from "./assets/voicemaskmaker/spacula.jpg";
-import voiceMaskMakerAngle1Image from "./assets/voicemaskmaker/angle 1.jpg";
-import voiceMaskMakerAngle2Image from "./assets/voicemaskmaker/angle 2.jpg";
-import voiceMaskMakerAngle3Image from "./assets/voicemaskmaker/angle 3.jpg";
-import voiceMaskMakerAngle4Image from "./assets/voicemaskmaker/angle 4.jpg";
-import voiceMaskMakerAngle5Image from "./assets/voicemaskmaker/angle 5.jpg";
-import voiceMaskMakerAngle6Image from "./assets/voicemaskmaker/angle 6.jpg";
-import voiceMaskMakerStep1Image from "./assets/voicemaskmaker/1.jpg";
-import voiceMaskMakerStep2Image from "./assets/voicemaskmaker/2.jpg";
-import voiceMaskMakerStep3Image from "./assets/voicemaskmaker/3.jpg";
-import voiceMaskMakerStep4Image from "./assets/voicemaskmaker/4.jpg";
-import voiceMaskMakerStep5Image from "./assets/voicemaskmaker/5.jpg";
-import voiceMaskMakerStep6Image from "./assets/voicemaskmaker/6.jpg";
-import voiceMaskMakerStep7Image from "./assets/voicemaskmaker/7.jpg";
-import voiceMaskMakerStep8Image from "./assets/voicemaskmaker/8.jpg";
-import voiceMaskMakerStep9Image from "./assets/voicemaskmaker/9.jpg";
-import voiceMaskMakerStep10Image from "./assets/voicemaskmaker/10.jpg";
-import voiceMaskMakerStep11Image from "./assets/voicemaskmaker/11.jpg";
-import voiceMaskMakerStep12Image from "./assets/voicemaskmaker/12.jpg";
-import voiceMaskMakerStep13Image from "./assets/voicemaskmaker/13.jpg";
+import voiceVersionMaskMakerImage from "./assets/voicevesion mask maker.webp";
+import voiceMaskMakerMainImage from "./assets/voicemaskmaker/machine.webp";
+import voiceMaskMakerBeakerImage from "./assets/voicemaskmaker/Beaker.webp";
+import voiceMaskMakerTrayImage from "./assets/voicemaskmaker/tray.webp";
+import voiceMaskMakerCordImage from "./assets/voicemaskmaker/Cord.webp";
+import voiceMaskMakerManualImage from "./assets/voicemaskmaker/manual.webp";
+import voiceMaskMakerCleaningBrushImage from "./assets/voicemaskmaker/Cleaning Brush.webp";
+import voiceMaskMakerCollagenPeptideImage from "./assets/voicemaskmaker/collegen petpide.webp";
+import voiceMaskMakerSpatulaImage from "./assets/voicemaskmaker/spacula.webp";
+import voiceMaskMakerAngle1Image from "./assets/voicemaskmaker/angle 1.webp";
+import voiceMaskMakerAngle2Image from "./assets/voicemaskmaker/angle 2.webp";
+import voiceMaskMakerAngle3Image from "./assets/voicemaskmaker/angle 3.webp";
+import voiceMaskMakerAngle4Image from "./assets/voicemaskmaker/angle 4.webp";
+import voiceMaskMakerAngle5Image from "./assets/voicemaskmaker/angle 5.webp";
+import voiceMaskMakerAngle6Image from "./assets/voicemaskmaker/angle 6.webp";
+import voiceMaskMakerStep1Image from "./assets/voicemaskmaker/1.webp";
+import voiceMaskMakerStep2Image from "./assets/voicemaskmaker/2.webp";
+import voiceMaskMakerStep3Image from "./assets/voicemaskmaker/3.webp";
+import voiceMaskMakerStep4Image from "./assets/voicemaskmaker/4.webp";
+import voiceMaskMakerStep5Image from "./assets/voicemaskmaker/5.webp";
+import voiceMaskMakerStep6Image from "./assets/voicemaskmaker/6.webp";
+import voiceMaskMakerStep7Image from "./assets/voicemaskmaker/7.webp";
+import voiceMaskMakerStep8Image from "./assets/voicemaskmaker/8.webp";
+import voiceMaskMakerStep9Image from "./assets/voicemaskmaker/9.webp";
+import voiceMaskMakerStep10Image from "./assets/voicemaskmaker/10.webp";
+import voiceMaskMakerStep11Image from "./assets/voicemaskmaker/11.webp";
+import voiceMaskMakerStep12Image from "./assets/voicemaskmaker/12.webp";
+import voiceMaskMakerStep13Image from "./assets/voicemaskmaker/13.webp";
 import {
   Volume2,
   Leaf,
@@ -486,7 +486,7 @@ const VoiceMaskMakerLanding = () => {
   return (
     <div className="mask-maker-landing bg-[#202020] text-[#FAF6F3] [font-family:'DM_Sans',sans-serif]">
       <MiniDivider />
-      <Header forceWhiteBg /><MaskMakerGuidePopup />
+      <Header forceWhiteBg /><MaskMakerGuidePopup currentModel="voice" />
 
       <style>{`
         @keyframes offerPop {

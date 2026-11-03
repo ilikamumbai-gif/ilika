@@ -33,6 +33,7 @@ import { buildProductReviewSchema, getProductReviews } from "../utils/productRev
 import { getProductMerchantMetadata } from "../utils/productPricing";
 import { getCanonicalProductSlugAlias, getProductSeoContent } from "../data/productSeoContent";
 import { getApiUrl, handleApiError } from "../utils/api";
+import { findProductBySlug } from "../utils/productLookup.js";
 import {
   buildCartProductSnapshot,
   findVariantByQueryValue,
@@ -2865,13 +2866,14 @@ const ProductDetail = () => {
   const [isBuying, setIsBuying] = useState(false);
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
 
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const cachedProduct = useMemo(() => findProductBySlug(products, productUrl), [products, productUrl]);
+  const [resolvedProduct, setProduct] = useState(null);
+  const [detailLoading, setLoading] = useState(true);
+  const product = findProductBySlug(resolvedProduct ? [resolvedProduct] : [], productUrl) || cachedProduct;
+  const loading = detailLoading && !product;
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageZoomActive, setIsImageZoomActive] = useState(false);
   const [imageZoomPosition, setImageZoomPosition] = useState({ x: 50, y: 50 });
-  const [isHeroImageLoaded, setIsHeroImageLoaded] = useState(false);
-  const [pendingImagesToPreload, setPendingImagesToPreload] = useState([]);
   const [selectedVideoUrl, setSelectedVideoUrl] = useState("");
   const [selectedVideoPlaying, setSelectedVideoPlaying] = useState(false);
   const [showAllThumbnails, setShowAllThumbnails] = useState(false);
@@ -2918,11 +2920,8 @@ const ProductDetail = () => {
   // const footerRef = useRef(null);
 
 
-  // displayImages - only populated after images are preloaded so old thumbs never flash
+  // Let native lazy loading fetch visible thumbnails without warming the full gallery.
   const [displayImages, setDisplayImages] = useState([]);
-  // ref to cancel in-flight preload when product/variant changes rapidly
-  const preloadAbortRef = useRef(false);
-  const ingredientPreloadedRef = useRef(new Set());
   const ingredientTrackRef = useRef(null);
   const ingredientDragStateRef = useRef({
     isDragging: false,
@@ -2941,49 +2940,6 @@ const ProductDetail = () => {
 
 
 
-  /* â”€â”€ Async image preloader - waits for each img to load before showing thumbnails â”€â”€ */
-  const preloadImages = useCallback(async (urls) => {
-    // Signal any previous preload to abort
-    preloadAbortRef.current = true;
-    // Small tick so the abort flag is read by any running preload
-    await new Promise(r => setTimeout(r, 0));
-
-    // Start fresh preload session
-    preloadAbortRef.current = false;
-    const token = {}; // unique object ref for this session
-    preloadAbortRef._token = token;
-
-    // Clear thumbnails immediately while new ones load
-    setDisplayImages([]);
-
-    if (!urls || urls.length === 0) return;
-
-    // Keep first image free for LCP and warm only secondary gallery images.
-    const secondaryUrls = urls.slice(1);
-    if (secondaryUrls.length === 0) {
-      setDisplayImages(urls.slice(0, 1));
-      return;
-    }
-
-    const loaded = await Promise.allSettled(
-      secondaryUrls.map(url => new Promise((resolve) => {
-        const img = new window.Image();
-        img.onload = () => resolve(url);
-        img.onerror = () => resolve(url); // still show even if error
-        img.src = url;
-      }))
-    );
-
-    // If a newer preload started, discard these results
-    if (preloadAbortRef._token !== token) return;
-
-    const readyUrls = loaded.map(r => r.value).filter(Boolean);
-    setDisplayImages([urls[0], ...readyUrls].filter(Boolean));
-  }, []);
-
-
-
-  /* â”€â”€ Unified sticky bar visibility - single source of truth â”€â”€ */
   useEffect(() => {
     const handleScroll = () => {
       if (!atcButtonsRef.current) return;
@@ -3013,13 +2969,21 @@ const ProductDetail = () => {
   // scroll math needed — this also fixes it floating on top of the footer.
 
 
+  const cachedProductRef = useRef(cachedProduct);
+  useEffect(() => {
+    cachedProductRef.current = cachedProduct;
+  }, [cachedProduct]);
+
   /* Product detail routing uses productUrl only. */
   useEffect(() => {
     let isCurrentRoute = true;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 10000);
 
     const currentProductUrl = normalizeRouteSlug(productUrl);
 
     if (!currentProductUrl) {
+      window.clearTimeout(timeoutId);
       setProduct(null);
       setLoading(false);
       return () => {
@@ -3028,42 +2992,26 @@ const ProductDetail = () => {
     }
 
     const load = async () => {
-      setLoading(true);
-      setProduct((currentProduct) => {
-        if (!currentProduct) return null;
-        return normalizeRouteSlug(currentProduct?.productUrl) === currentProductUrl
-          ? currentProduct
-          : null;
-      });
+      const cachedProduct = cachedProductRef.current;
+      setLoading(!cachedProduct);
+      setProduct((currentProduct) => cachedProduct ||
+        findProductBySlug(currentProduct ? [currentProduct] : [], currentProductUrl));
 
       try {
         const canonicalAliasSlug = normalizeRouteSlug(getCanonicalProductSlugAlias(currentProductUrl));
         const slugCandidates = Array.from(
           new Set([currentProductUrl, canonicalAliasSlug].map((value) => normalizeRouteSlug(value)).filter(Boolean))
         );
-        const cachedProduct = products.find((p) =>
-          slugCandidates.some((slugCandidate) => {
-            const productSlugCandidates = [
-              p?.productUrl,
-              p?.slug,
-              p?.name ? createSlug(p.name) : "",
-              getCanonicalProductSlugAlias(p?.productUrl || p?.slug || p?.name || ""),
-            ]
-              .map((value) => normalizeRouteSlug(value))
-              .filter(Boolean);
-
-            return productSlugCandidates.includes(slugCandidate);
-          })
-        );
         let resolved = null;
 
         for (const slugCandidate of slugCandidates) {
           try {
-            const res = await fetch(getApiUrl(`/api/products/slug/${slugCandidate}`));
+            const res = await fetch(getApiUrl(`/api/products/slug/${encodeURIComponent(slugCandidate)}`), { signal: controller.signal });
             if (!res.ok) continue;
             resolved = await res.json();
             break;
           } catch (error) {
+            if (controller.signal.aborted) break;
             handleApiError("Product detail", error);
           }
         }
@@ -3076,7 +3024,7 @@ const ProductDetail = () => {
           return;
         }
 
-        const found = resolved?.product || resolved || cachedProduct;
+        const found = resolved?.product || resolved || cachedProductRef.current;
         if (!found) throw new Error("Product slug not found");
 
         if (!isCurrentRoute) return;
@@ -3095,6 +3043,7 @@ const ProductDetail = () => {
         console.error("product not found", error);
         setProduct(null);
       } finally {
+        window.clearTimeout(timeoutId);
         if (isCurrentRoute) setLoading(false);
       }
     };
@@ -3103,13 +3052,10 @@ const ProductDetail = () => {
 
     return () => {
       isCurrentRoute = false;
+      window.clearTimeout(timeoutId);
+      controller.abort();
     };
-  }, [productUrl, products, navigate]);
-
-  useEffect(() => {
-    if (!isHeroImageLoaded || !pendingImagesToPreload?.length) return;
-    preloadImages(pendingImagesToPreload);
-  }, [isHeroImageLoaded, pendingImagesToPreload, preloadImages]);
+  }, [productUrl, navigate]);
 
   const syncVariantQueryParam = useCallback((variant, options = {}) => {
     const nextParams = new URLSearchParams(searchParams);
@@ -3139,14 +3085,12 @@ const ProductDetail = () => {
       null;
 
     setSelectedImage(null);
-    setIsHeroImageLoaded(false);
     setSelectedVideoUrl("");
     setSelectedVideoPlaying(false);
-    setDisplayImages([]);
+    setDisplayImages(nextImages);
     stopAuto();
     setActiveVariant(resolvedVariant);
     setSelectedImage(nextImage);
-    setPendingImagesToPreload(nextImages);
   }, [product]);
 
   /* â”€â”€ Resolve variant from URL and preload matching media â”€â”€ */
@@ -3220,7 +3164,7 @@ const ProductDetail = () => {
       })
       .filter(Boolean);
   }, [product?.name, product?.productUrl, product?.slug, product?.videos]);
-  // `displayImages` = what thumbnails actually render - only set after async preload
+  // `displayImages` follows the selected variant; each thumbnail loads independently.
   const activeDisplayPricing = useMemo(
     () => getProductDisplayPricing(product, activeVariant),
     [product, activeVariant]
@@ -4219,27 +4163,6 @@ const ProductDetail = () => {
   const hasIngredients = ingredients.length > 0;
   const hasInTheBox = inTheBoxItems.length > 0;
 
-  useEffect(() => {
-    if (!ingredients.length) return;
-    const warmup = () => {
-      ingredients.slice(0, 2).forEach((src) => {
-        if (!src || ingredientPreloadedRef.current.has(src)) return;
-        const img = new window.Image();
-        img.decoding = "async";
-        img.src = src;
-        ingredientPreloadedRef.current.add(src);
-      });
-    };
-
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(warmup, { timeout: 1500 });
-      return () => window.cancelIdleCallback(id);
-    }
-
-    const timeoutId = window.setTimeout(warmup, 1200);
-    return () => window.clearTimeout(timeoutId);
-  }, [ingredients]);
-
   const additionalInfoArray = useMemo(() => {
     const savedDetails = Array.isArray(product?.additionalInfo)
       ? product.additionalInfo
@@ -4892,7 +4815,7 @@ const ProductDetail = () => {
       />
 
       <div className="primary-bg-color" style={{ backgroundColor: detailTheme.pageBg }}>
-        {(isVoiceMaskMakerProduct || isNonVoiceMaskMakerProduct) && <MaskMakerGuidePopup key={productUrl} />}
+        {(isVoiceMaskMakerProduct || isNonVoiceMaskMakerProduct) && <MaskMakerGuidePopup key={productUrl} currentModel={isNonVoiceMaskMakerProduct ? "nonvoice" : "voice"} />}
         <Header />
         <CartDrawer />
 
@@ -5128,7 +5051,6 @@ const ProductDetail = () => {
                           loading="eager"
                           fetchPriority="high"
                           decoding="sync"
-                          onLoad={() => setIsHeroImageLoaded(true)}
                           src={`${selectedImage}${product.updatedAt ? `?v=${product.updatedAt}` : ""}`}
                           alt={product.name}
                           width="1080"
@@ -5961,7 +5883,7 @@ const ProductDetail = () => {
                   >
                     {item.image ? (
                       <img
-                        loading={index < 2 ? "eager" : "lazy"}
+                        loading="lazy"
                         src={item.image}
                         alt={item.title || `Box item ${index + 1}`}
                         className="h-24 w-auto max-w-full rounded-[18px] object-contain sm:h-32"
@@ -6055,14 +5977,14 @@ const ProductDetail = () => {
                     className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-proximity pb-2 [&::-webkit-scrollbar]:hidden"
                     style={{ scrollbarWidth: "none" }}
                   >
-                    {(shouldLoopIngredients ? loopedIngredients : loopedIngredients.slice(0, ingredients.length)).map((item, idx) => (
+                    {(shouldLoopIngredients ? loopedIngredients : loopedIngredients.slice(0, ingredients.length)).map((item) => (
                       <div
                         key={`ingredient-${item.key}`}
                         className="relative rounded-[28px] overflow-hidden group snap-start shrink-0 basis-full sm:basis-[calc(50%-8px)] lg:basis-[calc(25%-18px)] bg-white"
                         style={{ aspectRatio: "1 / 1" }}
                       >
                         <img
-                          loading={idx < 2 ? "eager" : "lazy"}
+                          loading="lazy"
                           src={item.src}
                           alt={`Ingredient ${item.originalIndex + 1}`}
                           width="600"
