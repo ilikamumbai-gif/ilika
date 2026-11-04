@@ -75,9 +75,17 @@ const ProductList = () => {
       const upserted = Number(result?.summary?.upserted || 0);
       const skipped = Number(result?.summary?.skipped || 0);
       const deleted = Number(result?.summary?.deleted || 0);
+      const errors = Number(result?.summary?.error || 0);
+      const details = (result?.results || []).flatMap((item) => {
+        const label = item.productName || item.offerId || "Product";
+        return [
+          ...(item.status === "error" ? [`${label}: ${item.message || "Sync failed"}`] : []),
+          ...(item.mediaWarnings || []).map((warning) => `${label}: ${warning}`),
+        ];
+      });
 
       setSyncMessage(
-        `Merchant updated. Total: ${total}, synced: ${upserted}, skipped: ${skipped}, deleted: ${deleted}.`
+        `Merchant sync finished. Total: ${total}, synced: ${upserted}, skipped: ${skipped}, deleted: ${deleted}, failed: ${errors}.${details.length ? ` ${details.join(" ")}` : ""}`
       );
     } catch (error) {
       setSyncMessage(error?.message || "Merchant sync failed.");
@@ -102,7 +110,7 @@ const ProductList = () => {
               className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-60"
             >
               <RefreshCw size={16} className={syncingMerchant ? "animate-spin" : ""} />
-              {syncingMerchant ? "Syncing Merchant..." : "Sync Merchant URLs"}
+              {syncingMerchant ? "Syncing Merchant..." : "Sync Merchant Products"}
             </button>
           )}
           <button onClick={() => navigate("/admin/products/add")}

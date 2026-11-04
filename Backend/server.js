@@ -1,4 +1,5 @@
 import express from "express";
+import merchantMedia from "../functions/merchantMedia.cjs";
 import cors from "cors";
 import dotenv from "dotenv";
 import Razorpay from "razorpay";
@@ -12,6 +13,7 @@ import { getComboStockError } from "./services/comboStock.js";
 import { getPrepaidDiscount } from "./services/prepaidDiscount.js";
 import { createPreorderHandler } from "./services/preorderRequests.js";
 
+const { getMerchantMedia } = merchantMedia;
 dotenv.config();
 const app = express();
 app.set("trust proxy", true);
@@ -1837,50 +1839,6 @@ const normalizeAbsoluteUrl = (value = "", siteBase = "https://ilika.in") => {
   }
 };
 
-const isPublicHttpUrl = (value = "") => /^https?:\/\//i.test(String(value || "").trim());
-
-const readImageValue = (value) => {
-  if (typeof value === "string") return value.trim();
-  if (value && typeof value === "object") {
-    const candidate = value.url || value.image || value.src || "";
-    return typeof candidate === "string" ? candidate.trim() : "";
-  }
-  return "";
-};
-
-const sanitizeMerchantImageCandidates = (values = []) => {
-  const seen = new Set();
-  const clean = [];
-
-  values
-    .map((value) => readImageValue(value))
-    .filter(Boolean)
-    .forEach((value) => {
-      const key = value.toLowerCase();
-      if (seen.has(key)) return;
-      seen.add(key);
-      clean.push(value);
-    });
-
-  return clean;
-};
-
-const getMerchantImageCandidates = (product = {}) => {
-  const imageList = Array.isArray(product?.images) ? product.images : [];
-  const variantImages = Array.isArray(product?.variants)
-    ? product.variants.flatMap((variant) =>
-        Array.isArray(variant?.images) ? variant.images : []
-      )
-    : [];
-
-  return sanitizeMerchantImageCandidates([
-    product?.image,
-    product?.imageUrl,
-    ...imageList,
-    ...variantImages,
-  ]);
-};
-
 const normalizeMerchantSiteBaseUrl = (value = "") => {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -1985,21 +1943,7 @@ const mapProductToMerchantPayload = (product = {}, variant = null) => {
     `/product/${slug}${variantQuery ? `?variant=${encodeURIComponent(variantQuery)}` : ""}`,
     siteBaseUrl
   );
-  const variantImageCandidates = variant
-    ? [
-        ...(Array.isArray(variant?.images) ? variant.images : []),
-        product?.image,
-        product?.imageUrl,
-        ...(Array.isArray(product?.images) ? product.images : []),
-      ]
-    : getMerchantImageCandidates(product);
-  const normalizedImages = sanitizeMerchantImageCandidates(variantImageCandidates)
-    .map((img) => normalizeAbsoluteUrl(img, siteBaseUrl))
-    .filter((img) => isPublicHttpUrl(img));
-  const imageLink = normalizedImages[0] || "";
-  const additionalImageLinks = normalizedImages
-    .filter(Boolean)
-    .slice(1, 10);
+  const { imageLink, additionalImageLinks, videoLinks } = getMerchantMedia(product, variant, siteBaseUrl);
 
   const payload = {
     offerId,
@@ -2010,7 +1954,8 @@ const mapProductToMerchantPayload = (product = {}, variant = null) => {
       description: stripHtml(product?.shortInfo || product?.description || name),
       link: productUrl,
       imageLink: imageLink || undefined,
-      additionalImageLinks: additionalImageLinks.length ? additionalImageLinks : undefined,
+      additionalImageLinks,
+      videoLinks,
       availability: (() => {
       if (typeof variant?.inStock === "boolean") return variant.inStock ? "in stock" : "out of stock";
       const stockValue = variant?.stock;
@@ -2067,6 +2012,11 @@ const upsertMerchantProduct = async (product = {}) => {
     return { status: "skipped", reason: "product_not_eligible", offerId: product?.id || null };
   }
 
+  const { rejectedVideoLinks } = getMerchantMedia(product, null, getSiteBaseUrl());
+  const mediaWarnings = rejectedVideoLinks.length
+    ? [`${rejectedVideoLinks.length} video link(s) skipped: use a public YouTube URL or a direct supported video file URL instead of a preview page.`]
+    : [];
+
   for (const payload of payloads) {
     await authClient.request({
       url: `https://merchantapi.googleapis.com/products/v1/accounts/${encodeURIComponent(MERCHANT_CENTER_ACCOUNT_ID)}/productInputs:insert?dataSource=${encodeURIComponent(dataSourceName)}`,
@@ -2088,6 +2038,8 @@ const upsertMerchantProduct = async (product = {}) => {
     offerId: product?.id || null,
     offerIds: payloads.map((payload) => payload.offerId),
     variantOfferIds: desiredOfferIds,
+    productName: String(product?.name || "").trim(),
+    mediaWarnings,
   };
 };
 

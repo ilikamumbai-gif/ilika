@@ -3,6 +3,7 @@ const admin = require("firebase-admin");
 const { google } = require("googleapis");
 const dotenv = require("dotenv");
 const path = require("path");
+const { getMerchantMedia } = require("./merchantMedia.cjs");
 
 // Use Backend/.env as the single local source of env vars.
 // In deployed Firebase runtime, process.env is still provided by the platform.
@@ -91,52 +92,6 @@ const toAbsoluteUrl = (value = "", fallbackOrigin = merchantConfig.siteUrl) => {
   }
 };
 
-const isPublicHttpUrl = (value = "") => /^https?:\/\//i.test(String(value || "").trim());
-
-const readImageValue = (value) => {
-  if (typeof value === "string") return value.trim();
-  if (value && typeof value === "object") {
-    const candidate = value.url || value.image || value.src || "";
-    return typeof candidate === "string" ? candidate.trim() : "";
-  }
-  return "";
-};
-
-const sanitizeMerchantImageCandidates = (values = []) => {
-  const seen = new Set();
-  const clean = [];
-
-  values
-    .map((value) => readImageValue(value))
-    .filter(Boolean)
-    .forEach((value) => {
-      const key = value.toLowerCase();
-      if (seen.has(key)) return;
-      seen.add(key);
-      clean.push(value);
-    });
-
-  return clean;
-};
-
-const getPrimaryImage = (product = {}) => {
-  const imageList = Array.isArray(product.images) ? product.images : [];
-  const variantImages = Array.isArray(product?.variants)
-    ? product.variants.flatMap((variant) =>
-        Array.isArray(variant?.images) ? variant.images : []
-      )
-    : [];
-  const normalized = sanitizeMerchantImageCandidates([
-    product.image,
-    product.imageUrl,
-    ...imageList,
-    ...variantImages,
-  ])
-    .map((value) => toAbsoluteUrl(value))
-    .filter((value) => isPublicHttpUrl(value));
-  return normalized[0] || "";
-};
-
 const getSellPrice = (product = {}) => {
   if (product?.hasVariants && Array.isArray(product.variants)) {
     const prices = product.variants
@@ -158,22 +113,7 @@ const mapProductForMerchant = ({ product = {}, productId = "" }) => {
   const slug = readMerchantProductUrl(product);
   if (!slug) return null;
   const link = toAbsoluteUrl(`/product/${slug}`);
-  const imageLink = toAbsoluteUrl(getPrimaryImage(product));
-  const normalizedImages = sanitizeMerchantImageCandidates([
-    product.image,
-    product.imageUrl,
-    ...(Array.isArray(product.images) ? product.images : []),
-    ...(Array.isArray(product?.variants)
-      ? product.variants.flatMap((variant) =>
-          Array.isArray(variant?.images) ? variant.images : []
-        )
-      : []),
-  ])
-    .map((img) => toAbsoluteUrl(img))
-    .filter((img) => isPublicHttpUrl(img));
-  const additionalImageLinks = normalizedImages
-    .filter(Boolean)
-    .slice(1, 10);
+  const { imageLink, additionalImageLinks, videoLinks } = getMerchantMedia(product, null, merchantConfig.siteUrl);
 
   const payload = {
     offerId,
@@ -181,7 +121,9 @@ const mapProductForMerchant = ({ product = {}, productId = "" }) => {
     description: stripHtml(product.description || product.shortInfo || title),
     link,
     imageLink: imageLink || undefined,
-    additionalImageLinks: additionalImageLinks.length ? additionalImageLinks : undefined,
+    additionalImageLinks,
+    // Content API exposes newer feed attributes through customAttributes.
+    customAttributes: videoLinks?.map((value) => ({ name: "video_link", value })),
     contentLanguage: merchantConfig.contentLanguage,
     targetCountry: merchantConfig.targetCountry,
     channel: merchantConfig.channel,
@@ -216,6 +158,15 @@ exports.syncProductToGoogle = functions.firestore
 
     const productId = context.params.productId;
 
+    // The backend records this field after syncing its variant-aware listings.
+    // Do not recreate a parent listing or overwrite media managed by that sync.
+    const productSnapshot = change.after.exists ? change.after : change.before;
+    const storedProduct = productSnapshot.data() || {};
+    if (Array.isArray(storedProduct.merchantVariantOfferIds) || storedProduct.hasVariants) {
+      console.log(`Merchant sync managed by backend: ${productId}`);
+      return null;
+    }
+
     // Delete case.
     if (!change.after.exists) {
       if (!merchantConfig.syncDelete) {
@@ -240,6 +191,10 @@ exports.syncProductToGoogle = functions.firestore
     }
 
     const product = change.after.data() || {};
+    const { rejectedVideoLinks } = getMerchantMedia(product, null, merchantConfig.siteUrl);
+    if (rejectedVideoLinks.length) {
+      console.warn(`Merchant videos skipped for ${productId}: use public YouTube or direct video file URLs (${rejectedVideoLinks.length} unsupported links).`);
+    }
     const requestBody = mapProductForMerchant({ product, productId });
 
     if (!requestBody) {

@@ -1978,7 +1978,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         {form.hasVideo && (
           <div className="space-y-5">
             <p className="text-xs text-gray-500">
-              Add YouTube or Google Drive links. These videos will appear as the last thumbnail(s) in product gallery.
+              Add a public YouTube link or a direct video file URL (such as .mp4) to show videos in the gallery and submit them to Google Merchant Center. Google Drive preview links work only in the website gallery. For Google, use videos lasting 6 seconds to 4 minutes, at least 720p, and no larger than 500 MB.
             </p>
             {(form.videos || []).map((video, idx) => (
               <div key={idx} className="border rounded-xl p-4 bg-white space-y-3">
@@ -1989,7 +1989,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                     className="text-red-500 text-xs"
                   >Remove</button>
                 </div>
-                <input type="text" placeholder="Paste YouTube or Drive link" value={video.url || ""}
+                <input type="text" placeholder="Paste YouTube or direct video file URL" value={video.url || ""}
                   onChange={e => updateVideo(idx, { url: e.target.value })}
                   className="w-full border p-2 rounded text-sm"
                 />
