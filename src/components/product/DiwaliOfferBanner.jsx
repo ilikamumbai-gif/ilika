@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Gift, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import "./DiwaliOfferBanner.css";
 
 const BannerCracker = ({ index }) => (
@@ -47,16 +47,26 @@ export default function DiwaliOfferBanner({ isNonVoiceMaskMaker }) {
         </span>
         <span className="h-px flex-1 bg-[#e8cf9b]" />
       </div>
-      <div className="diwali-offer-gift relative flex min-h-[142px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#c5a965] bg-[linear-gradient(120deg,#090909_0%,#191919_55%,#2b2925_100%)] px-4 py-5 shadow-sm sm:gap-4 sm:px-5">
-        <span className="diwali-offer-icon relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[#efd38f]/50 bg-[#f6dbaa]/10 text-[#ffe7ae] sm:h-14 sm:w-14"><Gift size={25} /></span>
-        <div className="relative z-10 min-w-0 flex-1">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#ffe7ae] sm:text-[10px]">Your Diwali gift</p>
-          <p className="mt-1.5 text-base font-bold leading-6 text-white sm:text-lg">{isNonVoiceMaskMaker ? "25 g Hydra Gel" : "8 collagen peptide tablets"}</p>
+      <div className="diwali-offer-gift relative flex min-h-[142px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#c5a965] bg-[linear-gradient(120deg,#090909_0%,#191919_55%,#2b2925_100%)] px-4 py-4 shadow-sm sm:gap-4 sm:px-5">
+        <span className="diwali-offer-icon relative z-10 grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl border border-[#efd38f]/50 bg-white sm:h-14 sm:w-14">
+          <img
+            src={isNonVoiceMaskMaker ? "/Images/hydra-gel-gift.webp" : "/Images/Peptide.jpeg"}
+            alt={isNonVoiceMaskMaker ? "Hydra Gel moisturizer" : "Collagen peptide tablets"}
+            width={56}
+            height={56}
+            loading="lazy"
+            decoding="async"
+            className={`diwali-gift-product-image${isNonVoiceMaskMaker ? " diwali-gift-product-gel" : ""}`}
+          />
+        </span>
+        <div className="diwali-offer-copy relative z-10 min-w-0 flex-1">
+          <p className="diwali-gift-eyebrow font-semibold uppercase tracking-[0.12em] text-[#ffe7ae]">Your Diwali gift</p>
+          <p className="diwali-gift-name font-bold text-white">{isNonVoiceMaskMaker ? "25 g Hydra Gel" : "8 collagen peptide tablets"}</p>
           <div className="diwali-gift-highlight">
             <span className="diwali-gift-free"><Sparkles size={14} aria-hidden="true" /> FREE</span>
             <span className="diwali-gift-included">with your mask maker</span>
           </div>
-          <p className="mt-2 text-[11px] leading-4 text-[#e4ddd0] sm:text-xs">A little extra glow, on us.</p>
+          <p className="diwali-gift-note text-[#e4ddd0]">A little extra glow, on us.</p>
         </div>
         <div className="diwali-banner-decoration relative z-10 h-24 w-14 shrink-0 sm:w-28" aria-hidden="true">
           {[0, 1, 2].map((index) => <BannerCracker key={index} index={index} />)}
