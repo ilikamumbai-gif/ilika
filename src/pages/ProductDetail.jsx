@@ -336,26 +336,23 @@ const normalizeExternalUrl = (value = "") => {
   return `https://${raw}`;
 };
 
-const getMarketplaceLinks = (product = {}, livePrices = {}, fallbackPrice = null) => {
+const getMarketplaceLinks = (product = {}) => {
   const source = product?.marketplaceLinks || product || {};
   return [
     {
       key: "amazon",
       label: "Amazon",
       url: normalizeExternalUrl(source?.amazon || source?.amazonLink || ""),
-      price: livePrices?.amazon ?? fallbackPrice,
     },
     {
       key: "flipkart",
       label: "Flipkart",
       url: normalizeExternalUrl(source?.flipkart || source?.flipkartLink || ""),
-      price: livePrices?.flipkart ?? fallbackPrice,
     },
     {
       key: "meesho",
       label: "Meesho",
       url: normalizeExternalUrl(source?.meesho || source?.meeshoLink || ""),
-      price: livePrices?.meesho ?? fallbackPrice,
     },
   ].filter((item) => item.url);
 };
@@ -367,7 +364,7 @@ const MARKETPLACE_LOGOS = {
 };
 const PRODUCT_DETAIL_PAYMENT_METHOD_IMAGE = "/ProductDetailPage/paymentmethod.webp";
 
-const MarketplaceButtons = ({ links = [], className = "" }) => {
+const MarketplaceAvailability = ({ links = [], className = "" }) => {
   if (!Array.isArray(links) || !links.length) return null;
 
   return (
@@ -387,24 +384,13 @@ const MarketplaceButtons = ({ links = [], className = "" }) => {
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group min-w-[138px] snap-start rounded-[18px] bg-[#fcf8f6] px-4 py-3 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_12px_30px_rgba(181,132,113,0.16)] sm:min-w-[124px] sm:flex-none"
-            aria-label={`Buy on ${item.label}`}
+            aria-label={`View on ${item.label}`}
+            className="flex min-w-[124px] shrink-0 snap-start items-center gap-3 rounded-[18px] bg-[#fcf8f6] px-4 py-3 transition hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a6423e]"
           >
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_8px_18px_rgba(43,42,41,0.06)]">
-                <img
-                  src={MARKETPLACE_LOGOS[item.key]}
-                  alt={item.label}
-                  loading="lazy"
-                  className="h-7 w-7 object-contain"
-                />
-              </div>
-              {item.price ? (
-                <span className="text-sm font-semibold leading-none text-[#2b2a29]">
-                  ₹{item.price.toLocaleString("en-IN")}
-                </span>
-              ) : null}
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_8px_18px_rgba(43,42,41,0.06)]">
+              <img src={MARKETPLACE_LOGOS[item.key]} alt="" loading="lazy" className="h-7 w-7 object-contain" />
             </div>
+            <span className="text-sm font-semibold text-[#2b2a29]">{item.label}</span>
           </a>
         ))}
         </div>
@@ -427,14 +413,24 @@ const EmiOfferCard = ({
   disabled = false,
   className = "",
   autoOpen = false,
+  onOpen = null,
+  onDismiss = null,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (!autoOpen) return undefined;
-    const timer = window.setTimeout(() => setIsOpen(true), 300);
+    const timer = window.setTimeout(() => {
+      setIsOpen(true);
+      onOpen?.();
+    }, 300);
     return () => window.clearTimeout(timer);
-  }, [autoOpen]);
+  }, [autoOpen, onOpen]);
+
+  const dismissEmi = () => {
+    setIsOpen(false);
+    onDismiss?.();
+  };
 
   const safeAmount = Math.max(0, Number(amount) || 0);
   const plans = EMI_PLAN_MONTHS.map((months) => ({
@@ -452,7 +448,7 @@ const EmiOfferCard = ({
     <>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={() => { setIsOpen(true); onOpen?.(); }}
         className={`relative mt-3 w-full rounded-[16px] border bg-white px-3 pb-3 pt-6 text-left shadow-[0_10px_24px_rgba(69,39,34,0.06)] transition hover:-translate-y-[1px] hover:shadow-[0_14px_28px_rgba(69,39,34,0.08)] sm:rounded-[18px] sm:px-4 sm:pt-6 ${className}`}
         style={{ borderColor: detailTheme.heading || detailTheme.borderSoft }}
       >
@@ -493,7 +489,7 @@ const EmiOfferCard = ({
       {isOpen ? createPortal(
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/60 p-4 py-8 backdrop-blur-[2px] sm:p-6 sm:py-10"
-          onClick={() => setIsOpen(false)}
+          onClick={dismissEmi}
         >
           <div
             className="relative my-auto w-full max-w-[420px] overflow-visible rounded-[28px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.28)] max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-h-[calc(100vh-4rem)]"
@@ -501,7 +497,7 @@ const EmiOfferCard = ({
           >
             <button
               type="button"
-              onClick={() => setIsOpen(false)}
+              onClick={dismissEmi}
               className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full text-[#4b5563] transition hover:bg-black/5"
               aria-label="Close EMI options"
             >
@@ -2865,6 +2861,11 @@ const ProductDetail = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
+  const [emiDismissed, setEmiDismissed] = useState(null);
+  const handleEmiOpen = useCallback(() => setEmiDismissed(null), []);
+  const handleEmiDismiss = useCallback(() => {
+    setEmiDismissed({ productUrl, at: Date.now() });
+  }, [productUrl]);
 
   const cachedProduct = useMemo(() => findProductBySlug(products, productUrl), [products, productUrl]);
   const [resolvedProduct, setProduct] = useState(null);
@@ -2890,7 +2891,6 @@ const ProductDetail = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponMessage, setCouponMessage] = useState({ type: "", text: "" });
   const [liveAssignedCoupon, setLiveAssignedCoupon] = useState(null);
-  const [marketplaceLivePrices, setMarketplaceLivePrices] = useState({});
   const [selectedPackId, setSelectedPackId] = useState("");
   const [collagenAddonCount, setCollagenAddonCount] = useState(0);
   const isCollagenPeptidePackProduct = useMemo(
@@ -4021,53 +4021,7 @@ const ProductDetail = () => {
     </div>
   ) : null;
   const detailCtaColors = useMemo(() => getDetailCtaColors(detailTheme), [detailTheme]);
-  const marketplaceSourceLinks = useMemo(() => getMarketplaceLinks(product), [product]);
-  const marketplaceLinks = useMemo(
-    () => getMarketplaceLinks(product, marketplaceLivePrices),
-    [product, marketplaceLivePrices]
-  );
-
-  useEffect(() => {
-    if (!marketplaceSourceLinks.length) {
-      setMarketplaceLivePrices({});
-      return;
-    }
-
-    const controller = new AbortController();
-    const params = new URLSearchParams();
-
-    marketplaceSourceLinks.forEach((item) => {
-      if (item?.key && item?.url) {
-        params.set(item.key, item.url);
-      }
-    });
-
-    const loadMarketplacePrices = async () => {
-      try {
-        const response = await fetch(getApiUrl(`/api/marketplace-prices?${params.toString()}`), {
-          signal: controller.signal,
-        });
-
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          throw new Error(data?.error || "Failed to fetch marketplace prices");
-        }
-
-        setMarketplaceLivePrices({
-          amazon: Number(data?.amazon?.price) || null,
-          flipkart: Number(data?.flipkart?.price) || null,
-          meesho: Number(data?.meesho?.price) || null,
-        });
-      } catch (error) {
-        if (error?.name === "AbortError") return;
-        setMarketplaceLivePrices({});
-      }
-    };
-
-    loadMarketplacePrices();
-
-    return () => controller.abort();
-  }, [marketplaceSourceLinks]);
+  const marketplaceLinks = useMemo(() => getMarketplaceLinks(product), [product]);
 
   const variantPaletteMap = useMemo(() => {
     const map = new Map();
@@ -4815,7 +4769,7 @@ const ProductDetail = () => {
       />
 
       <div className="primary-bg-color" style={{ backgroundColor: detailTheme.pageBg }}>
-        {(isVoiceMaskMakerProduct || isNonVoiceMaskMakerProduct) && <MaskMakerGuidePopup key={productUrl} currentModel={isNonVoiceMaskMakerProduct ? "nonvoice" : "voice"} />}
+        {(isVoiceMaskMakerProduct || isNonVoiceMaskMakerProduct) && <MaskMakerGuidePopup key={productUrl} currentModel={isNonVoiceMaskMakerProduct ? "nonvoice" : "voice"} startAfter={emiDismissed?.productUrl === productUrl ? emiDismissed.at : null} />}
         <Header />
         <CartDrawer />
 
@@ -5146,6 +5100,32 @@ const ProductDetail = () => {
               ) : null}
 
               {eligibleForCollagenAddon && (
+                <section aria-label="Collagen refills" className="rounded-xl border border-[#eadfda] bg-[#fffcf8] p-2.5 sm:flex sm:items-center sm:gap-3 sm:p-3" data-collagen-refills>
+                  <Link to={`/product/${COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG}`} className="mb-2 flex shrink-0 items-center gap-2 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a6423e] sm:mb-0 sm:max-w-[160px]">
+                    <img loading="lazy" decoding="async" width={36} height={36} src="/Images/Peptide.jpeg" alt="Collagen peptide tablets" className="h-9 w-9 shrink-0 rounded-lg object-contain" />
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-bold text-[#332521]">Add collagen refills</h3>
+                      <p className="mt-0.5 text-[10px] leading-3 text-[#82736e]">Optional &middot; 8 tablets per pack</p>
+                    </div>
+                  </Link>
+                  <div className="grid min-w-0 flex-1 grid-cols-4 gap-1.5">
+                    {COLLAGEN_ADDON_OPTIONS.filter((option) => option.count > 0).map((option) => (
+                      <Link key={option.id} to={`/product/${COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG}?packs=${option.count}`}
+                        aria-label={`${option.count} pack${option.count === 1 ? "" : "s"}, ${option.tablets} tablets, \u20B9${option.price}`}
+                        className={`min-w-0 rounded-lg border px-1 py-1.5 text-center transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a6423e] ${collagenAddonCount === option.count ? "border-[#a6423e] bg-[#fff4f1]" : "border-[#ece5e1] bg-white hover:border-[#d6aaa0] hover:bg-[#fffbfa]"}`}>
+                        <span className="block text-[10px] font-medium leading-4 text-[#79645e]">{option.count} pack{option.count === 1 ? "" : "s"}</span>
+                        <span className="block text-sm font-bold leading-5 text-[#302522]">&#8377;{option.price}</span>
+                      </Link>
+                    ))}
+                  </div>
+                  {collagenAddonCount > 0 && <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-[#675650] sm:mt-0 sm:flex-col sm:items-end">
+                    <span>{selectedCollagenAddon.tablets} tablets &middot; &#8377;{selectedCollagenAddon.price}</span>
+                    <button type="button" onClick={() => setCollagenAddonCount(0)} className="font-semibold text-[#9b5b4f] underline underline-offset-2">Remove</button>
+                  </div>}
+                </section>
+              )}
+
+              {eligibleForCollagenAddon && (
                 <div className="flex flex-col gap-3.5 sm:contents" data-mask-maker-gift>
                   {!isOutOfStock && <p className="mb-2 text-sm font-semibold text-[#1d6a4a]" role="status">Back in stock — Order now</p>}
                   <DiwaliOfferBanner isNonVoiceMaskMaker={isNonVoiceMaskMaker} />
@@ -5211,58 +5191,7 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              {eligibleForCollagenAddon && (
-                <section className="overflow-hidden rounded-2xl border border-[#eadfda] bg-white shadow-[0_8px_24px_rgba(76,48,40,0.05)]">
-                  <div className="flex items-center justify-between gap-2 bg-[#fbf7f5] px-3 py-2 sm:px-5 sm:py-3">
-                    <div>
-                      <h3 className="text-sm font-bold text-[#332521] sm:text-base">
-                        <Link to={`/product/${COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG}`} className="rounded-sm underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a6423e]">Add collagen refills</Link>
-                      </h3>
-                      <p className="mt-0.5 text-[11px] text-[#82736e] sm:text-xs">Choose a pack size · 8 tablets per pack</p>
-                    </div>
-                    <span className="shrink-0 rounded-full border border-[#e6d9d4] bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#79645e]">Optional</span>
-                  </div>
 
-                  <div className="p-2.5 sm:p-4">
-                    <Link to={`/product/${COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG}`} className="mb-2 flex items-center gap-2 rounded-xl transition hover:bg-[#fbf7f5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a6423e] sm:mb-4 sm:gap-3">
-                      <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-[#faf6f4] sm:h-16 sm:w-16 sm:rounded-xl">
-                        <img loading="lazy" decoding="async" width={64} height={64} src="/Images/Peptide.jpeg" alt="Collagen peptide tablets" className="h-full w-full object-contain" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-[#332521] sm:text-sm">Collagen Peptide Pack</p>
-                        <p className="text-[10px] leading-4 text-[#82736e] sm:mt-1 sm:text-xs sm:leading-5">One tablet makes one mask.</p>
-                      </div>
-                    </Link>
-
-                    <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
-                      {COLLAGEN_ADDON_OPTIONS.filter((option) => option.count > 0).map((option) => {
-                        const isSelected = collagenAddonCount === option.count;
-                        return (
-                          <Link
-                            key={option.id}
-                            to={`/product/${COLLAGEN_PEPTIDE_PACK_PRODUCT_SLUG}?packs=${option.count}`}
-                            className={`min-w-0 rounded-lg border px-1.5 py-2 text-left transition sm:rounded-xl sm:px-3 sm:py-3 ${isSelected ? "border-[#a6423e] bg-[#fff4f1] shadow-[0_4px_12px_rgba(166,66,62,0.10)]" : "border-[#ece5e1] bg-white hover:border-[#d6aaa0] hover:bg-[#fffbfa]"}`}
-                          >
-                            <span className="block text-[11px] font-semibold text-[#55433d] sm:text-xs">{option.count} pack{option.count === 1 ? "" : "s"}</span>
-                            <span className="mt-0.5 block text-[10px] text-[#8b7b75] sm:mt-1 sm:text-[11px]">{option.tablets} tablets</span>
-                            <span className={`mt-1.5 block text-base font-bold leading-none sm:mt-2 sm:text-lg ${isSelected ? "text-[#a6423e]" : "text-[#302522]"}`}>₹{option.price}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-
-                    {collagenAddonCount > 0 ? <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#f0e9e6] pt-3">
-                      <p className="text-xs font-medium text-[#675650]">
-                        {collagenAddonCount > 0 ? `${selectedCollagenAddon.tablets} tablets selected` : "No extra pack selected"}
-                      </p>
-                      <div className="flex items-center gap-3">
-                        {collagenAddonCount > 0 && <button type="button" onClick={() => setCollagenAddonCount(0)} className="text-xs font-semibold text-[#9b5b4f] underline underline-offset-2">Remove</button>}
-                        <p className="text-sm font-bold text-[#332521]">{collagenAddonCount > 0 ? `Add ₹${selectedCollagenAddon.price}` : "₹0 extra"}</p>
-                      </div>
-                    </div> : <p className="mt-2 text-[10px] text-[#82736e] sm:text-xs">Tap a pack to shop collagen refills.</p>}
-                  </div>
-                </section>
-              )}
 
               {/* Mobile purchase card */}
               <div className="h-fit lg:col-span-2 xl:hidden" data-product-purchase>
@@ -5369,6 +5298,8 @@ const ProductDetail = () => {
                               isProcessing={isBuying}
                               disabled={isOutOfStock}
                               autoOpen
+                              onOpen={handleEmiOpen}
+                              onDismiss={handleEmiDismiss}
                             />
                           </div> : null}
                         </div>
@@ -5547,7 +5478,7 @@ const ProductDetail = () => {
 
               {marketplaceLinks.length > 0 && (
                 <div className="pt-2">
-                  <MarketplaceButtons links={marketplaceLinks} />
+                  <MarketplaceAvailability links={marketplaceLinks} />
                 </div>
               )}
             </div>
@@ -6190,6 +6121,8 @@ const ProductDetail = () => {
                           isProcessing={isBuying}
                           disabled={isOutOfStock}
                           autoOpen
+                          onOpen={handleEmiOpen}
+                          onDismiss={handleEmiDismiss}
                         />
                       </div> : null}
                     </div>

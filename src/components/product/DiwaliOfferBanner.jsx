@@ -39,23 +39,24 @@ export default function DiwaliOfferBanner({ isNonVoiceMaskMaker }) {
     return () => observer.disconnect();
   }, []);
   return (
-    <div ref={bannerRef} className="diwali-offer relative isolate w-full overflow-hidden rounded-2xl border border-[#eed9ad] bg-[linear-gradient(135deg,#fff9e9_0%,#fff8f6_100%)] p-3 shadow-[0_8px_22px_rgba(153,108,39,0.08)] sm:p-4">
+    <div ref={bannerRef} className="diwali-offer relative isolate w-full overflow-hidden rounded-2xl border border-[#dfcfac] bg-[linear-gradient(135deg,#faf8f3_0%,#fff5df_100%)] p-3 shadow-[0_8px_22px_rgba(28,24,18,0.08)] sm:p-4">
       <div className="relative z-10 mb-3 flex items-center gap-3">
         <span className="h-px flex-1 bg-[#e8cf9b]" />
-        <span className="diwali-offer-badge inline-flex items-center gap-1.5 rounded-full bg-[#fff0c9] px-2.5 py-1 text-[10px] font-bold tracking-[0.15em] text-[#946414]">
+        <span className="diwali-offer-badge inline-flex items-center gap-1.5 rounded-full border border-[#d3b67b] bg-[#23211e] px-2.5 py-1 text-[10px] font-bold tracking-[0.15em] text-[#ffe2a0]">
           <Sparkles size={12} /> DIWALI DHAMAKA OFFERS <Sparkles size={12} />
         </span>
         <span className="h-px flex-1 bg-[#e8cf9b]" />
       </div>
-      <div className="diwali-offer-gift relative flex min-h-[108px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#d5ad6c] bg-[linear-gradient(120deg,#451125_0%,#74223d_55%,#8c3650_100%)] px-3 py-4 shadow-sm sm:gap-4 sm:px-4">
-        <span className="diwali-offer-icon relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#e5c28b]/40 bg-[#f6dbaa]/10 text-[#ffe7ae] sm:h-12 sm:w-12"><Gift size={21} /></span>
+      <div className="diwali-offer-gift relative flex min-h-[142px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#c5a965] bg-[linear-gradient(120deg,#090909_0%,#191919_55%,#2b2925_100%)] px-4 py-5 shadow-sm sm:gap-4 sm:px-5">
+        <span className="diwali-offer-icon relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[#efd38f]/50 bg-[#f6dbaa]/10 text-[#ffe7ae] sm:h-14 sm:w-14"><Gift size={25} /></span>
         <div className="relative z-10 min-w-0 flex-1">
           <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#ffe7ae] sm:text-[10px]">Your Diwali gift</p>
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <p className="text-sm font-bold leading-5 text-white sm:text-base">{isNonVoiceMaskMaker ? "25 g Hydra Gel" : "8 collagen peptide tablets"}</p>
-            <span className="rounded-full bg-[#ffe9b0] px-2 py-0.5 text-[10px] font-bold tracking-wide text-[#765018]">FREE</span>
+          <p className="mt-1.5 text-base font-bold leading-6 text-white sm:text-lg">{isNonVoiceMaskMaker ? "25 g Hydra Gel" : "8 collagen peptide tablets"}</p>
+          <div className="diwali-gift-highlight">
+            <span className="diwali-gift-free"><Sparkles size={14} aria-hidden="true" /> FREE</span>
+            <span className="diwali-gift-included">with your mask maker</span>
           </div>
-          <p className="mt-1.5 text-[11px] leading-4 text-white/85 sm:text-xs">A festive treat, included with your mask maker.</p>
+          <p className="mt-2 text-[11px] leading-4 text-[#e4ddd0] sm:text-xs">A little extra glow, on us.</p>
         </div>
         <div className="diwali-banner-decoration relative z-10 h-24 w-14 shrink-0 sm:w-28" aria-hidden="true">
           {[0, 1, 2].map((index) => <BannerCracker key={index} index={index} />)}

@@ -8,7 +8,7 @@ import { getDefaultVariant, getProductDisplayImage, getProductDisplayPricing, ge
 import OptimizedImage from "./OptimizedImage";
 import "./MaskMakerGuidePopup.css";
 
-export default function MaskMakerGuidePopup({ currentModel }) {
+export default function MaskMakerGuidePopup({ currentModel, startAfter }) {
   const { products = [] } = useProducts();
   const showVoice = currentModel === "nonvoice";
   const slug = showVoice ? "voice-face-mask-maker" : "non-voice-face-mask-maker";
@@ -25,10 +25,12 @@ export default function MaskMakerGuidePopup({ currentModel }) {
   const dismissedKey = `ilika-mask-maker-offer-dismissed.${currentModel}`;
   const [open, setOpen] = useState(false);
   useEffect(() => {
+    setOpen(false);
+    if (startAfter === null) return;
     try { if (sessionStorage.getItem(dismissedKey)) return; } catch { /* Storage may be unavailable. */ }
-    const timer = window.setTimeout(() => setOpen(true), 6000);
+    const timer = window.setTimeout(() => setOpen(true), 5000);
     return () => window.clearTimeout(timer);
-  }, [dismissedKey]);
+  }, [dismissedKey, startAfter]);
   const dismiss = useCallback(() => {
     setOpen(false);
     try { sessionStorage.setItem(dismissedKey, "1"); } catch { /* Dismiss still works without storage. */ }
@@ -52,7 +54,14 @@ export default function MaskMakerGuidePopup({ currentModel }) {
       </div>
     </div>
     <p>{showVoice ? "Spoken prompts guide you through every step." : "Make fresh fruit masks without voice prompts."}</p>
-    <div className="mask-guide-popup-offer"><Gift size={17} /><span>{offer.label}</span></div>
+    <div className="mask-guide-popup-offer">
+      <Gift size={22} aria-hidden="true" />
+      <div className="mask-guide-popup-gift-copy">
+        <span className="mask-guide-popup-gift-name">{offer.name}</span>
+        <span className="mask-guide-popup-gift-included">Included with your mask maker</span>
+      </div>
+      <span className="mask-guide-popup-free">FREE</span>
+    </div>
     {available === false && <p className="mask-guide-popup-stock">Currently out of stock · Check for stock updates</p>}
     <Link to={`/product/${slug}`} onClick={dismiss}>View {name} <ArrowRight size={16} /></Link>
   </aside>;

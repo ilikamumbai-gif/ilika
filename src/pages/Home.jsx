@@ -937,8 +937,8 @@ const Home = () => {
                 width: 1774,
                 height: 887,
                 hotspots: [
-                  { href: "/product/voice-face-mask-maker", label: "Shop voice mask maker", left: "36%", top: "32%", width: "27%", height: "54%", mobilePosition: { left: "16%", top: "75%", width: "31%", height: "7%" } },
-                  { href: "/product/non-voice-face-mask-maker", label: "Shop non-voice mask maker", left: "64%", top: "32%", width: "28%", height: "54%", mobilePosition: { left: "56%", top: "75%", width: "31%", height: "7%" } },
+                  { href: "/product/voice-face-mask-maker", label: "Shop voice mask maker", left: "0%", top: "0%", width: "62%", height: "100%", mobilePosition: { left: "0%", top: "0%", width: "50%", height: "100%" } },
+                  { href: "/product/non-voice-face-mask-maker", label: "Shop non-voice mask maker", left: "62%", top: "0%", width: "38%", height: "100%", mobilePosition: { left: "50%", top: "0%", width: "50%", height: "100%" } },
                 ],
               },
               {
