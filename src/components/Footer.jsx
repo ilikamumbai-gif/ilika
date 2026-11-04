@@ -161,9 +161,9 @@ const Footer = () => {
             <span>Call: +91 91208 79879</span>
           </a>
 
-          <a href="https://wa.me/919120879879" target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 transition hover:text-white">
+          <a href="https://wa.me/919270114738" target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 transition hover:text-white">
             <MessageCircle size={16} className="mt-1 shrink-0" />
-            <span>WhatsApp: +91 91208 79879</span>
+            <span>WhatsApp: +91 92701 14738</span>
           </a>
 
           <div className="flex items-start gap-3">
@@ -347,9 +347,9 @@ const Footer = () => {
                 <span>Call: +91 91208 79879</span>
               </a>
 
-              <a href="https://wa.me/919120879879" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition hover:text-white">
+              <a href="https://wa.me/919270114738" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 transition hover:text-white">
                 <MessageCircle size={13} className="shrink-0" />
-                <span>WhatsApp: +91 91208 79879</span>
+                <span>WhatsApp: +91 92701 14738</span>
               </a>
 
               <div className="flex items-center gap-2">

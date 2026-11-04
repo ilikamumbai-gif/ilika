@@ -24,7 +24,7 @@ const EnquiryButton = () => {
   }, [pathname]);
 
   const openWhatsApp = () => {
-    const phoneNumber = "919120879879";
+    const phoneNumber = "919270114738";
     const message = "Hi, I checked your website. Can you share more details about your products and offers?";
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
