@@ -92,7 +92,7 @@ const ShippingPolicy = () => {
             <div className="bg-white rounded-xl p-5 shadow-sm border space-y-2">
               <p className="font-medium">Ilika Support Team</p>
               <p>📧 customersupport.ilika@gmail.com</p>
-              <p>📞 9270114738</p>
+              <p>📞 9120879879</p>
               <p>🕒 Monday – Saturday, 10:00 AM – 6:00 PM</p>
             </div>
           </section>

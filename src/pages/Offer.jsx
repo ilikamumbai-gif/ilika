@@ -2,6 +2,9 @@ import React from "react";
 import OfferCard from "../components/OfferCard";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import BlogMaskMakerOffers from "../components/BlogMaskMakerOffers";
+import { useProducts } from "../admin/context/ProductContext";
+import { getMaskMakerBlogOffers } from "../utils/maskMakerBlogOffers";
 
 const offers = [
   {
@@ -16,6 +19,9 @@ const offers = [
 ];
 
 const Offers = () => {
+  const { products } = useProducts();
+  const maskMakerOffers = getMaskMakerBlogOffers(products, { restock: true });
+
   return (
     <>
     <Header />
@@ -37,6 +43,9 @@ const Offers = () => {
 
       <div className="relative max-w-7xl mx-auto">
         <h1 className="text-3xl font-semibold">Ilika Offers & Beauty Deals</h1>
+        <div className="mt-4 md:mt-8">
+          <BlogMaskMakerOffers offers={maskMakerOffers} restock />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-8">
           {offers.map((offer, index) => (
             <OfferCard key={index} {...offer} />

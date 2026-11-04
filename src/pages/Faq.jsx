@@ -56,7 +56,7 @@ const faqData = [
   {
     question: "How can I contact customer support?",
     answer:
-      "You can reach us at customersupport.ilika@gmail.com or call 9270114738 between 10 AM – 6 PM (Mon–Sat).",
+      "You can reach us at customersupport.ilika@gmail.com or call 9120879879 between 10 AM – 6 PM (Mon–Sat).",
   },
 ];
 
