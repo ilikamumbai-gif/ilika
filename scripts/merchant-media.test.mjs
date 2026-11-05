@@ -87,12 +87,25 @@ test("Merchant API payload contains images and native videoLinks for the selecte
   assert.equal(payload.productAttributes.link, `${siteUrl}/product/test-product?variant=Blue`);
 });
 
+test("Merchant payload requires an image and respects field length limits", () => {
+  assert.equal(mapBackend({ ...product, images: [], image: null, imageUrl: null }), null);
+  const payload = mapBackend({ ...product, name: "a".repeat(200), shortInfo: "b".repeat(6000) });
+  assert.equal(payload.productAttributes.title.length, 150);
+  assert.equal(payload.productAttributes.description.length, 5000);
+});
+
+test("Merchant variant availability follows the storefront stock precedence", () => {
+  assert.equal(mapBackend({ ...product, inStock: false }).productAttributes.availability, "OUT_OF_STOCK");
+  assert.equal(mapBackend(product, { id: "empty", stock: 0 }).productAttributes.availability, "OUT_OF_STOCK");
+  assert.equal(mapBackend(product, { id: "empty", inStock: false, stock: 10 }).productAttributes.availability, "OUT_OF_STOCK");
+});
+
 const functionSource = fs.readFileSync(new URL("../functions/index.js", import.meta.url), "utf8");
-const loadTrigger = () => {
+const loadTrigger = ({ requestError = null } = {}) => {
   const requests = [];
   const context = {
     exports: {}, __dirname: ".", console: { log() {}, warn() {}, error() {} },
-    process: { env: { GOOGLE_MERCHANT_ID: "test", GOOGLE_MERCHANT_CLIENT_EMAIL: "test", GOOGLE_MERCHANT_PRIVATE_KEY: "test" } },
+    process: { env: { GOOGLE_MERCHANT_ID: "test", GOOGLE_MERCHANT_CLIENT_EMAIL: "test", GOOGLE_MERCHANT_PRIVATE_KEY: "test", GOOGLE_MERCHANT_DATA_SOURCE_ID: "source" } },
     URL,
     require: (name) => {
       if (name === "./merchantMedia.cjs") return media;
@@ -100,9 +113,9 @@ const loadTrigger = () => {
       if (name === "firebase-admin") return { initializeApp() {} };
       if (name === "dotenv") return { config() {} };
       if (name === "path") return { resolve: () => "." };
-      if (name === "googleapis") return { google: { auth: { JWT: class {} }, content: () => ({ products: {
-        insert: async (request) => requests.push(request), delete: async () => {},
-      } }) } };
+      if (name === "googleapis") return { google: { auth: { GoogleAuth: class {
+        async getClient() { return { request: async (request) => { if (requestError) throw requestError; requests.push(request); return { data: {} }; } }; }
+      } } } };
       throw new Error(`Unexpected dependency: ${name}`);
     },
   };
@@ -111,13 +124,31 @@ const loadTrigger = () => {
 };
 const changeFor = (value) => ({ after: { exists: true, data: () => value }, before: { exists: false, data: () => ({}) } });
 
-test("Firestore sync sends photos and video_link feed attributes through Content API", async () => {
+test("Firestore sync sends photos and native videos through Merchant API v1", async () => {
   const { trigger, requests } = loadTrigger();
   await trigger(changeFor(product), { params: { productId: product.id } });
   assert.equal(requests.length, 1);
-  assert.equal(requests[0].requestBody.imageLink, `${siteUrl}/gallery-first.jpg`);
-  assert.equal(requests[0].requestBody.customAttributes[0].name, "video_link");
-  assert.equal(requests[0].requestBody.customAttributes[0].value, "https://www.youtube.com/watch?v=abcdefghijk");
+  assert.match(requests[0].url, /merchantapi\.googleapis\.com\/products\/v1\//);
+  assert.equal(requests[0].data.productAttributes.imageLink, `${siteUrl}/gallery-first.jpg`);
+  assert.equal(requests[0].data.productAttributes.videoLinks[0], "https://www.youtube.com/watch?v=abcdefghijk");
+  assert.equal(requests[0].data.productAttributes.price.amountMicros, "999000000");
+});
+
+test("Firestore sync sends stock changes and deletes inactive products", async () => {
+  const { trigger, requests } = loadTrigger();
+  await trigger(changeFor({ ...product, inStock: false }), { params: { productId: product.id } });
+  assert.equal(requests[0].data.productAttributes.availability, "OUT_OF_STOCK");
+  await trigger(changeFor({ ...product, isActive: false }), { params: { productId: product.id } });
+  assert.equal(requests[1].method, "DELETE");
+  assert.match(requests[1].url, /productInputs\/en~IN~product-1\?dataSource=/);
+});
+
+test("Firestore sync does not submit incomplete products and surfaces Google failures", async () => {
+  const { trigger, requests } = loadTrigger();
+  await trigger(changeFor({ ...product, images: [], image: null, imageUrl: null }), { params: { productId: product.id } });
+  assert.equal(requests.length, 0);
+  const failing = loadTrigger({ requestError: new Error("Cloud project registration required") });
+  await assert.rejects(failing.trigger(changeFor(product), { params: { productId: product.id } }), /registration required/);
 });
 
 test("Firestore sync leaves backend-managed listings and variant products to the backend", async () => {

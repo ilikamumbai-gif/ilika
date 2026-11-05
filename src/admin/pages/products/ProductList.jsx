@@ -80,6 +80,7 @@ const ProductList = () => {
         const label = item.productName || item.offerId || "Product";
         return [
           ...(item.status === "error" ? [`${label}: ${item.message || "Sync failed"}`] : []),
+          ...(item.status === "skipped" ? [`${label}: ${item.reason || "Not eligible for Merchant"}`] : []),
           ...(item.mediaWarnings || []).map((warning) => `${label}: ${warning}`),
         ];
       });

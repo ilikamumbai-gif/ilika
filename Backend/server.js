@@ -1944,14 +1944,15 @@ const mapProductToMerchantPayload = (product = {}, variant = null) => {
     siteBaseUrl
   );
   const { imageLink, additionalImageLinks, videoLinks } = getMerchantMedia(product, variant, siteBaseUrl);
+  if (!imageLink) return null;
 
   const payload = {
     offerId,
     contentLanguage: MERCHANT_CONTENT_LANGUAGE,
     feedLabel: MERCHANT_FEED_LABEL,
     productAttributes: {
-      title: variant?.label ? `${name} - ${String(variant.label).trim()}` : name,
-      description: stripHtml(product?.shortInfo || product?.description || name),
+      title: (variant?.label ? `${name} - ${String(variant.label).trim()}` : name).slice(0, 150),
+      description: stripHtml(product?.shortInfo || product?.description || name).slice(0, 5000),
       link: productUrl,
       imageLink: imageLink || undefined,
       additionalImageLinks,
@@ -2004,13 +2005,16 @@ const upsertMerchantProduct = async (product = {}) => {
   const variants = product?.hasVariants && Array.isArray(product?.variants)
     ? product.variants.filter((variant) => variant && (variant.id || variant.label))
     : [];
-  const desiredOfferIds = variants.map((variant) => getMerchantVariantOfferId(product?.id, variant));
   const payloads = variants.length
     ? variants.map((variant) => mapProductToMerchantPayload(product, variant)).filter(Boolean)
     : [mapProductToMerchantPayload(product)].filter(Boolean);
   if (!payloads.length) {
-    return { status: "skipped", reason: "product_not_eligible", offerId: product?.id || null };
+    return { status: "skipped", reason: "product_not_eligible: name, product URL, positive price and public image are required", offerId: product?.id || null, productName: product?.name || null };
   }
+  if (variants.length && payloads.length !== variants.length) {
+    throw new Error("Some variants are missing a valid price or public image. Fix all variants before syncing this product.");
+  }
+  const desiredOfferIds = variants.length ? payloads.map((payload) => payload.offerId) : [];
 
   const { rejectedVideoLinks } = getMerchantMedia(product, null, getSiteBaseUrl());
   const mediaWarnings = rejectedVideoLinks.length
@@ -2111,7 +2115,7 @@ const syncMerchantProductById = async (productId = "") => {
     return deleteMerchantProduct(cleanId);
   }
 
-  const product = { id: doc.id, ...doc.data() };
+  const product = { ...doc.data(), id: doc.id };
   if (product.isActive === false) {
     const deletions = await deleteMerchantListingsForProduct(product);
     return { status: "deleted", offerId: cleanId, deletedListings: deletions.length };
@@ -2128,7 +2132,7 @@ const syncAllProductsToMerchant = async () => {
   const snapshot = await db.collection("products").get();
   const results = [];
   for (const doc of snapshot.docs) {
-    const product = { id: doc.id, ...doc.data() };
+    const product = { ...doc.data(), id: doc.id };
     try {
       if (product?.isActive === false) {
         const deletions = await deleteMerchantListingsForProduct(product);
@@ -5906,7 +5910,8 @@ app.post("/api/merchant/sync-products", async (req, res) => {
     });
   } catch (error) {
     console.error("MERCHANT SYNC ALL FAILED:", error);
-    res.status(500).json({ error: "Merchant sync failed" });
+    const detail = getMerchantErrorSummary(error);
+    res.status(500).json({ error: detail.message, merchantError: detail });
   }
 });
 
@@ -5936,7 +5941,8 @@ app.post("/api/merchant/sync-products/:id", async (req, res) => {
     });
   } catch (error) {
     console.error("MERCHANT SYNC ONE FAILED:", error);
-    res.status(500).json({ error: "Merchant single-product sync failed" });
+    const detail = getMerchantErrorSummary(error);
+    res.status(500).json({ error: detail.message, merchantError: detail });
   }
 });
 

@@ -43,6 +43,7 @@ const merchantConfig = {
   privateKey: String(process.env.GOOGLE_MERCHANT_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
   contentLanguage: process.env.GOOGLE_MERCHANT_CONTENT_LANGUAGE || "en",
   targetCountry: process.env.GOOGLE_MERCHANT_TARGET_COUNTRY || "IN",
+  feedLabel: process.env.GOOGLE_MERCHANT_FEED_LABEL || process.env.GOOGLE_MERCHANT_TARGET_COUNTRY || "IN",
   channel: process.env.GOOGLE_MERCHANT_CHANNEL || "online",
   currency: process.env.GOOGLE_MERCHANT_CURRENCY || "INR",
   brand: process.env.GOOGLE_MERCHANT_BRAND || "Ilika",
@@ -57,14 +58,35 @@ const hasMerchantConfig = () =>
       merchantConfig.privateKey
   );
 
-const auth = new google.auth.JWT(
-  merchantConfig.clientEmail,
-  null,
-  merchantConfig.privateKey,
-  ["https://www.googleapis.com/auth/content"]
-);
-
-const content = google.content({ version: "v2.1", auth });
+const auth = new google.auth.GoogleAuth({
+  credentials: { client_email: merchantConfig.clientEmail, private_key: merchantConfig.privateKey },
+  scopes: ["https://www.googleapis.com/auth/content"],
+});
+let dataSourcePromise;
+const getDataSourceName = async (client) => {
+  if (process.env.GOOGLE_MERCHANT_DATA_SOURCE_NAME) return process.env.GOOGLE_MERCHANT_DATA_SOURCE_NAME;
+  if (process.env.GOOGLE_MERCHANT_DATA_SOURCE_ID) return `accounts/${merchantConfig.merchantId}/dataSources/${process.env.GOOGLE_MERCHANT_DATA_SOURCE_ID}`;
+  if (!dataSourcePromise) {
+    dataSourcePromise = (async () => {
+      const sources = [];
+      let pageToken = "";
+      do {
+        const url = new URL(`https://merchantapi.googleapis.com/datasources/v1/accounts/${merchantConfig.merchantId}/dataSources`);
+        url.searchParams.set("pageSize", "1000");
+        if (pageToken) url.searchParams.set("pageToken", pageToken);
+        const { data } = await client.request({ url: url.href, method: "GET" });
+        sources.push(...(data.dataSources || []));
+        pageToken = data.nextPageToken || "";
+      } while (pageToken);
+      const matches = sources.filter((source) => source.input === "API" && source.primaryProductDataSource
+        && (!source.primaryProductDataSource.contentLanguage || source.primaryProductDataSource.contentLanguage === merchantConfig.contentLanguage)
+        && (!source.primaryProductDataSource.feedLabel || source.primaryProductDataSource.feedLabel === merchantConfig.feedLabel));
+      if (matches.length !== 1) throw new Error("Configure exactly one matching Merchant API primary data source, or set GOOGLE_MERCHANT_DATA_SOURCE_ID.");
+      return matches[0].name;
+    })().catch((error) => { dataSourcePromise = null; throw error; });
+  }
+  return dataSourcePromise;
+};
 
 const slugify = (value = "") =>
   String(value || "")
@@ -93,6 +115,7 @@ const toAbsoluteUrl = (value = "", fallbackOrigin = merchantConfig.siteUrl) => {
 };
 
 const getSellPrice = (product = {}) => {
+  if (/leafless-hair-dryer/i.test(product.productUrl || product.slug || "") || /bldc hair dryer|leafless hair dryer/i.test(product.name || "")) return 2699;
   if (product?.hasVariants && Array.isArray(product.variants)) {
     const prices = product.variants
       .map((v) => Number(v?.price))
@@ -105,7 +128,7 @@ const getSellPrice = (product = {}) => {
 
 const mapProductForMerchant = ({ product = {}, productId = "" }) => {
   const offerId = String(productId || product.id || "").trim();
-  const title = String(product.title || product.name || "").trim();
+  const title = String(product.name || product.title || "").trim();
   const numericPrice = getSellPrice(product);
   if (!offerId || !title || !numericPrice) return null;
   if (product?.isActive === false) return null;
@@ -114,39 +137,40 @@ const mapProductForMerchant = ({ product = {}, productId = "" }) => {
   if (!slug) return null;
   const link = toAbsoluteUrl(`/product/${slug}`);
   const { imageLink, additionalImageLinks, videoLinks } = getMerchantMedia(product, null, merchantConfig.siteUrl);
+  if (!imageLink) return null;
 
   const payload = {
     offerId,
-    title,
-    description: stripHtml(product.description || product.shortInfo || title),
+    contentLanguage: merchantConfig.contentLanguage,
+    feedLabel: merchantConfig.feedLabel,
+    productAttributes: {
+    title: title.slice(0, 150),
+    description: stripHtml(product.shortInfo || product.description || title).slice(0, 5000),
     link,
     imageLink: imageLink || undefined,
     additionalImageLinks,
-    // Content API exposes newer feed attributes through customAttributes.
-    customAttributes: videoLinks?.map((value) => ({ name: "video_link", value })),
-    contentLanguage: merchantConfig.contentLanguage,
-    targetCountry: merchantConfig.targetCountry,
-    channel: merchantConfig.channel,
-    availability: product.inStock === false ? "out of stock" : "in stock",
-    condition: "new",
+    videoLinks,
+    availability: product.inStock === false ? "OUT_OF_STOCK" : "IN_STOCK",
+    condition: "NEW",
     price: {
-      value: numericPrice.toFixed(2),
-      currency: merchantConfig.currency,
+      amountMicros: String(Math.round(numericPrice * 1_000_000)),
+      currencyCode: merchantConfig.currency,
     },
     brand: String(product.brand || merchantConfig.brand).trim() || merchantConfig.brand,
+    },
   };
 
   const gtin = String(product.gtin || "").trim();
   const mpn = String(product.mpn || "").trim();
-  if (gtin) payload.gtin = gtin;
-  if (mpn) payload.mpn = mpn;
-  if (!gtin && !mpn) payload.identifierExists = false;
+  if (gtin) payload.productAttributes.gtins = [gtin];
+  if (mpn) payload.productAttributes.mpn = mpn;
+  if (!gtin && !mpn) payload.productAttributes.identifierExists = false;
 
   return payload;
 };
 
 const getMerchantProductResourceId = (offerId = "") =>
-  `${merchantConfig.channel}:${merchantConfig.contentLanguage}:${merchantConfig.targetCountry}:${offerId}`;
+  `accounts/${merchantConfig.merchantId}/productInputs/${encodeURIComponent(`${merchantConfig.contentLanguage}~${merchantConfig.feedLabel}~${offerId}`)}`;
 
 exports.syncProductToGoogle = functions.firestore
   .document("products/{productId}")
@@ -167,16 +191,18 @@ exports.syncProductToGoogle = functions.firestore
       return null;
     }
 
-    // Delete case.
-    if (!change.after.exists) {
-      if (!merchantConfig.syncDelete) {
+    // Remove products that are deleted or deactivated from the live catalog.
+    if (!change.after.exists || storedProduct.isActive === false) {
+      if (!change.after.exists && !merchantConfig.syncDelete) {
         console.log(`Product deleted in Firestore, delete sync disabled: ${productId}`);
         return null;
       }
       try {
-        await content.products.delete({
-          merchantId: merchantConfig.merchantId,
-          productId: getMerchantProductResourceId(productId),
+        const client = await auth.getClient();
+        const dataSource = await getDataSourceName(client);
+        await client.request({
+          url: `https://merchantapi.googleapis.com/products/v1/${getMerchantProductResourceId(productId)}?dataSource=${encodeURIComponent(dataSource)}`,
+          method: "DELETE",
         });
         console.log(`Deleted product from Merchant Center: ${productId}`);
       } catch (error) {
@@ -185,6 +211,7 @@ exports.syncProductToGoogle = functions.firestore
           console.log(`Product already absent in Merchant Center: ${productId}`);
         } else {
           console.error(`Error deleting product ${productId}:`, error.message);
+          throw error;
         }
       }
       return null;
@@ -203,13 +230,17 @@ exports.syncProductToGoogle = functions.firestore
     }
 
     try {
-      await content.products.insert({
-        merchantId: merchantConfig.merchantId,
-        requestBody,
+      const client = await auth.getClient();
+      const dataSource = await getDataSourceName(client);
+      await client.request({
+        url: `https://merchantapi.googleapis.com/products/v1/accounts/${merchantConfig.merchantId}/productInputs:insert?dataSource=${encodeURIComponent(dataSource)}`,
+        method: "POST",
+        data: requestBody,
       });
       console.log(`Product synced to Merchant Center: ${productId}`);
     } catch (error) {
       console.error(`Error syncing product ${productId}:`, error.message);
+      throw error;
     }
 
     return null;
