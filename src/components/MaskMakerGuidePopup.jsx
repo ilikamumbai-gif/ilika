@@ -22,19 +22,16 @@ export default function MaskMakerGuidePopup({ currentModel, startAfter }) {
   const productImage = product && getProductDisplayImage(product, variant);
   const image = productImage && productImage !== "/placeholder.webp" ? productImage :
     `/ProductBanners/${showVoice ? "voice" : "nonvoice"}-mask-maker-diwali.webp`;
-  const dismissedKey = `ilika-mask-maker-offer-dismissed.${currentModel}`;
   const [open, setOpen] = useState(false);
   useEffect(() => {
     setOpen(false);
     if (startAfter === null) return;
-    try { if (sessionStorage.getItem(dismissedKey)) return; } catch { /* Storage may be unavailable. */ }
     const timer = window.setTimeout(() => setOpen(true), 5000);
     return () => window.clearTimeout(timer);
-  }, [dismissedKey, startAfter]);
+  }, [currentModel, startAfter]);
   const dismiss = useCallback(() => {
     setOpen(false);
-    try { sessionStorage.setItem(dismissedKey, "1"); } catch { /* Dismiss still works without storage. */ }
-  }, [dismissedKey]);
+  }, []);
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event) => { if (event.key === "Escape") dismiss(); };

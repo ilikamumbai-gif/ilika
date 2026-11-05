@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { useProducts } from "../admin/context/ProductContext";
 import HomeProductCard from "./HomeProductCard";
 import { getProductSlug } from "../utils/slugify";
+import { sortProductsInStockFirst } from "../utils/productOrdering";
 
 const HomeTrendingShowcase = ({
   categoryId,
@@ -39,7 +40,7 @@ const HomeTrendingShowcase = ({
       filteredProducts = [...priorityItems, ...restItems];
     }
 
-    return filteredProducts.slice(0, limit);
+    return sortProductsInStockFirst(filteredProducts).slice(0, limit);
   }, [categoryId, limit, priorityNames, prioritySlugs, products]);
 
   const visibleDesktopProducts = featuredProducts.slice(0, Math.min(3, featuredProducts.length || 0));

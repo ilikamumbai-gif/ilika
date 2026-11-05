@@ -5,6 +5,7 @@ import HomeProductCard from "./HomeProductCard";
 import StructuredData from "./StructuredData";
 import { buildProductListStructuredData } from "../utils/productListStructuredData";
 import { productMatchesCategoryKeys } from "../utils/productDiscovery";
+import { sortProductsInStockFirst } from "../utils/productOrdering";
 
 const ProductList = ({
   categoryId,
@@ -63,6 +64,8 @@ const ProductList = ({
     );
     filteredProducts = [...priorityItems, ...restItems];
   }
+
+  filteredProducts = sortProductsInStockFirst(filteredProducts);
 
   if (offset > 0) {
     filteredProducts = filteredProducts.slice(offset);

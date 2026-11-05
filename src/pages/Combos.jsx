@@ -10,6 +10,9 @@ import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 import { useProducts } from "../admin/context/ProductContext";
 import { getProductSlug } from "../utils/slugify";
+import { getMaskMakerBlogOffers } from "../utils/maskMakerBlogOffers";
+import { getMaskMakerOffer } from "../utils/maskMakerOffer";
+import { getProductDisplayImage } from "../utils/productPricing";
 
 const offBanner = "/Images/Tonner.webp";
 const offerCardImage = "/Images/MaskMakercard.webp";
@@ -49,6 +52,7 @@ const trustItems = [
 
 const Combos = () => {
   const { products = [] } = useProducts();
+  const maskMakerOffers = getMaskMakerBlogOffers(products, { restock: true });
 
   const productMap = useMemo(
     () =>
@@ -63,6 +67,32 @@ const Combos = () => {
   const hairDryer = productMap.get(normalizeName(PRODUCT_NAMES.hairDryer));
 
   const offerCards = [
+    ...maskMakerOffers.map((offer) => {
+      const isVoice = offer.model === "voice";
+      const product = products.find((item) =>
+        item?.isActive !== false && getMaskMakerOffer(item)?.tablets === offer.tablets
+      );
+      return {
+        category: "Free gift",
+        title: `Ilika ${offer.name}`,
+        highlight: isVoice ? "8 tablets FREE" : "25 g Hydra Gel FREE",
+        description: isVoice
+          ? "Get 8 collagen peptide tablets FREE with your Voice Mask Maker."
+          : "Get a 25 g Hydra Gel FREE with your Non-Voice Mask Maker.",
+        price: offer.priceLabel,
+        availability: offer.available === false ? "Out of stock" : offer.available ? "In stock" : "Check availability",
+        link: offer.href,
+        image: product ? getProductDisplayImage(product) : offerCardImage,
+        background: isVoice
+          ? "linear-gradient(135deg, #fff3df 0%, #ffe4b8 50%, #fff8ec 100%)"
+          : "linear-gradient(135deg, #f0eaff 0%, #e2d5fa 50%, #f8f4ff 100%)",
+        overlay: isVoice
+          ? "linear-gradient(90deg, #fff3df 0%, rgba(255,228,184,0.7) 50%, transparent 100%)"
+          : "linear-gradient(90deg, #f0eaff 0%, rgba(226,213,250,0.7) 50%, transparent 100%)",
+        textColor: isVoice ? "#33251b" : "#2e2340",
+        badgeColor: isVoice ? "#9b671b" : "#7953a2",
+      };
+    }),
     {
       category: "Combo",
       title: "Mask Combo Offers",
@@ -136,7 +166,7 @@ const Combos = () => {
             />
           </section>
 
-          <section className="mx-auto mt-5 grid max-w-[1680px] grid-cols-1 gap-4 sm:mt-8 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <section className="mx-auto mt-5 grid max-w-[1680px] grid-cols-1 gap-4 sm:mt-8 sm:gap-5 md:grid-cols-2">
             {offerCards.map((card) => (
               <Link
                 key={card.title}
@@ -159,8 +189,8 @@ const Combos = () => {
 
 
                 
-                <div className="relative aspect-square min-h-[320px] p-4 sm:aspect-[1.06/1] sm:min-h-[300px] sm:p-6 lg:min-h-[320px] lg:p-7">
-                  <div className="flex h-full max-w-[68%] flex-col sm:max-w-none">
+                <div className="relative flex h-full min-h-[420px] p-4 sm:min-h-[460px] sm:p-6 lg:min-h-[480px] lg:p-7">
+                  <div className="flex w-full max-w-[68%] flex-col sm:max-w-none">
                     <p
                       className="text-[12px] font-semibold uppercase tracking-[0.15em] sm:text-sm"
                       style={{ color: card.badgeColor }}
@@ -185,8 +215,12 @@ const Combos = () => {
                     <p className="mt-3 max-w-[250px] text-[1.08rem] leading-8 text-[#433531] sm:mt-4 sm:max-w-[300px] sm:text-base sm:leading-8">
                       {card.description}
                     </p>
-
-               
+                    {card.price && (
+                      <div className="mt-auto pt-4 text-sm font-semibold" style={{ color: card.textColor }}>
+                        <p>{card.price} <span className="font-normal">· {card.availability}</span></p>
+                        <p className="mt-2 underline underline-offset-4">View product &amp; offer →</p>
+                      </div>
+                    )}
 
                   </div>
                 </div>
