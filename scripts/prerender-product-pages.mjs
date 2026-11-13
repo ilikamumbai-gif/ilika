@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { WATCH_VIDEOS, getWatchPath } from "../src/data/watchVideos.js";
 import { getProductDisplayPricing, getProductDisplayImage, getProductMerchantMetadata, getProductVariantAvailability, getVariantQueryValue } from "../src/utils/productPricing.js";
 import { buildProductReviewSchema, getProductReviews } from "../src/utils/productReviews.js";
 import { getCanonicalProductSlugAlias, getProductSeoContent } from "../src/data/productSeoContent.js";
@@ -136,6 +137,7 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
   const details = String(product?.description || product?.shortInfo || "").trim();
   const category = escapeHtml(String(product?.categoryName || product?.category || "Beauty and personal care"));
   const variants = Array.isArray(product?.variants) ? product.variants : [];
+  const watchVideos = WATCH_VIDEOS.filter((video) => video.relatedPath === new URL(canonicalUrl).pathname);
   const variantLinks = variants
     .map((variant) => {
       const queryValue = getVariantQueryValue(variant);
@@ -154,6 +156,7 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
     <img src="${escapeHtml(image)}" alt="${name}" />
     <p>${escapeHtml(description)}</p>
     ${priceMarkup}
+    ${watchVideos.length ? `<section><h2>Watch the product video</h2>${watchVideos.map((video) => `<p><a href="${getWatchPath(video)}">${escapeHtml(video.title)}</a></p>`).join("")}</section>` : ""}
     <p><strong>Availability:</strong> ${getProductVariantAvailability(product) ? "In stock" : "Out of stock"}</p>
     ${reviews.length ? `<section id="reviews"><h2>Customer reviews</h2>${reviews.map((review) => `<article><h3>${escapeHtml(review.author.name)}</h3><p>${review.reviewRating.ratingValue}/5${review.datePublished ? ` · <time datetime="${review.datePublished}">${review.datePublished}</time>` : ""}</p><p>${escapeHtml(review.reviewBody)}</p></article>`).join("")}</section>` : ""}
     <p><strong>Category:</strong> ${category}</p>

@@ -1,5 +1,13 @@
 # SEO build and release
 
+The private `/user` account route is crawlable but returns `X-Robots-Tag: noindex, nofollow` through Vercel. Do not re-add a robots.txt block for this route: Google must fetch it to see the directive and remove an already indexed URL. Account sign-in behavior is unchanged. After deploying changes to this policy, inspect `/user` with Test live URL and confirm the noindex response header. The desired Search Console result is exclusion by noindex, not indexing of the account page. Use Search Console's temporary removal tool if the old URL needs to disappear sooner while recrawling is pending.
+
+## Video watch pages
+
+The five videos reported as supplementary content have dedicated `/watch/{slug}` pages, linked from `/videos`, the footer, relevant product pages, and both sitemaps. `src/data/watchVideos.js` records their titles, source URLs, stable thumbnails and verified upload dates. YouTube dates come from public video metadata; the local hair dryer clip uses its first tracked upload date. Each watch page has one prominent player, working controls, visible title and description, a self canonical and matching `VideoObject` in the initial HTML. Product-page videos remain supplementary and may continue to appear in Search Console's “Video isn't on a watch page” report; video indexing should be evaluated on the dedicated watch URLs.
+
+`npm run build` generates these pages and `video-sitemap.xml`, and verifies them with `npm run verify:videos`. After deploying Vercel, submit `https://ilika.in/video-sitemap.xml` in Search Console and inspect the new watch pages with Test live URL, then request indexing. Revalidation of old product URLs alone does not turn them into watch pages. Google decides whether and when a qualifying video is indexed; technical validation is not an indexing guarantee.
+
 Run `npm ci` and `npm run build` with Node 22+ and the production `VITE_API_URL` configured. The build fetches the public catalog, generates the sitemap, renders product and article HTML, and uses Playwright Chromium to capture the actual remaining public pages. It fails when content, metadata, API requests, or canonicals are invalid. Everyone receives the same HTML; React provides interactivity after loading.
 
 Chromium is installed by the prerender command. Linux build images must also supply its system libraries (`npx playwright install --with-deps chromium` during CI setup). Cache the Playwright browser directory to avoid downloading it on every build. Builds need network access to the public API and the browser download host on first use.

@@ -3,6 +3,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "redirects": [
+    {"source":"/watch","destination":"/videos","statusCode":301},
     {"source":"/voice-mask-maker-at-home","destination":"/blog/voice-mask-maker-at-home","statusCode":301},
     {"source":"/voice-mask-maker-at-home/","destination":"/blog/voice-mask-maker-at-home","statusCode":301},
     {"source":"/product/portable-travel-bidet","destination":"/product/ilika-portable-travel-manual-bidet","statusCode":301},
@@ -201,6 +202,7 @@
   { "source": "/detail/:legacyId(\\d+)", "destination": "/api/legacy-product?path=detail/:legacyId" },
   { "source": "/.well-known/:path*", "destination": "/.well-known/:path*" },
   { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
+  { "source": "/video-sitemap.xml", "destination": "/video-sitemap.xml" },
   { "source": "/sitemap.html", "destination": "/sitemap.html" },
   { "source": "/robots.txt", "destination": "/robots.txt" },
   { "source": "/llms.txt", "destination": "/llms.txt" },
@@ -222,6 +224,18 @@
   { "source": "/:path*", "destination": "/api/not-found?status=404" }
 ],
   "headers": [
+    {
+      "source": "/user",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/user/:path*",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [

@@ -27,6 +27,7 @@ const quickLinks = [
   { label: "Shop All", to: "/shopall", icon: ShoppingBag },
   { label: "Offers", to: "/offer", icon: ShoppingBag },
   { label: "Social Feed", to: "/social-feed", icon: BookOpen },
+  { label: "Videos", to: "/videos", icon: BookOpen },
   { label: "Track Order", to: "/track-order", icon: ShieldCheck },
 ];
 

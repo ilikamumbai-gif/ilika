@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { getCanonicalProductSlugAlias } from "../src/data/productSeoContent.js";
 import { getVariantQueryValue } from "../src/utils/productPricing.js";
+import { WATCH_VIDEOS, getWatchPath } from "../src/data/watchVideos.js";
 import {
   STATIC_BLOGS,
 } from "../src/data/privateBlogs.js";
@@ -46,6 +47,8 @@ const resolveEnv = async () => {
 };
 
 const STATIC_URLS = [
+  { loc: "/videos", priority: "0.7", changefreq: "weekly" },
+  ...WATCH_VIDEOS.map((video) => ({ loc: getWatchPath(video), priority: "0.7", changefreq: "monthly" })),
   { loc: "/", priority: "1.0", changefreq: "daily" },
   { loc: "/shopall", priority: "0.9", changefreq: "daily" },
   { loc: "/products", priority: "0.9", changefreq: "daily" },

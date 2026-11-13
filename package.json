@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run sitemap && vite build && npm run prerender:products && npm run prerender:catalog && npm run prerender:routes && npm run verify:indexability",
+    "build": "npm run sitemap && vite build && npm run prerender:products && npm run prerender:catalog && npm run prerender:videos && npm run prerender:routes && npm run verify:indexability && npm run verify:videos",
+    "prerender:videos": "node scripts/prerender-video-pages.mjs",
+    "verify:videos": "node scripts/verify-video-pages.mjs",
     "prerender:products": "node scripts/prerender-product-pages.mjs",
     "prerender:catalog": "node scripts/prerender-catalog-pages.mjs",
     "prerender:routes": "node scripts/prerender-static-routes.mjs",

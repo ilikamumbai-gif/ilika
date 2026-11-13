@@ -8,6 +8,8 @@ import { AdminAuthProvider } from "../admin/context/AdminAuthContext";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
 import { HOME_SEO } from "../data/siteSeo";
+import { getWatchVideo } from "../data/watchVideos";
+import { VIDEO_LIBRARY_TITLE, VIDEO_LIBRARY_DESCRIPTION } from "../utils/videoPages";
 const SITE_URL = "https://ilika.in";
 
 const Home = lazy(() => import("../pages/Home"));
@@ -21,6 +23,7 @@ const Blog = lazy(() => import("../pages/Blog"));
 const UserDetail = lazy(() => import("../pages/UserDetail"));
 const BlogDetail = lazy(() => import("../pages/BlogDetail"));
 const HairDryerGuides = lazy(() => import("../pages/HairDryerGuides"));
+const WatchVideo = lazy(() => import("../pages/WatchVideo"));
 const Contact = lazy(() => import("../pages/Contact"));
 const Privacy = lazy(() => import("../pages/Privacy"));
 const ProductDetail = lazy(() => import("../pages/ProductDetail"));
@@ -98,6 +101,9 @@ const SEO_MATCHER_ROUTES = [
   { path: "/blog" },
   { path: "/articles" },
   { path: "/hair-dryer-guides" },
+  { path: "/videos" },
+  { path: "/watch" },
+  { path: "/watch/:videoSlug" },
   { path: "/shopall" },
   { path: "/user" },
   { path: "/blog/:slug" },
@@ -194,6 +200,11 @@ const UrlCanonicalizer = () => {
 const getRouteSeo = (pathname = "") => {
   const baseKeywords = ["Ilika", "skincare", "beauty products", "hair care", "grooming tools"];
   if (pathname === "/") return HOME_SEO;
+  if (pathname === "/videos") return { title: VIDEO_LIBRARY_TITLE, description: VIDEO_LIBRARY_DESCRIPTION };
+  if (pathname.startsWith("/watch/")) {
+    const video = getWatchVideo(pathname.slice("/watch/".length));
+    if (video) return { title: video.title, description: video.description };
+  }
   if (pathname === "/offer") return { title: "Offers", description: "Discover latest Ilika offers and beauty deals." };
   if (pathname === "/checkout") return { title: "Checkout", description: "Secure checkout for your Ilika order." };
   if (pathname === "/skin") return { title: "Skin Care", description: "Explore Ilika skin care products and routines." };
@@ -385,6 +396,9 @@ const NavRoutes = () => {
       <RouteSeo />
       <Routes location={location} key={`${location.pathname}${location.search}${location.hash}`}>
         <Route path="/" element={renderLazy(Home)} />
+        <Route path="/videos" element={renderLazy(WatchVideo)} />
+        <Route path="/watch" element={<Navigate to="/videos" replace />} />
+        <Route path="/watch/:videoSlug" element={renderLazy(WatchVideo)} />
         <Route path="/offer" element={renderLazy(Offer)} />
         <Route
           path="/checkout"

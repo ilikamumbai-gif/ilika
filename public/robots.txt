@@ -6,8 +6,7 @@ Disallow: /admin
 Disallow: /admin/
 Disallow: /login
 Disallow: /signup
-Disallow: /user
-Disallow: /user/
+# /user must be crawlable so Google can read its noindex response header.
 Disallow: /checkout
 Disallow: /checkout/
 Disallow: /order-success
@@ -21,3 +20,4 @@ Disallow: /api/
 Disallow: /.well-known/
 
 Sitemap: https://ilika.in/sitemap.xml
+Sitemap: https://ilika.in/video-sitemap.xml

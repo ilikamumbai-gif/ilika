@@ -55,6 +55,7 @@ async function main() {
   if (new Set(urls).size !== urls.length) throw new Error("Duplicate URLs found in sitemap.xml.");
   const productUrls = urls.filter((url) => new URL(url).pathname.startsWith("/product/"));
   const blogUrls = urls.filter((url) => new URL(url).pathname.startsWith("/blog/"));
+  const videoUrls = urls.filter((url) => new URL(url).pathname.startsWith("/watch/"));
   const journal = await readFile(path.join(distDir, "blog", "index.html"));
   if (!journal.includes('href="/articles"')) throw new Error("Blog page must link to the article directory in initial HTML.");
   const blogIndex = await readFile(path.join(distDir, "articles", "index.html"));
@@ -68,7 +69,8 @@ async function main() {
   if (Array.from(articleLinks).some(href => href.startsWith("/blog/private/") && !indexablePrivateRoutes.has(href))) {
     throw new Error("Article directory exposes a private article without indexing permission.");
   }
-  const otherUrls = urls.filter(url => !productUrls.includes(url) && !blogUrls.includes(url));
+  const otherUrls = urls.filter(url => !productUrls.includes(url) && !blogUrls.includes(url) && !videoUrls.includes(url));
+  await Promise.all(videoUrls.map((url) => verifyPage({ distDir, url, type: "video" })));
   if (!productUrls.length || !blogUrls.length) throw new Error("Sitemap must include both product and blog URLs.");
 
   const [products, blogs] = await Promise.all([

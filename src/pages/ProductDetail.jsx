@@ -46,6 +46,8 @@ import {
   slugifyVariantValue,
 } from "../utils/productPricing";
 
+import { WATCH_VIDEOS, getWatchPath } from "../data/watchVideos";
+
 const DEFAULT_DETAIL_BG = "#FFFFFF";
 const BLDC_HAIR_DRYER_GALLERY_VIDEO = {
   url: "/HonestReview/instagram-reel-youtube-short.mp4",
@@ -5493,6 +5495,11 @@ const ProductDetail = () => {
             <div className="overflow-hidden rounded-[20px] border bg-white shadow-[0_12px_28px_rgba(69,39,34,0.05)] sm:rounded-[26px]" style={{ borderColor: detailTheme.borderSoft }}>
               <div className="border-b px-4 py-3 sm:px-5 sm:py-4" style={{ borderColor: detailTheme.borderSoft, backgroundColor: detailTheme.reviewSurface }}>
                 <p className="text-sm font-semibold" style={{ color: detailTheme.heading }}>Watch it in action</p>
+                {WATCH_VIDEOS.filter((video) => video.relatedPath === `/product/${product.productUrl}`).map((video) => (
+                  <Link key={video.slug} to={getWatchPath(video)} className="mt-2 inline-block text-sm font-medium text-pink-700 underline">
+                    Watch {video.title} on its own page
+                  </Link>
+                ))}
               </div>
               <div className="aspect-video w-full bg-black">
                 {productVideos[0].kind === "native" ? (
