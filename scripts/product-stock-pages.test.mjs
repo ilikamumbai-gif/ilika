@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { buildProductHtml } from "./prerender-product-pages.mjs";
 import { getProductSaveMessage, getProductRebuildMessage } from "../src/utils/productSyncFeedback.js";
+import { getProductVariantAvailability } from "../src/utils/productPricing.js";
+import { isPublishedProductCurrent } from "../src/utils/productPublication.js";
 
 const template = '<html><head><title>Ilika</title></head><body><div id="root"></div></body></html>';
 const product = {
@@ -56,4 +58,18 @@ test("queued rebuilds are reported as pending deployment, not published", () => 
   assert.match(getProductRebuildMessage({ status: "triggered" }), /Wait for the Vercel deployment/);
   assert.match(getProductRebuildMessage({ status: "error" }), /rebuild failed/);
   assert.match(getProductRebuildMessage(undefined), /not confirmed/);
+});
+
+test("the main out-of-stock setting disables all otherwise available variants", () => {
+  const p = { ...product, inStock: false, hasVariants: true, variants: [{ id: "blue", inStock: true, price: 3999 }] };
+  assert.equal(getProductVariantAvailability(p, p.variants[0]), false);
+  assert.equal(availability(buildProductHtml(template, p, p.productUrl)), "https://schema.org/OutOfStock");
+});
+
+test("published page markers distinguish the current admin save from an older build", () => {
+  const current = { ...product, updatedAt: 1234 };
+  const html = buildProductHtml(template, current, current.productUrl);
+  assert.equal(isPublishedProductCurrent(html, current), true);
+  assert.equal(isPublishedProductCurrent(html, { ...current, updatedAt: 1235 }), false);
+  assert.equal(isPublishedProductCurrent('<main></main><p data-product-id="maker" data-product-version="1234">', current), false);
 });

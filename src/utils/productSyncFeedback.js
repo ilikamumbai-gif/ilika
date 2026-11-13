@@ -15,6 +15,12 @@ export const getProductSaveMessage = (result = {}) => {
   const sync = result.merchantSync;
   const merchantMessage = sync?.status === "upserted"
     ? "Product data submitted to Merchant Center."
+    : sync?.status === "confirmed"
+      ? "Stock confirmed in Google's processed product data."
+    : sync?.status === "queued"
+      ? "Google sync is queued until the updated website page is published."
+    : sync?.status === "retrying"
+      ? "Google sync will retry automatically after a temporary failure."
     : sync?.status === "error"
       ? `Merchant sync failed: ${sync.message || "Check the backend Merchant configuration."}`
       : sync?.status === "deleted"
@@ -22,3 +28,14 @@ export const getProductSaveMessage = (result = {}) => {
         : `Merchant sync was not completed${sync?.reason ? `: ${sync.reason}` : "."}`;
   return `Product saved. ${merchantMessage} ${getProductRebuildMessage(result.prerenderRebuild)}`;
 };
+
+export const getMerchantSyncLabel = (sync) => ({
+  queued: "Waiting for website",
+  retrying: "Retrying Google sync",
+  upserted: "Submitted to Google",
+  confirmed: "Stock confirmed in Google",
+  skipped: "Needs attention",
+  deleted: "Removed from Google",
+  error: "Google sync failed",
+  disabled: "Google auto-sync off",
+})[sync?.status] || "Not checked";

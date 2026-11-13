@@ -233,6 +233,7 @@ export const getProductVariantStock = (product = {}, selectedVariant = null) => 
 };
 
 export const getProductVariantAvailability = (product = {}, selectedVariant = null) => {
+  if (product?.inStock === false) return false;
   const activeVariant = findMatchingVariant(product, selectedVariant) || selectedVariant || getDefaultVariant(product);
   if (typeof activeVariant?.inStock === "boolean") return activeVariant.inStock;
 

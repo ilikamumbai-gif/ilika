@@ -6,7 +6,7 @@ import { useProducts } from "../../context/ProductContext";
 import { useCategories } from "../../context/CategoryContext";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 import { getProductDisplayPricing } from "../../../utils/productPricing";
-import { getProductRebuildMessage } from "../../../utils/productSyncFeedback";
+import { getProductRebuildMessage, getMerchantSyncLabel } from "../../../utils/productSyncFeedback";
 
 const FilterSelect = ({ value, onChange, children }) => (
   <div className="relative">
@@ -34,6 +34,12 @@ const ProductList = () => {
   const { categories } = useCategories();
   const { admin, getAdminAuthHeaders } = useAdminAuth();
   useEffect(() => { fetchProducts(); }, [categories.length]);
+  const hasPendingMerchantSync = products.some((product) => ["queued", "retrying", "upserted"].includes(product.merchantSyncState?.status));
+  useEffect(() => {
+    if (!hasPendingMerchantSync) return;
+    const timer = window.setInterval(() => fetchProducts(), 30000);
+    return () => window.clearInterval(timer);
+  }, [hasPendingMerchantSync, fetchProducts]);
 
   const getCategoryNames = (ids = []) =>
     ids.map(id => categories.find(c => String(c.id) === String(id))?.name).filter(Boolean).join(", ") || "—";
@@ -78,6 +84,7 @@ const ProductList = () => {
       const skipped = Number(result?.summary?.skipped || 0);
       const deleted = Number(result?.summary?.deleted || 0);
       const errors = Number(result?.summary?.error || 0);
+      const queued = Number(result?.summary?.queued || 0) + Number(result?.summary?.retrying || 0);
       const details = (result?.results || []).flatMap((item) => {
         const label = item.productName || item.offerId || "Product";
         return [
@@ -88,7 +95,7 @@ const ProductList = () => {
       });
 
       setSyncMessage(
-        `Merchant sync finished. Total: ${total}, synced: ${upserted}, skipped: ${skipped}, deleted: ${deleted}, failed: ${errors}.${details.length ? ` ${details.join(" ")}` : ""} ${getProductRebuildMessage(result.prerenderRebuild)}`
+        `Merchant sync finished. Total: ${total}, submitted: ${upserted}, queued: ${queued}, skipped: ${skipped}, deleted: ${deleted}, failed: ${errors}.${details.length ? ` ${details.join(" ")}` : ""} ${getProductRebuildMessage(result.prerenderRebuild)}`
       );
     } catch (error) {
       setSyncMessage(error?.message || "Merchant sync failed.");
@@ -160,14 +167,14 @@ const ProductList = () => {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F0F0F0" }}>
-                {["Product", "Category", "Price", "Status", "Stock", "Actions"].map(h => (
+                {["Product", "Category", "Price", "Status", "Stock", "Google sync", "Actions"].map(h => (
                   <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "#888" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={6} className="px-5 py-12 text-center">
+                <tr><td colSpan={7} className="px-5 py-12 text-center">
                   <div className="flex flex-col items-center gap-2 text-gray-300"><Package size={36} /><p className="text-sm">No products found</p></div>
                 </td></tr>
               ) : filtered.map(p => {
@@ -195,6 +202,11 @@ const ProductList = () => {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${p.inStock === false ? "bg-gray-100 text-gray-500 border-gray-200" : "bg-blue-50 text-blue-600 border-blue-200"}`}>
                       {p.inStock === false ? "Out of Stock" : "In Stock"}
                     </span>
+                  </td>
+                  <td className="px-5 py-4">
+                    <div title={p.merchantSyncState?.message || p.merchantSyncState?.reason || ""} className="mb-2 text-xs text-gray-600">
+                      {getMerchantSyncLabel(p.merchantSyncState)}
+                    </div>
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
@@ -237,6 +249,7 @@ const ProductList = () => {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${p.isActive === false ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>{p.isActive === false ? "Inactive" : "Active"}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${p.inStock === false ? "bg-gray-100 text-gray-500" : "bg-blue-50 text-blue-600"}`}>{p.inStock === false ? "Out" : "In Stock"}</span>
                   </div>
+                  <p className="mt-1 text-xs text-gray-500">{getMerchantSyncLabel(p.merchantSyncState)}</p>
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">

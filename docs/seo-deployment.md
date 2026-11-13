@@ -1,5 +1,13 @@
 # SEO build and release
 
+## Admin stock synchronization
+
+Product saves create a durable `merchantSyncJobs/{productId}` job. The backend waits for the canonical product page's `data-product-id` and `data-product-version` marker to match the current database save before submitting the Merchant payload. This prevents a restock submission being compared with the previous Vercel deployment. Inactive products are removed without waiting for a page. Both product update routes use this flow, and backend-managed records carry `merchantVariantOfferIds` so the Firestore trigger does not race the backend.
+
+The running backend checks pending jobs every 30 seconds and on startup. Jobs survive restarts, use a per-product transaction lease, and preserve a newer admin save when an older request finishes. Transient Merchant failures retry with backoff; a page still missing after five minutes requests another deploy-hook rebuild. After submission, the job polls Google's processed variant availability. Admin shows “Submitted to Google” until every expected offer has the correct stock, then “Stock confirmed in Google”. A persistent override is resubmitted at five-minute intervals. Confirmation refers to stock, not guaranteed ad serving, indexing, or exact display timing. The main product's out-of-stock switch overrides variant availability on both the storefront and the Merchant payload.
+
+Deploy both the frontend (publication markers) and the backend (queue worker). Keep `GOOGLE_MERCHANT_SYNC_AUTO=true`, a valid Merchant data source, and `PRODUCT_PRERENDER_DEPLOY_HOOK_URL` configured on Render. A backend that is stopped cannot process jobs until it starts again. Use `node --test Backend/services/productMerchantSync.test.js scripts/product-stock-pages.test.mjs scripts/merchant-media.test.mjs` to check publication ordering, both stock transitions, retries, restarts, concurrent saves and processed Google confirmation.
+
 The private `/user` account route is crawlable but returns `X-Robots-Tag: noindex, nofollow` through Vercel. Do not re-add a robots.txt block for this route: Google must fetch it to see the directive and remove an already indexed URL. Account sign-in behavior is unchanged. After deploying changes to this policy, inspect `/user` with Test live URL and confirm the noindex response header. The desired Search Console result is exclusion by noindex, not indexing of the account page. Use Search Console's temporary removal tool if the old URL needs to disappear sooner while recrawling is pending.
 
 ## Video watch pages

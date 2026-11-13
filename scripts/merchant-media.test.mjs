@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import media from "../functions/merchantMedia.cjs";
+import { getProductVariantAvailability } from "../src/utils/productPricing.js";
 
 const { getMerchantMedia } = media;
 const siteUrl = "https://ilika.in";
@@ -85,6 +86,7 @@ test("excludes a rejected Merchant video across YouTube URL formats without chan
 const backendSource = fs.readFileSync(new URL("../Backend/server.js", import.meta.url), "utf8");
 const mapperSource = backendSource.slice(backendSource.indexOf("const mapProductToMerchantPayload ="), backendSource.indexOf("const upsertMerchantProduct ="));
 const mapBackend = vm.runInNewContext(`${mapperSource}\nmapProductToMerchantPayload`, {
+  getProductVariantAvailability,
   getMerchantMedia, getSiteBaseUrl: () => siteUrl,
   getProductSellPrice: (p, variant) => variant?.price || p.price,
   readMerchantProductUrl: (p) => p.productUrl,
@@ -109,7 +111,9 @@ test("Merchant payload requires an image and respects field length limits", () =
 });
 
 test("Merchant variant availability follows the storefront stock precedence", () => {
+  assert.equal(mapBackend({ ...product, inStock: false }, { id: "blue", inStock: true }).productAttributes.availability, "OUT_OF_STOCK");
   assert.equal(mapBackend({ ...product, inStock: false }).productAttributes.availability, "OUT_OF_STOCK");
+  assert.equal(mapBackend({ ...product, inStock: true, stock: 0 }).productAttributes.availability, "OUT_OF_STOCK");
   assert.equal(mapBackend(product, { id: "empty", stock: 0 }).productAttributes.availability, "OUT_OF_STOCK");
   assert.equal(mapBackend(product, { id: "empty", inStock: false, stock: 10 }).productAttributes.availability, "OUT_OF_STOCK");
 });

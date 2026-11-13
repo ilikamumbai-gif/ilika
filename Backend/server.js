@@ -12,6 +12,8 @@ import getOrderConfirmationEmail from "./emailTemplates/orderConfirmationEmail.j
 import { getComboStockError } from "./services/comboStock.js";
 import { getPrepaidDiscount } from "./services/prepaidDiscount.js";
 import { createPreorderHandler } from "./services/preorderRequests.js";
+import { createProductMerchantSync } from "./services/productMerchantSync.js";
+import { getProductVariantAvailability } from "../src/utils/productPricing.js";
 
 const { getMerchantMedia } = merchantMedia;
 dotenv.config();
@@ -1957,15 +1959,7 @@ const mapProductToMerchantPayload = (product = {}, variant = null) => {
       imageLink: imageLink || undefined,
       additionalImageLinks,
       videoLinks,
-      availability: (() => {
-      if (typeof variant?.inStock === "boolean") return variant.inStock ? "in stock" : "out of stock";
-      const stockValue = variant?.stock;
-      const stock = Number(stockValue);
-      if (variant && stockValue !== undefined && stockValue !== null && stockValue !== "" && Number.isFinite(stock)) {
-        return stock > 0 ? "in stock" : "out of stock";
-      }
-      return product?.inStock === false ? "out of stock" : "in stock";
-      })() === "in stock" ? "IN_STOCK" : "OUT_OF_STOCK",
+      availability: getProductVariantAvailability(product, variant) ? "IN_STOCK" : "OUT_OF_STOCK",
       condition: "NEW",
       price: {
         amountMicros: String(Math.round(Number(priceValue) * 1_000_000)),
@@ -2026,6 +2020,7 @@ const upsertMerchantProduct = async (product = {}) => {
       url: `https://merchantapi.googleapis.com/products/v1/accounts/${encodeURIComponent(MERCHANT_CENTER_ACCOUNT_ID)}/productInputs:insert?dataSource=${encodeURIComponent(dataSourceName)}`,
       method: "POST",
       data: payload,
+      timeout: 20000,
     });
   }
 
@@ -2104,28 +2099,58 @@ const getMerchantErrorSummary = (error) => {
   };
 };
 
+const submitPublishedMerchantProduct = async (product) => {
+  if (product.isActive === false) {
+    const deletions = await deleteMerchantListingsForProduct(product);
+    return { status: "deleted", offerId: product.id, deletedListings: deletions.length };
+  }
+  const result = await upsertMerchantProduct(product);
+  if (result.status === "upserted") {
+    await db.collection("products").doc(product.id).update({ merchantVariantOfferIds: result.variantOfferIds || [] });
+  }
+  return result;
+};
+
+const merchantPublisher = createProductMerchantSync({
+  db,
+  submit: submitPublishedMerchantProduct,
+  siteBaseUrl: getSiteBaseUrl(),
+  requestRebuild: triggerProductPrerenderRebuild,
+  verify: async (product) => {
+    const authClient = await getMerchantApiAuthClient();
+    if (!authClient) throw new Error("Merchant API is not configured");
+    const variants = product.hasVariants && Array.isArray(product.variants)
+      ? product.variants.filter((variant) => variant && (variant.id || variant.label)) : [];
+    const expected = (variants.length ? variants : [null])
+      .map((variant) => mapProductToMerchantPayload(product, variant)).filter(Boolean);
+    for (const payload of expected) {
+      const key = Buffer.from(`${payload.contentLanguage}~${payload.feedLabel}~${payload.offerId}`).toString("base64url");
+      try {
+        const response = await authClient.request({
+          url: `https://merchantapi.googleapis.com/products/v1/accounts/${encodeURIComponent(MERCHANT_CENTER_ACCOUNT_ID)}/products/${key}`,
+          method: "GET", timeout: 20000,
+        });
+        if (response.data?.productAttributes?.availability !== payload.productAttributes.availability) return false;
+      } catch (error) {
+        if (Number(error?.response?.status) === 404) return false;
+        throw error;
+      }
+    }
+    return expected.length > 0;
+  },
+  productPath: (product) => {
+    const variant = product.hasVariants ? product.variants?.[0] : null;
+    if (!mapProductToMerchantPayload(product, variant)) return "";
+    return `/product/${readMerchantProductUrl(product)}`;
+  },
+});
+
 const syncMerchantProductById = async (productId = "") => {
   const cleanId = String(productId || "").trim();
   if (!cleanId) return { status: "skipped", reason: "missing_product_id", offerId: null };
-
-  const ref = db.collection("products").doc(cleanId);
-  const doc = await ref.get();
-
-  if (!doc.exists) {
-    return deleteMerchantProduct(cleanId);
-  }
-
-  const product = { ...doc.data(), id: doc.id };
-  if (product.isActive === false) {
-    const deletions = await deleteMerchantListingsForProduct(product);
-    return { status: "deleted", offerId: cleanId, deletedListings: deletions.length };
-  }
-
-  const result = await upsertMerchantProduct(product);
-  if (result.status === "upserted") {
-    await ref.update({ merchantVariantOfferIds: result.variantOfferIds || [] });
-  }
-  return result;
+  const doc = await db.collection("products").doc(cleanId).get();
+  if (!doc.exists) return deleteMerchantProduct(cleanId);
+  return merchantPublisher.sync({ ...doc.data(), id: doc.id });
 };
 
 const syncAllProductsToMerchant = async () => {
@@ -2134,15 +2159,7 @@ const syncAllProductsToMerchant = async () => {
   for (const doc of snapshot.docs) {
     const product = { ...doc.data(), id: doc.id };
     try {
-      if (product?.isActive === false) {
-        const deletions = await deleteMerchantListingsForProduct(product);
-        results.push({ status: "deleted", offerId: doc.id, deletedListings: deletions.length });
-        continue;
-      }
-      const result = await upsertMerchantProduct(product);
-      if (result.status === "upserted") {
-        await doc.ref.update({ merchantVariantOfferIds: result.variantOfferIds || [] });
-      }
+      const result = await merchantPublisher.queue(product);
       results.push(result);
     } catch (error) {
       const summary = getMerchantErrorSummary(error);
@@ -3087,6 +3104,7 @@ app.post("/api/products", async (req, res) => {
           : [],
       isActive: req.body.isActive ?? true,
       inStock: req.body.inStock ?? true,
+      merchantVariantOfferIds: [],
       createdAt: now,
       updatedAt: now,
     };
@@ -3108,7 +3126,7 @@ app.post("/api/products", async (req, res) => {
       productUrl: productData.productUrl,
     });
 
-    res.json({ ...(await formatProductForApi(productData, docRef.id)), merchantSync, prerenderRebuild });
+    res.json({ ...(await formatProductForApi((await docRef.get()).data(), docRef.id)), merchantSync, prerenderRebuild });
   } catch (error) {
     console.error("ADD PRODUCT ERROR:", error);
     res.status(500).json({ error: "Failed to add product" });
@@ -3311,6 +3329,7 @@ app.put("/api/products/:id", async (req, res) => {
         : (Array.isArray(existingData?.reviews) ? existingData.reviews : []),
       isActive: typeof req.body.isActive === "boolean" ? req.body.isActive : existingData.isActive ?? true,
       inStock: typeof req.body.inStock === "boolean" ? req.body.inStock : existingData.inStock ?? true,
+      merchantVariantOfferIds: Array.isArray(existingData.merchantVariantOfferIds) ? existingData.merchantVariantOfferIds : [],
       updatedAt: Date.now(),
     };
 
@@ -3320,7 +3339,7 @@ app.put("/api/products/:id", async (req, res) => {
     let merchantSync = { status: "disabled", reason: "auto_sync_disabled" };
     if (MERCHANT_SYNC_AUTO) {
       try {
-        merchantSync = await syncMerchantProductById(req.params.id);
+        merchantSync = await syncMerchantProductById(updatedDoc.id);
       } catch (err) {
         merchantSync = { status: "error", ...getMerchantErrorSummary(err) };
         console.error("MERCHANT AUTO SYNC (UPDATE) FAILED:", merchantSync);
@@ -3335,7 +3354,7 @@ app.put("/api/products/:id", async (req, res) => {
 
     res.json({
       message: "Product updated successfully",
-      product: await formatProductForApi(updatedDoc.data(), updatedDoc.id),
+      product: await formatProductForApi((await productRef.get()).data(), updatedDoc.id),
       merchantSync,
       prerenderRebuild,
     });
@@ -3402,11 +3421,20 @@ app.put("/admin/products/edit/:id", async (req, res) => {
         : (Array.isArray(existingData?.reviews) ? existingData.reviews : []),
       isActive: typeof req.body.isActive === "boolean" ? req.body.isActive : existingData.isActive ?? true,
       inStock: typeof req.body.inStock === "boolean" ? req.body.inStock : existingData.inStock ?? true,
+      merchantVariantOfferIds: Array.isArray(existingData.merchantVariantOfferIds) ? existingData.merchantVariantOfferIds : [],
       updatedAt: Date.now(),
     };
 
     await productRef.update(updateData);
     const updatedDoc = await productRef.get();
+    let merchantSync = { status: "disabled", reason: "auto_sync_disabled" };
+    if (MERCHANT_SYNC_AUTO) {
+      try {
+        merchantSync = await syncMerchantProductById(updatedDoc.id);
+      } catch (err) {
+        merchantSync = { status: "error", ...getMerchantErrorSummary(err) };
+      }
+    }
     const prerenderRebuild = await triggerProductPrerenderRebuild({
       action: "product_updated",
       productId: updatedDoc.id,
@@ -3414,7 +3442,8 @@ app.put("/admin/products/edit/:id", async (req, res) => {
     });
     res.json({
       message: "Product updated successfully",
-      product: await formatProductForApi(updatedDoc.data(), updatedDoc.id),
+      product: await formatProductForApi((await productRef.get()).data(), updatedDoc.id),
+      merchantSync,
       prerenderRebuild,
     });
   } catch (error) {
@@ -5875,6 +5904,8 @@ app.get("/api/merchant/sync-status", async (req, res) => {
   res.json({
     configured: isMerchantConfigured(),
     autoSyncEnabled: MERCHANT_SYNC_AUTO,
+    websiteRebuildConfigured: Boolean(PRODUCT_PRERENDER_DEPLOY_HOOK_URL),
+    stockSyncMode: "after_published_page",
     merchantId: MERCHANT_CENTER_ACCOUNT_ID || null,
     targetCountry: MERCHANT_TARGET_COUNTRY,
     feedLabel: MERCHANT_FEED_LABEL,
@@ -5905,6 +5936,7 @@ app.post("/api/merchant/sync-products", async (req, res) => {
 
     const result = await syncAllProductsToMerchant();
     const prerenderRebuild = await triggerProductPrerenderRebuild({ action: "merchant_sync" });
+    merchantPublisher.drain().catch((error) => console.error("MERCHANT BULK QUEUE FAILED:", getMerchantErrorSummary(error).message));
     res.json({
       message: "Merchant sync completed",
       ...result,
@@ -7237,6 +7269,13 @@ removeRevokedSuperAdmins();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
+  if (isMerchantConfigured()) {
+    const retryPendingMerchantSyncs = () => merchantPublisher.drain().catch((error) => {
+      console.error("MERCHANT SYNC RETRY FAILED:", getMerchantErrorSummary(error).message);
+    });
+    retryPendingMerchantSyncs();
+    setInterval(retryPendingMerchantSyncs, 30000).unref();
+  }
   console.log(`Server running on port ${PORT}`);
   console.log(
     `[Merchant] configured=${isMerchantConfigured()} autoSync=${MERCHANT_SYNC_AUTO} merchantId=${

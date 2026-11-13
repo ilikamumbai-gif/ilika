@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getProductPublicationMarker } from "../src/utils/productPublication.js";
 import { WATCH_VIDEOS, getWatchPath } from "../src/data/watchVideos.js";
 import { getProductDisplayPricing, getProductDisplayImage, getProductMerchantMetadata, getProductVariantAvailability, getVariantQueryValue } from "../src/utils/productPricing.js";
 import { buildProductReviewSchema, getProductReviews } from "../src/utils/productReviews.js";
@@ -149,7 +150,7 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
     .join("");
   const priceMarkup = price > 0 ? `<p><strong>Price:</strong> ₹${escapeHtml(price.toLocaleString("en-IN"))}${hasDiscount ? ` (MRP ₹${escapeHtml(compareAtPrice.toLocaleString("en-IN"))})` : ""}</p>` : "";
 
-  return `<main id="prerendered-content" data-prerendered="product">
+  return `<main id="prerendered-content" data-prerendered="product" ${getProductPublicationMarker(product)}>
   <article>
     <nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/products">Products</a> / ${name}</nav>
     <h1>${name}</h1>
