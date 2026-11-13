@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import ProductForm from "../../components/ProductFrom";
 import { useProducts } from "../../context/ProductContext";
+import { getProductSaveMessage } from "../../../utils/productSyncFeedback";
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -64,9 +65,7 @@ const EditProduct = () => {
 
   const handleUpdate = async (data) => {
     const result = await updateProduct(candidateIds.length ? candidateIds : [id], data);
-    console.log("Product update response:", result);
-    console.log("Merchant sync result:", result?.merchantSync || { status: "missing" });
-    navigate("/admin/products");
+    navigate("/admin/products", { state: { productMessage: getProductSaveMessage(result) } });
   };
 
   if (isLoading) {

@@ -10,6 +10,10 @@ The renderer dismisses timed offer popups before saving HTML, so visitors withou
 
 Catalog/content updates require a rebuild. The backend supports `PRODUCT_PRERENDER_DEPLOY_HOOK_URL` / `SITE_REBUILD_HOOK_URL`; configure the appropriate deployment hook for product changes and trigger deployments after blog or policy edits as well.
 
+For Vercel, open the production project's Settings → Git → Deploy Hooks and create a hook for the production branch (`main`). Store its URL as `PRODUCT_PRERENDER_DEPLOY_HOOK_URL` in the Render backend service's environment, then save and deploy that service. Keep the URL private. Saving a product and manually syncing Merchant products both request a rebuild. The admin reports whether the request was accepted, disabled, or failed; a triggered build still needs to finish successfully in Vercel before the published HTML changes. The build reads the live catalog and renders stock text and Offer availability from the same availability helper as the storefront. Google can continue to report the earlier availability until it processes the new feed and crawls the rebuilt page.
+
+To repair an already stale deployment, rebuild and deploy the production frontend, confirm the raw product HTML contains `https://schema.org/InStock` for restocked products, and then sync Merchant products. Check both the Vercel deployment result and Merchant Center's processed product status; an accepted Merchant API submission alone does not confirm the published availability.
+
 After deploying:
 
 1. Fetch `https://ilika.in/`, a product, a blog, and a policy with `curl`. Confirm page content, navigation, unique metadata, and canonicals in the raw response.

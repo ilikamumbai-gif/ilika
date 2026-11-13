@@ -36,7 +36,27 @@ const getMerchantMedia = (product = {}, variant = null, siteUrl = "https://ilika
     .map((url) => url.href));
 
   const rejectedVideoLinks = [];
+  // A video rejected by Google can remain on the storefront while being
+  // excluded from future Merchant submissions. Match canonical YouTube IDs
+  // too, since the website may store a Shorts or youtu.be URL.
+  const videoKey = (value) => {
+    const url = toMediaUrl(value, siteUrl);
+    if (!url) return readUrl(value);
+    const host = url.hostname.toLowerCase();
+    const youtubeHosts = ["youtube.com", "www.youtube.com", "m.youtube.com", "youtube-nocookie.com", "www.youtube-nocookie.com"];
+    const youtubeId = ["youtu.be", "www.youtu.be"].includes(host)
+      ? url.pathname.split("/")[1]
+      : youtubeHosts.includes(host)
+        ? url.searchParams.get("v") || url.pathname.match(/^\/(?:shorts|embed|live)\/([^/]+)/)?.[1]
+        : "";
+    return youtubeId ? `youtube:${youtubeId}` : url.href;
+  };
+  const excludedVideos = new Set(
+    (Array.isArray(product.merchantExcludedVideoUrls) ? product.merchantExcludedVideoUrls : [])
+      .map(videoKey)
+  );
   const videoLinks = unique((Array.isArray(product.videos) ? product.videos : [])
+    .filter((value) => !excludedVideos.has(videoKey(value)))
     .map((value) => {
       const raw = readUrl(value);
       if (!raw) return "";

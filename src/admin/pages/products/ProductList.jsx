@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Pencil, Plus, Trash2, Search, Package, Eye, RefreshCw } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import { useProducts } from "../../context/ProductContext";
 import { useCategories } from "../../context/CategoryContext";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 import { getProductDisplayPricing } from "../../../utils/productPricing";
+import { getProductRebuildMessage } from "../../../utils/productSyncFeedback";
 
 const FilterSelect = ({ value, onChange, children }) => (
   <div className="relative">
@@ -22,12 +23,13 @@ const FilterSelect = ({ value, onChange, children }) => (
 
 const ProductList = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch]           = useState("");
   const [statusFilter, setStatus]     = useState("");
   const [stockFilter, setStock]       = useState("");
   const [categoryFilter, setCategory] = useState("");
   const [syncingMerchant, setSyncingMerchant] = useState(false);
-  const [syncMessage, setSyncMessage] = useState("");
+  const [syncMessage, setSyncMessage] = useState(() => location.state?.productMessage || "");
   const { products, deleteProduct, fetchProducts, syncAllMerchantProducts } = useProducts();
   const { categories } = useCategories();
   const { admin, getAdminAuthHeaders } = useAdminAuth();
@@ -86,7 +88,7 @@ const ProductList = () => {
       });
 
       setSyncMessage(
-        `Merchant sync finished. Total: ${total}, synced: ${upserted}, skipped: ${skipped}, deleted: ${deleted}, failed: ${errors}.${details.length ? ` ${details.join(" ")}` : ""}`
+        `Merchant sync finished. Total: ${total}, synced: ${upserted}, skipped: ${skipped}, deleted: ${deleted}, failed: ${errors}.${details.length ? ` ${details.join(" ")}` : ""} ${getProductRebuildMessage(result.prerenderRebuild)}`
       );
     } catch (error) {
       setSyncMessage(error?.message || "Merchant sync failed.");
@@ -123,7 +125,7 @@ const ProductList = () => {
       </div>
 
       {syncMessage ? (
-        <div className="mb-4 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700">
+        <div role="status" className="mb-4 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700">
           {syncMessage}
         </div>
       ) : null}

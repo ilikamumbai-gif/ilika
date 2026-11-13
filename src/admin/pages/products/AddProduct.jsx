@@ -4,6 +4,7 @@ import { useCategories } from "../../context/CategoryContext";
 import { useProducts } from "../../context/ProductContext";
 import AdminLayout from "../../components/AdminLayout";
 import ProductForm from "../../components/ProductFrom";
+import { getProductSaveMessage } from "../../../utils/productSyncFeedback";
 
 /* ================= LOG ================= */
 
@@ -30,11 +31,11 @@ const AddProduct = () => {
 
   const handleAdd = async (data) => {
 
-    await addProduct(data);
+    const result = await addProduct(data);
 
 
 
-    navigate("/admin/products");
+    navigate("/admin/products", { state: { productMessage: getProductSaveMessage(result) } });
 
   };
 

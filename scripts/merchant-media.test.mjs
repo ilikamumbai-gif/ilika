@@ -67,6 +67,20 @@ test("limits videos to ten and safely handles products without media", () => {
   assert.equal(getMerchantMedia({}).imageLink, undefined);
 });
 
+test("excludes a rejected Merchant video across YouTube URL formats without changing storefront videos", () => {
+  const videos = [
+    { url: "https://youtube.com/shorts/LLly1UH4duI" },
+    { url: "https://youtu.be/C7Q96p8u6zc" },
+  ];
+  const result = getMerchantMedia({
+    videos,
+    merchantExcludedVideoUrls: ["https://www.youtube.com/watch?v=LLly1UH4duI"],
+  });
+  assert.deepEqual(result.videoLinks, ["https://www.youtube.com/watch?v=C7Q96p8u6zc"]);
+  assert.equal(videos.length, 2);
+  assert.deepEqual(result.rejectedVideoLinks, []);
+});
+
 // Exercise the actual outbound mapper without starting the HTTP server or loading credentials.
 const backendSource = fs.readFileSync(new URL("../Backend/server.js", import.meta.url), "utf8");
 const mapperSource = backendSource.slice(backendSource.indexOf("const mapProductToMerchantPayload ="), backendSource.indexOf("const upsertMerchantProduct ="));

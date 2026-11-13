@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import MiniDivider from "../components/MiniDivider";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -31,8 +30,9 @@ const HydrationGlowCombo = () => {
         <Header />
         <CartDrawer />
 
-     
-
+        <h1 className="mx-auto max-w-6xl px-4 pt-6 text-2xl font-semibold text-gray-900">
+          Hydration + Glow Combo
+        </h1>
         <MaskDuoOffer />
 
         <Footer />

@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { getProductDisplayPricing, getProductDisplayImage, getProductMerchantMetadata, getProductVariantAvailability, getVariantQueryValue } from "../src/utils/productPricing.js";
 import { buildProductReviewSchema, getProductReviews } from "../src/utils/productReviews.js";
 import { getCanonicalProductSlugAlias, getProductSeoContent } from "../src/data/productSeoContent.js";
@@ -153,6 +154,7 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
     <img src="${escapeHtml(image)}" alt="${name}" />
     <p>${escapeHtml(description)}</p>
     ${priceMarkup}
+    <p><strong>Availability:</strong> ${getProductVariantAvailability(product) ? "In stock" : "Out of stock"}</p>
     ${reviews.length ? `<section id="reviews"><h2>Customer reviews</h2>${reviews.map((review) => `<article><h3>${escapeHtml(review.author.name)}</h3><p>${review.reviewRating.ratingValue}/5${review.datePublished ? ` · <time datetime="${review.datePublished}">${review.datePublished}</time>` : ""}</p><p>${escapeHtml(review.reviewBody)}</p></article>`).join("")}</section>` : ""}
     <p><strong>Category:</strong> ${category}</p>
     ${details ? `<section><h2>Product details</h2>${details}</section>` : ""}
@@ -209,7 +211,7 @@ const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => 
       "@type": "Offer",
       priceCurrency: "INR",
       price: String(price),
-      availability: !product?.isOutOfStock && getProductVariantAvailability(product) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      availability: getProductVariantAvailability(product) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       priceValidUntil: merchant.priceValidUntil,
       validFrom: merchant.validFrom,
       url: canonicalUrl,
@@ -276,7 +278,7 @@ async function fetchProducts(endpoint) {
 const injectOrReplace = (html, pattern, replacement) =>
   pattern.test(html) ? html.replace(pattern, replacement) : html;
 
-function buildProductHtml(templateHtml, product, slug) {
+export function buildProductHtml(templateHtml, product, slug) {
   const canonicalUrl = buildCanonicalUrl(slug);
   const title = buildSeoTitle(product);
   const description = buildSeoDescription(product);
@@ -384,7 +386,9 @@ async function main() {
   console.log(`[prerender] Wrote ${written} product page(s) to dist/product/*/index.html`);
 }
 
-main().catch((err) => {
-  console.error("[prerender] Failed:", err);
-  process.exit(1);
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((err) => {
+    console.error("[prerender] Failed:", err);
+    process.exit(1);
+  });
+}
