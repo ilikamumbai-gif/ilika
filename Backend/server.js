@@ -5904,9 +5904,11 @@ app.post("/api/merchant/sync-products", async (req, res) => {
     }
 
     const result = await syncAllProductsToMerchant();
+    const prerenderRebuild = await triggerProductPrerenderRebuild({ action: "merchant_sync" });
     res.json({
       message: "Merchant sync completed",
       ...result,
+      prerenderRebuild,
     });
   } catch (error) {
     console.error("MERCHANT SYNC ALL FAILED:", error);
@@ -5935,9 +5937,14 @@ app.post("/api/merchant/sync-products/:id", async (req, res) => {
     }
 
     const result = await syncMerchantProductById(req.params.id);
+    const prerenderRebuild = await triggerProductPrerenderRebuild({
+      action: "merchant_product_sync",
+      productId: req.params.id,
+    });
     res.json({
       message: "Merchant single-product sync completed",
       result,
+      prerenderRebuild,
     });
   } catch (error) {
     console.error("MERCHANT SYNC ONE FAILED:", error);
