@@ -138,7 +138,8 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
   const details = String(product?.description || product?.shortInfo || "").trim();
   const category = escapeHtml(String(product?.categoryName || product?.category || "Beauty and personal care"));
   const variants = Array.isArray(product?.variants) ? product.variants : [];
-  const watchVideos = WATCH_VIDEOS.filter((video) => video.relatedPath === new URL(canonicalUrl).pathname);
+  const canonicalPath = new URL(canonicalUrl).pathname;
+  const watchVideos = WATCH_VIDEOS.filter((video) => video.relatedPath === canonicalPath);
   const variantLinks = variants
     .map((variant) => {
       const queryValue = getVariantQueryValue(variant);
@@ -148,7 +149,8 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
     })
     .filter(Boolean)
     .join("");
-  const priceMarkup = price > 0 ? `<p><strong>Price:</strong> ₹${escapeHtml(price.toLocaleString("en-IN"))}${hasDiscount ? ` (MRP ₹${escapeHtml(compareAtPrice.toLocaleString("en-IN"))})` : ""}</p>` : "";
+  const priceLabel = canonicalPath === "/product/non-voice-face-mask-maker" ? "Online price" : "Price";
+  const priceMarkup = price > 0 ? `<p><strong>${priceLabel}:</strong> ₹${escapeHtml(price.toLocaleString("en-IN"))}${hasDiscount ? ` (MRP ₹${escapeHtml(compareAtPrice.toLocaleString("en-IN"))})` : ""}</p>` : "";
 
   return `<main id="prerendered-content" data-prerendered="product" ${getProductPublicationMarker(product)}>
   <article>

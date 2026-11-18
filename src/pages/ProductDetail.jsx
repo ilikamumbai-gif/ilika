@@ -5237,6 +5237,7 @@ const ProductDetail = () => {
                               {topPriceBadgeLabel}
                             </span>
                           )}
+                          {isNonVoiceMaskMaker && <p className="mb-1 text-xs font-semibold text-gray-600">Online price</p>}
                           {effectiveMrp > price && savingAmount > 0 ? (
                             <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
                               <span className="text-[24px] font-bold leading-none sm:text-[28px]" style={{ color: detailTheme.heading }}>
@@ -6068,13 +6069,14 @@ const ProductDetail = () => {
                           {topPriceBadgeLabel}
                         </span>
                       )}
+                      {isNonVoiceMaskMaker && <p className="mb-1 text-xs font-semibold text-gray-600">Online price</p>}
                       {effectiveMrp > price && savingAmount > 0 ? (
                         <div className="mb-2 flex flex-wrap items-end gap-x-2 gap-y-1">
                           <span className="text-[24px] font-bold leading-none sm:text-[28px]" style={{ color: detailTheme.heading }}>
                             ₹{price.toLocaleString("en-IN")}
                           </span>
                           <span className="text-[13px] font-semibold leading-none text-gray-400 line-through sm:text-[16px]">
-                            ₹{effectiveMrp.toLocaleString("en-IN")}
+                            {isNonVoiceMaskMaker && "MRP "}₹{effectiveMrp.toLocaleString("en-IN")}
                           </span>
                           <span className="text-[13px] font-bold leading-none sm:text-[15px]" style={{ color: "#0a8f45" }}>
                             ↓ {savingPercent}%
