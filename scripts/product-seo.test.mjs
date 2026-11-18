@@ -10,6 +10,7 @@ test("specific product slugs win over overlapping product names", () => {
   assert.notEqual(voice.title, nonVoice.title);
   assert.notEqual(voice.description, nonVoice.description);
   assert.equal(nonVoice.canonicalSlug, "non-voice-face-mask-maker");
+  assert.match(nonVoice.title, /^Non-Voice Face Mask Maker Machine\b/);
 });
 
 test("both mask maker pages expose their own canonical and selling price in the initial HTML", () => {

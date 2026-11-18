@@ -10,12 +10,12 @@ import { ComboProvider } from "./admin/context/ComboContext";
 import { BannerProvider } from "./admin/context/BannerContext";
 
 import CartStatusToast from "./components/CartStatusToast";
+import EnquiryButton from "./components/EnquiryButton";
 import ScrollToTop from "./components/ScrollToTop";
 import NavRoutes from "./Routes/NavRoutes";
 
 import { captureTrafficSource } from "./utils/tracking";
 
-const EnquiryButton = lazy(() => import("./components/EnquiryButton"));
 const ScrollToTopButton = lazy(() => import("./components/ScrollToTopButton"));
 const DiwaliPageLighting = lazy(() => import("./components/product/DiwaliPageLighting"));
 
@@ -132,8 +132,8 @@ const AppContent = () => {
                   <Suspense fallback={null}>
                     {effectsReady && <DiwaliPageLighting />}
                   </Suspense>
+                  <EnquiryButton />
                   <Suspense fallback={null}>
-                    <EnquiryButton />
                     <ScrollToTopButton />
                   </Suspense>
                   <ScrollToTop />

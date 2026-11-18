@@ -135,6 +135,10 @@
       "destination": "/product/voice-face-mask-maker",
       "permanent": true
     },
+    { "source": "/product/facial-mask-maker-machine-none-voice", "destination": "/product/non-voice-face-mask-maker", "permanent": true },
+    { "source": "/product/facial-mask-maker-machine-none-voice/", "destination": "/product/non-voice-face-mask-maker", "permanent": true },
+    { "source": "/product/facial-mask-maker-machine-non-voice", "destination": "/product/non-voice-face-mask-maker", "permanent": true },
+    { "source": "/product/facial-mask-maker-machine-non-voice/", "destination": "/product/non-voice-face-mask-maker", "permanent": true },
     {
       "source": "/product/facial-mask-maker-machine/",
       "destination": "/product/voice-face-mask-maker",

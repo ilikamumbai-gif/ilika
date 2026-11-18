@@ -417,8 +417,8 @@ export const PRODUCT_SEO_CONTENT = [
     slugs: ["facial-mask-maker-machine-none-voice", "facial-mask-maker-machine-non-voice", "non-voice-face-mask-maker"],
     names: ["ilika non voice face mask maker", "ilika facial mask maker machine non voice", "facial mask maker machine none voice", "facial mask maker machine non voice", "non voice face mask maker"],
     topKeyword: "manual mask maker machine India",
-    title: "ilika Facial Mask Maker Machine (Non-Voice Version)",
-    description: "Make fresh DIY face masks at home with ilika's Non-Voice Facial Mask Maker Machine - simple manual controls, no learning curve. Buy online.",
+    title: "Non-Voice Face Mask Maker Machine | Ilika India",
+    description: "Shop the Ilika Non-Voice Face Mask Maker Machine with simple manual controls and collagen peptide. Make fresh fruit facial masks at home.",
     keywords: keywordRows([
       ["facial mask maker machine non voice", "Buyer", "High"],
       ["manual face mask maker machine", "Buyer", "High"],

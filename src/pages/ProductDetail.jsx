@@ -1061,7 +1061,6 @@ const ImageLightbox = ({ images, videos = [], view360Images = [], initialIndex =
                   className="w-full aspect-video max-h-full"
                   style={{ border: "none" }}
                   allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                  allowFullScreen
                 />
               )}
             </div>
@@ -1574,7 +1573,6 @@ const HonestReviewPreviewMedia = ({ item, media }) => {
         className="pointer-events-none h-[420px] w-full bg-black sm:h-[470px]"
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
         referrerPolicy="strict-origin-when-cross-origin"
-        allowFullScreen
       />
     );
   }
@@ -4251,6 +4249,7 @@ const ProductDetail = () => {
     ? `${productSeoContent?.title || product.name}${hasSelectedVariantUrl && activeVariantName ? ` - ${activeVariantName}` : ""}`
     : "Product Details | Ilika";
   const seoProductDescriptionBase =
+    (canonicalProductSlug === NONVOICE_MASK_MAKER_PRODUCT_SLUG ? productSeoContent?.description : "") ||
     String(product?.seoDescription || "").trim() ||
     productSeoContent?.description ||
     stripHtml(product?.shortInfo) ||
@@ -4967,7 +4966,6 @@ const ProductDetail = () => {
                               }
                               style={{ border: "none" }}
                               allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                              allowFullScreen
                             />
                           )
                         ) : (
@@ -5522,7 +5520,6 @@ const ProductDetail = () => {
                     className="h-full w-full"
                     style={{ border: "none" }}
                     allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                    allowFullScreen
                   />
                 )}
               </div>
