@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { X, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartProvider";
-import DiwaliOfferBanner from "./product/DiwaliOfferBanner";
+import MaskMakerGiftCard from "./product/MaskMakerGiftCard";
 import {
   getCartItemDisplayImage,
   getCartItemDisplayPricing,
@@ -245,7 +245,7 @@ const CartDrawer = () => {
             })
           )}
           {maskMakerModels.map((model) => (
-            <DiwaliOfferBanner key={model} isNonVoiceMaskMaker={model === "non-voice"} />
+            <MaskMakerGiftCard key={model} isNonVoiceMaskMaker={model === "non-voice"} />
           ))}
         </div>
 

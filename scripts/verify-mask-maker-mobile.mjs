@@ -22,7 +22,7 @@ const bundle = await build({
   }}],
 });
 const cssName=fs.readdirSync("dist/assets").find(file=>/^index-.*\.css$/.test(file));
-const css=fs.readFileSync(`dist/assets/${cssName}`,"utf8")+fs.readFileSync("src/Landing/MaskMakerLanding.css","utf8")+fs.readFileSync("src/components/product/DiwaliOfferBanner.css","utf8");
+const css=fs.readFileSync(`dist/assets/${cssName}`,"utf8")+fs.readFileSync("src/Landing/MaskMakerLanding.css","utf8");
 const browser=await chromium.launch({headless:true});
 try{
  for(const model of ["voice","nonvoice"]){

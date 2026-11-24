@@ -1,6 +1,7 @@
 import { PRICING_DELIVERY_BLOGS } from "../data/pricingDeliveryBlogs.js";
 import { FRESH_MASK_BLOG } from "../data/freshMaskBlog.js";
 import { FRUIT_MASK_BLOG } from "../data/fruitMaskBlog.js";
+import { FAN_GUIDE } from "../data/fanGuideBlogs.js";
 import React, { useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import BlogCard from "../components/BlogCard";
@@ -62,6 +63,12 @@ const Blog = () => {
           <h2 id="latest-story-title" className="mb-5 mt-2 text-2xl font-semibold">Fresh ideas for your skincare ritual.</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {[FRUIT_MASK_BLOG, FRESH_MASK_BLOG].map((blog) => <BlogCard key={blog.id} blog={blog} linkPath={`/blog/${blog.slug}`} prioritizeImage ctaLabel="Read the story" compact />)}
+          </div>
+        </section>
+        <section className="mb-10" aria-labelledby="fan-guide-title">
+          <h2 id="fan-guide-title" className="mb-5 text-2xl font-semibold">Bladeless tower fan guides</h2>
+          <div className="max-w-xl">
+            <BlogCard blog={FAN_GUIDE} linkPath={`/blog/${FAN_GUIDE.slug}`} ctaLabel="Explore the city guides" compact />
           </div>
         </section>
         <section className="mb-8 flex flex-col gap-4 rounded-2xl border border-[#ececec] bg-[#faf8f5] p-6 sm:flex-row sm:items-center sm:justify-between">

@@ -1,368 +1,404 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ilika.in/videos</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/watch/leafless-hair-dryer-video</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/watch/non-voice-mask-maker-demo</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/watch/acne-light-therapy-device-demo</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/watch/ilika-introduction</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/watch/high-frequency-therapy-wand-demo</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://ilika.in/</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://ilika.in/shopall</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://ilika.in/products</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://ilika.in/newarrival</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://ilika.in/best-seller</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://ilika.in/offer</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/gift-store</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/gifts-under-999</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/gifts-under-1499</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/gifts-under-2499</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/gifts-2999-plus</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/gifts-for-her</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/gifts-for-him</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/gifts-for-parents</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/gifts-for-special-occasion</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/skin</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/hair</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/grooming</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/skin/face</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/skin/body</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/hair/care</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/hair/styling</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/grooming/roller</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/grooming/face</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/grooming/remover</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/ctm</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/ctmkit</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/offers</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/glow-therapy-comb</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/hydration-glow-combo</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/mask-combo</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/articles</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/blog</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/hair-dryer-guides</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/about</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/about/why-ilika</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/about/quality-promise</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/about/ingredient-philosophy</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/contact</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/feedback</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://ilika.in/warranty-registration</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://ilika.in/support-ticket</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://ilika.in/raise-complaint</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://ilika.in/warranty-claim</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://ilika.in/privacy</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://ilika.in/termsandcondition</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://ilika.in/return</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://ilika.in/shippingpolicy</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://ilika.in/faq</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://ilika.in/track-order</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/social-feed</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/knowskintype</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ilika.in/voice-mask-maker</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/nonvoice-mask-maker</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/high-frequency-therapy-wand</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/hot-cold-blackhead-remover</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/blackseed-hair-oil</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/herbal-hair-oil</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/ilika-portable-travel-manual-bidet</loc>
-    <lastmod>2026-09-29</lastmod>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/ceramide-gel-moisturizer</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/keratin-repair-hair-mask</loc>
-    <lastmod>2026-06-30</lastmod>
+    <lastmod>2026-10-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -392,19 +428,19 @@
   </url>
   <url>
     <loc>https://ilika.in/product/peach-jojoba-brightening-toner</loc>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-10-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/red-algae-hydrating-sheet-mask</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/24k-gold-beauty-oil</loc>
-    <lastmod>2026-06-20</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -422,7 +458,7 @@
   </url>
   <url>
     <loc>https://ilika.in/product/24k-gold-collagen-face-mask</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-11-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -434,19 +470,19 @@
   </url>
   <url>
     <loc>https://ilika.in/product/keratin-repair-conditioner</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/voice-face-mask-maker</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/ilika-white-lotus-refreshing-toner</loc>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-10-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -458,7 +494,7 @@
   </url>
   <url>
     <loc>https://ilika.in/product/belgium-rose-soothing-toner</loc>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-10-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -476,25 +512,25 @@
   </url>
   <url>
     <loc>https://ilika.in/product/leafless-hair-dryer</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/leafless-hair-dryer?variant=black</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/leafless-hair-dryer?variant=white</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/leafless-hair-dryer?variant=purple</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -506,7 +542,7 @@
   </url>
   <url>
     <loc>https://ilika.in/product/blooming-vine-calming-toner</loc>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -524,19 +560,19 @@
   </url>
   <url>
     <loc>https://ilika.in/product/acne-light-therapy-device</loc>
-    <lastmod>2026-10-17</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/revitalizing-facial-oil</loc>
-    <lastmod>2026-06-20</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/lip-plumper-vacuum-device</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -560,7 +596,7 @@
   </url>
   <url>
     <loc>https://ilika.in/product/keratin-repair-shampoo</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -584,43 +620,43 @@
   </url>
   <url>
     <loc>https://ilika.in/product/tea-tree-avocado-toner</loc>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/clarifying-peeling-solution</loc>
-    <lastmod>2026-06-20</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/dazzling-glow-face-serum</loc>
-    <lastmod>2026-06-29</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/ginseng-anti-aging-sheet-mask</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/cocoa-butter-body-lotion</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/frizz-control-hair-serum</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/brown-spot-corrector-oil</loc>
-    <lastmod>2026-06-20</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -650,7 +686,7 @@
   </url>
   <url>
     <loc>https://ilika.in/product/kumkumadi-tailam-facial-oil</loc>
-    <lastmod>2026-06-20</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -662,7 +698,7 @@
   </url>
   <url>
     <loc>https://ilika.in/product/under-eye-serum</loc>
-    <lastmod>2026-06-26</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -680,13 +716,13 @@
   </url>
   <url>
     <loc>https://ilika.in/product/anti-scar-facial-oil</loc>
-    <lastmod>2026-06-20</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/alpha-arbutin-sheet-mask</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -704,13 +740,13 @@
   </url>
   <url>
     <loc>https://ilika.in/product/foaming-face-wash</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/collagen-firming-sheet-mask</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -722,37 +758,37 @@
   </url>
   <url>
     <loc>https://ilika.in/product/bst-seedwhiter-sheet-mask-brightening-hydration-skin-glow-care</loc>
-    <lastmod>2026-06-20</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/keratin-hair-care-combo</loc>
-    <lastmod>2026-06-29</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/non-voice-face-mask-maker</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/4in1-collagen-face-mask</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-11-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/gentle-facial-cleanser</loc>
-    <lastmod>2026-06-26</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/berry-body-yogurt</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -764,19 +800,19 @@
   </url>
   <url>
     <loc>https://ilika.in/product/kumkumadi-face-sheet-mask</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/cucumber-sheet-mask</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/collagen-serum</loc>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -794,7 +830,7 @@
   </url>
   <url>
     <loc>https://ilika.in/product/tea-tree-face-sheet-mask</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -806,25 +842,25 @@
   </url>
   <url>
     <loc>https://ilika.in/product/kakadu-plum-sheet-mask</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/acai-berry-antiwrinkle-sheet-mask</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/retinol-anti-aging-facial-oil</loc>
-    <lastmod>2026-06-20</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ilika.in/product/7color-led-light-therapy-device</loc>
-    <lastmod>2026-10-07</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -836,109 +872,247 @@
   </url>
   <url>
     <loc>https://ilika.in/category/new</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/skin</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/cleanser</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/hair</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/serum</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/hair-oil</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/rollerandgausha</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/toner</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/grooming</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/facegrooming</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/haircare</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/facecare</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/hair-dryer</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/hairremoval</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/moisture</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/hairstyling</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/category/body</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/diy-fruit-sheet-masks-at-home</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/voice-mask-maker-at-home</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/bladeless-tower-fan-guide</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/bladeless-tower-fan-in-bengaluru</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/bladeless-tower-fan-in-falakata</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/bladeless-tower-fan-in-malappuram</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/bladeless-tower-fan-in-pune</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/bladeless-tower-fan-in-unnao</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/bladeless-tower-fan-in-varanasi</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/diy-face-mask-machine-vs-sheet-masks-which-one-is-better-for-your-skin-in-2026</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/25-best-homemade-face-mask-recipes-for-every-skin-type-2026-guide</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/15-best-face-masks-for-glowing-skin-at-home-natural-recipes-expert-tips</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/home-facial-guide-how-to-get-salon-quality-glowing-skin-naturally-2026</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/collagen-face-masks-benefits-how-they-work-how-to-choose-the-right-one-2026-guide</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/face-mask-before-or-after-shower-dermatology-inspired-skincare-guide-2026</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/aloe-vera-for-face-benefits-uses-diy-face-masks-skincare-tips-2026-guide</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/vitamin-c-for-face-benefits-how-to-use-it-complete-skincare-guide-2026</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/how-often-should-you-use-a-face-mask-complete-guide-by-skin-type-2026</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/best-face-mask-machine-in-india-2026-features-buying-guide-how-to-choose-the-right-one</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/face-mask-machine-vs-sheet-masks-which-is-better-for-your-skincare-routine-2026-guide</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/how-to-clean-a-face-mask-machine-complete-maintenance-guide-for-long-lasting-performance-2026</loc>
+    <lastmod>2026-07-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ilika.in/blog/best-ingredients-for-homemade-face-masks-a-complete-guide-to-safe-diy-skincare-2026</loc>
     <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/diy-face-mask-machine-buying-guide-2026-how-to-choose-the-right-face-mask-maker</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/private/best-face-mask-maker-for-parlour-home</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1089,6 +1263,132 @@
   <url>
     <loc>https://ilika.in/blog/face-mask-maker-pricing-delivery-india</loc>
     <lastmod>2026-09-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-hyderabad-500055</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-chandigarh-160019</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-udaipur-313001</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-rajkot-360003</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-navi-mumbai-400706</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-nagpur-440015</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-kochi-682024</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-new-delhi-110043</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-jamshedpur-831001</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-pathanamthitta-689653</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-bengaluru-562130</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-navi-mumbai-400703</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/mask-maker-mumbai-400017</loc>
+    <lastmod>2026-07-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/voice-face-mask-maker-panjim-goa-403001</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/voice-face-mask-maker-indore-452005</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/voice-face-mask-maker-hyderabad-500055</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/voice-face-mask-maker-noida-110091</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/voice-face-mask-maker-delhi-110054</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/voice-face-mask-maker-pune-411007</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/voice-face-mask-maker-hyderabad-500002</loc>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ilika.in/blog/voice-face-mask-maker-mumbai-400034</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

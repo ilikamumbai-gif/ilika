@@ -8,7 +8,7 @@ import Footer from "../components/Footer";
 import MiniDivider from "../components/MiniDivider";
 import CartDrawer from "../components/CartDrawer";
 import EmiAvailableNotice from "../components/EmiAvailableNotice";
-import DiwaliOfferBanner from "../components/product/DiwaliOfferBanner";
+import MaskMakerGiftCard from "../components/product/MaskMakerGiftCard";
 import OptimizedImage from "../components/OptimizedImage";
 import { useProducts } from "../admin/context/ProductContext";
 import { createSlug, getProductSlug } from "../utils/slugify";
@@ -213,7 +213,7 @@ const NonvoiceMaskMakerLanding = () => {
             </p>
 
             <div className="mb-4 w-full max-w-[760px]">
-              <DiwaliOfferBanner isNonVoiceMaskMaker />
+              <MaskMakerGiftCard isNonVoiceMaskMaker />
             </div>
 
             <div className="mb-4 flex flex-wrap items-end gap-2.5 sm:gap-3">

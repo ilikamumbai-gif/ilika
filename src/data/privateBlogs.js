@@ -1,6 +1,7 @@
 import { PRICING_DELIVERY_BLOGS } from "./pricingDeliveryBlogs.js";
 import { FRESH_MASK_BLOG } from "./freshMaskBlog.js";
 import { FRUIT_MASK_BLOG } from "./fruitMaskBlog.js";
+import { FAN_GUIDE_BLOGS } from "./fanGuideBlogs.js";
 import { createSlug } from "../utils/slugify.js";
 
 const privateBlogTitle =
@@ -2219,6 +2220,7 @@ const READY_TO_PUBLISH_BLOGS = [
 export const STATIC_BLOGS = [
   FRUIT_MASK_BLOG,
   FRESH_MASK_BLOG,
+  ...FAN_GUIDE_BLOGS,
   // Published guides retain their established URLs, including /blog/private/.
   ...PRIVATE_BLOGS.filter((blog) => !blog.isPrivate || blog.allowIndexing === true),
   CUSTOM_VOICE_MASK_GUIDE_BLOG,

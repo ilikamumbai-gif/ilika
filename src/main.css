@@ -118,6 +118,90 @@ body,
   border-top: 1px solid #ddd;
 }
 
+.fan-guide {
+  scroll-margin-top: 9rem;
+  color: #385238;
+  line-height: 1.7;
+}
+
+.fan-guide > :where(p, figure, aside, details, .fan-guide-table-wrap) + :where(p, figure, aside, details, .fan-guide-table-wrap) {
+  margin-top: 0.85rem;
+}
+
+.fan-guide a {
+  color: #801f1f;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.fan-guide > a + a {
+  margin-inline-start: 1rem;
+}
+
+.fan-guide :is(aside, details, .fan-guide-city-card, .fan-guide-related a) {
+  padding: 1rem;
+  border: 1px solid #dfe8df;
+  border-radius: 0.75rem;
+  background: #f8fbf8;
+}
+
+.fan-guide :is(summary, dt) {
+  font-weight: 600;
+}
+
+.fan-guide summary {
+  cursor: pointer;
+}
+
+.fan-guide details p {
+  margin-top: 0.6rem;
+}
+
+.fan-guide dd + dt {
+  margin-top: 0.5rem;
+}
+
+.fan-guide figure img {
+  width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}
+
+.fan-guide figcaption,
+.fan-guide-related small,
+.fan-guide-city-card > span {
+  display: block;
+  font-size: 0.875rem;
+}
+
+.fan-guide-cities,
+.fan-guide-related {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.fan-guide-table-wrap {
+  overflow-x: auto;
+}
+
+.fan-guide table {
+  width: 100%;
+  min-width: 32rem;
+}
+
+.fan-guide :is(th, td) {
+  padding: 0.75rem;
+  border-bottom: 1px solid #dfe8df;
+  text-align: left;
+  vertical-align: top;
+}
+
+.fan-guide th {
+  background: #f8fbf8;
+}
+
 /* ================= FESTIVAL BUTTON ANIMATION ================= */
 .festival-btn-animated {
   padding: 12px 28px;

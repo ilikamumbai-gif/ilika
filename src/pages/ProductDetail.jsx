@@ -25,7 +25,7 @@ import {
 import ProductCard from "../components/ProductCard";
 import NotifyMeModal from "../components/NotifyMeModal";
 import Lazy360ViewButton from "../components/product/Lazy360ViewButton";
-import DiwaliOfferBanner from "../components/product/DiwaliOfferBanner";
+import MaskMakerGiftCard from "../components/product/MaskMakerGiftCard";
 import { toast } from "react-hot-toast";
 import { useSeo } from "../hooks/useSeo";
 import StructuredData from "../components/StructuredData";
@@ -5128,7 +5128,7 @@ const ProductDetail = () => {
               {eligibleForCollagenAddon && (
                 <div className="flex flex-col gap-3.5 sm:contents" data-mask-maker-gift>
                   {!isOutOfStock && <p className="mb-2 text-sm font-semibold text-[#1d6a4a]" role="status">Back in stock — Order now</p>}
-                  <DiwaliOfferBanner isNonVoiceMaskMaker={isNonVoiceMaskMaker} />
+                  <MaskMakerGiftCard isNonVoiceMaskMaker={isNonVoiceMaskMaker} />
                 </div>
               )}
 
