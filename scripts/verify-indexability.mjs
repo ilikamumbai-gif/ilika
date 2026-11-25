@@ -4,6 +4,7 @@ import { HOME_SEO } from "../src/data/siteSeo.js";
 import { PRIVATE_BLOGS } from "../src/data/privateBlogs.js";
 import { isBlogIndexable } from "../src/utils/blogIndexing.js";
 import { buildBlogUrl } from "../src/utils/blogRoutes.js";
+import { getPrerenderedProductPath } from "./prerender-product-pages.mjs";
 
 const SITE_URL = "https://ilika.in";
 
@@ -17,8 +18,11 @@ const getTitle = (html) => html.match(/<title>([\s\S]*?)<\/title>/i)?.[1].trim()
 const decode = (value) => value.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 
 async function verifyPage({ distDir, url, type }) {
-  const pathname = new URL(url).pathname.replace(/^\/+|\/+$/g, "");
-  const filePath = path.join(distDir, pathname, "index.html");
+  const pageUrl = new URL(url);
+  const pathname = pageUrl.pathname.replace(/^\/+|\/+$/g, "");
+  const filePath = type === "product"
+    ? path.join(distDir, getPrerenderedProductPath(pathname.slice("product/".length), pageUrl.searchParams.get("variant") || ""))
+    : path.join(distDir, pathname, "index.html");
   const html = await readFile(filePath).catch(() => "");
   if (!html) throw new Error(`Missing prerendered ${type} HTML: ${url}`);
 
@@ -36,9 +40,7 @@ async function verifyPage({ distDir, url, type }) {
   if (descriptionTags.length !== 1) throw new Error(`Expected one meta description, found ${descriptionTags.length}: ${url}`);
   if (!title || !description) throw new Error(`Missing title or description: ${url}`);
   const expectedCanonical = new URL(url);
-  // Product variant URLs share the prerendered pathname HTML; the product
-  // page hydration sets the variant query as its self canonical.
-  expectedCanonical.search = "";
+  if (type !== "product") expectedCanonical.search = "";
   if (canonical !== expectedCanonical.toString()) throw new Error(`Incorrect prerendered canonical: ${url} -> ${canonical || "(missing)"}`);
   for (const [attribute, key, expected] of [["property", "og:title", title], ["property", "og:description", description], ["name", "twitter:title", title], ["name", "twitter:description", description]]) {
     const value = html.match(new RegExp(`<meta\\s+${attribute}="${key}"\\s+content="([^"]*)"`))?.[1] || "";
@@ -78,9 +80,8 @@ async function main() {
     Promise.all(blogUrls.map((url) => verifyPage({ distDir, url, type: "blog" }))),
   ]);
   for (const [label, pages] of [["product", products], ["blog", blogs]]) {
-    // Product variant URLs share one prerendered pathname and therefore one
-    // title/description. Compare distinct pages, while still verifying every
-    // variant URL above for its canonical and social metadata.
+    // Compare base product descriptions across products. Variants may reuse
+    // the description of the same product.
     const uniquePages = label === "product"
       ? Array.from(new Map(pages.map((page) => [new URL(page.url).pathname, page])).values())
       : pages;

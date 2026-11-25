@@ -1,11 +1,19 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
+import path from "node:path";
+import { getPrerenderedProductPath } from "./prerender-product-pages.mjs";
 import { getProductDisplayPricing } from "../src/utils/productPricing.js";
 import { getProductReviews, buildProductReviewSchema } from "../src/utils/productReviews.js";
 
 const canonical = "https://ilika.in/product/leafless-hair-dryer";
-const html = await fs.readFile("dist/product/leafless-hair-dryer/index.html", "utf8");
-const schemas = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((match) => JSON.parse(match[1]));
+const html = await fs.readFile(path.join("dist", getPrerenderedProductPath("leafless-hair-dryer")), "utf8");
+const getSchemas = (page) => [...page.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((match) => JSON.parse(match[1]));
+const verifyAvailability = (page, offer) => {
+  assert.match(offer.availability, /^https:\/\/schema\.org\/(InStock|OutOfStock)$/);
+  const available = offer.availability.endsWith("/InStock");
+  assert.ok(page.includes(`<strong>Availability:</strong> ${available ? "In stock" : "Out of stock"}`));
+};
+const schemas = getSchemas(html);
 const products = schemas.filter((schema) => schema["@type"] === "Product");
 assert.equal(products.length, 1);
 const product = products[0];
@@ -17,8 +25,16 @@ assert.equal(product.offers.priceCurrency, "INR");
 assert.equal(product.offers.priceValidUntil, "2026-11-29");
 assert.equal(product.offers.validFrom, "2026-09-16");
 assert.ok(Date.parse(product.offers.validFrom) <= Date.parse(product.offers.priceValidUntil));
-assert.equal(product.offers.availability, "https://schema.org/InStock");
+verifyAvailability(html, product.offers);
 assert.equal(product.offers.itemCondition, "https://schema.org/NewCondition");
+for (const color of ["Black", "White", "Purple"]) {
+  const variant = color.toLowerCase();
+  const variantHtml = await fs.readFile(path.join("dist", getPrerenderedProductPath("leafless-hair-dryer", variant)), "utf8");
+  const variantProduct = getSchemas(variantHtml).find((schema) => schema["@type"] === "Product");
+  assert.equal(variantProduct.color, color);
+  assert.equal(variantProduct.offers.url, `${canonical}?variant=${variant}`);
+  verifyAvailability(variantHtml, variantProduct.offers);
+}
 assert.ok(html.includes("₹2,699 (MRP ₹5,999)"));
 assert.ok(product.review.length >= 6);
 for (const placeholderAuthor of ["Priya S.", "Ankit R.", "Meera K."]) {

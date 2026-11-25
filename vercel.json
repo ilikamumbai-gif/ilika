@@ -220,6 +220,12 @@
   { "source": "/order-success/:id", "destination": "/index.html" },
   { "source": "/admin/:path*", "destination": "/admin" },
 
+  {
+    "source": "/product/:slug",
+    "has": [{ "type": "query", "key": "variant", "value": "(?<variantSlug>[a-z0-9]+(?:-[a-z0-9]+)*)" }],
+    "destination": "/_product-pages/:slug/variants/:variantSlug"
+  },
+  { "source": "/product/:slug", "destination": "/_product-pages/:slug" },
   { "source": "/product/:path*", "destination": "/index.html" },
   { "source": "/blog/:path*", "destination": "/index.html" },
   { "source": "/category/:path*", "destination": "/index.html" },

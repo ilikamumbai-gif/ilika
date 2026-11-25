@@ -3,9 +3,13 @@ import path from "node:path";
 import { chromium } from "playwright";
 import { startPreview } from "./seo-preview.mjs";
 import { HOME_SEO } from "../src/data/siteSeo.js";
+import { getPrerenderedProductPath } from "./prerender-product-pages.mjs";
 
 // Capture the actual UI. Serve identical HTML to users and crawlers.
 const distDir = path.resolve("dist");
+const getPageFile = (url) => path.join(distDir, url.pathname.startsWith("/product/")
+  ? getPrerenderedProductPath(url.pathname.slice("/product/".length), url.searchParams.get("variant") || "")
+  : path.join(url.pathname, "index.html"));
 const template = await fs.readFile(path.join(distDir, "index.html"), "utf8");
 // Admin needs a real entry file on static hosts, but must never be rendered
 // with an authenticated session or included in the public sitemap.
@@ -61,9 +65,10 @@ try {
     // Product and article prerenders are generated before this script. Ensure
     // they also have crawlable footer navigation in the fallback path.
     for (const [, url] of sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)) {
-      const route = new URL(url).pathname;
+      const pageUrl = new URL(url);
+      const route = pageUrl.pathname;
       if (route !== "/blog" && route !== "/articles" && !/^\/(product|blog)\//.test(route)) continue;
-      const file = path.join(distDir, route, "index.html");
+      const file = getPageFile(pageUrl);
       const html = await fs.readFile(file, "utf8").catch(() => "");
       if (html && !/<footer[\s>]/i.test(html)) await fs.writeFile(file, html.replace(/<\/main>/i, `</main>${footer}`));
     }
@@ -148,9 +153,9 @@ try {
   }
   // API-rendered products/articles also receive the site's working footer.
   for (const [, url] of sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)) {
-    const route = new URL(url).pathname;
-    if (!/^\/(product|blog)\//.test(route)) continue;
-    const file = path.join(distDir, route, "index.html");
+    const pageUrl = new URL(url);
+    if (!/^\/(product|blog)\//.test(pageUrl.pathname)) continue;
+    const file = getPageFile(pageUrl);
     const html = await fs.readFile(file, "utf8");
     await fs.writeFile(file, html.replace(/<\/main>/, () => `</main>${footer}`));
   }

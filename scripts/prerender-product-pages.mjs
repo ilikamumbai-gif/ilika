@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getProductPublicationMarker } from "../src/utils/productPublication.js";
 import { WATCH_VIDEOS, getWatchPath } from "../src/data/watchVideos.js";
-import { getProductDisplayPricing, getProductDisplayImage, getProductMerchantMetadata, getProductVariantAvailability, getVariantQueryValue } from "../src/utils/productPricing.js";
+import { getProductDisplayPricing, getProductDisplayImage, getProductMerchantMetadata, getProductVariantAvailability, getProductVariantName, getProductVariantSku, getVariantQueryValue } from "../src/utils/productPricing.js";
 import { buildProductReviewSchema, getProductReviews } from "../src/utils/productReviews.js";
 import { getCanonicalProductSlugAlias, getProductSeoContent } from "../src/data/productSeoContent.js";
 
@@ -131,21 +131,29 @@ const toAbsoluteUrl = (value = "", fallbackOrigin = SITE_URL) => {
 
 const buildCanonicalUrl = (slug) => `${SITE_URL}/product/${slug}`;
 
-const buildProductContent = (product, canonicalUrl, image, description, faqs = []) => {
-  const name = escapeHtml(String(product?.name || "Product"));
-  const { price, compareAtPrice, hasDiscount } = getProductDisplayPricing(product);
+export const getPrerenderedProductPath = (slug, variant = "") => {
+  if (variant) return path.join("_product-pages", slug, "variants", variant, "index.html");
+  // Vercel serves existing files before rewrites, so the public path must
+  // stay free for the query-based variant rewrite.
+  const directory = process.env.VERCEL === "1" ? "_product-pages" : "product";
+  return path.join(directory, slug, "index.html");
+};
+
+const buildProductContent = (product, productName, productUrl, image, description, faqs, variant) => {
+  const name = escapeHtml(productName);
+  const { price, compareAtPrice, hasDiscount } = getProductDisplayPricing(product, variant);
   const reviews = buildProductReviewSchema(getProductReviews(product));
   const details = String(product?.description || product?.shortInfo || "").trim();
   const category = escapeHtml(String(product?.categoryName || product?.category || "Beauty and personal care"));
   const variants = Array.isArray(product?.variants) ? product.variants : [];
-  const canonicalPath = new URL(canonicalUrl).pathname;
+  const { pathname: canonicalPath, origin } = new URL(productUrl);
   const watchVideos = WATCH_VIDEOS.filter((video) => video.relatedPath === canonicalPath);
   const variantLinks = variants
     .map((variant) => {
       const queryValue = getVariantQueryValue(variant);
       const label = String(variant?.label || "").trim();
       if (!queryValue || !label) return "";
-      return `<li><a href="${escapeHtml(canonicalUrl)}?variant=${encodeURIComponent(queryValue)}">${escapeHtml(name)} - ${escapeHtml(label)}</a></li>`;
+      return `<li><a href="${escapeHtml(origin + canonicalPath)}?variant=${encodeURIComponent(queryValue)}">${escapeHtml(product.name)} - ${escapeHtml(label)}</a></li>`;
     })
     .filter(Boolean)
     .join("");
@@ -160,13 +168,13 @@ const buildProductContent = (product, canonicalUrl, image, description, faqs = [
     <p>${escapeHtml(description)}</p>
     ${priceMarkup}
     ${watchVideos.length ? `<section><h2>Watch the product video</h2>${watchVideos.map((video) => `<p><a href="${getWatchPath(video)}">${escapeHtml(video.title)}</a></p>`).join("")}</section>` : ""}
-    <p><strong>Availability:</strong> ${getProductVariantAvailability(product) ? "In stock" : "Out of stock"}</p>
+    <p><strong>Availability:</strong> ${getProductVariantAvailability(product, variant) ? "In stock" : "Out of stock"}</p>
     ${reviews.length ? `<section id="reviews"><h2>Customer reviews</h2>${reviews.map((review) => `<article><h3>${escapeHtml(review.author.name)}</h3><p>${review.reviewRating.ratingValue}/5${review.datePublished ? ` · <time datetime="${review.datePublished}">${review.datePublished}</time>` : ""}</p><p>${escapeHtml(review.reviewBody)}</p></article>`).join("")}</section>` : ""}
     <p><strong>Category:</strong> ${category}</p>
     ${details ? `<section><h2>Product details</h2>${details}</section>` : ""}
     ${variantLinks ? `<section><h2>Available variants</h2><ul>${variantLinks}</ul></section>` : ""}
     ${faqs.length ? `<section id="faq"><h2>Frequently Asked Questions</h2>${faqs.map((faq) => `<div class="faq-item"><h3>${escapeHtml(faq.question)}</h3><p>${escapeHtml(faq.answer)}</p></div>`).join("")}</section>` : ""}
-    <p><a href="${escapeHtml(canonicalUrl)}">View ${name}</a></p>
+    <p><a href="${escapeHtml(productUrl)}">View ${name}</a></p>
   </article>
 </main>`;
 };
@@ -192,9 +200,9 @@ const buildSeoImage = (product = {}) =>
     DEFAULT_OG_IMAGE
   ) || DEFAULT_OG_IMAGE;
 
-const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => {
+const buildProductJsonLd = (product, slug, canonicalUrl, image, description, name, variant, variantName) => {
   const offers = [];
-  const { price } = getProductDisplayPricing(product);
+  const { price } = getProductDisplayPricing(product, variant);
   const merchant = getProductMerchantMetadata(product);
   const reviews = getProductReviews(product);
   const reviewCount = reviews.length;
@@ -217,7 +225,7 @@ const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => 
       "@type": "Offer",
       priceCurrency: "INR",
       price: String(price),
-      availability: getProductVariantAvailability(product) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      availability: getProductVariantAvailability(product, variant) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       priceValidUntil: merchant.priceValidUntil,
       validFrom: merchant.validFrom,
       url: canonicalUrl,
@@ -232,11 +240,12 @@ const buildProductJsonLd = (product, slug, canonicalUrl, image, description) => 
     "@type": "Product",
     "@id": `${canonicalUrl}#product`,
     mainEntityOfPage: canonicalUrl,
-    name: String(product?.name || "Product"),
+    name,
     description,
     image: [image],
     url: canonicalUrl,
-    sku: String(merchant.sku || product?.sku || product?._id || product?.id || slug),
+    sku: String((variant && getProductVariantSku(product, variant)) || merchant.sku || product?.sku || product?._id || product?.id || slug),
+    color: variantName || undefined,
     brand: {
       "@type": "Brand",
       name: "Ilika",
@@ -284,15 +293,19 @@ async function fetchProducts(endpoint) {
 const injectOrReplace = (html, pattern, replacement) =>
   pattern.test(html) ? html.replace(pattern, replacement) : html;
 
-export function buildProductHtml(templateHtml, product, slug) {
-  const canonicalUrl = buildCanonicalUrl(slug);
-  const title = buildSeoTitle(product);
+export function buildProductHtml(templateHtml, product, slug, variant = null) {
+  const variantQuery = variant ? getVariantQueryValue(variant) : "";
+  const variantName = variant ? getProductVariantName(product, variant) : "";
+  const suffix = variantName ? ` - ${variantName}` : "";
+  const canonicalUrl = buildCanonicalUrl(slug) + (variantQuery ? `?variant=${encodeURIComponent(variantQuery)}` : "");
+  const title = buildSeoTitle(product) + suffix;
+  const name = String(product?.name || "Product") + suffix;
   const description = buildSeoDescription(product);
-  const image = buildSeoImage(product);
+  const image = (variant && toAbsoluteUrl(getProductDisplayImage(product, variant))) || buildSeoImage(product);
   const keywords = String(product?.seoKeywords || "").trim();
   const faqs = getProductSeoContent(product, slug)?.faqs || product?.faqs || [];
   const schema = [
-    buildProductJsonLd(product, slug, canonicalUrl, image, description),
+    buildProductJsonLd(product, slug, canonicalUrl, image, description, name, variant, variantName),
     buildBreadcrumbJsonLd(product, canonicalUrl),
     ...(faqs.length ? [{
       "@context": "https://schema.org",
@@ -361,7 +374,7 @@ export function buildProductHtml(templateHtml, product, slug) {
   html = html.replace(/<\/head>/i, `${schemaMarkup}</head>`);
   html = html.replace(
     /<div id="root"><\/div>/i,
-    `<div id="root">${buildProductContent(product, canonicalUrl, image, description, faqs)}</div>`
+    `<div id="root">${buildProductContent(product, name, canonicalUrl, image, description, faqs, variant)}</div>`
   );
 
   return html;
@@ -382,14 +395,21 @@ async function main() {
     const slug = getCanonicalProductSlug(product);
     if (!slug) continue;
 
-    const productDir = path.join(distDir, "product", slug);
-    const productHtml = buildProductHtml(templateHtml, product, slug);
-    await fs.mkdir(productDir, { recursive: true });
-    await fs.writeFile(path.join(productDir, "index.html"), productHtml, "utf8");
-    written += 1;
+    const variants = product.hasVariants && Array.isArray(product.variants) ? product.variants : [];
+    const pages = new Map([["", null]]);
+    for (const variant of variants) {
+      const query = getVariantQueryValue(variant);
+      if (PRODUCT_URL_PATTERN.test(query) && !pages.has(query)) pages.set(query, variant);
+    }
+    for (const [query, variant] of pages) {
+      const file = path.join(distDir, getPrerenderedProductPath(slug, query));
+      await fs.mkdir(path.dirname(file), { recursive: true });
+      await fs.writeFile(file, buildProductHtml(templateHtml, product, slug, variant), "utf8");
+      written += 1;
+    }
   }
 
-  console.log(`[prerender] Wrote ${written} product page(s) to dist/product/*/index.html`);
+  console.log(`[prerender] Wrote ${written} product and variant pages`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

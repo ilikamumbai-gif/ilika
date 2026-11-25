@@ -44,6 +44,32 @@ test("variant availability agrees between page content and schema", () => {
   assert.ok(html.includes('<strong>Availability:</strong> Out of stock'));
 });
 
+test("hair dryer variant pages use the selected color's stock and offer URL", () => {
+  const dryer = {
+    ...product,
+    name: "Ilika Leafless Hair Dryer",
+    productUrl: "leafless-hair-dryer",
+    inStock: true,
+    hasVariants: true,
+    variants: [
+      { label: "Black", isDefault: true, inStock: false },
+      { label: "White", inStock: true },
+      { label: "Purple", inStock: true },
+    ],
+  };
+  const canonicalTemplate = template.replace("</head>", '<link rel="canonical" href="https://ilika.in/" /></head>');
+
+  for (const variant of dryer.variants) {
+    const html = buildProductHtml(canonicalTemplate, dryer, dryer.productUrl, variant);
+    const url = `https://ilika.in/product/leafless-hair-dryer?variant=${variant.label.toLowerCase()}`;
+    assert.ok(html.includes(`rel="canonical" href="${url}"`));
+    assert.ok(html.includes(`<h1>${dryer.name} - ${variant.label}</h1>`));
+    assert.ok(html.includes(`<strong>Availability:</strong> ${variant.inStock ? "In stock" : "Out of stock"}`));
+    assert.equal(availability(html), `https://schema.org/${variant.inStock ? "InStock" : "OutOfStock"}`);
+    assert.ok(html.includes(`"url":"${url}"`));
+  }
+});
+
 test("successful saves still expose Merchant failure and missing website rebuild", () => {
   const message = getProductSaveMessage({
     merchantSync: { status: "error", message: "Permission denied" },

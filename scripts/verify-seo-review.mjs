@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
+import path from "node:path";
+import { getPrerenderedProductPath } from "./prerender-product-pages.mjs";
 import { chromium } from "playwright";
 import { startPreview } from "./seo-preview.mjs";
 import { BLOG_REDIRECTS } from "../src/data/blogConsolidation.js";
@@ -14,7 +16,7 @@ for (const destination of new Set(Object.values(BLOG_REDIRECTS))) {
   assert.ok(html.includes("Check delivery for your pincode"));
   assert.ok(html.includes(`href="https://ilika.in${destination}"`));
 }
-const lip = await fs.readFile("dist/product/lip-plumper-vacuum-device/index.html", "utf8");
+const lip = await fs.readFile(path.join("dist", getPrerenderedProductPath("lip-plumper-vacuum-device")), "utf8");
 assert.match(lip, /<title>Lip Plumper Tool \| Rechargeable Vacuum Device \| Ilika<\/title>/);
 assert.match(lip, /What features does the Ilika lip plumper tool have/);
 assert.ok(sitemap.includes("/product/lip-plumper-vacuum-device</loc>"));
