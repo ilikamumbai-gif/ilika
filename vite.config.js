@@ -72,6 +72,22 @@ const buildProductSeoPayload = (product = {}, routeSlug = "") => {
   const category = readProductCategory(product);
   const price = readProductPrice(product);
   const canonicalUrl = `${SITE_URL}/product/${slug}`;
+  const productImages = [
+    ...(Array.isArray(product?.images) ? product.images : []),
+    product?.image,
+    product?.imageUrl,
+  ]
+    .map((value) => String(value?.url || value?.image || value?.src || value || "").trim())
+    .filter(Boolean)
+    .map((value) => {
+      try {
+        const imageUrl = new URL(value, SITE_URL);
+        return /^https?:$/.test(imageUrl.protocol) ? imageUrl.href : "";
+      } catch {
+        return "";
+      }
+    })
+    .filter(Boolean);
 
   if (!name || !description || !Number.isFinite(price) || price <= 0) return null;
 
@@ -80,6 +96,7 @@ const buildProductSeoPayload = (product = {}, routeSlug = "") => {
     "@type": "Product",
     name,
     description,
+    image: [...new Set(productImages)],
     brand: {
       "@type": "Brand",
       name: "Ilika",
