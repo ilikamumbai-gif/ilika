@@ -414,6 +414,7 @@ const EmiOfferCard = ({
   isProcessing = false,
   disabled = false,
   className = "",
+  popupOnly = false,
   autoOpen = false,
   onOpen = null,
   onDismiss = null,
@@ -451,12 +452,12 @@ const EmiOfferCard = ({
       <button
         type="button"
         onClick={() => { setIsOpen(true); onOpen?.(); }}
-        className={`relative mt-3 w-full rounded-[16px] border bg-white px-3 pb-3 pt-6 text-left shadow-[0_10px_24px_rgba(69,39,34,0.06)] transition hover:-translate-y-[1px] hover:shadow-[0_14px_28px_rgba(69,39,34,0.08)] sm:rounded-[18px] sm:px-4 sm:pt-6 ${className}`}
-        style={{ borderColor: detailTheme.heading || detailTheme.borderSoft }}
+        className={`relative mt-3 w-full rounded-[16px] border bg-white px-3 pb-3 pt-6 text-left shadow-[0_10px_24px_rgba(69,39,34,0.06)] transition hover:-translate-y-[1px] hover:shadow-[0_14px_28px_rgba(69,39,34,0.08)] sm:rounded-[18px] sm:px-4 sm:pt-6 ${popupOnly ? "hidden" : ""} ${className}`}
+        style={{ borderColor: "#e8cad2" }}
       >
         <span
           className="ilika-badge-pulse absolute left-4 top-0 z-10 inline-flex min-h-[26px] -translate-y-[40%] items-center rounded-[9px] px-3.5 py-1 text-[10px] font-semibold leading-none text-white shadow-[0_8px_18px_rgba(0,0,0,0.18)]"
-          style={{ backgroundColor: detailTheme.heading || "#111827" }}
+          style={{ backgroundColor: "#74223d" }}
         >
           EMI available
         </span>
@@ -465,7 +466,7 @@ const EmiOfferCard = ({
           <div className="min-w-0">
             <p className="text-[14px] leading-tight text-[#2f3540] sm:text-[15px]">
               or{" "}
-              <span className="font-bold" style={{ color: detailTheme.heading }}>
+              <span className="font-bold" style={{ color: "#74223d" }}>
                 ₹{formatEmiAmount(primaryPlan.monthly)}
               </span>
               <span className="font-semibold text-[#111827]">/month</span>{" "}
@@ -481,7 +482,7 @@ const EmiOfferCard = ({
 
           <span
             className="inline-flex h-fit shrink-0 items-center justify-center self-center rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white"
-            style={{ backgroundColor: detailTheme.heading || "#111827" }}
+            style={{ backgroundColor: "#74223d" }}
           >
             View
           </span>
@@ -508,10 +509,10 @@ const EmiOfferCard = ({
 
             <div className="px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6">
               <div className="pr-12">
-                <p className="text-sm font-semibold uppercase tracking-[0.16em]" style={{ color: detailTheme.accent }}>
+                <p className="text-sm font-semibold uppercase tracking-[0.16em]" style={{ color: "#74223d" }}>
                   Razorpay EMI
                 </p>
-                <h3 className="mt-2 text-[27px] font-bold leading-none sm:text-[30px]" style={{ color: detailTheme.heading }}>
+                <h3 className="mt-2 text-[27px] font-bold leading-none sm:text-[30px]" style={{ color: "#74223d" }}>
                   ₹{formatEmiAmount(primaryPlan.monthly)}/month for {primaryPlan.months} months
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-[#5f666d]">
@@ -519,11 +520,11 @@ const EmiOfferCard = ({
                 </p>
               </div>
 
-              <div className="mt-5 rounded-[22px] border bg-[#f5f5f5] p-4" style={{ borderColor: detailTheme.borderSoft }}>
+              <div className="mt-5 rounded-[22px] border bg-[#fff1f3] p-4" style={{ borderColor: "#e8cad2" }}>
                 <div className="grid grid-cols-3 gap-3">
                   {plans.map((plan, index) => {
                     const slice = index === 0 ? 0.32 : index === 1 ? 0.66 : 1;
-                    const circleBackground = `conic-gradient(${detailTheme.accent} 0turn ${slice}turn, #ffffff ${slice}turn 1turn)`;
+                    const circleBackground = `conic-gradient(#74223d 0turn ${slice}turn, #ffffff ${slice}turn 1turn)`;
 
                     return (
                       <div key={plan.months} className="text-center">
@@ -543,7 +544,7 @@ const EmiOfferCard = ({
                             />
                           </div>
                         </div>
-                        <p className="mt-3 text-[15px] font-bold leading-none" style={{ color: detailTheme.heading }}>
+                        <p className="mt-3 text-[15px] font-bold leading-none" style={{ color: "#74223d" }}>
                           ₹{formatEmiAmount(plan.monthly)}
                         </p>
                         <p className="mt-1 text-[10px] text-[#5f666d]">per month</p>
@@ -555,10 +556,10 @@ const EmiOfferCard = ({
                   })}
                 </div>
 
-                <div className="mt-4 overflow-hidden rounded-[16px] border bg-white" style={{ borderColor: detailTheme.borderSoft }}>
+                <div className="mt-4 overflow-hidden rounded-[16px] border bg-white" style={{ borderColor: "#e8cad2" }}>
                   <div className="flex items-center justify-between px-4 py-3 text-sm">
                     <span className="font-semibold text-[#374151]">Total Order Value</span>
-                    <span className="font-bold" style={{ color: detailTheme.heading }}>
+                    <span className="font-bold" style={{ color: "#74223d" }}>
                       ₹{safeAmount.toLocaleString("en-IN")}
                     </span>
                   </div>
@@ -567,15 +568,15 @@ const EmiOfferCard = ({
 
               <div className="mt-5 grid grid-cols-3 gap-3 text-center">
                 <div>
-                  <p className="text-[13px] font-bold" style={{ color: detailTheme.heading }}>0% Interest</p>
+                  <p className="text-[13px] font-bold" style={{ color: "#74223d" }}>0% Interest</p>
                   <p className="mt-1 text-[11px] leading-4 text-[#6b7280]">Shown when eligible</p>
                 </div>
                 <div>
-                  <p className="text-[13px] font-bold" style={{ color: detailTheme.heading }}>No Extra Cost</p>
+                  <p className="text-[13px] font-bold" style={{ color: "#74223d" }}>No Extra Cost</p>
                   <p className="mt-1 text-[11px] leading-4 text-[#6b7280]">Depends on bank offer</p>
                 </div>
                 <div>
-                  <p className="text-[13px] font-bold" style={{ color: detailTheme.heading }}>UPI & Cards</p>
+                  <p className="text-[13px] font-bold" style={{ color: "#74223d" }}>UPI & Cards</p>
                   <p className="mt-1 text-[11px] leading-4 text-[#6b7280]">Available in checkout</p>
                 </div>
               </div>
@@ -591,7 +592,7 @@ const EmiOfferCard = ({
                 }}
                 disabled={disabled || isProcessing}
                 className={`mt-6 inline-flex w-full items-center justify-center rounded-[16px] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 ${disabled || isProcessing ? "cursor-not-allowed opacity-60" : ""}`}
-                style={{ backgroundColor: detailTheme.accent }}
+                style={{ backgroundColor: "#74223d" }}
               >
                 {isProcessing ? "Processing..." : "Continue to checkout to use Razorpay EMI"}
               </button>
@@ -2852,6 +2853,159 @@ const AnimatedCtaButton = ({
   );
 };
 
+const ProductVideoPopup = ({ video, product, price, mrp, isOutOfStock, onClose, onBuyNow }) => {
+  const [stage, setStage] = useState("video");
+  const [nativeVideoIsPortrait, setNativeVideoIsPortrait] = useState(false);
+  const youtubePlayerContainerRef = useRef(null);
+  const isPortraitVideo = Boolean(video?.isShort || nativeVideoIsPortrait);
+  const savings = Math.max(0, Number(mrp || 0) - Number(price || 0));
+  const emiPlans = [3, 6, 9].map((months) => ({ months, monthly: Number(price || 0) / months }));
+  useEffect(() => {
+    if (!video) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event) => { if (event.key === "Escape") onClose(); };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [video, onClose]);
+  useEffect(() => {
+    const youtubeId = video?.kind === "native" ? "" : getYouTubeVideoId(video?.url || "");
+    if (stage !== "video" || !youtubeId || !youtubePlayerContainerRef.current) return undefined;
+    let player;
+    let cancelled = false;
+    const createPlayer = () => {
+      if (cancelled || !window.YT?.Player || !youtubePlayerContainerRef.current) return;
+      player = new window.YT.Player(youtubePlayerContainerRef.current, {
+        videoId: youtubeId,
+        playerVars: { autoplay: 1, controls: 1, playsinline: 1, rel: 0, modestbranding: 1 },
+        events: {
+          onReady: (event) => event.target.mute(),
+          onStateChange: (event) => {
+            if (event.data === window.YT.PlayerState.ENDED) onClose();
+          },
+        },
+      });
+    };
+    if (window.YT?.Player) {
+      createPlayer();
+    } else {
+      const previousReady = window.onYouTubeIframeAPIReady;
+      const ready = () => { previousReady?.(); createPlayer(); };
+      window.onYouTubeIframeAPIReady = ready;
+      if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+        const script = document.createElement("script");
+        script.src = "https://www.youtube.com/iframe_api";
+        script.async = true;
+        document.head.appendChild(script);
+      }
+    }
+    return () => {
+      cancelled = true;
+      if (player?.destroy) player.destroy();
+    };
+  }, [stage, video?.kind, video?.url, onClose]);
+  if (!video) return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#28151f]/75 p-3 backdrop-blur-md sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section role="dialog" aria-modal="true" aria-labelledby="product-video-popup-title" className={`w-full overflow-hidden rounded-2xl bg-[#180d12] shadow-2xl ${isPortraitVideo ? "max-w-[430px]" : "max-w-4xl"}`}>
+        <header className="flex items-start justify-between gap-4 bg-[#74223d] px-5 py-4 text-white sm:px-7">
+          <div>
+            <p className="text-[11px] font-medium text-[#ffe2c2]">{stage === "video" ? "PRODUCT VIDEO" : stage === "savings" ? "YOUR SAVINGS" : "PAYMENT OPTIONS"}</p>
+            <h2 id="product-video-popup-title" className="mt-1 text-xl font-semibold sm:text-2xl">{stage === "video" ? "See it in action" : stage === "savings" ? "Your product offer" : "Easy EMI available"}</h2>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close product video" className="rounded-full p-2 text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"><X size={20} /></button>
+        </header>
+        {stage === "video" ? <div className="flex justify-center bg-[#180d12] p-2 sm:p-3">
+          <div className="mx-auto flex max-w-full items-center justify-center overflow-hidden rounded-xl bg-black" style={isPortraitVideo ? { height: "min(76vh, 700px)", aspectRatio: "9 / 16" } : { width: "100%", maxHeight: "76vh", aspectRatio: "16 / 9" }}>
+            {video.kind === "native" ? (
+              <video src={video.url} title={video.title} className="h-full w-full object-contain" autoPlay controls playsInline onLoadedMetadata={(event) => setNativeVideoIsPortrait(event.currentTarget.videoHeight > event.currentTarget.videoWidth)} onEnded={onClose} />
+            ) : getYouTubeVideoId(video.url) ? (
+              <div ref={youtubePlayerContainerRef} className="h-full w-full" />
+            ) : (
+              <iframe src={video.embedUrl} title={video.title} className="h-full w-full" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
+            )}
+          </div>
+          <div className="hidden">
+            <p className="text-sm text-slate-500">{product?.name}</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-950">₹{Number(price || 0).toLocaleString("en-IN")}</p>
+            {Number(mrp) > Number(price) && <p className="mt-1 text-sm text-slate-500">MRP <s>₹{Number(mrp).toLocaleString("en-IN")}</s></p>}
+            <p className="mt-5 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">Watch how the Ilika face mask maker helps you prepare a fresh mask at home.</p>
+            <button type="button" onClick={() => setStage("savings")} className="mt-6 w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">Continue to savings</button>
+          </div>
+          <div className="hidden">
+            <p className="text-[11px] font-medium text-slate-500">{product?.name}</p>
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              {savings > 0 && <span className="text-3xl font-semibold text-slate-950">Save ₹{savings.toLocaleString("en-IN")}</span>}
+              <span className="text-lg font-medium text-slate-900">Now ₹{Number(price || 0).toLocaleString("en-IN")}</span>
+              {Number(mrp) > Number(price) && <span className="text-sm text-slate-500">MRP <s>₹{Number(mrp).toLocaleString("en-IN")}</s></span>}
+            </div>
+            <div className="mt-4 flex flex-col gap-3 rounded-xl bg-[#f3f6ff] p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div><p className="text-sm font-medium text-slate-900">Easy EMI available</p><p className="mt-1 text-xs text-slate-600">Choose EMI at checkout to spread your payment into monthly instalments.</p></div>
+              <button type="button" onClick={() => setStage("emi")} className="shrink-0 rounded-xl bg-slate-950 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800">View EMI</button>
+            </div>
+          </div>
+        </div> : stage === "savings" ? <div className="p-5 sm:p-7">
+          <p className="text-sm text-slate-500">{product?.name}</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl bg-[#f3f6ff] p-5"><p className="text-sm text-slate-600">{savings > 0 ? "You save" : "Current price"}</p><p className="mt-1 text-3xl font-semibold text-slate-950">₹{(savings > 0 ? savings : Number(price || 0)).toLocaleString("en-IN")}</p></div>
+            <div className="rounded-2xl border border-slate-100 p-5"><p className="text-sm text-slate-600">Now</p><p className="mt-1 text-2xl font-semibold text-slate-950">₹{Number(price || 0).toLocaleString("en-IN")}</p>{Number(mrp) > Number(price) && <p className="mt-1 text-sm text-slate-500">MRP <s>₹{Number(mrp).toLocaleString("en-IN")}</s></p>}</div>
+          </div>
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+            <button type="button" onClick={() => setStage("video")} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Watch video again</button>
+            <div className="flex flex-col gap-3 sm:flex-row"><button type="button" onClick={() => setStage("emi")} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">View EMI</button><button type="button" disabled={isOutOfStock} onClick={() => { onClose(); onBuyNow(); }} className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50">{isOutOfStock ? "Out of stock" : "Buy now"}</button></div>
+          </div>
+        </div> : <div className="p-5 sm:p-7">
+          <p className="text-sm text-slate-500">Estimated monthly payments for {product?.name}. Final EMI plans and charges are confirmed at checkout.</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">{emiPlans.map(({ months, monthly }) => <div key={months} className="rounded-2xl bg-[#f3f6ff] p-5"><p className="text-sm text-slate-600">{months} months</p><p className="mt-1 text-2xl font-semibold text-slate-950">₹{monthly.toLocaleString("en-IN", { maximumFractionDigits: 0 })}<span className="text-sm font-normal text-slate-500">/mo</span></p></div>)}</div>
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between"><button type="button" onClick={() => setStage("savings")} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Back to savings</button><button type="button" disabled={isOutOfStock} onClick={() => { onClose(); onBuyNow(); }} className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50">{isOutOfStock ? "Out of stock" : "Continue to checkout"}</button></div>
+        </div>}
+      </section>
+    </div>,
+    document.body
+  );
+};
+
+const ProductSavingsPopup = ({ product, price, mrp, isOutOfStock, onClose, onBuyNow, onViewEmi }) => {
+  const [showEmi, setShowEmi] = useState(false);
+  const savings = Math.max(0, Number(mrp || 0) - Number(price || 0));
+  const emiPlans = [3, 6, 9].map((months) => ({ months, monthly: Number(price || 0) / months }));
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event) => { if (event.key === "Escape") onClose(); };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onClose]);
+  return createPortal(
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#28151f]/75 p-3 backdrop-blur-md sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section role="dialog" aria-modal="true" aria-labelledby="product-savings-popup-title" className="w-full max-w-[480px] overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <header className="flex items-start justify-between gap-4 bg-[#74223d] px-5 py-4 text-white sm:px-6">
+          <div><p className="text-[11px] font-medium text-[#ffe2c2]">{showEmi ? "PAYMENT OPTIONS" : "SPECIAL OFFER"}</p><h2 id="product-savings-popup-title" className="mt-1 text-xl font-semibold">{showEmi ? "Easy EMI available" : savings > 0 ? "Your exclusive savings" : "Special product offer"}</h2></div>
+          <button type="button" onClick={onClose} aria-label="Close offer" className="rounded-full p-2 text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"><X size={20} /></button>
+        </header>
+        {!showEmi ? (
+          <div className="p-5 sm:p-6">
+            <p className="text-xs leading-5 text-slate-500">{product?.name}</p>
+            {savings > 0 ? <p className="mt-3 text-3xl font-semibold text-slate-950">Save ₹{savings.toLocaleString("en-IN")}</p> : <p className="mt-3 text-3xl font-semibold text-slate-950">₹{Number(price || 0).toLocaleString("en-IN")}</p>}
+            <p className="mt-3 text-sm text-slate-700">Now ₹{Number(price || 0).toLocaleString("en-IN")}{Number(mrp) > Number(price) && <> · MRP <s className="text-slate-500">₹{Number(mrp).toLocaleString("en-IN")}</s></>}</p>
+            {Number(price) > 2000 && <div className="mt-5 rounded-xl bg-[#fff1f3] p-4"><p className="text-sm font-medium text-[#4b2632]">Easy EMI available</p><p className="mt-1 text-xs leading-5 text-slate-600">Choose EMI at checkout to spread your payment into monthly instalments.</p></div>}
+            <div className={`mt-5 grid gap-3 ${Number(price) > 2000 ? "grid-cols-2" : "grid-cols-1"}`}><button type="button" onClick={onClose} className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-[#fff6f6]">Continue</button>{Number(price) > 2000 && <button type="button" onClick={onViewEmi} className="rounded-xl bg-[#74223d] px-4 py-3 text-sm font-semibold text-white hover:bg-[#5d1b30]">View EMI</button>}</div>
+          </div>
+        ) : (
+          <div className="p-5 sm:p-6"><p className="text-sm leading-6 text-slate-600">Estimated monthly payments. Final EMI plans and charges are confirmed at checkout.</p><div className="mt-4 space-y-2">{emiPlans.map(({ months, monthly }) => <div key={months} className="flex items-center justify-between rounded-xl bg-[#f3f6ff] px-4 py-3"><span className="text-sm text-slate-700">{months} months</span><span className="font-semibold text-slate-950">₹{monthly.toLocaleString("en-IN", { maximumFractionDigits: 0 })}/month</span></div>)}</div><div className="mt-5 grid grid-cols-2 gap-3"><button type="button" onClick={() => setShowEmi(false)} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Back</button><button type="button" disabled={isOutOfStock} onClick={() => { onClose(); onBuyNow(); }} className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50">{isOutOfStock ? "Out of stock" : "Continue"}</button></div></div>
+        )}
+      </section>
+    </div>,
+    document.body
+  );
+};
+
 const ProductDetail = () => {
   const { products = [] } = useProducts();
   const { productUrl } = useParams();
@@ -2877,6 +3031,20 @@ const ProductDetail = () => {
   const [imageZoomPosition, setImageZoomPosition] = useState({ x: 50, y: 50 });
   const [selectedVideoUrl, setSelectedVideoUrl] = useState("");
   const [selectedVideoPlaying, setSelectedVideoPlaying] = useState(false);
+  const [productVideoPopupOpen, setProductVideoPopupOpen] = useState(false);
+  const [productSavingsPopupOpen, setProductSavingsPopupOpen] = useState(false);
+  const [productEmiPopupOpen, setProductEmiPopupOpen] = useState(false);
+  const savingsPopupTimerRef = useRef(null);
+  const closeProductVideoPopup = useCallback(() => {
+    setProductVideoPopupOpen(false);
+    window.clearTimeout(savingsPopupTimerRef.current);
+    savingsPopupTimerRef.current = window.setTimeout(() => setProductSavingsPopupOpen(true), 2200);
+  }, []);
+  const openProductEmiPopup = useCallback(() => {
+    setProductSavingsPopupOpen(false);
+    setProductEmiPopupOpen(true);
+  }, []);
+  useEffect(() => () => window.clearTimeout(savingsPopupTimerRef.current), []);
   const [showAllThumbnails, setShowAllThumbnails] = useState(false);
   const [activeVariant, setActiveVariant] = useState(null);
   const [touchStartX, setTouchStartX] = useState(null);
@@ -3164,6 +3332,16 @@ const ProductDetail = () => {
       })
       .filter(Boolean);
   }, [product?.name, product?.productUrl, product?.slug, product?.videos]);
+  useEffect(() => {
+    setProductVideoPopupOpen(false);
+    setProductSavingsPopupOpen(false);
+    if (!product) return undefined;
+    const timer = window.setTimeout(() => {
+      if (productVideos[0]) setProductVideoPopupOpen(true);
+      else setProductSavingsPopupOpen(true);
+    }, productVideos[0] ? 1500 : 3500);
+    return () => window.clearTimeout(timer);
+  }, [product?.id, product?.productUrl, productUrl, productVideos[0]?.id]);
   // `displayImages` follows the selected variant; each thumbnail loads independently.
   const activeDisplayPricing = useMemo(
     () => getProductDisplayPricing(product, activeVariant),
@@ -4710,6 +4888,40 @@ const ProductDetail = () => {
         }
       `}</style>
       <StructuredData schema={productStructuredData} />
+      {productVideoPopupOpen && productVideos[0] && (
+        <ProductVideoPopup
+          video={productVideos[0]}
+          product={product}
+          price={price}
+          mrp={effectiveMrp}
+          isOutOfStock={isOutOfStock}
+          onClose={closeProductVideoPopup}
+          onBuyNow={handleBuyNow}
+        />
+      )}
+      {productSavingsPopupOpen && (
+        <ProductSavingsPopup
+          product={product}
+          price={price}
+          mrp={effectiveMrp}
+          isOutOfStock={isOutOfStock}
+          onClose={() => setProductSavingsPopupOpen(false)}
+          onBuyNow={handleBuyNow}
+          onViewEmi={openProductEmiPopup}
+        />
+      )}
+      {productEmiPopupOpen && Number(price) > 2000 && (
+        <EmiOfferCard
+          amount={price}
+          detailTheme={detailTheme}
+          popupOnly
+          autoOpen
+          disabled={isOutOfStock}
+          isProcessing={isBuying}
+          onDismiss={() => setProductEmiPopupOpen(false)}
+          onContinue={() => { setProductEmiPopupOpen(false); return handleBuyNow(); }}
+        />
+      )}
       <MiniDivider />
         {showReviewModal && (
           <ReviewModal
@@ -4773,6 +4985,25 @@ const ProductDetail = () => {
         {(isVoiceMaskMakerProduct || isNonVoiceMaskMakerProduct) && <MaskMakerGuidePopup key={productUrl} currentModel={isNonVoiceMaskMakerProduct ? "nonvoice" : "voice"} startAfter={emiDismissed?.productUrl === productUrl ? emiDismissed.at : null} />}
         <Header />
         <CartDrawer />
+
+        {(isVoiceMaskMakerProduct || isNonVoiceMaskMakerProduct) && !isOutOfStock && (
+          <div className="mx-auto w-full max-w-[90rem] px-3 pt-3 sm:px-6 sm:pt-6">
+            <div className="overflow-hidden rounded-xl">
+              <OptimizedImage
+                src="/Homepage/mask-maker-back-in-stock-banner.webp"
+                alt="Ilika face mask makers are back in stock. Shop now."
+                width={5000}
+                height={2500}
+                sizes="(max-width: 90rem) 100vw, 90rem"
+                className="block h-auto w-full"
+              />
+            </div>
+            <div className="mt-3 flex flex-wrap justify-center gap-3">
+              <Link to="/product/voice-face-mask-maker" className="rounded-full bg-[#801f1f] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#651717] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#801f1f]">Shop Voice Mask Maker</Link>
+              <Link to="/product/non-voice-face-mask-maker" className="rounded-full border border-[#801f1f] bg-white px-5 py-3 text-sm font-semibold text-[#801f1f] transition hover:bg-[#fff5f4] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#801f1f]">Shop Non-Voice Mask Maker</Link>
+            </div>
+          </div>
+        )}
 
         {/* â•â•â•â• HERO â•â•â•â• */}
         <div className="relative max-w-[90rem] mx-auto xl:flex xl:items-start xl:gap-8">
@@ -5085,6 +5316,16 @@ const ProductDetail = () => {
                 <p className="mt-2 text-[14px] leading-6 text-gray-500 sm:text-[15px]">
                   {product.shortInfo || "Deep nourishment & long lasting hydration"}
                 </p>
+                {(isVoiceMaskMakerProduct || isNonVoiceMaskMakerProduct) && productVideos.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setProductVideoPopupOpen(true)}
+                    className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#ead8d3] bg-white px-4 py-2.5 text-sm font-semibold text-[#542e28] shadow-sm transition hover:border-[#b66d61] hover:bg-[#fff8f6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#801f1f]"
+                  >
+                    <span aria-hidden="true" className="flex h-6 w-6 items-center justify-center rounded-full bg-[#801f1f] text-xs text-white">▶</span>
+                    Watch product video
+                  </button>
+                )}
               </div>
 
               {publicReviewCount > 0 ? (
@@ -5298,7 +5539,6 @@ const ProductDetail = () => {
                               onContinue={handleBuyNow}
                               isProcessing={isBuying}
                               disabled={isOutOfStock}
-                              autoOpen
                               onOpen={handleEmiOpen}
                               onDismiss={handleEmiDismiss}
                             />
@@ -6126,7 +6366,6 @@ const ProductDetail = () => {
                           onContinue={handleBuyNow}
                           isProcessing={isBuying}
                           disabled={isOutOfStock}
-                          autoOpen
                           onOpen={handleEmiOpen}
                           onDismiss={handleEmiDismiss}
                         />

@@ -925,20 +925,20 @@ const Home = () => {
             bannerKey="home-top"
             slides={[
               {
-                desktopSrc: "/Homepage/diwali-mask-makers-shop-hero.webp",
-                mobileSrc: "/Homepage/diwali-mask-makers-mobile.webp",
+                desktopSrc: "/Homepage/mask-maker-back-in-stock-banner.webp",
+                mobileSrc: "/Homepage/mask-maker-back-in-stock-banner.webp",
                 linkUrl: "/product/voice-face-mask-maker",
-                alt: "Diwali Dhamaka offers on Ilika voice and non-voice mask makers",
+                alt: "Ilika mask makers are back in stock. Shop face mask makers for making fresh masks at home.",
                 imageFit: "contain",
-                aspectRatio: "1774 / 887",
-                mobileAspectRatio: "1060 / 1484",
-                mobileWidth: 1060,
-                mobileHeight: 1484,
-                width: 1774,
-                height: 887,
+                aspectRatio: "2 / 1",
+                mobileAspectRatio: "2 / 1",
+                mobileWidth: 5000,
+                mobileHeight: 2500,
+                width: 5000,
+                height: 2500,
                 hotspots: [
-                  { href: "/product/voice-face-mask-maker", label: "Shop voice mask maker", left: "0%", top: "0%", width: "62%", height: "100%", mobilePosition: { left: "0%", top: "0%", width: "50%", height: "100%" } },
-                  { href: "/product/non-voice-face-mask-maker", label: "Shop non-voice mask maker", left: "62%", top: "0%", width: "38%", height: "100%", mobilePosition: { left: "50%", top: "0%", width: "50%", height: "100%" } },
+                  { href: "/product/voice-face-mask-maker", label: "Shop Voice Mask Maker", left: "0%", top: "0%", width: "50%", height: "100%" },
+                  { href: "/product/non-voice-face-mask-maker", label: "Shop Non-Voice Mask Maker", left: "50%", top: "0%", width: "50%", height: "100%" },
                 ],
               },
               {
